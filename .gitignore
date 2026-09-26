@@ -1,4 +1,4 @@
-# Dependencias y paquetes pesados
+# Dependencias de paquetes
 node_modules/
 package-lock.json
 
@@ -6,13 +6,24 @@ package-lock.json
 .DS_Store
 Thumbs.db
 *.log
+*.txt
 .vscode/
 .idea/
+.agents/
 
-# Pruebas y temporales
+# Carpetas temporales y de pruebas
+scratch/
+tmp/
+temp/
+output/
+brain/
+
+# Pruebas intermedias y volcados
 tests/results/*.png
 tests/results/*.json
 !tests/results/.gitkeep
+*.bak
+*.BACKUP_*
 
 # Respaldos y exportaciones locales
 backups/
@@ -20,8 +31,6 @@ exports/
 CETPRO_BACKUP_*.json
 *.zip
 
-# Archivos de entorno y temporales del sistema
+# Archivos de entorno
 .env
 .env.local
-tmp/
-temp/
