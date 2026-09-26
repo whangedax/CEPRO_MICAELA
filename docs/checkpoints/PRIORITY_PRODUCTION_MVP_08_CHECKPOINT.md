@@ -1,0 +1,27 @@
+# Checkpoint previo — PRIORITY-PRODUCTION-MVP-08
+
+Fecha: 2026-09-16
+
+El proyecto no dispone de repositorio Git. Este checkpoint conserva los SHA-256 previos de los archivos existentes que se prevé modificar. Los archivos nuevos del gate no existían al tomarlo.
+
+| Archivo | SHA-256 previo |
+|---|---|
+| `app-v2/index.html` | `CC753ACD0311330E523D0BD0B6DB2355F230689AD2EF384C77305028FC6A847E` |
+| `app-v2/candidate.css` | `C56A446BABC53E4C3B984C12E32B62D2BA43602B49FF31DEDC974409E3565392` |
+| `app/js/config.js` | `B25137275BCD8269DC496306226FD599D64C78B064CEA2AC7F82D71EC11F77B7` |
+| `app/js/app.js` | `240970437653A8C33739642F83B0C2A3D8C0449FF47EF18D52D6840E173BD7F3` |
+| `app/js/ui/layout.js` | `5BFEB99D11A49FBF8972A66A2399EC9352C3BA2088E47EC4D6BECD2730AA4843` |
+| `app/js/ui/enrollments-view.js` | `D503DAFB02EAA25E978B8E6AF142F16E8F14202631B3694A66957847EFF80D75` |
+| `app/js/ui/group-assignment-view.js` | `CAEA61B0A060E66ECA2465C1B2323C43919D0FA0A989BE816AAA9BCC5AC32CA4` |
+| `app/js/services/pdf-template-engine.js` | `50471B474935A0F11218A80E03EF29D4DB3A4EC52753635FF9C71E90CC40AD1E` |
+| `docs/PROJECT_STATE.md` | `AD04AF0F6FF3AA78BBBFDB442ACFDF55CA7EF985AF2EC25F0C1B774F654EE720` |
+| `docs/DECISIONS.md` | `23A010657C98D0C6E0EBB3237AD8BA27449550A0F1B6C0CF41FDA3714AB4AB4D` |
+| `docs/ISSUES.md` | `C1F65A4B64FBACA51E49A6FCE067CC78A386AC0F23D017AD9FD1AA49F328C73B` |
+| `tests/TEST_MATRIX.md` | `256B54B6FC0B988340FCAE4D2415033CC068BBC0F34DBF9672B03DD15B71140B` |
+
+Estado previo comprobado:
+
+- Regresión global documentada: 1287/1287, 53 suites, `failed=0`.
+- PDF canónicos: 21/21 presentes; sus hashes fueron capturados antes del gate.
+- Producción: `CETPRO_DB` schema 1; migración v2 no autorizada.
+- Candidata: `CETPRO_V2_CANDIDATE` schema 2; la validación real de este gate será de solo lectura.

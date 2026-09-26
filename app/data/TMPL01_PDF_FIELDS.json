@@ -1,0 +1,2322 @@
+{
+  "header.cetpro": {
+    "x": 386.82,
+    "y": 101.31,
+    "w": 166.27,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "header.programa": {
+    "x": 179.61,
+    "y": 176.02,
+    "w": 373.48,
+    "h": 14.93,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 6,
+    "paddingX": 2
+  },
+  "header.ugel": {
+    "x": 214.92,
+    "y": 101.31,
+    "w": 35.31,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 4.5,
+    "paddingX": 1
+  },
+  "header.gestionPublica": {
+    "x": 113.57,
+    "y": 116.25,
+    "w": 35.33,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 8,
+    "paddingX": 0
+  },
+  "header.distrito": {
+    "x": 326.44,
+    "y": 146.12,
+    "w": 226.65,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5,
+    "paddingX": 2
+  },
+  "header.lugar": {
+    "x": 65.49,
+    "y": 161.07,
+    "w": 204.7,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5,
+    "paddingX": 2
+  },
+  "header.direccion": {
+    "x": 326.44,
+    "y": 161.07,
+    "w": 226.65,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5,
+    "paddingX": 2
+  },
+  "header.codigoModular": {
+    "x": 469.7,
+    "y": 116.26,
+    "w": 83.39,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "header.modulo": {
+    "x": 65.5,
+    "y": 190.95,
+    "w": 184.74,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 4,
+    "paddingX": 2
+  },
+  "header.rdModulo": {
+    "x": 386.82,
+    "y": 190.95,
+    "w": 56.79,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5,
+    "paddingX": 1
+  },
+  "header.ciclo": {
+    "x": 469.7,
+    "y": 190.95,
+    "w": 83.39,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "header.fechaInicio": {
+    "x": 113.59,
+    "y": 205.9,
+    "w": 66.02,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "header.fechaTermino": {
+    "x": 250.24,
+    "y": 205.9,
+    "w": 43.48,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "header.turno": {
+    "x": 386.82,
+    "y": 205.9,
+    "w": 56.79,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "header.seccion": {
+    "x": 510.62,
+    "y": 205.9,
+    "w": 42.47,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row01.codigoMatricula": {
+    "x": 45.54,
+    "y": 244.49,
+    "w": 68.03,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row01.nombre": {
+    "x": 113.57,
+    "y": 244.49,
+    "w": 180.13,
+    "h": 14.92,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row01.sexo": {
+    "x": 293.7,
+    "y": 244.49,
+    "w": 32.74,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row01.fechaNacimiento": {
+    "x": 326.44,
+    "y": 244.49,
+    "w": 60.37,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row01.condicion": {
+    "x": 443.62,
+    "y": 244.49,
+    "w": 26.08,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row01.numeroUnidades": {
+    "x": 469.7,
+    "y": 244.49,
+    "w": 40.92,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row01.creditos": {
+    "x": 510.62,
+    "y": 244.49,
+    "w": 42.47,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row02.codigoMatricula": {
+    "x": 45.54,
+    "y": 259.41,
+    "w": 68.03,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row02.nombre": {
+    "x": 113.57,
+    "y": 259.41,
+    "w": 180.13,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row02.sexo": {
+    "x": 293.7,
+    "y": 259.41,
+    "w": 32.74,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row02.fechaNacimiento": {
+    "x": 326.44,
+    "y": 259.41,
+    "w": 60.37,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row02.condicion": {
+    "x": 443.62,
+    "y": 259.41,
+    "w": 26.08,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row02.numeroUnidades": {
+    "x": 469.7,
+    "y": 259.41,
+    "w": 40.92,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row02.creditos": {
+    "x": 510.62,
+    "y": 259.41,
+    "w": 42.47,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row03.codigoMatricula": {
+    "x": 45.54,
+    "y": 274.36,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row03.nombre": {
+    "x": 113.57,
+    "y": 274.36,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row03.sexo": {
+    "x": 293.7,
+    "y": 274.36,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row03.fechaNacimiento": {
+    "x": 326.44,
+    "y": 274.36,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row03.condicion": {
+    "x": 443.62,
+    "y": 274.36,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row03.numeroUnidades": {
+    "x": 469.7,
+    "y": 274.36,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row03.creditos": {
+    "x": 510.62,
+    "y": 274.36,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row04.codigoMatricula": {
+    "x": 45.54,
+    "y": 289.3,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row04.nombre": {
+    "x": 113.57,
+    "y": 289.3,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row04.sexo": {
+    "x": 293.7,
+    "y": 289.3,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row04.fechaNacimiento": {
+    "x": 326.44,
+    "y": 289.3,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row04.condicion": {
+    "x": 443.62,
+    "y": 289.3,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row04.numeroUnidades": {
+    "x": 469.7,
+    "y": 289.3,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row04.creditos": {
+    "x": 510.62,
+    "y": 289.3,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row05.codigoMatricula": {
+    "x": 45.54,
+    "y": 304.24,
+    "w": 68.03,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row05.nombre": {
+    "x": 113.57,
+    "y": 304.24,
+    "w": 180.13,
+    "h": 14.93,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row05.sexo": {
+    "x": 293.7,
+    "y": 304.24,
+    "w": 32.74,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row05.fechaNacimiento": {
+    "x": 326.44,
+    "y": 304.24,
+    "w": 60.37,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row05.condicion": {
+    "x": 443.62,
+    "y": 304.24,
+    "w": 26.08,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row05.numeroUnidades": {
+    "x": 469.7,
+    "y": 304.24,
+    "w": 40.92,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row05.creditos": {
+    "x": 510.62,
+    "y": 304.24,
+    "w": 42.47,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row06.codigoMatricula": {
+    "x": 45.54,
+    "y": 319.18,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row06.nombre": {
+    "x": 113.57,
+    "y": 319.18,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row06.sexo": {
+    "x": 293.7,
+    "y": 319.18,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row06.fechaNacimiento": {
+    "x": 326.44,
+    "y": 319.18,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row06.condicion": {
+    "x": 443.62,
+    "y": 319.18,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row06.numeroUnidades": {
+    "x": 469.7,
+    "y": 319.18,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row06.creditos": {
+    "x": 510.62,
+    "y": 319.18,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row07.codigoMatricula": {
+    "x": 45.54,
+    "y": 334.12,
+    "w": 68.03,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row07.nombre": {
+    "x": 113.57,
+    "y": 334.12,
+    "w": 180.13,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row07.sexo": {
+    "x": 293.7,
+    "y": 334.12,
+    "w": 32.74,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row07.fechaNacimiento": {
+    "x": 326.44,
+    "y": 334.12,
+    "w": 60.37,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row07.condicion": {
+    "x": 443.62,
+    "y": 334.12,
+    "w": 26.08,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row07.numeroUnidades": {
+    "x": 469.7,
+    "y": 334.12,
+    "w": 40.92,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row07.creditos": {
+    "x": 510.62,
+    "y": 334.12,
+    "w": 42.47,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row08.codigoMatricula": {
+    "x": 45.54,
+    "y": 349.07,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row08.nombre": {
+    "x": 113.57,
+    "y": 349.07,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row08.sexo": {
+    "x": 293.7,
+    "y": 349.07,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row08.fechaNacimiento": {
+    "x": 326.44,
+    "y": 349.07,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row08.condicion": {
+    "x": 443.62,
+    "y": 349.07,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row08.numeroUnidades": {
+    "x": 469.7,
+    "y": 349.07,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row08.creditos": {
+    "x": 510.62,
+    "y": 349.07,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row09.codigoMatricula": {
+    "x": 45.54,
+    "y": 364.01,
+    "w": 68.03,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row09.nombre": {
+    "x": 113.57,
+    "y": 364.01,
+    "w": 180.13,
+    "h": 14.93,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row09.sexo": {
+    "x": 293.7,
+    "y": 364.01,
+    "w": 32.74,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row09.fechaNacimiento": {
+    "x": 326.44,
+    "y": 364.01,
+    "w": 60.37,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row09.condicion": {
+    "x": 443.62,
+    "y": 364.01,
+    "w": 26.08,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row09.numeroUnidades": {
+    "x": 469.7,
+    "y": 364.01,
+    "w": 40.92,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row09.creditos": {
+    "x": 510.62,
+    "y": 364.01,
+    "w": 42.47,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row10.codigoMatricula": {
+    "x": 45.54,
+    "y": 378.94,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row10.nombre": {
+    "x": 113.57,
+    "y": 378.94,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row10.sexo": {
+    "x": 293.7,
+    "y": 378.94,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row10.fechaNacimiento": {
+    "x": 326.44,
+    "y": 378.94,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row10.condicion": {
+    "x": 443.62,
+    "y": 378.94,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row10.numeroUnidades": {
+    "x": 469.7,
+    "y": 378.94,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row10.creditos": {
+    "x": 510.62,
+    "y": 378.94,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row11.codigoMatricula": {
+    "x": 45.54,
+    "y": 393.89,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row11.nombre": {
+    "x": 113.57,
+    "y": 393.89,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row11.sexo": {
+    "x": 293.7,
+    "y": 393.89,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row11.fechaNacimiento": {
+    "x": 326.44,
+    "y": 393.89,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row11.condicion": {
+    "x": 443.62,
+    "y": 393.89,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row11.numeroUnidades": {
+    "x": 469.7,
+    "y": 393.89,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row11.creditos": {
+    "x": 510.62,
+    "y": 393.89,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row12.codigoMatricula": {
+    "x": 45.54,
+    "y": 408.83,
+    "w": 68.03,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row12.nombre": {
+    "x": 113.57,
+    "y": 408.83,
+    "w": 180.13,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row12.sexo": {
+    "x": 293.7,
+    "y": 408.83,
+    "w": 32.74,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row12.fechaNacimiento": {
+    "x": 326.44,
+    "y": 408.83,
+    "w": 60.37,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row12.condicion": {
+    "x": 443.62,
+    "y": 408.83,
+    "w": 26.08,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row12.numeroUnidades": {
+    "x": 469.7,
+    "y": 408.83,
+    "w": 40.92,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row12.creditos": {
+    "x": 510.62,
+    "y": 408.83,
+    "w": 42.47,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row13.codigoMatricula": {
+    "x": 45.54,
+    "y": 423.78,
+    "w": 68.03,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row13.nombre": {
+    "x": 113.57,
+    "y": 423.78,
+    "w": 180.13,
+    "h": 14.92,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row13.sexo": {
+    "x": 293.7,
+    "y": 423.78,
+    "w": 32.74,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row13.fechaNacimiento": {
+    "x": 326.44,
+    "y": 423.78,
+    "w": 60.37,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row13.condicion": {
+    "x": 443.62,
+    "y": 423.78,
+    "w": 26.08,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row13.numeroUnidades": {
+    "x": 469.7,
+    "y": 423.78,
+    "w": 40.92,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row13.creditos": {
+    "x": 510.62,
+    "y": 423.78,
+    "w": 42.47,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row14.codigoMatricula": {
+    "x": 45.54,
+    "y": 438.7,
+    "w": 68.03,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row14.nombre": {
+    "x": 113.57,
+    "y": 438.7,
+    "w": 180.13,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row14.sexo": {
+    "x": 293.7,
+    "y": 438.7,
+    "w": 32.74,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row14.fechaNacimiento": {
+    "x": 326.44,
+    "y": 438.7,
+    "w": 60.37,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row14.condicion": {
+    "x": 443.62,
+    "y": 438.7,
+    "w": 26.08,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row14.numeroUnidades": {
+    "x": 469.7,
+    "y": 438.7,
+    "w": 40.92,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row14.creditos": {
+    "x": 510.62,
+    "y": 438.7,
+    "w": 42.47,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row15.codigoMatricula": {
+    "x": 45.54,
+    "y": 453.65,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row15.nombre": {
+    "x": 113.57,
+    "y": 453.65,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row15.sexo": {
+    "x": 293.7,
+    "y": 453.65,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row15.fechaNacimiento": {
+    "x": 326.44,
+    "y": 453.65,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row15.condicion": {
+    "x": 443.62,
+    "y": 453.65,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row15.numeroUnidades": {
+    "x": 469.7,
+    "y": 453.65,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row15.creditos": {
+    "x": 510.62,
+    "y": 453.65,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row16.codigoMatricula": {
+    "x": 45.54,
+    "y": 468.6,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row16.nombre": {
+    "x": 113.57,
+    "y": 468.6,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row16.sexo": {
+    "x": 293.7,
+    "y": 468.6,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row16.fechaNacimiento": {
+    "x": 326.44,
+    "y": 468.6,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row16.condicion": {
+    "x": 443.62,
+    "y": 468.6,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row16.numeroUnidades": {
+    "x": 469.7,
+    "y": 468.6,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row16.creditos": {
+    "x": 510.62,
+    "y": 468.6,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row17.codigoMatricula": {
+    "x": 45.54,
+    "y": 483.54,
+    "w": 68.03,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row17.nombre": {
+    "x": 113.57,
+    "y": 483.54,
+    "w": 180.13,
+    "h": 14.93,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row17.sexo": {
+    "x": 293.7,
+    "y": 483.54,
+    "w": 32.74,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row17.fechaNacimiento": {
+    "x": 326.44,
+    "y": 483.54,
+    "w": 60.37,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row17.condicion": {
+    "x": 443.62,
+    "y": 483.54,
+    "w": 26.08,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row17.numeroUnidades": {
+    "x": 469.7,
+    "y": 483.54,
+    "w": 40.92,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row17.creditos": {
+    "x": 510.62,
+    "y": 483.54,
+    "w": 42.47,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row18.codigoMatricula": {
+    "x": 45.54,
+    "y": 498.47,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row18.nombre": {
+    "x": 113.57,
+    "y": 498.47,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row18.sexo": {
+    "x": 293.7,
+    "y": 498.47,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row18.fechaNacimiento": {
+    "x": 326.44,
+    "y": 498.47,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row18.condicion": {
+    "x": 443.62,
+    "y": 498.47,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row18.numeroUnidades": {
+    "x": 469.7,
+    "y": 498.47,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row18.creditos": {
+    "x": 510.62,
+    "y": 498.47,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row19.codigoMatricula": {
+    "x": 45.54,
+    "y": 513.41,
+    "w": 68.03,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row19.nombre": {
+    "x": 113.57,
+    "y": 513.41,
+    "w": 180.13,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row19.sexo": {
+    "x": 293.7,
+    "y": 513.41,
+    "w": 32.74,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row19.fechaNacimiento": {
+    "x": 326.44,
+    "y": 513.41,
+    "w": 60.37,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row19.condicion": {
+    "x": 443.62,
+    "y": 513.41,
+    "w": 26.08,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row19.numeroUnidades": {
+    "x": 469.7,
+    "y": 513.41,
+    "w": 40.92,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row19.creditos": {
+    "x": 510.62,
+    "y": 513.41,
+    "w": 42.47,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row20.codigoMatricula": {
+    "x": 45.54,
+    "y": 528.36,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row20.nombre": {
+    "x": 113.57,
+    "y": 528.36,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row20.sexo": {
+    "x": 293.7,
+    "y": 528.36,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row20.fechaNacimiento": {
+    "x": 326.44,
+    "y": 528.36,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row20.condicion": {
+    "x": 443.62,
+    "y": 528.36,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row20.numeroUnidades": {
+    "x": 469.7,
+    "y": 528.36,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row20.creditos": {
+    "x": 510.62,
+    "y": 528.36,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row21.codigoMatricula": {
+    "x": 45.54,
+    "y": 543.31,
+    "w": 68.03,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row21.nombre": {
+    "x": 113.57,
+    "y": 543.31,
+    "w": 180.13,
+    "h": 14.93,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row21.sexo": {
+    "x": 293.7,
+    "y": 543.31,
+    "w": 32.74,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row21.fechaNacimiento": {
+    "x": 326.44,
+    "y": 543.31,
+    "w": 60.37,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row21.condicion": {
+    "x": 443.62,
+    "y": 543.31,
+    "w": 26.08,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row21.numeroUnidades": {
+    "x": 469.7,
+    "y": 543.31,
+    "w": 40.92,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row21.creditos": {
+    "x": 510.62,
+    "y": 543.31,
+    "w": 42.47,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row22.codigoMatricula": {
+    "x": 45.54,
+    "y": 558.24,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row22.nombre": {
+    "x": 113.57,
+    "y": 558.24,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row22.sexo": {
+    "x": 293.7,
+    "y": 558.24,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row22.fechaNacimiento": {
+    "x": 326.44,
+    "y": 558.24,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row22.condicion": {
+    "x": 443.62,
+    "y": 558.24,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row22.numeroUnidades": {
+    "x": 469.7,
+    "y": 558.24,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row22.creditos": {
+    "x": 510.62,
+    "y": 558.24,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row23.codigoMatricula": {
+    "x": 45.54,
+    "y": 573.18,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row23.nombre": {
+    "x": 113.57,
+    "y": 573.18,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row23.sexo": {
+    "x": 293.7,
+    "y": 573.18,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row23.fechaNacimiento": {
+    "x": 326.44,
+    "y": 573.18,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row23.condicion": {
+    "x": 443.62,
+    "y": 573.18,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row23.numeroUnidades": {
+    "x": 469.7,
+    "y": 573.18,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row23.creditos": {
+    "x": 510.62,
+    "y": 573.18,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row24.codigoMatricula": {
+    "x": 45.54,
+    "y": 588.12,
+    "w": 68.03,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row24.nombre": {
+    "x": 113.57,
+    "y": 588.12,
+    "w": 180.13,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row24.sexo": {
+    "x": 293.7,
+    "y": 588.12,
+    "w": 32.74,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row24.fechaNacimiento": {
+    "x": 326.44,
+    "y": 588.12,
+    "w": 60.37,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row24.condicion": {
+    "x": 443.62,
+    "y": 588.12,
+    "w": 26.08,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row24.numeroUnidades": {
+    "x": 469.7,
+    "y": 588.12,
+    "w": 40.92,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row24.creditos": {
+    "x": 510.62,
+    "y": 588.12,
+    "w": 42.47,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row25.codigoMatricula": {
+    "x": 45.54,
+    "y": 603.07,
+    "w": 68.03,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row25.nombre": {
+    "x": 113.57,
+    "y": 603.07,
+    "w": 180.13,
+    "h": 14.92,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row25.sexo": {
+    "x": 293.7,
+    "y": 603.07,
+    "w": 32.74,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row25.fechaNacimiento": {
+    "x": 326.44,
+    "y": 603.07,
+    "w": 60.37,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row25.condicion": {
+    "x": 443.62,
+    "y": 603.07,
+    "w": 26.08,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row25.numeroUnidades": {
+    "x": 469.7,
+    "y": 603.07,
+    "w": 40.92,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row25.creditos": {
+    "x": 510.62,
+    "y": 603.07,
+    "w": 42.47,
+    "h": 14.92,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row26.codigoMatricula": {
+    "x": 45.54,
+    "y": 617.99,
+    "w": 68.03,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row26.nombre": {
+    "x": 113.57,
+    "y": 617.99,
+    "w": 180.13,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row26.sexo": {
+    "x": 293.7,
+    "y": 617.99,
+    "w": 32.74,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row26.fechaNacimiento": {
+    "x": 326.44,
+    "y": 617.99,
+    "w": 60.37,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row26.condicion": {
+    "x": 443.62,
+    "y": 617.99,
+    "w": 26.08,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row26.numeroUnidades": {
+    "x": 469.7,
+    "y": 617.99,
+    "w": 40.92,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row26.creditos": {
+    "x": 510.62,
+    "y": 617.99,
+    "w": 42.47,
+    "h": 14.95,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row27.codigoMatricula": {
+    "x": 45.54,
+    "y": 632.95,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row27.nombre": {
+    "x": 113.57,
+    "y": 632.95,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row27.sexo": {
+    "x": 293.7,
+    "y": 632.95,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row27.fechaNacimiento": {
+    "x": 326.44,
+    "y": 632.95,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row27.condicion": {
+    "x": 443.62,
+    "y": 632.95,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row27.numeroUnidades": {
+    "x": 469.7,
+    "y": 632.95,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row27.creditos": {
+    "x": 510.62,
+    "y": 632.95,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row28.codigoMatricula": {
+    "x": 45.54,
+    "y": 647.89,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row28.nombre": {
+    "x": 113.57,
+    "y": 647.89,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row28.sexo": {
+    "x": 293.7,
+    "y": 647.89,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row28.fechaNacimiento": {
+    "x": 326.44,
+    "y": 647.89,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row28.condicion": {
+    "x": 443.62,
+    "y": 647.89,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row28.numeroUnidades": {
+    "x": 469.7,
+    "y": 647.89,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row28.creditos": {
+    "x": 510.62,
+    "y": 647.89,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row29.codigoMatricula": {
+    "x": 45.54,
+    "y": 662.83,
+    "w": 68.03,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row29.nombre": {
+    "x": 113.57,
+    "y": 662.83,
+    "w": 180.13,
+    "h": 14.93,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row29.sexo": {
+    "x": 293.7,
+    "y": 662.83,
+    "w": 32.74,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row29.fechaNacimiento": {
+    "x": 326.44,
+    "y": 662.83,
+    "w": 60.37,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row29.condicion": {
+    "x": 443.62,
+    "y": 662.83,
+    "w": 26.08,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row29.numeroUnidades": {
+    "x": 469.7,
+    "y": 662.83,
+    "w": 40.92,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row29.creditos": {
+    "x": 510.62,
+    "y": 662.83,
+    "w": 42.47,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row30.codigoMatricula": {
+    "x": 45.54,
+    "y": 677.76,
+    "w": 68.03,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 1
+  },
+  "row30.nombre": {
+    "x": 113.57,
+    "y": 677.76,
+    "w": 180.13,
+    "h": 14.94,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 2
+  },
+  "row30.sexo": {
+    "x": 293.7,
+    "y": 677.76,
+    "w": 32.74,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row30.fechaNacimiento": {
+    "x": 326.44,
+    "y": 677.76,
+    "w": 60.37,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row30.condicion": {
+    "x": 443.62,
+    "y": 677.76,
+    "w": 26.08,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row30.numeroUnidades": {
+    "x": 469.7,
+    "y": 677.76,
+    "w": 40.92,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "row30.creditos": {
+    "x": 510.62,
+    "y": 677.76,
+    "w": 42.47,
+    "h": 14.94,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "summary.hombres": {
+    "x": 113.57,
+    "y": 732.55,
+    "w": 35.33,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "summary.mujeres": {
+    "x": 148.9,
+    "y": 732.55,
+    "w": 30.71,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "summary.totalSexo": {
+    "x": 179.61,
+    "y": 732.55,
+    "w": 35.31,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "summary.gratuitos": {
+    "x": 250.23,
+    "y": 732.55,
+    "w": 43.47,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "summary.pagantes": {
+    "x": 293.7,
+    "y": 732.55,
+    "w": 93.11,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "summary.becarios": {
+    "x": 386.81,
+    "y": 732.55,
+    "w": 56.8,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  },
+  "summary.totalCondicion": {
+    "x": 443.62,
+    "y": 732.55,
+    "w": 67,
+    "h": 14.93,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 0
+  }
+}

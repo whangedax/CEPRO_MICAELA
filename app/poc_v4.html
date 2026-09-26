@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CETPRO M11 ARCH POC V4</title>
+  <script src="./vendor/pdf-lib.min.js"></script>
+  <style>
+    body { font-family: monospace; padding: 20px; }
+    #btn-generate { padding: 10px 20px; font-size: 16px; margin-bottom: 20px; cursor: pointer; }
+    #pdf-viewer { width: 100%; height: 80vh; border: 1px solid #ccc; display: block; margin-top: 20px; }
+    #metrics { margin-top: 20px; background: #f4f4f4; padding: 15px; border: 1px solid #ddd; display: none; }
+    pre { margin: 0; }
+  </style>
+</head>
+<body>
+  <h1>Validación Arquitectura PDF Nativo V4</h1>
+  <button id="btn-generate">Generar PDF V4 Normal</button>
+  
+  <div id="metrics">
+    <h3>RUNTIME_BUILD: <span id="runtime-ts"></span></h3>
+    <pre id="metrics-out"></pre>
+  </div>
+
+  <iframe id="pdf-viewer" src="about:blank"></iframe>
+
+  <script type="module">
+    import { generatePOC_V4_Normal } from './js/poc/pdf-draw-poc.js';
+
+    document.getElementById('btn-generate').addEventListener('click', async () => {
+      try {
+        document.getElementById('btn-generate').textContent = 'Generando...';
+        document.getElementById('btn-generate').disabled = true;
+
+        const { pdfBytes, metrics } = await generatePOC_V4_Normal();
+        
+        // Show Metrics
+        document.getElementById('metrics').style.display = 'block';
+        document.getElementById('runtime-ts').textContent = new Date().toISOString() + " | V4";
+        document.getElementById('metrics-out').textContent = JSON.stringify(metrics, null, 2);
+
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        document.getElementById('pdf-viewer').src = url;
+
+        document.getElementById('btn-generate').textContent = 'Completado';
+      } catch (err) {
+        console.error(err);
+        alert('Error: ' + err.message);
+        document.getElementById('btn-generate').textContent = 'Error (ver consola)';
+      }
+    });
+  </script>
+</body>
+</html>

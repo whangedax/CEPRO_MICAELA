@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>QA documental CETPRO v2 - TEST_ONLY</title>
+  <link rel="stylesheet" href="/tools/document-renderer-qa.css">
+  <style>[hidden]{display:none!important}</style>
+  <script src="/app/vendor/pdf-lib.min.js"></script>
+</head>
+<body>
+  <header class="qa-header">
+    <div>
+      <p class="eyebrow">EDGE-PHYSICAL-ACCEPTANCE-05</p>
+      <h1>QA documental representativa</h1>
+      <p>Renderers técnicos sobre PDF canónico. Fixtures exclusivamente en memoria.</p>
+    </div>
+    <div class="warning">QA TÉCNICA - DATOS SINTÉTICOS - NO OFICIAL</div>
+  </header>
+
+  <main class="qa-shell">
+    <aside class="qa-controls" aria-label="Controles de QA">
+      <section class="panel runtime-panel">
+        <h2>Entorno autorizado</h2>
+        <dl><dt>Host</dt><dd id="qa-host">-</dd><dt>Base usada</dt><dd>NINGUNA</dd><dt>Persistencia</dt><dd>MEMORIA</dd><dt>Red externa</dt><dd>PROHIBIDA</dd></dl>
+      </section>
+
+      <section class="panel">
+        <label for="qa-template">Plantilla representativa</label>
+        <select id="qa-template">
+          <option value="TMPL-01">TMPL-01 - Nómina</option>
+          <option value="TMPL-02">TMPL-02 - Ficha de matrícula</option>
+          <option value="TMPL-03">TMPL-03 - Registro modular (solo estado)</option>
+          <option value="TMPL-04">TMPL-04 - Portada</option>
+          <option value="TMPL-05" selected>TMPL-05 - Asistencia</option>
+          <option value="TMPL-11">TMPL-11 - Evaluación</option>
+          <option value="TMPL-18">TMPL-18 - EFSRT</option>
+          <option value="TMPL-19">TMPL-19 - Acta</option>
+          <option value="TMPL-20">TMPL-20 - Certificado</option>
+          <option value="TMPL-21">TMPL-21 - Título</option>
+        </select>
+
+        <fieldset>
+          <legend>Modo</legend>
+          <label><input type="radio" name="qa-mode" value="normal" checked> Vista normal</label>
+          <label><input type="radio" name="qa-mode" value="long"> Texto largo</label>
+          <label><input type="radio" name="qa-mode" value="max"> Capacidad máxima</label>
+          <label><input type="radio" name="qa-mode" value="overflow"> Overflow controlado</label>
+        </fieldset>
+
+        <div id="qa-overflow-choice" hidden>
+          <label for="qa-overflow-type">Tipo de overflow</label>
+          <select id="qa-overflow-type">
+            <option value="field">FIELD_OVERFLOW</option>
+            <option value="capacity">CAPACITY_EXCEEDED</option>
+          </select>
+        </div>
+
+        <button id="qa-render" type="button">Generar vista QA</button>
+        <p class="fine-print">No existe botón de emisión oficial. La descarga, cuando hay PDF válido, usa un nombre TEST_ONLY.</p>
+      </section>
+
+      <section class="panel status-panel" aria-live="polite">
+        <h2>Resultado</h2>
+        <div id="qa-status" class="status neutral">Seleccione un caso y genere.</div>
+        <dl><dt>Plantilla</dt><dd id="qa-result-template">-</dd><dt>Páginas</dt><dd id="qa-pages">-</dd><dt>Filas</dt><dd id="qa-rows">-</dd><dt>Error esperado</dt><dd id="qa-error-code">-</dd></dl>
+      </section>
+
+      <section class="panel links-panel">
+        <h2>Comprobaciones relacionadas</h2>
+        <a href="/#/documentos" target="_blank" rel="noopener">TMPL-02 real en candidata</a>
+        <a href="/#/respaldo" target="_blank" rel="noopener">Exportar backup v2</a>
+      </section>
+    </aside>
+
+    <section class="qa-preview" aria-label="Vista previa PDF">
+      <div class="preview-toolbar">
+        <div><strong id="qa-preview-title">TMPL-05 - Vista normal</strong><span id="qa-preview-note">Datos sintéticos</span></div>
+        <a id="qa-download" class="download disabled" aria-disabled="true">Descargar TEST_ONLY</a>
+      </div>
+      <div id="qa-review-only" class="review-only" hidden>
+        <strong>TMPL-03 - REVIEW_REQUIRED</strong>
+        <p>La geometría no es inequívoca. Este harness no genera ni inventa coordenadas.</p>
+      </div>
+      <iframe id="qa-pdf" title="Vista previa PDF técnica" hidden></iframe>
+      <div id="qa-empty" class="empty-state">La vista previa aparecerá aquí.</div>
+    </section>
+  </main>
+  <footer>Herramienta separada, no enlazada al menú productivo - 127.0.0.1:8081 solamente</footer>
+  <script type="module" src="/tools/document-renderer-qa.js"></script>
+</body>
+</html>

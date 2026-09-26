@@ -1,0 +1,40 @@
+PAQUETE DE RÉPLICAS INSTITUCIONALES CETPRO
+
+Este paquete reemplaza la entrega anterior.
+
+FUENTE
+Libro original: hoja(2).xlsm, con 58 hojas.
+
+CONTENIDO
+Se incluyen las 21 hojas institucionales activas del libro:
+- Nómina y matrícula: 4 plantillas.
+- Asistencia: 6 plantillas, As-1 a As-6.
+- Evaluación: 7 plantillas, IL/UD1 y UD2 a UD7.
+- EFSRT: 1 plantilla.
+- Documentos finales: Acta, Certificado y Título.
+
+CRITERIO DE RÉPLICA
+Cada archivo conserva la estructura visual de su hoja de origen: anchos, alturas,
+combinaciones, estilos, bordes, colores, textos fijos, objetos, imágenes, orientación
+y configuración de impresión. Solo se retiraron fórmulas, vínculos, macros y datos
+variables para dejar una plantilla limpia.
+
+VALIDACIÓN
+- 21 de 21 archivos aprobados en la comparación estructural.
+- 21 de 21 archivos abiertos y convertidos a PDF en una prueba independiente.
+- Cero fórmulas, errores de celda, macros, enlaces externos y datos personales de ejemplo.
+
+ALCANCE
+- Una hoja institucional por archivo XLSX.
+- No se incluyeron hojas técnicas, bases de datos, respaldos ni versiones históricas (2).
+- El libro original no contiene una hoja As-7; por eso no se inventó una plantilla.
+- AUDITORIA_REPLICAS.csv registra la comparación de cada archivo con el original.
+
+USO EN EL NUEVO SISTEMA
+El sistema debe insertar los datos únicamente en los campos vacíos. No debe modificar
+los estilos, combinaciones, dimensiones, imágenes ni configuración de impresión.
+
+IMPORTANTE
+La fidelidad se validó contra el libro proporcionado. Antes de emitir documentos reales,
+la institución debe confirmar con la UGEL que estos formatos siguen siendo la versión
+normativa vigente.

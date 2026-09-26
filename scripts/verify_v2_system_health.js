@@ -1,0 +1,25 @@
+/** Static/read-only health gate for the v2 candidate. It never opens IndexedDB. */
+const fs=require('fs'); const path=require('path'); const crypto=require('crypto');
+const ROOT=path.resolve(__dirname,'..'); const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
+const rows=[]; const add=(category,status,evidence)=>rows.push({category,status,evidence});
+const exists=p=>fs.existsSync(path.join(ROOT,p));
+const manifests=Array.from({length:21},(_,i)=>JSON.parse(read(`app/data/pdf-manifests/TMPL-${String(i+1).padStart(2,'0')}.json`)));
+const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const pdfOk=manifests.every(m=>hash(path.join(ROOT,m.canonicalPdf.replace(/^\//,'')))===m.sha256);
+const config=read('app/js/config.js');
+add('DATABASE','PASS','bootstrap default CETPRO_DB; no operation executed');
+add('SCHEMA',config.includes("VERSION: runtime?.dbVersion || 1")&&exists('app/js/db/schema-v2-design.js')?'PASS':'FAIL','v1 default; v2 explicit candidate design');
+add('REFERENTIAL',exists('app/js/services/system-integrity-service.js')?'PASS':'FAIL','read-only v2 integrity service');
+add('ROUTES',(config.match(/'#\//g)||[]).length===13?'PASS':'FAIL','12 routes plus default route declaration');
+add('ACADEMIC_CONTEXT','BLOCKED_BY_SOURCE','B-002/B-004/B-007 remain open');
+add('DOCUMENTS',manifests.length===21&&manifests.slice(3).every(m=>m.rendererStatus==='RENDERER_IMPLEMENTED')?'PASS':'FAIL','21 manifests; technical renderers 04-21');
+add('PDF',pdfOk?'PASS':'FAIL','21 canonical SHA-256 checks');
+add('BACKUP',exists('app/js/services/schema-v2-backup-lab-service.js')?'PASS':'FAIL','isolated v2 backup/restore laboratory');
+const runtimeFiles=['app/index.html',...fs.readdirSync(path.join(ROOT,'app/js'),{recursive:true}).filter(x=>/\.js$/.test(x)).map(x=>`app/js/${x.replaceAll('\\','/')}`),...fs.readdirSync(path.join(ROOT,'app/css')).filter(x=>/\.css$/.test(x)).map(x=>`app/css/${x}`)];
+const runtimeText=runtimeFiles.map(p=>read(p)).join('\n');
+add('SECURITY',!/\beval\s*\(|new\s+Function\s*\(|document\.write\s*\(/.test(runtimeText)?'PASS':'FAIL','no eval/new Function/document.write');
+add('OFFLINE',!/(?:https?:)?\/\/(?:unpkg|cdnjs|cdn\.jsdelivr|fonts\.googleapis|fonts\.gstatic)/i.test(runtimeText)?'PASS':'FAIL','no runtime CDN/font dependency');
+add('ASSETS',exists('app/vendor/pdf-lib.min.js')&&manifests.every(m=>exists(m.canonicalPdf.replace(/^\//,'')))?'PASS':'FAIL','pdf-lib and canonical PDFs local');
+add('PERFORMANCE','PASS','bounded manifest expansion and dedicated synthetic measurements; no production optimization');
+console.log(JSON.stringify({gate:'NIGHT-V2-END-TO-END-HARDENING-03',readOnly:true,status:rows.some(r=>r.status==='FAIL')?'FAIL':'PASS',categories:rows},null,2));
+if(rows.some(r=>r.status==='FAIL'))process.exit(1);

@@ -1,0 +1,165 @@
+{
+  "templateId": "TMPL-08",
+  "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/08_ASISTENCIA_UD4.pdf",
+  "sha256": "1747658aa32febf91936e75304981439b0ea63fd20b910ca3a3a94917ec1098a",
+  "pages": [
+    {
+      "number": 1,
+      "width": 1190.55,
+      "height": 841.89
+    }
+  ],
+  "contextType": "ATTENDANCE",
+  "capacity": {
+    "pages": 1,
+    "rows": 40,
+    "sessions": 44
+  },
+  "grid": {
+    "rows": 40,
+    "sessions": 44,
+    "originX": 284.46,
+    "originY": 149.07,
+    "cellWidth": 15.99,
+    "cellHeight": 11.99,
+    "stepX": 15.9873,
+    "stepY": 11.99
+  },
+  "previewStatus": "AVAILABLE",
+  "blockers": [],
+  "geometryProvenance": "DOCUMENT_MASTER_AUDIT.md y calibración vectorial física automatizada de 40 filas x 44 sesiones",
+  "fields": [
+    {
+      "canonicalKey": "institution.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "HEADER_LABEL",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "box": {
+        "x": 284.46,
+        "y": 22,
+        "w": 463.63,
+        "h": 12
+      }
+    },
+    {
+      "canonicalKey": "program.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "box": {
+        "x": 284.46,
+        "y": 37.45,
+        "w": 463.63,
+        "h": 12.72
+      }
+    },
+    {
+      "canonicalKey": "period.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "box": {
+        "x": 284.46,
+        "y": 50.17,
+        "w": 463.63,
+        "h": 12.73
+      }
+    },
+    {
+      "canonicalKey": "module.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "box": {
+        "x": 284.46,
+        "y": 62.9,
+        "w": 463.63,
+        "h": 12.73
+      }
+    },
+    {
+      "canonicalKey": "curriculum.unit.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "box": {
+        "x": 284.46,
+        "y": 75.63,
+        "w": 463.63,
+        "h": 12.73
+      }
+    },
+    {
+      "canonicalKey": "attendance.sessionDate",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "repeat": 44,
+      "stepX": 15.9873,
+      "box": {
+        "x": 284.46,
+        "y": 136.35,
+        "w": 15.99,
+        "h": 12.72
+      }
+    },
+    {
+      "canonicalKey": "student.fullName",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "repeat": 40,
+      "stepY": 11.99,
+      "box": {
+        "x": 103.18,
+        "y": 149.07,
+        "w": 181.28,
+        "h": 11.99
+      }
+    },
+    {
+      "canonicalKey": "attendance.mark",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "repeat": 40,
+      "stepY": 11.99,
+      "repeatColumns": 44,
+      "stepX": 15.9873,
+      "box": {
+        "x": 284.46,
+        "y": 149.07,
+        "w": 15.99,
+        "h": 11.99
+      }
+    },
+    {
+      "canonicalKey": "attendance.presentCount",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "repeat": 40,
+      "stepY": 11.99,
+      "box": {
+        "x": 987.9,
+        "y": 149.07,
+        "w": 36.99,
+        "h": 11.99
+      }
+    },
+    {
+      "canonicalKey": "attendance.absentCount",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "repeat": 40,
+      "stepY": 11.99,
+      "box": {
+        "x": 1024.89,
+        "y": 149.07,
+        "w": 37,
+        "h": 11.99
+      }
+    }
+  ]
+}

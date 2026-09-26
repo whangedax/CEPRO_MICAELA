@@ -1,0 +1,13 @@
+{
+  "templateId": "TMPL-01", "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/01_NOMINA_DE_MATRICULA.pdf",
+  "sha256": "938bc91b7b4734aed3c0eb4d73d80a776d14940ca86ce3fe73928cdd65e0e1b2",
+  "pages": [{ "number": 1, "width": 595.28, "height": 841.89 }], "contextType": "GROUP", "capacity": { "rows": 30, "pages": 1 },
+  "physicalBindingSource": "/app/data/TMPL01_PDF_FIELDS.json", "previewStatus": "PARTIAL",
+  "blockers": ["B-002", "B-004", "B-007", "I-049"],
+  "fields": [
+    { "canonicalKey": "institution.name", "physicalBoxId": "header.cetpro", "page": 1, "styleProfile": "INSTITUTION_NAME", "overflowPolicy": "FIELD_OVERFLOW" },
+    { "canonicalKey": "institution.ugel", "physicalBoxId": "header.ugel", "page": 1, "styleProfile": "HEADER_VALUE", "overflowPolicy": "FIELD_OVERFLOW" },
+    { "canonicalKey": "program.name", "physicalBoxId": "header.programa", "page": 1, "styleProfile": "PROGRAM_NAME", "overflowPolicy": "FIELD_OVERFLOW" },
+    { "canonicalKey": "student.fullName", "physicalBoxPattern": "row{row}.nombre", "page": 1, "repeat": 30, "styleProfile": "PRIMARY_PERSON_NAME", "overflowPolicy": "FIELD_OVERFLOW" }
+  ]
+}

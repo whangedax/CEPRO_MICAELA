@@ -1,0 +1,78 @@
+{
+  "totalRows": 295,
+  "coordsUnique": 295,
+  "emptyDniCount": 2,
+  "atypicalDniCount": 21,
+  "uniqueDniCount": 267,
+  "valid8DigitDnisCount": 246,
+  "atypicalUniqueDnisCount": 21,
+  "multiMatriculaGroupsCount": 22,
+  "totalRowsInMultiGroups": 48,
+  "extraRowsInMultiGroups": 26,
+  "nameDiscrepancyGroupsCount": 7,
+  "nameDiscrepancyGroups": [
+    {
+      "dniMasked": "40****96",
+      "dniFull": "40286796",
+      "count": 2,
+      "names": [
+        "MAMANI PANDIA, NATIVIDAD",
+        "MAMANI PANDIA, NATIVIDAD MIRIAN"
+      ]
+    },
+    {
+      "dniMasked": "40****91",
+      "dniFull": "40829291",
+      "count": 3,
+      "names": [
+        "PONCE MAMANCHURA, JUANA LIDIA",
+        "PONCE MARANCHURA, JUANA LIDIA"
+      ]
+    },
+    {
+      "dniMasked": "42****93",
+      "dniFull": "42686793",
+      "count": 2,
+      "names": [
+        "VILCA CANAZA  ,SEVERINO",
+        "VILCA CANAZA,CEVERINO"
+      ]
+    },
+    {
+      "dniMasked": "60****26",
+      "dniFull": "60179226",
+      "count": 2,
+      "names": [
+        "GALARZA QUISPE, FRANKLIN FROILAN",
+        "GALARZA QUISPE, FRANKLIN  FROILAN"
+      ]
+    },
+    {
+      "dniMasked": "74****18",
+      "dniFull": "74602518",
+      "count": 2,
+      "names": [
+        "LARICO PACHA, CRISTHIAN PAUL",
+        "LORICO PACHA,CHISTIAN PAUL"
+      ]
+    },
+    {
+      "dniMasked": "75****62",
+      "dniFull": "75253262",
+      "count": 2,
+      "names": [
+        "QUISPE CALLA, MITWARD JESUS",
+        "QUISPE CALLA, MITWARS JESUS"
+      ]
+    },
+    {
+      "dniMasked": "75****55",
+      "dniFull": "75957355",
+      "count": 2,
+      "names": [
+        "PAMPA ANACAYO, SIMION",
+        "PAMPA ARACAYO, SIMON"
+      ]
+    }
+  ]
+}

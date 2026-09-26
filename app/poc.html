@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>M11 POC: PDF Nativo AcroForm</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; background: #f9f9f9; }
+    h1 { color: #333; }
+    .controls { margin-bottom: 20px; padding: 15px; background: white; border: 1px solid #ddd; border-radius: 4px; }
+    button { padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #0056b3; }
+    #pdf-viewer { width: 100%; height: 80vh; border: 1px solid #ccc; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+  </style>
+  <script src="vendor/pdf-lib.min.js"></script>
+</head>
+<body>
+  <h1>POC: PDF Nativo con pdf-lib (M11-ARCH-POC)</h1>
+  
+  <div class="controls">
+    <p style="margin-bottom: 10px; font-size: 14px; color: #555;">
+      <strong>REQUISITO:</strong> Asegúrate de que el archivo PDF original exista en:<br>
+      <code>sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/01_NOMINA_DE_MATRICULA.pdf</code>
+    </p>
+    <button id="btn-generate">Generar PDF con Datos (Flatten)</button>
+    <a id="btn-download" style="display: none; margin-left: 10px; padding: 10px 15px; background: #28a745; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">Descargar TMPL01_POC_RESULTADO.pdf</a>
+  </div>
+
+  <iframe id="pdf-viewer" src="about:blank"></iframe>
+
+  <script type="module">
+    import { generatePOC } from './js/poc/pdf-form-poc.js';
+
+    document.getElementById('btn-generate').addEventListener('click', async () => {
+      try {
+        document.getElementById('btn-generate').textContent = 'Generando...';
+        document.getElementById('btn-generate').disabled = true;
+
+        const pdfBytes = await generatePOC();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+
+        const viewer = document.getElementById('pdf-viewer');
+        viewer.src = url;
+
+        const dlBtn = document.getElementById('btn-download');
+        dlBtn.href = url;
+        dlBtn.download = 'TMPL01_POC_RESULTADO.pdf';
+        dlBtn.style.display = 'inline-block';
+
+        document.getElementById('btn-generate').textContent = 'Generado correctamente';
+      } catch (err) {
+        console.error('Error generando POC:', err);
+        alert('Error: ' + err.message);
+        document.getElementById('btn-generate').textContent = 'Error';
+      }
+    });
+  </script>
+</body>
+</html>

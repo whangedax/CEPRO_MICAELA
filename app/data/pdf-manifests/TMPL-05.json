@@ -1,0 +1,231 @@
+{
+  "templateId": "TMPL-05",
+  "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/05_ASISTENCIA_UD1.pdf",
+  "sha256": "e3e120d1cab57fce6b0e27a85b082e262c13c12e56d25ef9807b6f45ca6952ef",
+  "pages": [
+    {
+      "number": 1,
+      "width": 1190.55,
+      "height": 841.89
+    }
+  ],
+  "contextType": "ATTENDANCE",
+  "capacity": {
+    "rows": 40,
+    "sessions": 44
+  },
+  "previewStatus": "AVAILABLE",
+  "blockers": [
+    "B-002",
+    "B-004",
+    "B-007"
+  ],
+  "geometryProvenance": "DOCUMENT_MASTER_AUDIT.md y Gate 16; cuadrícula física calibrada de 44 sesiones x 40 filas entre x=284.46 y x=987.90 con paso dx=15.9873pt y dy=11.99pt.",
+  "grid": {
+    "rows": 40,
+    "sessions": 44,
+    "originX": 284.46,
+    "originY": 149.07,
+    "cellWidth": 15.99,
+    "cellHeight": 11.99,
+    "stepX": 15.9873,
+    "stepY": 11.99
+  },
+  "fields": [
+    {
+      "canonicalKey": "program.name",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "period.name",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "module.name",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "curriculum.unit.name",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "student.fullName",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "attendance.sessionDate",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "attendance.mark",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "attendance.presentCount",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "attendance.absentCount",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "attendance.absencePercent",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "document.teacherSignature",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    }
+  ],
+  "physicalFields": [
+    {
+      "canonicalKey": "program.name",
+      "page": 1,
+      "x": 284.46,
+      "y": 37.45,
+      "width": 463.63,
+      "height": 12.72,
+      "alignment": "left",
+      "styleProfile": "PROGRAM_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py.",
+      "evidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py."
+    },
+    {
+      "canonicalKey": "period.name",
+      "page": 1,
+      "x": 284.46,
+      "y": 50.17,
+      "width": 463.63,
+      "height": 12.73,
+      "alignment": "left",
+      "styleProfile": "HEADER_VALUE",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py.",
+      "evidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py."
+    },
+    {
+      "canonicalKey": "module.name",
+      "page": 1,
+      "x": 284.46,
+      "y": 62.9,
+      "width": 463.63,
+      "height": 12.73,
+      "alignment": "left",
+      "styleProfile": "MODULE_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py.",
+      "evidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py."
+    },
+    {
+      "canonicalKey": "curriculum.unit.name",
+      "page": 1,
+      "x": 284.46,
+      "y": 75.63,
+      "width": 463.63,
+      "height": 12.73,
+      "alignment": "left",
+      "styleProfile": "UNIT_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py.",
+      "evidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py."
+    },
+    {
+      "canonicalKey": "attendance.sessionDate",
+      "page": 1,
+      "x": 284.46,
+      "y": 136.35,
+      "width": 15.99,
+      "height": 12.72,
+      "alignment": "center",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-05; 44 columnas verificadas entre x=284.46 y x=987.90 con paso stepX=15.9873pt.",
+      "repeat": 44,
+      "stepX": 15.9873,
+      "source": "sessions",
+      "evidence": "PDF canónico TMPL-05; límites vectoriales de fecha en cabecera de 44 sesiones."
+    },
+    {
+      "canonicalKey": "student.fullName",
+      "page": 1,
+      "x": 103.18,
+      "y": 149.07,
+      "width": 181.27999999999997,
+      "height": 11.99,
+      "alignment": "left",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py.",
+      "repeat": 40,
+      "stepY": 11.99,
+      "source": "rows",
+      "evidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py."
+    },
+    {
+      "canonicalKey": "attendance.presentCount",
+      "page": 1,
+      "x": 988.27,
+      "y": 149.07,
+      "width": 37,
+      "height": 11.99,
+      "alignment": "center",
+      "styleProfile": "TABLE_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py.",
+      "repeat": 40,
+      "stepY": 11.99,
+      "source": "rows",
+      "evidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py."
+    },
+    {
+      "canonicalKey": "attendance.absentCount",
+      "page": 1,
+      "x": 1025.27,
+      "y": 149.07,
+      "width": 37,
+      "height": 11.99,
+      "alignment": "center",
+      "styleProfile": "TABLE_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py.",
+      "repeat": 40,
+      "stepY": 11.99,
+      "source": "rows",
+      "evidence": "PDF canónico TMPL-05; límites vectoriales medidos individualmente con scripts/audit_pdf_geometry_boxes.py."
+    }
+  ],
+  "rendererStatus": "RENDERER_IMPLEMENTED",
+  "fitStatus": "FAIL_CLOSED",
+  "officialIssueStatus": "BLOCKED"
+}

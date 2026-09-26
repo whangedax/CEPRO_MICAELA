@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "jimp": "^1.6.1",
+    "pdf-lib": "^1.17.1",
+    "pdf2json": "^4.1.0",
+    "pdfjs-dist": "^6.3.289",
+    "puppeteer": "^25.10.0"
+  }
+}

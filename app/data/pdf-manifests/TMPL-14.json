@@ -1,0 +1,261 @@
+{
+  "templateId": "TMPL-14",
+  "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/14_EVALUACION_UD4.pdf",
+  "sha256": "185d9f893340fca879670af6c0dbd2ec5ac2a13e31f1b7bd5b05f98a1389e1ff",
+  "pages": [
+    {
+      "number": 1,
+      "width": 841.89,
+      "height": 1190.55
+    }
+  ],
+  "contextType": "EVALUATION",
+  "capacity": {
+    "pages": 1,
+    "rows": 40,
+    "indicators": 5
+  },
+  "grid": {
+    "rows": 40,
+    "indicators": 5,
+    "studentX": 34.53,
+    "studentW": 200.93,
+    "originX": 235.6,
+    "originY": 445.19,
+    "stepY": 14.455,
+    "stepX_IL": 108.3,
+    "subcols": {
+      "ia1": {
+        "offsetX": 0,
+        "width": 19.5
+      },
+      "ia2": {
+        "offsetX": 19.5,
+        "width": 19.5
+      },
+      "ia3": {
+        "offsetX": 39,
+        "width": 19.5
+      },
+      "il": {
+        "offsetX": 58.5,
+        "width": 31
+      },
+      "r": {
+        "offsetX": 89.5,
+        "width": 19
+      }
+    },
+    "finalResult": {
+      "x": 776,
+      "width": 42
+    }
+  },
+  "previewStatus": "AVAILABLE",
+  "geometryProvenance": "Calibración vectorial física sobre 14_EVALUACION_UD4.pdf en A3 Portrait (841.89 x 1190.55 pt) para 40 estudiantes x 26 columnas de evaluación.",
+  "fields": [
+    {
+      "canonicalKey": "institution.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "HEADER_TITLE",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 520,
+        "y": 168,
+        "w": 300,
+        "h": 14
+      }
+    },
+    {
+      "canonicalKey": "program.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 255,
+        "y": 182,
+        "w": 565,
+        "h": 13
+      }
+    },
+    {
+      "canonicalKey": "period.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 255,
+        "y": 194,
+        "w": 565,
+        "h": 13
+      }
+    },
+    {
+      "canonicalKey": "module.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 255,
+        "y": 207,
+        "w": 565,
+        "h": 13
+      }
+    },
+    {
+      "canonicalKey": "curriculum.unit.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 255,
+        "y": 219,
+        "w": 565,
+        "h": 13
+      }
+    },
+    {
+      "canonicalKey": "curriculum.unit.capacity",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 255,
+        "y": 238,
+        "w": 565,
+        "h": 13
+      }
+    },
+    {
+      "canonicalKey": "curriculum.indicator.1",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 255,
+        "y": 267,
+        "w": 565,
+        "h": 14
+      }
+    },
+    {
+      "canonicalKey": "curriculum.indicator.2",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 255,
+        "y": 295.5,
+        "w": 565,
+        "h": 14
+      }
+    },
+    {
+      "canonicalKey": "curriculum.indicator.3",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 255,
+        "y": 324,
+        "w": 565,
+        "h": 14
+      }
+    },
+    {
+      "canonicalKey": "curriculum.indicator.4",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 255,
+        "y": 352.5,
+        "w": 565,
+        "h": 14
+      }
+    },
+    {
+      "canonicalKey": "curriculum.indicator.5",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 255,
+        "y": 381,
+        "w": 565,
+        "h": 14
+      }
+    },
+    {
+      "canonicalKey": "student.fullName",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 34.53,
+        "y": 445.19,
+        "w": 200.93,
+        "h": 14.455
+      },
+      "repeat": 40,
+      "stepY": 14.455
+    },
+    {
+      "canonicalKey": "evaluation.indicatorScore",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_NUMBER",
+      "overflowPolicy": "AUTOFIT_OR_FAIL"
+    },
+    {
+      "canonicalKey": "evaluation.unitResult",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_NUMBER",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": {
+        "x": 776,
+        "y": 445.19,
+        "w": 42,
+        "h": 14.455
+      },
+      "repeat": 40,
+      "stepY": 14.455
+    }
+  ],
+  "physicalFields": [
+    {
+      "canonicalKey": "student.fullName",
+      "page": 1,
+      "x": 34.53,
+      "y": 445.19,
+      "width": 200.93,
+      "height": 14.455,
+      "alignment": "left",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-14; límites vectoriales calibrados.",
+      "repeat": 40,
+      "stepY": 14.455,
+      "source": "rows"
+    },
+    {
+      "canonicalKey": "evaluation.unitResult",
+      "page": 1,
+      "x": 776,
+      "y": 445.19,
+      "width": 42,
+      "height": 14.455,
+      "alignment": "center",
+      "styleProfile": "TABLE_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-14; límites vectoriales calibrados.",
+      "repeat": 40,
+      "stepY": 14.455,
+      "source": "rows"
+    }
+  ],
+  "rendererStatus": "RENDERER_IMPLEMENTED",
+  "fitStatus": "FAIL_CLOSED",
+  "officialIssueStatus": "BLOCKED"
+}

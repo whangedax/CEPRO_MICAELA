@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sistema Académico CETPRO</title>
+  <script src="/app/vendor/pdf-lib.min.js"></script>
+  <link rel="stylesheet" href="/app/css/app.css"><link rel="stylesheet" href="/app/css/components.css">
+  <link rel="stylesheet" href="/app/css/responsive.css"><link rel="stylesheet" href="/app/css/print.css" media="print">
+  <link rel="stylesheet" href="/app-v2/candidate.css">
+</head>
+<body>
+  <div id="app-layout">
+    <header class="app-header"><div class="header-brand">
+      <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menú de navegación">☰</button>
+      <div class="brand-title">Sistema Académico CETPRO</div>
+      <span id="candidate-runtime-banner" class="badge badge-success">PREPARANDO OPERACIÓN LOCAL…</span>
+    </div><div class="header-actions"><button id="btn-enter-demo" class="btn btn-warning" type="button">INICIAR MODO DEMOSTRACIÓN</button><div id="db-status-badge" class="status-badge status-offline"><span class="dot"></span> Preparando datos locales…</div></div></header>
+    <div id="demo-runtime-bar" class="demo-runtime-bar" role="status" aria-live="polite">
+      <strong>MODO DEMOSTRACIÓN · DATOS SIMULADOS · NO OFICIAL</strong>
+      <span>Base aislada CETPRO_V2_DEMO</span>
+      <div><a href="#/demo" class="btn btn-sm btn-light">Recorrido</a><button id="btn-reset-demo" class="btn btn-sm btn-light" type="button">REINICIAR DATOS DEMO</button><button id="btn-exit-demo" class="btn btn-sm btn-dark" type="button">SALIR DEL MODO DEMOSTRACIÓN</button></div>
+    </div>
+    <div class="app-body"><aside id="sidebar" class="app-sidebar"><div class="sidebar-title">Menú Principal</div>
+      <nav aria-label="Navegación del sistema">
+        <div class="nav-section-title">OPERACIÓN DIARIA</div>
+        <a href="#/inicio" class="nav-link active"><span class="nav-icon">🏠</span><span>INICIO</span></a>
+        <a href="#/estudiantes" class="nav-link"><span class="nav-icon">👥</span><span>ESTUDIANTES</span></a>
+        <a href="#/grupos" class="nav-link"><span class="nav-icon">🗂️</span><span>GRUPOS</span></a>
+        <a href="#/documentos" class="nav-link"><span class="nav-icon">📑</span><span>DOCUMENTOS</span></a>
+        <div class="nav-section-title">CONFIGURACIÓN ADMINISTRATIVA</div>
+        <a href="#/configuracion-academica" class="nav-link"><span class="nav-icon">⚙️</span><span>CONFIGURACIÓN ACADÉMICA</span></a>
+        <a href="#/programas" class="nav-link"><span class="nav-icon">📚</span><span>PROGRAMAS Y MÓDULOS</span></a>
+        <a href="#/respaldo" class="nav-link"><span class="nav-icon">💾</span><span>RESPALDO</span></a>
+        <div class="nav-section-title">DIAGNÓSTICO TÉCNICO</div>
+        <a href="#/configuracion" class="nav-link"><span class="nav-icon">ℹ️</span><span>INFORMACIÓN DEL SISTEMA</span></a>
+      </nav></aside>
+      <main id="main-content" class="main-area" aria-live="polite"><div class="card"><p>Preparando la aplicación local…</p></div></main>
+    </div>
+    <footer class="app-footer"><div>Sistema Académico CETPRO · Operación local sin Internet</div><div>Los documentos oficiales requieren confirmación académica.</div></footer>
+  </div>
+  <script type="module" src="/app/js/v2-candidate/candidate-entry.js"></script>
+</body>
+</html>

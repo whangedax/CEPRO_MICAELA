@@ -1,0 +1,232 @@
+/* ==========================================================================
+   COMPONENTES UI (components.css)
+   Módulo: M01 - Núcleo Local
+   ========================================================================== */
+
+/* Sidebar Navigation */
+.app-sidebar {
+  width: 260px;
+  background-color: var(--bg-sidebar);
+  color: var(--sidebar-text);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: transform var(--transition-normal);
+}
+
+.sidebar-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+  padding: 0 0.75rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #cbd5e1;
+  text-decoration: none;
+  font-weight: 5rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.nav-link.active {
+  background-color: var(--primary-color);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.4);
+}
+
+.nav-icon {
+  font-size: 1.1rem;
+}
+
+/* Cards & Containers */
+.card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-hero {
+  border-left: 5px solid var(--primary-color);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.view-header h2 {
+  font-size: 1.5rem;
+  color: var(--neutral-dark);
+  font-weight: 700;
+}
+
+.subtitle {
+  color: var(--neutral-muted);
+  font-size: 0.9rem;
+}
+
+/* Grids */
+.grid {
+  display: grid;
+  gap: 1.25rem;
+}
+.grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Stat Cards */
+.stat-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+.stat-icon {
+  font-size: 2rem;
+  background-color: var(--primary-light);
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stat-value {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--neutral-dark);
+  line-height: 1.2;
+}
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--neutral-muted);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.btn-primary {
+  background-color: var(--primary-color);
+  color: #ffffff;
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* Badges */
+.badge {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+.badge-info { background-color: #e0f2fe; color: #0369a1; }
+.badge-warning { background-color: #fef3c7; color: #b45309; }
+.badge-success { background-color: #d1fae5; color: #047857; }
+.badge-secondary { background-color: #f1f5f9; color: #475569; }
+.module-tag { font-size: 0.8rem; font-weight: 600; background: #e0e7ff; color: #4338ca; padding: 0.3rem 0.75rem; border-radius: var(--radius-sm); }
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+}
+.status-online { background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.status-offline { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.status-online .dot { background-color: #10b981; }
+.status-offline .dot { background-color: #ef4444; }
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  padding: 0.9rem 1.2rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  min-width: 300px;
+  max-width: 450px;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: all var(--transition-normal);
+}
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+.toast-info { border-left: 4px solid var(--secondary-color); }
+.toast-success { border-left: 4px solid var(--success-color); }
+.toast-warning { border-left: 4px solid var(--warning-color); }
+.toast-error { border-left: 4px solid var(--danger-color); }
+.toast-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--neutral-muted); margin-left: auto; }
+
+/* Empty States & Lists */
+.empty-state { text-align: center; padding: 3rem 1rem; }
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+.empty-state h3 { font-size: 1.2rem; color: var(--neutral-dark); margin-bottom: 0.5rem; }
+.text-muted { color: var(--neutral-muted); font-size: 0.9rem; margin-top: 0.5rem; }
+
+.table-info { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.table-info th, .table-info td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+.table-info th { background-color: #f8fafc; font-weight: 600; color: var(--neutral-dark); width: 220px; }
+
+.issue-box { background: #fffbebfb; border: 1px solid #fef3c7; padding: 0.9rem 1.1rem; border-radius: var(--radius-sm); font-size: 0.9rem; color: #92400e; }
+.check-item { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; font-size: 0.95rem; }
+.check-icon { color: var(--success-color); font-weight: 700; }
+.margin-top { margin-top: 1.5rem; }
+.margin-top-sm { margin-top: 0.8rem; }

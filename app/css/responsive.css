@@ -1,0 +1,79 @@
+/* ==========================================================================
+   ESTILOS RESPONSIVE PARA DISPOSITIVOS MÓVILES (responsive.css)
+   Módulo: M01 - Núcleo Local
+   ========================================================================== */
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--neutral-dark);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+.menu-toggle:hover {
+  background-color: #f1f5f9;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .app-sidebar {
+    position: fixed;
+    top: 64px;
+    bottom: 0;
+    left: 0;
+    z-index: 99;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .app-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main-area {
+    padding: 1rem;
+  }
+
+  .app-header {
+    padding: 0 1rem;
+  }
+
+  .view-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .toast-container {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+  }
+  .toast {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .grid, .grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .table-info th, .table-info td {
+    display: block;
+    width: 100%;
+  }
+  .table-info th {
+    border-bottom: none;
+    padding-bottom: 0.25rem;
+    color: var(--neutral-muted);
+  }
+  .table-info td {
+    padding-top: 0;
+  }
+}

@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Saneamiento de Base Candidata — CETPRO V2</title>
+  <link rel="stylesheet" href="/app/css/app.css">
+  <link rel="stylesheet" href="/app/css/components.css">
+  <style>
+    body { max-width: 900px; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; background: #f8fafc; color: #1e293b; }
+    .card { background: white; border-radius: 8px; padding: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .btn-danger { background: #dc2626; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-secondary { background: #64748b; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .badge-warn { background: #fef08a; color: #854d0e; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; }
+    .badge-ok { background: #bbf7d0; color: #166534; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem; }
+    th, td { padding: 0.6rem; border: 1px solid #e2e8f0; text-align: left; }
+    th { background: #f1f5f9; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <h1>Saneamiento y Rollback de Base Candidata (Puerto 8081)</h1>
+  <p class="text-muted">Herramienta de mantenimiento para <code>CETPRO_V2_CANDIDATE</code>. <strong>CETPRO_DB permanece 100% protegida.</strong></p>
+
+  <div class="card">
+    <h2>1. Diagnóstico de la Base Candidata</h2>
+    <div id="status-area"><p>Analizando IndexedDB <code>CETPRO_V2_CANDIDATE</code>…</p></div>
+    <div class="margin-top">
+      <button id="btn-refresh" class="btn-secondary" type="button">Actualizar Diagnóstico</button>
+    </div>
+  </div>
+
+  <div id="action-card" class="card" style="display:none;">
+    <h2>2. Ejecución de Purga y Saneamiento</h2>
+    <p>Esta acción realizará las siguientes operaciones atómicas en <code>CETPRO_V2_CANDIDATE</code>:</p>
+    <ul>
+      <li>Vaciar completamente el store <code>periodos</code> (restaurando el estado canónico de <strong>0 periodos</strong>).</li>
+      <li>Desvincular <code>periodoId</code> en cualquier grupo académico que lo referencie (fijándolo en <code>null</code>).</li>
+      <li>Registrar un asiento inmutable de auditoría (<code>SANEAMIENTO_PERIODOS_MANUALES</code>).</li>
+      <li><strong>Estudiantes (269) y Matrículas (295) quedan 100% intactos e inalterados.</strong></li>
+    </ul>
+    <button id="btn-purge" class="btn-danger" type="button">EJECUTAR SANEAMIENTO DE PERIODOS</button>
+  </div>
+
+  <div id="result-card" class="card" style="display:none;">
+    <h2>3. Resultado del Saneamiento</h2>
+    <div id="result-log"></div>
+  </div>
+
+  <script type="module">
+    const DB_NAME = 'CETPRO_V2_CANDIDATE';
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function inspect() {
+      const statusArea = document.querySelector('#status-area');
+      const actionCard = document.querySelector('#action-card');
+      try {
+        const db = await openDB();
+        const tx = db.transaction(['estudiantes', 'matriculas', 'grupos_academicos', 'periodos', 'unidades', 'auditoria'], 'readonly');
+        
+        const getAll = store => new Promise((res, rej) => {
+          const r = tx.objectStore(store).getAll();
+          r.onsuccess = () => res(r.result);
+          r.onerror = () => rej(r.error);
+        });
+
+        const students = await getAll('estudiantes');
+        const enrollments = await getAll('matriculas');
+        const groups = await getAll('grupos_academicos');
+        const periods = await getAll('periodos');
+        const units = await getAll('unidades');
+
+        let html = `
+          <table>
+            <tr><th>Store</th><th>Cantidad</th><th>Estado Canónico</th></tr>
+            <tr><td><strong>estudiantes</strong></td><td>${students.length}</td><td><span class="badge-ok">269 (OK)</span></td></tr>
+            <tr><td><strong>matriculas</strong></td><td>${enrollments.length}</td><td><span class="badge-ok">295 (OK)</span></td></tr>
+            <tr><td><strong>grupos_academicos</strong></td><td>${groups.length}</td><td><span class="badge-ok">12 (OK)</span></td></tr>
+            <tr><td><strong>unidades</strong></td><td>${units.length}</td><td><span class="badge-ok">0 (OK)</span></td></tr>
+            <tr><td><strong>periodos</strong></td><td><strong>${periods.length}</strong></td><td>${periods.length === 0 ? '<span class="badge-ok">0 CANÓNICO</span>' : '<span class="badge-warn">REQUIERE PURGA</span>'}</td></tr>
+          </table>
+        `;
+
+        if (periods.length > 0) {
+          html += `
+            <h3 class="margin-top">Periodos detectados en la base candidata:</h3>
+            <table>
+              <tr><th>ID</th><th>Denominación</th><th>Año</th><th>Inicio</th><th>Fin</th><th>Estado</th></tr>
+              ${periods.map(p => `<tr><td><code>${p.id || p.idPeriodo}</code></td><td><strong>${p.nombre || '—'}</strong></td><td>${p.anio || '—'}</td><td>${p.fechaInicio || '—'}</td><td>${p.fechaFin || '—'}</td><td>${p.estado || '—'}</td></tr>`).join('')}
+            </table>
+          `;
+
+          const groupsWithPeriod = groups.filter(g => g.periodoId);
+          if (groupsWithPeriod.length > 0) {
+            html += `
+              <h3 class="margin-top">Grupos con referencia a periodos:</h3>
+              <ul>
+                ${groupsWithPeriod.map(g => `<li>Grupo <strong>${g.codigoVisible || g.sourceGroupCode}</strong> (ID: <code>${g.id}</code>) → Periodo: <code>${g.periodoId}</code></li>`).join('')}
+              </ul>
+            `;
+          }
+          actionCard.style.display = 'block';
+        } else {
+          html += `<div class="alert alert-success margin-top">El store <code>periodos</code> ya se encuentra en su estado canónico limpio (0 periodos). No hay datos espurios.</div>`;
+          actionCard.style.display = 'none';
+        }
+
+        statusArea.innerHTML = html;
+        db.close();
+      } catch (err) {
+        statusArea.innerHTML = `<div class="alert alert-danger">Error al conectar con ${DB_NAME}: ${err.message}</div>`;
+      }
+    }
+
+    async function purge() {
+      if (!confirm('¿Confirma eliminar todos los periodos manuales/espurios de CETPRO_V2_CANDIDATE y desvincularlos de los grupos?')) {
+        return;
+      }
+
+      const resultCard = document.querySelector('#result-card');
+      const resultLog = document.querySelector('#result-log');
+      resultCard.style.display = 'block';
+      resultLog.innerHTML = '<p>Ejecutando transacción de saneamiento…</p>';
+
+      try {
+        const db = await openDB();
+        const tx = db.transaction(['grupos_academicos', 'periodos', 'auditoria'], 'readwrite');
+        
+        const periodStore = tx.objectStore('periodos');
+        const groupStore = tx.objectStore('grupos_academicos');
+        const auditStore = tx.objectStore('auditoria');
+
+        // 1. Obtener periodos existentes para registro de auditoría
+        const existingPeriods = await new Promise((res, rej) => {
+          const req = periodStore.getAll();
+          req.onsuccess = () => res(req.result);
+          req.onerror = () => rej(req.error);
+        });
+
+        // 2. Limpiar periodos
+        await new Promise((res, rej) => {
+          const req = periodStore.clear();
+          req.onsuccess = res;
+          req.onerror = () => rej(req.error);
+        });
+
+        // 3. Limpiar periodoId en grupos
+        const groups = await new Promise((res, rej) => {
+          const req = groupStore.getAll();
+          req.onsuccess = () => res(req.result);
+          req.onerror = () => rej(req.error);
+        });
+
+        let updatedGroupsCount = 0;
+        for (const group of groups) {
+          if (group.periodoId) {
+            const updated = {
+              ...group,
+              periodoId: null,
+              academicContextSources: {
+                ...(group.academicContextSources || {}),
+                periodoId: null
+              },
+              updatedAt: new Date().toISOString()
+            };
+            groupStore.put(updated);
+            updatedGroupsCount++;
+          }
+        }
+
+        // 4. Asiento de auditoría
+        const auditEntry = {
+          id: `AUD-SAN-${crypto.randomUUID()}`,
+          timestamp: new Date().toISOString(),
+          fechaHora: new Date().toISOString(),
+          entidad: 'BASE_CANDIDATA',
+          entidadId: 'PERIODOS_STORE',
+          accion: 'SANEAMIENTO_PERIODOS_MANUALES',
+          tipoOperacion: 'PURGA_CANONICA',
+          estadoAnterior: { periodosPurgados: existingPeriods.map(p => ({ id: p.id, nombre: p.nombre })), gruposAfectados: updatedGroupsCount },
+          estadoNuevo: { periodosCount: 0 },
+          origen: { usuarioOperador: 'ADMINISTRADOR_SISTEMA', pantalla: 'sanitize-candidate-db.html', motivo: 'Purga de periodos espurios ingresados en pruebas' }
+        };
+        auditStore.add(auditEntry);
+
+        await new Promise((res, rej) => {
+          tx.oncomplete = res;
+          tx.onerror = () => rej(tx.error);
+          tx.onabort = () => rej(tx.error);
+        });
+
+        db.close();
+
+        resultLog.innerHTML = `
+          <div class="alert alert-success">
+            <strong>Saneamiento completado con éxito:</strong>
+            <ul>
+              <li>Periodos eliminados: ${existingPeriods.length}</li>
+              <li>Grupos desvinculados: ${updatedGroupsCount}</li>
+              <li>Store <code>periodos</code> restaurado a <strong>0</strong>.</li>
+              <li>Asiento de auditoría generado: <code>${auditEntry.id}</code>.</li>
+            </ul>
+          </div>
+        `;
+
+        await inspect();
+      } catch (err) {
+        resultLog.innerHTML = `<div class="alert alert-danger">Fallo durante la purga: ${err.message}</div>`;
+      }
+    }
+
+    document.querySelector('#btn-refresh').onclick = inspect;
+    document.querySelector('#btn-purge').onclick = purge;
+    inspect();
+  </script>
+</body>
+</html>

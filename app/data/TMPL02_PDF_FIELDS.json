@@ -1,0 +1,123 @@
+{
+  "institution.name": {
+    "contractKey": "institution.nombre",
+    "x": 222.064,
+    "y": 79.216,
+    "width": 246.928,
+    "height": 23.264,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 5
+  },
+  "institution.dre": {
+    "contractKey": "institution.dre",
+    "x": 609.232,
+    "y": 79.216,
+    "width": 169.776,
+    "height": 23.264,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 5
+  },
+  "institution.codigoModular": {
+    "contractKey": "institution.codigoModular",
+    "x": 222.064,
+    "y": 102.48,
+    "width": 246.928,
+    "height": 19.024,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 5
+  },
+  "institution.managementType": {
+    "contractKey": "institution.tipoGestion",
+    "x": 609.232,
+    "y": 102.48,
+    "width": 169.776,
+    "height": 19.025,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 5
+  },
+  "institution.departamento": {
+    "contractKey": "institution.departamento",
+    "x": 222.064,
+    "y": 121.504,
+    "width": 246.928,
+    "height": 18.304,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 5
+  },
+  "institution.provincia": {
+    "contractKey": "institution.provincia",
+    "x": 609.232,
+    "y": 121.504,
+    "width": 169.776,
+    "height": 18.304,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 5
+  },
+  "institution.distrito": {
+    "contractKey": "institution.distrito",
+    "x": 222.064,
+    "y": 139.808,
+    "width": 246.928,
+    "height": 17.616,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 5
+  },
+  "institution.directorResolution": {
+    "contractKey": "institution.resolucion",
+    "x": 609.232,
+    "y": 139.811,
+    "width": 169.776,
+    "height": 17.613,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 5
+  },
+  "program.name": {
+    "contractKey": "program.nombre",
+    "x": 222.064,
+    "y": 157.424,
+    "width": 246.928,
+    "height": 23.952,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 5
+  },
+  "student.documentNumber": {
+    "contractKey": "student.numeroDocumento",
+    "x": 609.232,
+    "y": 231.424,
+    "width": 169.776,
+    "height": 18.304,
+    "align": "center",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 5
+  },
+  "student.fullName": {
+    "contractKey": "student.apellidosNombres",
+    "x": 222.064,
+    "y": 249.728,
+    "width": 556.944,
+    "height": 21.12,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 5.5,
+    "paddingX": 5
+  }
+}

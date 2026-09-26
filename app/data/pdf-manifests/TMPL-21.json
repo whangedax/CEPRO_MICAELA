@@ -1,0 +1,180 @@
+{
+  "templateId": "TMPL-21",
+  "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/21_TITULO_AUXILIAR_TECNICO.pdf",
+  "sha256": "6dbf9aa7b92866cc94c2fe1f7391816d2bcaa7331bbeaeeb1faba0a51fd3abaf",
+  "pages": [
+    {
+      "number": 1,
+      "width": 841.89,
+      "height": 595.28
+    },
+    {
+      "number": 2,
+      "width": 841.89,
+      "height": 595.28
+    }
+  ],
+  "contextType": "TITLE",
+  "capacity": null,
+  "previewStatus": "BLOCKED_BY_SOURCE",
+  "blockers": [
+    "B-002",
+    "B-004",
+    "B-006",
+    "B-007"
+  ],
+  "geometryProvenance": "AUDITORÍA VECTORIAL ESTRICTA 2026-09-20: Mapeo de fecha de emisión en anverso y cajetines registrales en reverso, manteniendo bloqueo preventivo bajo B-006.",
+  "fields": [
+    {
+      "canonicalKey": "student.fullName",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "document.officialTitleText",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "document.registerCode",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "document.directorSignature",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    }
+  ],
+  "physicalFields": [
+    {
+      "canonicalKey": "student.fullName",
+      "page": 1,
+      "x": 163.42,
+      "y": 255.75,
+      "width": 623.93,
+      "height": 20,
+      "alignment": "center",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "document.officialTitleText",
+      "page": 1,
+      "x": 54.88,
+      "y": 318,
+      "width": 732.47,
+      "height": 26.69,
+      "alignment": "center",
+      "styleProfile": "PROGRAM_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "document.emissionDate",
+      "page": 1,
+      "x": 164.4,
+      "y": 430,
+      "width": 623,
+      "height": 20,
+      "alignment": "center",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "document.registerCode",
+      "page": 2,
+      "x": 290,
+      "y": 195,
+      "width": 285,
+      "height": 30,
+      "alignment": "center",
+      "styleProfile": "DOCUMENT_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "document.registryAsiento",
+      "page": 2,
+      "x": 290,
+      "y": 240,
+      "width": 285,
+      "height": 50,
+      "alignment": "center",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    }
+  ],
+  "reservedRegions": [
+    {
+      "id": "PAGE1_FIXED_MAIN_PARAGRAPH",
+      "kind": "FIXED_TEXT_REGION",
+      "page": 1,
+      "x": 54.88,
+      "y": 300.47,
+      "width": 658.1,
+      "height": 17.5,
+      "evidence": "Texto fijo medido en el PDF canónico: top 302.470, bottom 315.963 pt."
+    },
+    {
+      "id": "PAGE1_FIXED_POR_TANTO",
+      "kind": "FIXED_TEXT_REGION",
+      "page": 1,
+      "x": 162.44,
+      "y": 355.92,
+      "width": 359,
+      "height": 45.28,
+      "evidence": "Bloque fijo POR TANTO medido en el PDF canónico: top 357.916 a bottom 399.198 pt."
+    },
+    {
+      "id": "PAGE1_FIXED_SIGNATURE",
+      "kind": "FIXED_TEXT_REGION",
+      "page": 1,
+      "x": 476,
+      "y": 520.76,
+      "width": 126,
+      "height": 28.49,
+      "evidence": "Firma impresa medida en el PDF canónico: top 522.76 a bottom 547.25 pt."
+    },
+    {
+      "id": "PAGE2_RESERVED_LOGO",
+      "kind": "RESERVED",
+      "page": 2,
+      "x": 374.29,
+      "y": 89.55,
+      "width": 103.58,
+      "height": 62.19,
+      "evidence": "Rectángulo punteado LOGO CETPRO medido en el PDF canónico."
+    },
+    {
+      "id": "PAGE2_FIXED_REGISTER_LABEL",
+      "kind": "FIXED_TEXT_REGION",
+      "page": 2,
+      "x": 352.9,
+      "y": 165.55,
+      "width": 161.63,
+      "height": 15,
+      "evidence": "Rótulo fijo Código del Registro Institucional medido en el PDF canónico."
+    },
+    {
+      "id": "PAGE2_FIXED_SIGNATURE",
+      "kind": "FIXED_TEXT_REGION",
+      "page": 2,
+      "x": 371,
+      "y": 339,
+      "width": 125,
+      "height": 34,
+      "evidence": "Firma impresa de la página 2 medida en el PDF canónico."
+    }
+  ],
+  "rendererStatus": "RENDERER_IMPLEMENTED",
+  "fitStatus": "FAIL_CLOSED",
+  "officialIssueStatus": "BLOCKED"
+}

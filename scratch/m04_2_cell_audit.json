@@ -1,0 +1,250 @@
+{
+  "totalCandidates": 305,
+  "typeCounts": {
+    "blank": 12,
+    "numeric": 268,
+    "shared string": 25
+  },
+  "emptyRowsCount": 12,
+  "numericRowsCount": 268,
+  "atypicalCounts": {
+    "7_DIGITOS": 20,
+    "MAS_DE_8_DIGITOS": 0,
+    "ALFANUMERICOS": 1,
+    "OTROS": 0,
+    "TOTAL": 21
+  },
+  "atypicalRowsDetail": [
+    {
+      "archivo": "1.B PB TURNO TARDE  PROF. AZU.xlsx",
+      "hoja": "PB.M-PB.T-PB.T-",
+      "fila": 13,
+      "nombre": "ORIHUELA ORDOÑEZ Ronald Angel",
+      "dniVal": "9501589",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "9501589",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "1.C PB TURNO NOCHE  PROF. FIDE.xlsx",
+      "hoja": "PB.M-PB.T-PB.T-",
+      "fila": 23,
+      "nombre": "MAMANI MAMNI, Facundo",
+      "dniVal": "O2037218",
+      "ooxmlType": "shared string",
+      "rawXmlValue": "33",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "3. MEC MOTOS PROF ANIBAL.xlsx",
+      "hoja": "MECANICA. MOTOS",
+      "fila": 19,
+      "nombre": "ORTIZ CALSINA, Elias",
+      "dniVal": "2430303",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "2430303",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "3. MEC MOTOS PROF ANIBAL.xlsx",
+      "hoja": "MECANICA. MOTOS",
+      "fila": 23,
+      "nombre": "QUISPE COILA, Freddy",
+      "dniVal": "1342626",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "1342626",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "3. MEC MOTOS PROF ANIBAL.xlsx",
+      "hoja": "MECANICA. MOTOS",
+      "fila": 24,
+      "nombre": "QUISPE GUTIERREZ, Simon Teodoro",
+      "dniVal": "2366890",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "2366890",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "3. MEC MOTOS PROF ANIBAL.xlsx",
+      "hoja": "MECANICA. MOTOS",
+      "fila": 25,
+      "nombre": "QUISPE PACOMPIA, Gumercindo",
+      "dniVal": "1395539",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "1395539",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "COMPUTACION PRESENCIAL 2026.xlsx",
+      "hoja": "COMPUTACION .  PRESENCIAL -VIR",
+      "fila": 17,
+      "nombre": "LOAYZA QUISPE, Georgina  Gregoria",
+      "dniVal": "1555272",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "1555272",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "COMPUTACION PRESENCIAL 2026.xlsx",
+      "hoja": "COMPUTACION .  PRESENCIAL -VIR",
+      "fila": 20,
+      "nombre": "MAMANI LIMACHI, Huber",
+      "dniVal": "1341752",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "1341752",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "COMPUTACION PRESENCIAL 2026.xlsx",
+      "hoja": "COMPUTACION .  PRESENCIAL -VIR",
+      "fila": 32,
+      "nombre": "LOAYZA QUISPE, Georgina  Gregoria",
+      "dniVal": "1555271",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "1555271",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "COMPUTACION VIRTUAL 2026 -.xlsx",
+      "hoja": "COMPUTACION .  PRESENCIAL -VIR",
+      "fila": 73,
+      "nombre": "CALLI CHIRA, Rina Luz",
+      "dniVal": "2443504",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "2443504",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "COMPUTACION VIRTUAL 2026 -.xlsx",
+      "hoja": "COMPUTACION .  PRESENCIAL -VIR",
+      "fila": 102,
+      "nombre": "NUÑEZ CURO, Eduardo",
+      "dniVal": "1267078",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "1267078",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "COMPUTACION VIRTUAL 2026 -.xlsx",
+      "hoja": "COMPUTACION .  PRESENCIAL -VIR",
+      "fila": 107,
+      "nombre": "PINEDA HERRERA, Victor",
+      "dniVal": "1700773",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "1700773",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "COMPUTACION VIRTUAL 2026 -.xlsx",
+      "hoja": "COMPUTACION .  PRESENCIAL -VIR",
+      "fila": 126,
+      "nombre": "VALENCIA PAMPA, Leo Bladimir",
+      "dniVal": "2029135",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "2029135",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "COMPUTACION VIRTUAL 2026 -.xlsx",
+      "hoja": "COMPUTACION .  PRESENCIAL -VIR",
+      "fila": 128,
+      "nombre": "VARGAS ARIAS, Joel leonid",
+      "dniVal": "2442832",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "2442832",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "COMPUTACION VIRTUAL 2026 -.xlsx",
+      "hoja": "COMPUTACION .  PRESENCIAL -VIR",
+      "fila": 135,
+      "nombre": "VILLASANTE CCOSI, Antonio",
+      "dniVal": "2031064",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "2031064",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "CORTE  ENSAMBLAJE MAÑANA.xlsx",
+      "hoja": "C.E.M-T-N.",
+      "fila": 9,
+      "nombre": "COLCA ILAQUITA, Delia  Benancia",
+      "dniVal": "2399315",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "2399315",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "CORTE  ENSAMBLAJE MAÑANA.xlsx",
+      "hoja": "C.E.M-T-N.",
+      "fila": 22,
+      "nombre": "MAMANI QUISPE, Prudencio",
+      "dniVal": "2382987",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "2382987",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "CORTE  ENSAMBLAJE MAÑANA.xlsx",
+      "hoja": "C.E.M-T-N.",
+      "fila": 24,
+      "nombre": "MARTINES CHARAJA, Nancy  Marleny",
+      "dniVal": "1308913",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "1308913",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "CORTE  ENSAMBLAJE NOCHE.xlsx",
+      "hoja": "C.E.M-T-N.",
+      "fila": 7,
+      "nombre": "CONDORI SACACA, Juan Pedro",
+      "dniVal": "2557768",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "2557768",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "CORTE  ENSAMBLAJE TARDE.xlsx",
+      "hoja": "C.E.M-T-N.",
+      "fila": 20,
+      "nombre": "NAIRA SILVA, Sabina",
+      "dniVal": "1228239",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "1228239",
+      "numFmtId": "0",
+      "formatCode": "General"
+    },
+    {
+      "archivo": "CORTE  ENSAMBLAJE TARDE.xlsx",
+      "hoja": "C.E.M-T-N.",
+      "fila": 23,
+      "nombre": "PARDES CHECALLA, Silvia Elsa",
+      "dniVal": "1234101",
+      "ooxmlType": "numeric",
+      "rawXmlValue": "1234101",
+      "numFmtId": "0",
+      "formatCode": "General"
+    }
+  ]
+}

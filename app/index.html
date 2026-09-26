@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Sistema Académico CETPRO</title>
+  
+  <script src="./vendor/pdf-lib.min.js"></script>
+  <!-- Hojas de estilo CSS nativas -->
+  <link rel="stylesheet" href="./css/app.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+  <link rel="stylesheet" href="./css/print.css" media="print">
+</head>
+<body>
+  <div id="app-layout">
+    <!-- Encabezado Principal -->
+    <header class="app-header">
+      <div class="header-brand">
+        <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menú de navegación">☰</button>
+        <div class="brand-title">Sistema Académico CETPRO</div>
+        <span class="badge badge-secondary">v1.0.0-M01</span>
+      </div>
+      
+      <div class="header-actions">
+        <div id="db-status-badge" class="status-badge status-offline">
+          <span class="dot"></span> IDB: Conectando…
+        </div>
+      </div>
+    </header>
+
+    <!-- Cuerpo con Navegación Lateral y Área de Vistas -->
+    <div class="app-body">
+      <!-- Navegación Lateral Escritorio / Drawer Móvil -->
+      <aside id="sidebar" class="app-sidebar">
+        <div class="sidebar-title">Menú Principal</div>
+        <nav aria-label="Navegación del sistema">
+          <a href="#/inicio" class="nav-link active">
+            <span class="nav-icon">🏠</span> <span>INICIO</span>
+          </a>
+          <a href="#/estudiantes" class="nav-link">
+            <span class="nav-icon">👥</span> <span>ESTUDIANTES</span>
+          </a>
+          <a href="#/matriculas" class="nav-link">
+            <span class="nav-icon">📋</span> <span>MATRÍCULAS</span>
+          </a>
+          <a href="#/programas" class="nav-link">
+            <span class="nav-icon">📚</span> <span>PROGRAMAS Y MÓDULOS</span>
+          </a>
+          <a href="#/grupos" class="nav-link">
+            <span class="nav-icon">🗂️</span> <span>ASIGNACIÓN DE GRUPOS</span>
+          </a>
+          <a href="#/registro" class="nav-link">
+            <span class="nav-icon">📝</span> <span>REGISTRO ACADÉMICO</span>
+          </a>
+          <a href="#/efsrt" class="nav-link">
+            <span class="nav-icon">💼</span> <span>EFSRT</span>
+          </a>
+          <a href="#/cierre" class="nav-link">
+            <span class="nav-icon">🏁</span> <span>CIERRE ACADÉMICO</span>
+          </a>
+          <a href="#/documentos" class="nav-link">
+            <span class="nav-icon">📄</span> <span>DOCUMENTOS</span>
+          </a>
+          <a href="#/incidencias" class="nav-link">
+            <span class="nav-icon">⚠️</span> <span>INCIDENCIAS</span>
+          </a>
+          <a href="#/respaldo" class="nav-link">
+            <span class="nav-icon">💾</span> <span>RESPALDO</span>
+          </a>
+          <a href="#/configuracion" class="nav-link">
+            <span class="nav-icon">⚙️</span> <span>CONFIGURACIÓN</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Área de Contenido Principal -->
+      <main id="main-content" class="main-area" aria-live="polite">
+        <div class="card">
+          <p>Cargando aplicación CETPRO…</p>
+        </div>
+      </main>
+    </div>
+
+    <!-- Pie de Página -->
+    <footer class="app-footer">
+      <div>CETPRO Público "Micaela Bastidas Puyucawa" — San Miguel</div>
+      <div>Sistema Académico Local (Offline) | Versión 1.0.0-M01</div>
+    </footer>
+  </div>
+
+  <!-- Script Principal de la Aplicación -->
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

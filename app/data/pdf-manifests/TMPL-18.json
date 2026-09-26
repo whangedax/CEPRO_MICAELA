@@ -1,0 +1,215 @@
+{
+  "templateId": "TMPL-18",
+  "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/18_CONSOLIDADO_EFSRT.pdf",
+  "sha256": "676ed06768bd7a063f72c915511b1b2787faae02ad1ed0b7b14f1e14c4c5ed08",
+  "pages": [
+    {
+      "number": 1,
+      "width": 841.89,
+      "height": 1190.55
+    }
+  ],
+  "contextType": "EFSRT",
+  "capacity": {
+    "pages": 1,
+    "rows": 40,
+    "criteria": 9
+  },
+  "grid": {
+    "rows": 40,
+    "originY": 405.49,
+    "stepY": 13.6,
+    "code": {
+      "x": 43.89,
+      "width": 49.4
+    },
+    "student": {
+      "x": 93.29,
+      "width": 185.8
+    },
+    "company": {
+      "x": 279.09,
+      "width": 139.7
+    },
+    "address": {
+      "x": 418.79,
+      "width": 139.7
+    },
+    "criteria": {
+      "originX": 558.49,
+      "stepX": 26.325,
+      "width": 26.325,
+      "count": 9
+    },
+    "finalScore": {
+      "x": 795.4,
+      "width": 35.0
+    }
+  },
+  "previewStatus": "AVAILABLE",
+  "geometryProvenance": "Calibración vectorial física sobre 18_CONSOLIDADO_EFSRT.pdf en A3 Portrait (841.89 x 1190.55 pt) con paso vertical dy=13.6 pt para 40 estudiantes, 9 criterios de evaluación y calificación final.",
+  "fields": [
+    {
+      "canonicalKey": "institution.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "HEADER_TITLE",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 95.0, "y": 263.0, "w": 450.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "module.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 95.0, "y": 277.5, "w": 450.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "efsrt.hours",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 670.0, "y": 277.5, "w": 140.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "document.teacherName",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 95.0, "y": 292.0, "w": 380.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "efsrt.startDate",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 565.0, "y": 292.0, "w": 70.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "efsrt.endDate",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 720.0, "y": 292.0, "w": 90.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "enrollment.code",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "DOCUMENT_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "student.fullName",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "efsrt.companyName",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "efsrt.companyAddress",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "efsrt.criterionScore",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "efsrt.finalGrade",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    }
+  ],
+  "physicalFields": [
+    {
+      "canonicalKey": "enrollment.code",
+      "page": 1,
+      "x": 43.89,
+      "y": 405.49,
+      "width": 49.4,
+      "height": 13.6,
+      "alignment": "left",
+      "styleProfile": "DOCUMENT_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-18; límites vectoriales medidos individualmente.",
+      "repeat": 40,
+      "stepY": 13.6,
+      "source": "rows"
+    },
+    {
+      "canonicalKey": "student.fullName",
+      "page": 1,
+      "x": 93.29,
+      "y": 405.49,
+      "width": 185.8,
+      "height": 13.6,
+      "alignment": "left",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-18; límites vectoriales medidos individualmente.",
+      "repeat": 40,
+      "stepY": 13.6,
+      "source": "rows"
+    },
+    {
+      "canonicalKey": "efsrt.companyName",
+      "page": 1,
+      "x": 279.09,
+      "y": 405.49,
+      "width": 139.7,
+      "height": 13.6,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-18; límites vectoriales medidos individualmente.",
+      "repeat": 40,
+      "stepY": 13.6,
+      "source": "rows"
+    },
+    {
+      "canonicalKey": "efsrt.companyAddress",
+      "page": 1,
+      "x": 418.79,
+      "y": 405.49,
+      "width": 139.7,
+      "height": 13.6,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-18; límites vectoriales medidos individualmente.",
+      "repeat": 40,
+      "stepY": 13.6,
+      "source": "rows"
+    },
+    {
+      "canonicalKey": "efsrt.finalGrade",
+      "page": 1,
+      "x": 795.4,
+      "y": 405.49,
+      "width": 26.32,
+      "height": 13.6,
+      "alignment": "center",
+      "styleProfile": "TABLE_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "geometryEvidence": "PDF canónico TMPL-18; límites vectoriales medidos individualmente.",
+      "repeat": 40,
+      "stepY": 13.6,
+      "source": "rows"
+    }
+  ],
+  "rendererStatus": "RENDERER_IMPLEMENTED",
+  "fitStatus": "FAIL_CLOSED"
+}

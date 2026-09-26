@@ -1,0 +1,147 @@
+{
+  "templateId": "TMPL-11",
+  "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/11_EVALUACION_IL_UD1.pdf",
+  "sha256": "74c6b099278301b03f1f712164d95585611ae127e795aff30a0defd8ec8a9d9a",
+  "pages": [
+    {
+      "number": 1,
+      "width": 841.89,
+      "height": 1190.55
+    }
+  ],
+  "contextType": "EVALUATION",
+  "capacity": {
+    "pages": 1,
+    "rows": 47,
+    "indicators": 5
+  },
+  "grid": {
+    "rows": 47,
+    "indicators": 5,
+    "studentX": 34.55,
+    "studentW": 210.42,
+    "originX": 245.0,
+    "originY": 369.22,
+    "stepY": 14.215,
+    "stepX_IL": 106.86,
+    "subcols": {
+      "ia1": { "offsetX": 0.0, "width": 19.26 },
+      "ia2": { "offsetX": 19.26, "width": 19.26 },
+      "ia3": { "offsetX": 38.52, "width": 19.26 },
+      "il": { "offsetX": 57.78, "width": 31.28 },
+      "r": { "offsetX": 89.06, "width": 17.80 }
+    },
+    "finalResult": {
+      "x": 779.3,
+      "width": 42.0
+    }
+  },
+  "previewStatus": "AVAILABLE",
+  "geometryProvenance": "Calibración vectorial física sobre 11_EVALUACION_IL_UD1.pdf en A3 Portrait (841.89 x 1190.55 pt) con paso vertical dy=14.215 pt para 47 estudiantes y 26 columnas de evaluación.",
+  "fields": [
+    {
+      "canonicalKey": "institution.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "HEADER_TITLE",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 520.0, "y": 98.0, "w": 300.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "program.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 255.0, "y": 112.0, "w": 565.0, "h": 13.0 }
+    },
+    {
+      "canonicalKey": "period.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 255.0, "y": 124.0, "w": 565.0, "h": 13.0 }
+    },
+    {
+      "canonicalKey": "module.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 255.0, "y": 136.0, "w": 565.0, "h": 13.0 }
+    },
+    {
+      "canonicalKey": "curriculum.unit.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 255.0, "y": 148.0, "w": 565.0, "h": 13.0 }
+    },
+    {
+      "canonicalKey": "curriculum.unit.capacity",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 255.0, "y": 167.0, "w": 565.0, "h": 13.0 }
+    },
+    {
+      "canonicalKey": "curriculum.indicator.1",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 255.0, "y": 194.0, "w": 565.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "curriculum.indicator.2",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 255.0, "y": 222.0, "w": 565.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "curriculum.indicator.3",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 255.0, "y": 250.0, "w": 565.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "curriculum.indicator.4",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 255.0, "y": 277.0, "w": 565.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "curriculum.indicator.5",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 255.0, "y": 305.0, "w": 565.0, "h": 14.0 }
+    },
+    {
+      "canonicalKey": "student.fullName",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 34.55, "y": 369.22, "w": 210.42, "h": 14.215 },
+      "repeat": 47,
+      "stepY": 14.215
+    },
+    {
+      "canonicalKey": "evaluation.indicatorScore",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_NUMBER",
+      "overflowPolicy": "AUTOFIT_OR_FAIL"
+    },
+    {
+      "canonicalKey": "evaluation.unitResult",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_NUMBER",
+      "overflowPolicy": "AUTOFIT_OR_FAIL",
+      "box": { "x": 779.3, "y": 369.22, "w": 42.0, "h": 14.215 },
+      "repeat": 47,
+      "stepY": 14.215
+    }
+  ],
+  "rendererStatus": "RENDERER_IMPLEMENTED",
+  "fitStatus": "FAIL_CLOSED",
+  "officialIssueStatus": "PREVIEW_AVAILABLE"
+}

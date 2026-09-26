@@ -1,0 +1,387 @@
+{
+  "templateId": "TMPL-19",
+  "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/19_ACTA_DE_EVALUACION_MODULAR.pdf",
+  "sha256": "c22f947478f2328eea51e71bb89e3ed5c57f06d92a48c15f02f4cab64dff24cf",
+  "pages": [
+    {
+      "number": 1,
+      "width": 1190.55,
+      "height": 841.89
+    },
+    {
+      "number": 2,
+      "width": 1190.55,
+      "height": 841.89
+    }
+  ],
+  "contextType": "CLOSURE",
+  "capacity": {
+    "pages": 2,
+    "rows": 40,
+    "pageRows": [
+      20,
+      20
+    ],
+    "maxUnits": 10
+  },
+  "previewStatus": "AVAILABLE",
+  "blockers": [],
+  "geometryProvenance": "CALIBRACIÓN VECTORIAL 2026-09-20: Mapeo exacto de 2 páginas físicas A3 landscape (1190.55 x 841.89 pt), partición 20+20 filas, cabeceras institucionales y cuadro estadístico.",
+  "fields": [
+    {
+      "canonicalKey": "institution.name",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "program.name",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "module.name",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "period.name",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "student.fullName",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "student.documentNumber",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "curriculum.unit.name",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "evaluation.unitResult",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "closure.approvedCount",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "closure.failedCount",
+      "geometryStatus": "REVIEW_REQUIRED",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    }
+  ],
+  "physicalFields": [
+    {
+      "canonicalKey": "institution.name",
+      "page": 1,
+      "x": 170.0,
+      "y": 141.3,
+      "width": 340.0,
+      "height": 23.6,
+      "alignment": "left",
+      "styleProfile": "PRIMARY_ORGANIZATION_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "institution.tipoGestion",
+      "page": 1,
+      "x": 170.0,
+      "y": 164.9,
+      "width": 160.0,
+      "height": 23.6,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "institution.codigoModular",
+      "page": 1,
+      "x": 425.0,
+      "y": 164.9,
+      "width": 88.0,
+      "height": 23.6,
+      "alignment": "center",
+      "styleProfile": "DOCUMENT_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "institution.resolucionAutorizacion",
+      "page": 1,
+      "x": 170.0,
+      "y": 188.5,
+      "width": 105.0,
+      "height": 23.7,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "institution.resolucionConversion",
+      "page": 1,
+      "x": 425.0,
+      "y": 188.5,
+      "width": 88.0,
+      "height": 23.7,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "institution.dre",
+      "page": 1,
+      "x": 125.0,
+      "y": 235.8,
+      "width": 95.0,
+      "height": 23.6,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "institution.ugel",
+      "page": 1,
+      "x": 284.0,
+      "y": 235.8,
+      "width": 225.0,
+      "height": 23.6,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "institution.region",
+      "page": 1,
+      "x": 125.0,
+      "y": 259.4,
+      "width": 150.0,
+      "height": 23.6,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "institution.provincia",
+      "page": 1,
+      "x": 340.0,
+      "y": 259.4,
+      "width": 170.0,
+      "height": 23.6,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "institution.distrito",
+      "page": 1,
+      "x": 125.0,
+      "y": 283.0,
+      "width": 150.0,
+      "height": 23.6,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "institution.lugar",
+      "page": 1,
+      "x": 340.0,
+      "y": 283.0,
+      "width": 170.0,
+      "height": 23.6,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "institution.direccion",
+      "page": 1,
+      "x": 125.0,
+      "y": 306.6,
+      "width": 385.0,
+      "height": 23.7,
+      "alignment": "left",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "program.name",
+      "page": 1,
+      "x": 968.0,
+      "y": 164.9,
+      "width": 200.0,
+      "height": 23.6,
+      "alignment": "left",
+      "styleProfile": "PROGRAM_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "group.ciclo",
+      "page": 1,
+      "x": 1072.0,
+      "y": 188.5,
+      "width": 98.0,
+      "height": 23.7,
+      "alignment": "center",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "module.name",
+      "page": 1,
+      "x": 968.0,
+      "y": 235.8,
+      "width": 200.0,
+      "height": 23.6,
+      "alignment": "left",
+      "styleProfile": "MODULE_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "module.resolucionAutorizacion",
+      "page": 1,
+      "x": 1072.0,
+      "y": 259.4,
+      "width": 98.0,
+      "height": 23.6,
+      "alignment": "center",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "group.seccion",
+      "page": 1,
+      "x": 1072.0,
+      "y": 283.0,
+      "width": 98.0,
+      "height": 23.6,
+      "alignment": "center",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "group.turno",
+      "page": 1,
+      "x": 1072.0,
+      "y": 306.6,
+      "width": 98.0,
+      "height": 23.7,
+      "alignment": "center",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "module.totalCreditosHoras",
+      "page": 1,
+      "x": 1072.0,
+      "y": 330.3,
+      "width": 98.0,
+      "height": 20.7,
+      "alignment": "center",
+      "styleProfile": "TABLE_TEXT",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED"
+    },
+    {
+      "canonicalKey": "student.documentNumber",
+      "page": 1,
+      "x": 43.52,
+      "y": 371.84,
+      "width": 77.68,
+      "height": 20.79,
+      "repeat": 20,
+      "stepY": 20.79,
+      "alignment": "center",
+      "styleProfile": "DOCUMENT_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "source": "rows"
+    },
+    {
+      "canonicalKey": "student.fullName",
+      "page": 1,
+      "x": 121.2,
+      "y": 371.84,
+      "width": 392.57,
+      "height": 20.79,
+      "repeat": 20,
+      "stepY": 20.79,
+      "alignment": "left",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "source": "rows"
+    },
+    {
+      "canonicalKey": "student.documentNumber",
+      "page": 2,
+      "x": 72.98,
+      "y": 220.06,
+      "width": 73.54,
+      "height": 17.57,
+      "repeat": 20,
+      "stepY": 17.57,
+      "alignment": "center",
+      "styleProfile": "DOCUMENT_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "source": "rows",
+      "rowOffset": 20
+    },
+    {
+      "canonicalKey": "student.fullName",
+      "page": 2,
+      "x": 146.52,
+      "y": 220.06,
+      "width": 371.62,
+      "height": 17.57,
+      "repeat": 20,
+      "stepY": 17.57,
+      "alignment": "left",
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW",
+      "geometryStatus": "VERIFIED",
+      "source": "rows",
+      "rowOffset": 20
+    }
+  ],
+  "rendererStatus": "RENDERER_IMPLEMENTED",
+  "fitStatus": "FAIL_CLOSED",
+  "officialIssueStatus": "AVAILABLE"
+}

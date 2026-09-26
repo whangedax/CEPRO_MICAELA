@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>QA técnica de asistencia CETPRO v2</title>
+  <link rel="stylesheet" href="/tools/attendance-qa.css">
+  <script src="/app/vendor/pdf-lib.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div><p class="eyebrow">ATTENDANCE-ENGINE-V2-07</p><h1>Matriz técnica de asistencia</h1>
+      <p>Motor por groupId, matriculaId, unidad y sesión; persistencia aislada.</p></div>
+    <strong class="warning">QA · DATOS SINTÉTICOS · LABORATORIO · NO OFICIAL</strong>
+  </header>
+  <main>
+    <section class="guard" aria-label="Límites del entorno">
+      <span>Origen: <b id="origin">—</b></span><span>DB: <b id="db-name">CETPRO_V2_ATTENDANCE_LAB_QA</b></span>
+      <span>Schema: <b>2</b></span><span>Base productiva: <b>NO</b></span><span>Persistencia: <b>DB LAB AISLADA</b></span>
+      <span>Emisión oficial: <b>NO</b></span><span>Política oficial: <b>BLOCKED_BY_POLICY · B-003</b></span>
+    </section>
+    <section class="toolbar" aria-label="Acciones de sesión">
+      <label>Sesión activa <select id="active-session" aria-label="Sesión activa"></select></label>
+      <button id="mark-all" type="button">Marcar todos presentes</button>
+      <button id="clear-session" type="button">Limpiar sesión</button>
+      <button id="save-session" class="primary" type="button">Guardar sesión completa</button>
+      <button id="reload" type="button">Cancelar / recargar</button>
+      <button id="pdf" type="button">Generar TMPL-05 TEST_ONLY</button>
+      <a id="download" hidden>Descargar PDF</a>
+    </section>
+    <section class="status-row" aria-live="polite">
+      <div id="status">Inicializando laboratorio aislado…</div><div id="dirty">SIN CAMBIOS</div>
+    </section>
+    <section class="summary" aria-label="Conteos operativos">
+      <div><b id="present">0</b><span>Presentes</span></div><div><b id="absent">0</b><span>Ausentes</span></div>
+      <div><b id="justified">0</b><span>Justificadas</span></div><div><b id="unmarked">0</b><span>Sin registro</span></div>
+      <div><b id="marked">0</b><span>Marcadas</span></div><div><b id="sessions">0</b><span>Sesiones guardadas</span></div>
+      <p>El porcentaje oficial de inasistencia no se calcula: <b>BLOCKED_BY_POLICY (B-003)</b>.</p>
+    </section>
+    <section class="matrix-wrap" aria-label="Matriz de asistencia sintética">
+      <table><thead><tr id="head"><th>#</th><th>Matrícula sintética</th><th>Estudiante sintético</th></tr></thead><tbody id="body"></tbody></table>
+    </section>
+    <p class="footnote">P/F/J son códigos de visualización no confirmados. La captura técnica conserva PRESENTE, AUSENTE, JUSTIFICADA y SIN_REGISTRO. SIN_REGISTRO nunca se interpreta como AUSENTE.</p>
+  </main>
+  <script type="module" src="/tools/attendance-qa.js"></script>
+</body>
+</html>

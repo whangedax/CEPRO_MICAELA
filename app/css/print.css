@@ -1,0 +1,34 @@
+/* ==========================================================================
+   ESTILOS PARA IMPRESIÓN (print.css)
+   Módulo: M01 - Núcleo Local
+   ========================================================================== */
+
+@media print {
+  .app-header,
+  .app-sidebar,
+  .app-footer,
+  .toast-container,
+  .btn,
+  .menu-toggle {
+    display: none !important;
+  }
+
+  body, #app-layout, .app-body, .main-area {
+    background-color: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  a {
+    text-decoration: none !important;
+    color: #000000 !important;
+  }
+}
