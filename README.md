@@ -31,3 +31,11 @@ Este repositorio prepara la migración del proyecto CETPRO desde la especificaci
 - No hay reglas académicas oficiales completas para notas, asistencia, EFSRT, cierre, certificado y título.
 
 Consulta `sources/templates/CATALOGO_PLANTILLAS.md` para el inventario documental y `docs/PROJECT_STATE.md` para el estado vigente.
+
+## Entorno de Trabajo Colaborativo
+
+- **Repositorio Oficial:** [whangedax/CEPRO_MICAELA](https://github.com/whangedax/CEPRO_MICAELA)
+- **Ramas de Trabajo:**
+  - `main`: Versión estable institucional.
+  - `dev-gonzalo`: Rama activa de desarrollo y pruebas de Gonzalo.
+
