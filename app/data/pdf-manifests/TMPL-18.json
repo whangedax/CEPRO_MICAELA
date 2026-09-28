@@ -123,37 +123,37 @@
     },
     {
       "canonicalKey": "enrollment.code",
-      "geometryStatus": "REVIEW_REQUIRED",
+      "geometryStatus": "VERIFIED",
       "styleProfile": "DOCUMENT_NUMBER",
       "overflowPolicy": "FIELD_OVERFLOW"
     },
     {
       "canonicalKey": "student.fullName",
-      "geometryStatus": "REVIEW_REQUIRED",
+      "geometryStatus": "VERIFIED",
       "styleProfile": "PRIMARY_PERSON_NAME",
       "overflowPolicy": "FIELD_OVERFLOW"
     },
     {
       "canonicalKey": "efsrt.companyName",
-      "geometryStatus": "REVIEW_REQUIRED",
+      "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "FIELD_OVERFLOW"
     },
     {
       "canonicalKey": "efsrt.companyAddress",
-      "geometryStatus": "REVIEW_REQUIRED",
+      "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "FIELD_OVERFLOW"
     },
     {
       "canonicalKey": "efsrt.criterionScore",
-      "geometryStatus": "REVIEW_REQUIRED",
+      "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "FIELD_OVERFLOW"
     },
     {
       "canonicalKey": "efsrt.finalGrade",
-      "geometryStatus": "REVIEW_REQUIRED",
+      "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "FIELD_OVERFLOW"
     }
