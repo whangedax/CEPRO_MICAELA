@@ -1,6 +1,7 @@
 /**
  * Espacio documental productivo común (#/documentos).
- * Categorización en 4 Etapas del Ciclo Académico con selectores secundarios para UDs.
+ * Centro de Emisión Documental orientado a Secretaría Académica.
+ * Categorización en 4 Etapas del Ciclo Académico con flujo guiado de 3 pasos.
  * Mantiene 100% de compatibilidad hacia atrás con selectores y pruebas existentes.
  */
 import { TemplateRegistry } from '../services/template-registry.js';
@@ -33,7 +34,7 @@ export const DOCUMENT_STAGES = Object.freeze([
     number: '1',
     title: 'Matrícula e Inicio',
     shortTitle: '1. Matrícula',
-    subtitle: 'Nómina, ficha, portada y registro inicial',
+    subtitle: 'Nómina oficial, fichas de matrícula y portadas de carpeta',
     icon: 'bi-pencil-square',
     badge: '4 documentos',
     templates: ['TMPL-01', 'TMPL-02', 'TMPL-04', 'TMPL-03']
@@ -42,10 +43,10 @@ export const DOCUMENT_STAGES = Object.freeze([
     id: 'ETAPA_2',
     number: '2',
     title: 'Registro Auxiliar Docente',
-    shortTitle: '2. Registro Auxiliar',
+    shortTitle: '2. Aula y Asistencia',
     subtitle: 'Seguimiento: Asistencia (UD1-UD6) y Evaluación (UD1-UD7)',
     icon: 'bi-calendar-check',
-    badge: '2 controles (13 UDs)',
+    badge: '13 UDs operativas',
     templates: [
       'TMPL-05', 'TMPL-06', 'TMPL-07', 'TMPL-08', 'TMPL-09', 'TMPL-10',
       'TMPL-11', 'TMPL-12', 'TMPL-13', 'TMPL-14', 'TMPL-15', 'TMPL-16', 'TMPL-17'
@@ -68,7 +69,7 @@ export const DOCUMENT_STAGES = Object.freeze([
     shortTitle: '4. Certificación',
     subtitle: 'Certificado modular y titulación técnica oficial',
     icon: 'bi-award',
-    badge: '2 documentos (B-006)',
+    badge: 'Trámite oficial',
     templates: ['TMPL-20', 'TMPL-21']
   }
 ]);
@@ -104,6 +105,7 @@ export class DocumentsView {
     this.pdfBlobUrl = null;
     this.searchRevision = 0;
     this.operationRevision = 0;
+    this.docFilterQuery = '';
   }
 
   async render(container) {
@@ -138,11 +140,74 @@ export class DocumentsView {
 
     container.innerHTML = `
       <style>
+        .documents-module-container {
+          max-width: 1300px;
+          margin: 0 auto;
+        }
+        .hero-banner {
+          background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+          border-radius: 12px;
+          color: #ffffff;
+          padding: 1.5rem 1.75rem;
+          margin-bottom: 1.5rem;
+          box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+        }
+        .flow-stepper {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.75rem;
+          margin-bottom: 1.5rem;
+        }
+        @media (max-width: 768px) {
+          .flow-stepper {
+            grid-template-columns: 1fr;
+          }
+        }
+        .stepper-item {
+          padding: 0.85rem 1rem;
+          border-radius: 8px;
+          border: 1.5px solid #e2e8f0;
+          background: #ffffff;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+          transition: all 0.2s ease;
+        }
+        .stepper-item.active {
+          border-color: #2563eb;
+          background: #eff6ff;
+        }
+        .stepper-item.completed {
+          border-color: #10b981;
+          background: #f0fdf4;
+        }
+        .stepper-badge {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 0.85rem;
+          background: #e2e8f0;
+          color: #475569;
+          flex-shrink: 0;
+        }
+        .stepper-item.active .stepper-badge {
+          background: #2563eb;
+          color: #ffffff;
+        }
+        .stepper-item.completed .stepper-badge {
+          background: #10b981;
+          color: #ffffff;
+        }
         .stage-nav-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 0.85rem;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
         }
         @media (max-width: 1100px) {
           .stage-nav-grid {
@@ -157,11 +222,11 @@ export class DocumentsView {
         .stage-nav-pill {
           cursor: pointer;
           border: 1.5px solid #cbd5e1;
-          border-radius: 8px;
+          border-radius: 10px;
           padding: 1rem 1.15rem;
           transition: all 0.2s ease;
           background: #ffffff;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+          box-shadow: 0 1px 4px rgba(0,0,0,0.04);
           display: flex;
           flex-direction: column;
           justify-content: space-between;
@@ -172,12 +237,12 @@ export class DocumentsView {
           border-color: #3b82f6;
           background: #f8fafc;
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
         .stage-nav-pill.active {
           background: #eff6ff;
           border: 2.5px solid #1d4ed8;
-          box-shadow: 0 4px 12px rgba(29, 78, 216, 0.15);
+          box-shadow: 0 4px 14px rgba(29, 78, 216, 0.18);
         }
         .doc-cards-grid {
           display: grid;
@@ -192,27 +257,32 @@ export class DocumentsView {
         .doc-item-card {
           cursor: pointer;
           border: 1.5px solid #cbd5e1;
-          border-radius: 8px;
+          border-radius: 10px;
           padding: 1.25rem;
           background: #ffffff;
           transition: all 0.2s ease;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+          box-shadow: 0 1px 4px rgba(0,0,0,0.04);
           box-sizing: border-box;
           user-select: none;
+          position: relative;
         }
         .doc-item-card:hover {
           border-color: #3b82f6;
           background: #f8fafc;
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
         }
         .doc-item-card.active-template {
           border: 2.5px solid #1d4ed8;
-          background: #eff6ff;
-          box-shadow: 0 4px 12px rgba(29, 78, 216, 0.15);
+          background: #f0f7ff;
+          box-shadow: 0 4px 16px rgba(29, 78, 216, 0.18);
+        }
+        .doc-item-card.filtered-out {
+          opacity: 0.35;
+          filter: grayscale(80%);
         }
         .ud-pills-bar {
           display: flex;
@@ -264,7 +334,7 @@ export class DocumentsView {
           flex-wrap: wrap;
           justify-content: space-between;
           align-items: center;
-          gap: 1rem;
+          gap: 0.75rem;
           padding: 0.75rem 1rem;
           background: #f8fafc;
           border: 1px solid #e2e8f0;
@@ -273,8 +343,8 @@ export class DocumentsView {
         }
         .doc-selector-select {
           flex: 1;
-          min-width: 320px;
-          max-width: 600px;
+          min-width: 280px;
+          max-width: 520px;
           padding: 0.45rem 0.75rem;
           font-size: 0.85rem;
           font-weight: 600;
@@ -283,31 +353,79 @@ export class DocumentsView {
           background: #ffffff;
           color: #1e293b;
         }
+        .context-step-box {
+          background: #f8fafc;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 10px;
+          overflow: hidden;
+        }
       </style>
 
-      <div class="documents-module-container p-4">
-        <!-- Encabezado Principal -->
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom gap-2">
-          <div>
-            <h2 class="m-0 text-primary d-flex align-items-center gap-2">
-              <i class="bi bi-folder2-open"></i>
-              <span>Panel Documental Institucional</span>
-            </h2>
-            <p class="text-muted m-0 small">Catálogo oficial ministerial organizado en 4 etapas del ciclo formativo.</p>
+      <div class="documents-module-container p-3 p-md-4">
+        <!-- Hero Header Secretaría -->
+        <div class="hero-banner">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-white text-primary fw-bold px-2 py-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">SECRETARÍA ACADÉMICA</span>
+                <span class="badge ${isDemoRuntime() ? 'bg-warning text-dark' : 'bg-light text-primary'} px-2 py-1" style="font-size: 0.75rem;">
+                  <i class="bi bi-${isDemoRuntime() ? 'flask' : 'shield-check'} me-1"></i>
+                  ${isDemoRuntime() ? 'DEMOSTRACIÓN — NO OFICIAL' : 'MODO CANDIDATO V2 (8081)'}
+                </span>
+              </div>
+              <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-ruled-fill"></i>
+                <span>Centro de Emisión Documental</span>
+              </h3>
+              <p class="mb-0 text-white-50 small">Emisión oficial de nóminas, fichas de matrícula, registros auxiliares y actas ministeriales.</p>
+            </div>
+            <!-- Buscador Rápido de Documentos para Secretaría -->
+            <div style="min-width: 280px; max-width: 440px; flex: 1;">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white border-0 text-primary"><i class="bi bi-search"></i></span>
+                <input type="search" id="doc-quick-search" class="form-control border-0" placeholder="Buscar documento (ej. nómina, ficha, carpeta, asistencia)..." value="${escapeHtml(this.docFilterQuery || '')}" autocomplete="off">
+                ${this.docFilterQuery ? '<button class="btn btn-light border-0" id="doc-quick-search-clear" type="button" title="Limpiar filtro"><i class="bi bi-x-circle"></i></button>' : ''}
+              </div>
+              <div class="small text-white-50 mt-1 d-flex justify-content-between" style="font-size: 0.72rem;">
+                <span>Filtro instantáneo de plantillas</span>
+                <span>${this.selectedTemplateId} activa</span>
+              </div>
+            </div>
           </div>
-          <span class="badge ${isDemoRuntime() ? 'bg-warning text-dark' : 'bg-primary'} p-2 fs-6">
-            <i class="bi bi-${isDemoRuntime() ? 'flask' : 'shield-check'} me-1"></i>
-            ${isDemoRuntime() ? 'DEMOSTRACIÓN — NO OFICIAL' : 'MODO CANDIDATO V2 (8081)'}
-          </span>
         </div>
 
-        <!-- Barra de Navegación por Etapas (4 Pestañas) -->
+        <!-- Flujo Visual de 3 Pasos -->
+        <div class="flow-stepper">
+          <div class="stepper-item ${this.activeStageId ? 'active' : ''}">
+            <div class="stepper-badge">1</div>
+            <div>
+              <div class="fw-bold text-dark small">Paso 1: Elija el Documento</div>
+              <div class="text-muted" style="font-size: 0.75rem;">Seleccione la etapa y el formato ministerial</div>
+            </div>
+          </div>
+          <div class="stepper-item ${(this.selectedGroupId || this.selectedEnrollmentId) ? 'active' : ''}">
+            <div class="stepper-badge">2</div>
+            <div>
+              <div class="fw-bold text-dark small">Paso 2: Datos de Emisión</div>
+              <div class="text-muted" style="font-size: 0.75rem;">Indique el grupo académico o busque al estudiante</div>
+            </div>
+          </div>
+          <div class="stepper-item ${this.pdfBlobUrl ? 'completed' : ''}">
+            <div class="stepper-badge">${this.pdfBlobUrl ? '<i class="bi bi-check"></i>' : '3'}</div>
+            <div>
+              <div class="fw-bold text-dark small">Paso 3: Revisión y Descarga</div>
+              <div class="text-muted" style="font-size: 0.75rem;">Previsualice, descargue o imprima en PDF</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de Navegación por Etapas (Paso 1) -->
         <div class="stage-nav-grid" id="document-stage-tabs" role="tablist">
           ${this._renderStageNav()}
         </div>
 
-        <!-- Contenedor Principal de la Etapa Seleccionada -->
-        <div class="card mb-4 shadow-sm" style="border: 1px solid #e2e8f0; border-radius: 10px;">
+        <!-- Contenedor Principal: Paso 1 y Paso 2 -->
+        <div class="card mb-4 shadow-sm" style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
           <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div class="d-flex align-items-center gap-2">
               <span class="badge bg-primary fs-6 px-2 py-1" style="background: #2563eb; color: #fff; border-radius: 6px;">ETAPA ${DOCUMENT_STAGES.find(s => s.id === this.activeStageId)?.number || '1'}</span>
@@ -315,14 +433,14 @@ export class DocumentsView {
             </div>
             <div class="small text-muted">${DOCUMENT_STAGES.find(s => s.id === this.activeStageId)?.subtitle || ''}</div>
           </div>
-          <div class="card-body p-3">
-            <!-- Selector canónico semántico con <optgroup> para accesibilidad y pruebas -->
+          <div class="card-body p-3 p-md-4">
+            <!-- Barra de Selección Canónica con <optgroup> para compatibilidad de accesibilidad y pruebas -->
             <div class="doc-selector-toolbar">
-              <div class="d-flex align-items-center gap-2" style="flex: 1;">
-                <label class="form-label fw-bold small text-muted m-0" for="doc-template-select" style="white-space: nowrap;">
-                  <i class="bi bi-funnel me-1 text-primary"></i>Selector canónico:
+              <div class="d-flex align-items-center gap-2" style="flex: 1; min-width: 280px;">
+                <label class="form-label fw-bold small text-secondary m-0 d-flex align-items-center gap-1" for="doc-template-select" style="white-space: nowrap;">
+                  <i class="bi bi-bookmark-star text-primary"></i> Acceso por código MINEDU:
                 </label>
-                <select id="doc-template-select" class="doc-selector-select">
+                <select id="doc-template-select" class="form-select form-select-sm doc-selector-select">
                   ${this._renderOptGroups()}
                 </select>
               </div>
@@ -333,27 +451,35 @@ export class DocumentsView {
               </div>
             </div>
 
-            <!-- Panel de Controles / Tarjetas según la Etapa Activa -->
-            <div id="stage-cards-container" class="mb-3">
-              ${this._renderStageCards()}
+            <!-- Catálogo de Tarjetas Documentales de la Etapa -->
+            <div class="mb-2">
+              <div class="fw-bold text-secondary small mb-2 text-uppercase tracking-wider">
+                <i class="bi bi-grid-fill text-primary me-1"></i>Documentos disponibles en esta etapa:
+              </div>
+              <div id="stage-cards-container">
+                ${this._renderStageCards()}
+              </div>
             </div>
 
-            <!-- Controles contextuales específicos de la plantilla -->
-            <div id="doc-context-controls" class="mt-3 pt-3 border-top">
+            <!-- Paso 2: Controles contextuales específicos para emisión -->
+            <div id="doc-context-controls" class="mt-4 pt-4 border-top">
               ${this._renderContextControls(currentTemplate)}
             </div>
           </div>
         </div>
 
-        <!-- Espacio de Vista Previa -->
-        <div class="card shadow-sm">
-          <div class="card-header bg-light d-flex justify-content-between align-items-center">
-            <span class="fw-bold text-dark small">
-              <i class="bi bi-eye me-1"></i>Visor documental: <strong>${escapeHtml(currentTemplate?.name || this.selectedTemplateId)}</strong>
-            </span>
-            <span class="badge bg-secondary small">${escapeHtml(currentTemplate?.templateId || '')}</span>
+        <!-- Paso 3: Espacio de Vista Previa y Descarga -->
+        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+          <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success rounded-circle p-1" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;">3</span>
+              <span class="fw-bold text-dark small">
+                <i class="bi bi-eye me-1 text-primary"></i>Visor y Descarga Oficial: <strong>${escapeHtml(currentTemplate?.name || this.selectedTemplateId)}</strong>
+              </span>
+            </div>
+            <span class="badge bg-light text-dark border small">${escapeHtml(currentTemplate?.templateId || '')}</span>
           </div>
-          <div class="card-body p-3 overflow-auto" id="doc-render-workspace" style="min-height: 500px; background-color: #f8f9fa;">
+          <div class="card-body p-3 overflow-auto" id="doc-render-workspace" style="min-height: 520px; background-color: #f8fafc;">
             ${this._renderEmptyWorkspace(currentTemplate)}
           </div>
         </div>
@@ -373,7 +499,7 @@ export class DocumentsView {
             <small class="text-muted">${stage.badge}</small>
           </div>
           <div class="fw-bold text-dark mb-1"><i class="bi ${stage.icon} me-1 text-primary"></i>${escapeHtml(stage.title)}</div>
-          <div class="text-muted" style="font-size: 0.75rem; line-height: 1.2;">${escapeHtml(stage.subtitle)}</div>
+          <div class="text-muted" style="font-size: 0.75rem; line-height: 1.25;">${escapeHtml(stage.subtitle)}</div>
         </div>`;
     }).join('');
   }
@@ -381,8 +507,8 @@ export class DocumentsView {
   _renderOptGroups() {
     return `
       <optgroup label="ETAPA 1: MATRÍCULA E INICIO DE GRUPO">
-        <option value="TMPL-01" ${this.selectedTemplateId === 'TMPL-01' ? 'selected' : ''}>TMPL-01 - Nómina de Matrícula</option>
-        <option value="TMPL-02" ${this.selectedTemplateId === 'TMPL-02' ? 'selected' : ''}>TMPL-02 - Ficha de Matrícula</option>
+        <option value="TMPL-01" ${this.selectedTemplateId === 'TMPL-01' ? 'selected' : ''}>TMPL-01 - Nómina de Matrícula (Oficial UGEL)</option>
+        <option value="TMPL-02" ${this.selectedTemplateId === 'TMPL-02' ? 'selected' : ''}>TMPL-02 - Ficha de Matrícula (Expediente del Alumno)</option>
         <option value="TMPL-04" ${this.selectedTemplateId === 'TMPL-04' ? 'selected' : ''}>TMPL-04 - Portada de Carpeta Pedagógica</option>
         <option value="TMPL-03" ${this.selectedTemplateId === 'TMPL-03' ? 'selected' : ''}>TMPL-03 - Registro de Matrícula Modular [En Revisión]</option>
       </optgroup>
@@ -437,57 +563,97 @@ export class DocumentsView {
       <div class="doc-cards-grid">
         <!-- Nómina de Matrícula (TMPL-01) -->
         <div class="doc-item-card ${isTmpl01 ? 'active-template' : ''}" data-select-tmpl="TMPL-01" role="button" tabindex="0" title="Seleccionar Nómina de Matrícula (TMPL-01)">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-people me-1 text-primary"></i>Nómina de Matrícula</h6>
-            <span class="badge bg-primary">TMPL-01</span>
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small">
+                <i class="bi bi-building me-1"></i>Trámite Oficial UGEL
+              </span>
+              <span class="badge bg-primary">TMPL-01</span>
+            </div>
+            <h6 class="fw-bold mb-1 text-dark">
+              <i class="bi bi-people-fill me-1 text-primary"></i>Nómina Oficial de Matrícula
+            </h6>
+            <p class="small text-muted mb-3" style="line-height: 1.35;">
+              Padrón oficial de estudiantes matriculados por grupo académico. Foliado ministerial de 30 en 30 para archivo y elevación a UGEL.
+            </p>
           </div>
-          <p class="small text-muted mb-3">Consolidado oficial de matrícula modular por grupo académico con paginación reglamentaria de 30 en 30.</p>
-          <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
             ${isTmpl01
-              ? '<span class="badge bg-primary px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>'
-              : '<span class="text-muted small"><i class="bi bi-cursor me-1"></i>Clic para seleccionar</span>'}
+              ? '<span class="badge bg-primary px-3 py-2 text-white"><i class="bi bi-check-circle-fill me-1"></i>Seleccionado para emitir</span>'
+              : '<span class="text-primary small fw-semibold"><i class="bi bi-hand-index-thumb me-1"></i>Clic para seleccionar</span>'}
+            <span class="small text-muted">Grupo completo</span>
           </div>
         </div>
 
         <!-- Ficha de Matrícula (TMPL-02) -->
         <div class="doc-item-card ${isTmpl02 ? 'active-template' : ''}" data-select-tmpl="TMPL-02" role="button" tabindex="0" title="Seleccionar Ficha de Matrícula (TMPL-02)">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-person-badge me-1 text-success"></i>Ficha de Matrícula</h6>
-            <span class="badge bg-success">TMPL-02</span>
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small">
+                <i class="bi bi-person-badge me-1"></i>Expediente del Alumno
+              </span>
+              <span class="badge bg-success">TMPL-02</span>
+            </div>
+            <h6 class="fw-bold mb-1 text-dark">
+              <i class="bi bi-person-lines-fill me-1 text-success"></i>Ficha Individual de Matrícula
+            </h6>
+            <p class="small text-muted mb-3" style="line-height: 1.35;">
+              Ficha personal con datos del estudiante, procedencia y programa formativo para firma de matrícula y expediente individual.
+            </p>
           </div>
-          <p class="small text-muted mb-3">Ficha individual con datos personales y académicos del estudiante. Generación directa mediante búsqueda en tiempo real.</p>
-          <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
             ${isTmpl02
-              ? '<span class="badge bg-success px-3 py-2 text-white"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>'
-              : '<span class="text-muted small"><i class="bi bi-cursor me-1"></i>Clic para seleccionar</span>'}
+              ? '<span class="badge bg-success px-3 py-2 text-white"><i class="bi bi-check-circle-fill me-1"></i>Seleccionado para emitir</span>'
+              : '<span class="text-success small fw-semibold"><i class="bi bi-hand-index-thumb me-1"></i>Clic para seleccionar</span>'}
+            <span class="small text-muted">Por estudiante</span>
           </div>
         </div>
 
         <!-- Portada de Carpeta Pedagógica (TMPL-04) -->
         <div class="doc-item-card ${isTmpl04 ? 'active-template' : ''}" data-select-tmpl="TMPL-04" role="button" tabindex="0" title="Seleccionar Portada de Carpeta (TMPL-04)">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-journal-bookmark me-1 text-info"></i>Portada de Carpeta</h6>
-            <span class="badge bg-info text-dark">TMPL-04</span>
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1 small">
+                <i class="bi bi-journal-text me-1"></i>Carpeta Docente
+              </span>
+              <span class="badge bg-info text-dark">TMPL-04</span>
+            </div>
+            <h6 class="fw-bold mb-1 text-dark">
+              <i class="bi bi-journal-bookmark-fill me-1 text-info"></i>Portada de Carpeta Pedagógica
+            </h6>
+            <p class="small text-muted mb-3" style="line-height: 1.35;">
+              Carátula formal de asistencia y evaluación con datos institucionales, programa, módulo formativo y docente responsable.
+            </p>
           </div>
-          <p class="small text-muted mb-3">Carátula oficial de asistencia y evaluación con datos institucionales, módulo y docente responsable.</p>
-          <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
             ${isTmpl04
-              ? '<span class="badge bg-info px-3 py-2 text-dark"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>'
-              : '<span class="text-muted small"><i class="bi bi-cursor me-1"></i>Clic para seleccionar</span>'}
+              ? '<span class="badge bg-info px-3 py-2 text-dark"><i class="bi bi-check-circle-fill me-1"></i>Seleccionado para emitir</span>'
+              : '<span class="text-secondary small fw-semibold"><i class="bi bi-hand-index-thumb me-1"></i>Clic para seleccionar</span>'}
+            <span class="small text-muted">Por grupo</span>
           </div>
         </div>
 
         <!-- Registro de Matrícula Modular (TMPL-03) -->
         <div class="doc-item-card ${isTmpl03 ? 'active-template' : ''}" data-select-tmpl="TMPL-03" role="button" tabindex="0" title="Seleccionar Registro Modular (TMPL-03)">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-card-checklist me-1 text-warning"></i>Registro de Matrícula Modular</h6>
-            <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>En Revisión Técnica</span>
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 small">
+                <i class="bi bi-hourglass-split me-1"></i>En Revisión Técnica
+              </span>
+              <span class="badge bg-warning text-dark">TMPL-03</span>
+            </div>
+            <h6 class="fw-bold mb-1 text-dark">
+              <i class="bi bi-card-checklist me-1 text-warning"></i>Registro de Matrícula Modular
+            </h6>
+            <p class="small text-muted mb-3" style="line-height: 1.35;">
+              Formato complementario de control y foliación ministerial por grupo académico (20 filas por página o reporte administrativo).
+            </p>
           </div>
-          <p class="small text-muted mb-3">Formato ministerial con enmascaramiento vectorial limpio (20 en 20) y reporte administrativo alternativo.</p>
-          <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
             ${isTmpl03
-              ? '<span class="badge bg-warning px-3 py-2 text-dark"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>'
-              : '<span class="text-muted small"><i class="bi bi-cursor me-1"></i>Clic para seleccionar</span>'}
+              ? '<span class="badge bg-warning px-3 py-2 text-dark"><i class="bi bi-check-circle-fill me-1"></i>Seleccionado para emitir</span>'
+              : '<span class="text-secondary small fw-semibold"><i class="bi bi-hand-index-thumb me-1"></i>Clic para seleccionar</span>'}
+            <span class="small text-muted">20 por página</span>
           </div>
         </div>
       </div>
@@ -518,39 +684,53 @@ export class DocumentsView {
       <div class="doc-cards-grid">
         <!-- Control de Asistencia (TMPL-05 a TMPL-10) -->
         <div class="doc-item-card ${isAsistencia ? 'active-template' : ''}" data-select-tmpl="${currentAsistenciaTmpl}" role="button" tabindex="0" title="Seleccionar Control de Asistencia Modular">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <div>
-              <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-calendar2-week me-1 text-primary"></i>Control de Asistencia Modular</h6>
-              <div class="text-xs text-muted">Agrupa TMPL-05 a TMPL-10 (40 sesiones)</div>
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small">
+                <i class="bi bi-calendar-check me-1"></i>Seguimiento Diario
+              </span>
+              <span class="badge ${isAsistencia ? 'bg-primary' : 'bg-light text-dark border'}">${isAsistencia ? this.selectedTemplateId : 'TMPL-05..10'}</span>
             </div>
-            <span class="badge ${isAsistencia ? 'bg-primary' : 'bg-light text-dark border'}">${isAsistencia ? this.selectedTemplateId : 'TMPL-05..10'}</span>
+            <h6 class="fw-bold mb-1 text-dark">
+              <i class="bi bi-calendar2-week-fill me-1 text-primary"></i>Control de Asistencia Modular
+            </h6>
+            <p class="small text-muted mb-2" style="line-height: 1.35;">
+              Hojas de asistencia ministerial (40 sesiones). Seleccione la Unidad Didáctica para emitir el formato:
+            </p>
+            <div class="d-flex flex-wrap gap-1 align-items-center mb-3">
+              <span class="small fw-bold text-secondary me-1">Unidad Didáctica:</span>
+              ${asistenciaPills}
+            </div>
           </div>
-          <p class="small text-muted mb-2">Seleccione la Unidad Didáctica para emitir el registro de asistencia correspondiente:</p>
-          <div class="d-flex flex-wrap gap-1 align-items-center mb-3">
-            <span class="small fw-bold text-secondary me-1">UD:</span>
-            ${asistenciaPills}
-          </div>
-          <div class="d-flex gap-2">
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
             <a href="#/asistencia" class="btn btn-sm btn-outline-primary"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Registro de Asistencia</a>
+            <span class="small text-muted">${isAsistencia ? 'UD' + this.selectedAsistenciaUD + ' activa' : 'Seleccione UD'}</span>
           </div>
         </div>
 
         <!-- Registro de Evaluación Auxiliar (TMPL-11 a TMPL-17) -->
         <div class="doc-item-card ${isEvaluacion ? 'active-template' : ''}" data-select-tmpl="${currentEvaluacionTmpl}" role="button" tabindex="0" title="Seleccionar Registro de Evaluación Auxiliar">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <div>
-              <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-card-checklist me-1 text-success"></i>Registro de Evaluación Auxiliar</h6>
-              <div class="text-xs text-muted">Agrupa TMPL-11 a TMPL-17 (Indicadores de Logro)</div>
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small">
+                <i class="bi bi-check2-square me-1"></i>Indicadores de Logro
+              </span>
+              <span class="badge ${isEvaluacion ? 'bg-success' : 'bg-light text-dark border'}">${isEvaluacion ? this.selectedTemplateId : 'TMPL-11..17'}</span>
             </div>
-            <span class="badge ${isEvaluacion ? 'bg-success' : 'bg-light text-dark border'}">${isEvaluacion ? this.selectedTemplateId : 'TMPL-11..17'}</span>
+            <h6 class="fw-bold mb-1 text-dark">
+              <i class="bi bi-clipboard-check-fill me-1 text-success"></i>Registro de Evaluación Auxiliar
+            </h6>
+            <p class="small text-muted mb-2" style="line-height: 1.35;">
+              Calificaciones vigesimales por criterios de logro. Seleccione la Unidad Didáctica para emitir el formato:
+            </p>
+            <div class="d-flex flex-wrap gap-1 align-items-center mb-3">
+              <span class="small fw-bold text-secondary me-1">Unidad Didáctica:</span>
+              ${evaluacionPills}
+            </div>
           </div>
-          <p class="small text-muted mb-2">Seleccione la Unidad Didáctica para emitir el registro de evaluación correspondiente:</p>
-          <div class="d-flex flex-wrap gap-1 align-items-center mb-3">
-            <span class="small fw-bold text-secondary me-1">UD:</span>
-            ${evaluacionPills}
-          </div>
-          <div class="d-flex gap-2">
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
             <a href="#/evaluacion" class="btn btn-sm btn-outline-success"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Registro de Evaluación</a>
+            <span class="small text-muted">${isEvaluacion ? 'UD' + this.selectedEvaluacionUD + ' activa' : 'Seleccione UD'}</span>
           </div>
         </div>
       </div>
@@ -565,27 +745,55 @@ export class DocumentsView {
       <div class="doc-cards-grid">
         <!-- Consolidado de EFSRT (TMPL-18) -->
         <div class="doc-item-card ${isTmpl18 ? 'active-template' : ''}" data-select-tmpl="TMPL-18" role="button" tabindex="0" title="Seleccionar Consolidado de EFSRT (TMPL-18)">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-briefcase me-1 text-success"></i>Consolidado de EFSRT</h6>
-            <span class="badge bg-success">TMPL-18</span>
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small">
+                <i class="bi bi-briefcase me-1"></i>Prácticas Pre-Profesionales
+              </span>
+              <span class="badge bg-success">TMPL-18</span>
+            </div>
+            <h6 class="fw-bold mb-1 text-dark">
+              <i class="bi bi-briefcase-fill me-1 text-success"></i>Consolidado de EFSRT
+            </h6>
+            <p class="small text-muted mb-3" style="line-height: 1.35;">
+              Experiencias Formativas en Situaciones Reales de Trabajo. Cuadrícula de 40 estudiantes con 9 criterios y cumplimiento de horas mínimas.
+            </p>
           </div>
-          <p class="small text-muted mb-3">Consolidado de Experiencias Formativas en Situaciones Reales de Trabajo. Cuadrícula de 40 estudiantes con 9 criterios y salvaguarda B-005 (celdas limpias).</p>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-sm ${isTmpl18 ? 'btn-success text-white' : 'btn-outline-success'}" data-select-tmpl="TMPL-18">Seleccionar</button>
-            <a href="#/efsrt" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Consolidado EFSRT</a>
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm ${isTmpl18 ? 'btn-success text-white' : 'btn-outline-success'}" data-select-tmpl="TMPL-18">
+                ${isTmpl18 ? '<i class="bi bi-check-circle me-1"></i>Activo' : 'Seleccionar'}
+              </button>
+              <a href="#/efsrt" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir EFSRT</a>
+            </div>
+            <span class="small text-muted">40 estudiantes</span>
           </div>
         </div>
 
         <!-- Acta de Evaluación Modular (TMPL-19) -->
         <div class="doc-item-card ${isTmpl19 ? 'active-template' : ''}" data-select-tmpl="TMPL-19" role="button" tabindex="0" title="Seleccionar Acta de Evaluación Modular (TMPL-19)">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-file-earmark-spreadsheet me-1 text-primary"></i>Acta de Evaluación Modular</h6>
-            <span class="badge bg-primary">TMPL-19</span>
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small">
+                <i class="bi bi-award me-1"></i>Cierre Oficial
+              </span>
+              <span class="badge bg-primary">TMPL-19</span>
+            </div>
+            <h6 class="fw-bold mb-1 text-dark">
+              <i class="bi bi-file-earmark-spreadsheet-fill me-1 text-primary"></i>Acta Oficial de Evaluación Modular
+            </h6>
+            <p class="small text-muted mb-3" style="line-height: 1.35;">
+              Acta oficial de 2 páginas físicas A3 landscape con partición 20+20 filas, cálculo de unidades aprobadas y cuadro estadístico general.
+            </p>
           </div>
-          <p class="small text-muted mb-3">Acta oficial de 2 páginas físicas A3 landscape (partición 20+20 filas, hasta 40 estudiantes, cálculo de unidades aprobadas y cuadro estadístico).</p>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-sm ${isTmpl19 ? 'btn-primary' : 'btn-outline-primary'}" data-select-tmpl="TMPL-19">Seleccionar</button>
-            <a href="#/evaluacion" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir y Generar Acta Modular</a>
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm ${isTmpl19 ? 'btn-primary' : 'btn-outline-primary'}" data-select-tmpl="TMPL-19">
+                ${isTmpl19 ? '<i class="bi bi-check-circle me-1"></i>Activo' : 'Seleccionar'}
+              </button>
+              <a href="#/evaluacion" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-up-right me-1"></i>Ir a Actas</a>
+            </div>
+            <span class="small text-muted">Formato A3 Oficial</span>
           </div>
         </div>
       </div>
@@ -600,25 +808,49 @@ export class DocumentsView {
       <div class="doc-cards-grid">
         <!-- Certificado Modular (TMPL-20) -->
         <div class="doc-item-card ${isTmpl20 ? 'active-template' : ''}" data-select-tmpl="TMPL-20" role="button" tabindex="0" title="Seleccionar Certificado Modular (TMPL-20)">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-mortarboard me-1 text-secondary"></i>Certificado Modular</h6>
-            <span class="badge bg-secondary"><i class="bi bi-lock-fill me-1"></i>Requiere Libro/Folio (B-006)</span>
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 small">
+                <i class="bi bi-lock-fill me-1"></i>Requiere Libro y Folio
+              </span>
+              <span class="badge bg-secondary">TMPL-20</span>
+            </div>
+            <h6 class="fw-bold mb-1 text-dark">
+              <i class="bi bi-mortarboard-fill me-1 text-secondary"></i>Certificado Modular Oficial
+            </h6>
+            <p class="small text-muted mb-3" style="line-height: 1.35;">
+              Documento oficial de acreditación modular ministerial (2 páginas físicas). Emisión oficial reservada hasta asignación formal de Libro y Folio institucional.
+            </p>
           </div>
-          <p class="small text-muted mb-3">Documento oficial de acreditación modular ministerial (2 páginas físicas, 55 campos mapeados). Emisión bloqueada por salvaguardas B-002 y B-006 hasta registro oficial.</p>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-sm ${isTmpl20 ? 'btn-secondary text-white' : 'btn-outline-secondary'}" data-select-tmpl="TMPL-20">Ver Estado de Bloqueo</button>
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+            <button type="button" class="btn btn-sm ${isTmpl20 ? 'btn-secondary text-white' : 'btn-outline-secondary'}" data-select-tmpl="TMPL-20">
+              <i class="bi bi-shield-lock me-1"></i>Ver Requisitos
+            </button>
+            <span class="badge bg-light text-muted border">B-006</span>
           </div>
         </div>
 
         <!-- Título Técnico (TMPL-21) -->
         <div class="doc-item-card ${isTmpl21 ? 'active-template' : ''}" data-select-tmpl="TMPL-21" role="button" tabindex="0" title="Seleccionar Título Técnico (TMPL-21)">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-award me-1 text-secondary"></i>Título Técnico</h6>
-            <span class="badge bg-secondary"><i class="bi bi-lock-fill me-1"></i>Requiere Código REGISTRA (B-006)</span>
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 small">
+                <i class="bi bi-lock-fill me-1"></i>Requiere Código REGISTRA
+              </span>
+              <span class="badge bg-secondary">TMPL-21</span>
+            </div>
+            <h6 class="fw-bold mb-1 text-dark">
+              <i class="bi bi-award-fill me-1 text-secondary"></i>Título Técnico Oficial
+            </h6>
+            <p class="small text-muted mb-3" style="line-height: 1.35;">
+              Acreditación de egreso y titulación técnica oficial. Emisión ministerial reservada hasta recepción y validación del código REGISTRA oficial del MINEDU.
+            </p>
           </div>
-          <p class="small text-muted mb-3">Acreditación de egreso y titulación técnica oficial. Emisión bloqueada por salvaguarda B-006 hasta asignación ministerial de código REGISTRA.</p>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-sm ${isTmpl21 ? 'btn-secondary text-white' : 'btn-outline-secondary'}" data-select-tmpl="TMPL-21">Ver Estado de Bloqueo</button>
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+            <button type="button" class="btn btn-sm ${isTmpl21 ? 'btn-secondary text-white' : 'btn-outline-secondary'}" data-select-tmpl="TMPL-21">
+              <i class="bi bi-shield-lock me-1"></i>Ver Requisitos
+            </button>
+            <span class="badge bg-light text-muted border">B-006</span>
           </div>
         </div>
       </div>
@@ -627,155 +859,248 @@ export class DocumentsView {
 
   _renderContextControls(template) {
     if (!template) return '<div class="alert alert-secondary mb-0">Plantilla no disponible.</div>';
+
+    // TMPL-01: Nómina de Matrícula (Grupo)
     if (template.templateId === 'TMPL-01') {
+      const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
       const groupOptions = this.groups.map(g =>
         `<option value="${escapeHtml(g.id)}" ${g.id === this.selectedGroupId ? 'selected' : ''}>${escapeHtml(g.visibleCode)} — ${escapeHtml(g.programaNombre || '')} (${g.enrollmentCount} matrículas)</option>`
       ).join('');
+
       return `
-        <div class="card p-3 mb-2 border-0 bg-light" style="border-radius: 8px;">
-          <div class="row align-items-end g-3">
-            <div class="col-md-6 col-lg-5">
+        <div class="context-step-box p-3 p-md-4">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge bg-primary text-white rounded-circle p-2" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;">2</span>
+            <h6 class="fw-bold m-0 text-dark">Paso 2: Seleccione el Grupo Académico para emitir la Nómina</h6>
+          </div>
+          <div class="row align-items-end g-3 mb-3">
+            <div class="col-md-7 col-lg-6">
               <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select">
-                <i class="bi bi-collection me-1 text-primary"></i>Grupo Académico:
+                <i class="bi bi-collection-fill me-1 text-primary"></i>Grupo Académico:
               </label>
-              <select id="doc-group-select" class="form-select form-select-sm">
+              <select id="doc-group-select" class="form-select">
                 ${groupOptions || '<option value="">No hay grupos disponibles</option>'}
               </select>
             </div>
-            <div class="col-md-6 col-lg-7 d-flex flex-wrap gap-2 align-items-center">
-              <button id="doc-generate-tmpl01-btn" type="button" class="btn btn-primary btn-sm" ${!this.selectedGroupId ? 'disabled' : ''}>
-                <i class="bi bi-file-earmark-pdf me-1"></i>Generar Nómina Oficial
+            <div class="col-md-5 col-lg-6 d-flex flex-wrap gap-2 align-items-center">
+              <button id="doc-generate-tmpl01-btn" type="button" class="btn btn-primary px-3 py-2 fw-bold" ${!this.selectedGroupId ? 'disabled' : ''}>
+                <i class="bi bi-file-earmark-pdf-fill me-1"></i>Generar Nómina Oficial
               </button>
               <button id="doc-generate-btn" type="button" class="btn btn-secondary btn-sm" style="display: none;" disabled aria-disabled="true">Generar Nómina</button>
             </div>
           </div>
-          <div id="doc-group-status" class="mt-2 small text-muted" aria-live="polite">
-            <i class="bi bi-info-circle me-1 text-primary"></i>Generación directa con paginación reglamentaria de 30 en 30 sobre la plantilla ministerial TMPL-01.
+          ${selectedGroup ? `
+            <div class="p-2 bg-white rounded border d-flex flex-wrap gap-3 align-items-center small text-secondary mb-2">
+              <span><strong>Grupo:</strong> ${escapeHtml(selectedGroup.visibleCode)}</span>
+              <span><strong>Programa:</strong> ${escapeHtml(selectedGroup.programaNombre || 'General')}</span>
+              <span><i class="bi bi-people me-1 text-primary"></i><strong>${selectedGroup.enrollmentCount}</strong> estudiantes matriculados</span>
+            </div>` : ''}
+          <div id="doc-group-status" class="small text-muted" aria-live="polite">
+            <i class="bi bi-info-circle me-1 text-primary"></i>Foliación ministerial automática de 30 en 30 para la presentación oficial.
           </div>
         </div>`;
     }
+
+    // TMPL-04: Portada de Carpeta (Grupo)
     if (template.templateId === 'TMPL-04') {
+      const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
       const groupOptions = this.groups.map(g =>
         `<option value="${escapeHtml(g.id)}" ${g.id === this.selectedGroupId ? 'selected' : ''}>${escapeHtml(g.visibleCode)} — ${escapeHtml(g.programaNombre || '')} (${g.enrollmentCount} matrículas)</option>`
       ).join('');
+
       return `
-        <div class="card p-3 mb-2 border-0 bg-light" style="border-radius: 8px;">
-          <div class="row align-items-end g-3">
-            <div class="col-md-6 col-lg-5">
+        <div class="context-step-box p-3 p-md-4">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge bg-primary text-white rounded-circle p-2" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;">2</span>
+            <h6 class="fw-bold m-0 text-dark">Paso 2: Seleccione el Grupo Académico para la Portada</h6>
+          </div>
+          <div class="row align-items-end g-3 mb-3">
+            <div class="col-md-7 col-lg-6">
               <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select">
-                <i class="bi bi-journal-bookmark me-1 text-info"></i>Grupo Académico:
+                <i class="bi bi-journal-bookmark-fill me-1 text-info"></i>Grupo Académico:
               </label>
-              <select id="doc-group-select" class="form-select form-select-sm">
+              <select id="doc-group-select" class="form-select">
                 ${groupOptions || '<option value="">No hay grupos disponibles</option>'}
               </select>
             </div>
-            <div class="col-md-6 col-lg-7 d-flex flex-wrap gap-2 align-items-center">
-              <button id="doc-generate-tmpl04-btn" type="button" class="btn btn-info text-white btn-sm" ${!this.selectedGroupId ? 'disabled' : ''}>
-                <i class="bi bi-file-earmark-check me-1"></i>Generar Portada
+            <div class="col-md-5 col-lg-6 d-flex flex-wrap gap-2 align-items-center">
+              <button id="doc-generate-tmpl04-btn" type="button" class="btn btn-info text-white px-3 py-2 fw-bold" ${!this.selectedGroupId ? 'disabled' : ''}>
+                <i class="bi bi-journal-check me-1"></i>Generar Portada de Carpeta
               </button>
             </div>
           </div>
-          <div id="doc-group-status" class="mt-2 small text-muted" aria-live="polite">
-            <i class="bi bi-info-circle me-1 text-info"></i>Carátula oficial de carpeta pedagógica con datos confirmados de institución, programa, módulo y docente.
+          ${selectedGroup ? `
+            <div class="p-2 bg-white rounded border d-flex flex-wrap gap-3 align-items-center small text-secondary mb-2">
+              <span><strong>Grupo:</strong> ${escapeHtml(selectedGroup.visibleCode)}</span>
+              <span><strong>Programa:</strong> ${escapeHtml(selectedGroup.programaNombre || 'General')}</span>
+            </div>` : ''}
+          <div id="doc-group-status" class="small text-muted" aria-live="polite">
+            <i class="bi bi-info-circle me-1 text-info"></i>Carátula formal para la carpeta pedagógica con datos del docente e institución.
           </div>
         </div>`;
     }
+
+    // TMPL-03: Registro Modular (Grupo)
     if (template.templateId === 'TMPL-03') {
+      const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
       const groupOptions = this.groups.map(g =>
         `<option value="${escapeHtml(g.id)}" ${g.id === this.selectedGroupId ? 'selected' : ''}>${escapeHtml(g.visibleCode)} — ${escapeHtml(g.programaNombre || '')} (${g.enrollmentCount} matrículas)</option>`
       ).join('');
+
       return `
-        <div class="card p-3 mb-2 border-0 bg-light" style="border-radius: 8px;">
-          <div class="d-flex align-items-center gap-2 mb-2">
-            <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>En Revisión Técnica</span>
-            <small class="text-muted">Plantilla ministerial calibrada (20 en 20). Salida alternativa en formato administrativo.</small>
+        <div class="context-step-box p-3 p-md-4">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge bg-warning text-dark rounded-circle p-2" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;">2</span>
+            <h6 class="fw-bold m-0 text-dark">Paso 2: Seleccione el Grupo Académico para el Registro Modular</h6>
           </div>
-          <div class="row align-items-end g-3">
+          <div class="row align-items-end g-3 mb-3">
             <div class="col-md-6 col-lg-5">
               <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select">
                 <i class="bi bi-card-checklist me-1 text-warning"></i>Grupo Académico:
               </label>
-              <select id="doc-group-select" class="form-select form-select-sm">
+              <select id="doc-group-select" class="form-select">
                 ${groupOptions || '<option value="">No hay grupos disponibles</option>'}
               </select>
             </div>
             <div class="col-md-6 col-lg-7 d-flex flex-wrap gap-2 align-items-center">
-              <button id="doc-generate-tmpl03-oficial-btn" type="button" class="btn btn-primary btn-sm" ${!this.selectedGroupId ? 'disabled' : ''}>
+              <button id="doc-generate-tmpl03-oficial-btn" type="button" class="btn btn-primary btn-sm fw-bold" ${!this.selectedGroupId ? 'disabled' : ''}>
                 <i class="bi bi-file-earmark-ruled me-1"></i>Generar Registro Modular (TMPL-03 Oficial)
               </button>
-              <button id="doc-generate-tmpl03-alt-btn" type="button" class="btn btn-outline-secondary btn-sm" ${!this.selectedGroupId ? 'disabled' : ''}>
+              <button id="doc-generate-tmpl03-alt-btn" type="button" class="btn btn-outline-secondary btn-sm fw-bold" ${!this.selectedGroupId ? 'disabled' : ''}>
                 <i class="bi bi-table me-1"></i>Reporte Administrativo Alternativo
               </button>
             </div>
           </div>
-          <div id="doc-group-status" class="mt-2 small text-muted" aria-live="polite">
-            <i class="bi bi-info-circle me-1 text-warning"></i>Seleccione el formato deseado para visualizarlo en el visor integrado.
+          <div id="doc-group-status" class="small text-muted" aria-live="polite">
+            <i class="bi bi-info-circle me-1 text-warning"></i>Elija entre la plantilla oficial o el reporte administrativo directo.
           </div>
         </div>`;
     }
+
+    // TMPL-05..10: Asistencia
     if (template.templateId >= 'TMPL-05' && template.templateId <= 'TMPL-10') {
       const udNum = parseInt(template.templateId.replace('TMPL-', ''), 10) - 4;
       return `
-        <div class="alert alert-info mb-3" id="doc-context-status">
-          <div class="fw-bold"><i class="bi bi-calendar2-week me-1"></i>Registro de Asistencia — Unidad Didáctica ${udNum} (${template.templateId})</div>
-          <div>Formato ministerial de 40 sesiones para el seguimiento de asistencia estudiantil. Operativo desde la vista de Asistencia.</div>
-        </div>
-        <a href="#/asistencia" class="btn btn-primary btn-sm"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Asistencia (UD${udNum})</a>`;
+        <div class="context-step-box p-3 p-md-4">
+          <div class="alert alert-info mb-3 border-0 bg-white shadow-sm" id="doc-context-status">
+            <div class="fw-bold text-primary mb-1">
+              <i class="bi bi-calendar2-week me-1"></i>Registro de Asistencia — Unidad Didáctica ${udNum} (${template.templateId})
+            </div>
+            <div class="text-secondary small">Formato ministerial de 40 sesiones para el control de asistencia de los estudiantes del módulo formativo.</div>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <a href="#/asistencia" class="btn btn-primary px-3 py-2 fw-bold"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Asistencia (UD${udNum})</a>
+          </div>
+        </div>`;
     }
+
+    // TMPL-11..17: Evaluación
     if (template.templateId >= 'TMPL-11' && template.templateId <= 'TMPL-17') {
       const udNum = parseInt(template.templateId.replace('TMPL-', ''), 10) - 10;
       return `
-        <div class="alert alert-info mb-3" id="doc-context-status">
-          <div class="fw-bold"><i class="bi bi-card-checklist me-1"></i>Registro de Evaluación Auxiliar — Unidad Didáctica ${udNum} (${template.templateId})</div>
-          <div>Evaluación por indicadores de logro y calificación vigesimal. Operativo desde la vista de Evaluación.</div>
-        </div>
-        <a href="#/evaluacion" class="btn btn-primary btn-sm"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Evaluación (UD${udNum})</a>`;
+        <div class="context-step-box p-3 p-md-4">
+          <div class="alert alert-info mb-3 border-0 bg-white shadow-sm" id="doc-context-status">
+            <div class="fw-bold text-success mb-1">
+              <i class="bi bi-card-checklist me-1"></i>Registro de Evaluación Auxiliar — Unidad Didáctica ${udNum} (${template.templateId})
+            </div>
+            <div class="text-secondary small">Hojas auxiliares de calificación vigesimal organizadas por indicadores de logro de la capacidad terminal.</div>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <a href="#/evaluacion" class="btn btn-success px-3 py-2 fw-bold text-white"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Evaluación (UD${udNum})</a>
+          </div>
+        </div>`;
     }
+
+    // TMPL-18: EFSRT
     if (template.templateId === 'TMPL-18') {
       return `
-        <div class="alert alert-info mb-3" id="doc-context-status">
-          <div class="fw-bold"><i class="bi bi-briefcase me-1"></i>Consolidado de EFSRT (TMPL-18)</div>
-          <div>Experiencias Formativas en Situaciones Reales de Trabajo (40 estudiantes, 9 criterios, salvaguarda B-005 con celdas limpias).</div>
-        </div>
-        <a href="#/efsrt" class="btn btn-primary btn-sm"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Consolidado EFSRT (TMPL-18)</a>`;
+        <div class="context-step-box p-3 p-md-4">
+          <div class="alert alert-info mb-3 border-0 bg-white shadow-sm" id="doc-context-status">
+            <div class="fw-bold text-success mb-1">
+              <i class="bi bi-briefcase me-1"></i>Consolidado de EFSRT (${template.templateId})
+            </div>
+            <div class="text-secondary small">Experiencias Formativas en Situaciones Reales de Trabajo (40 estudiantes, 9 criterios de evaluación formativa).</div>
+          </div>
+          <a href="#/efsrt" class="btn btn-success px-3 py-2 fw-bold text-white"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Consolidado EFSRT (TMPL-18)</a>
+        </div>`;
     }
+
+    // TMPL-19: Acta Modular
     if (template.templateId === 'TMPL-19') {
       return `
-        <div class="alert alert-info mb-3" id="doc-context-status">
-          <div class="fw-bold"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Acta de Evaluación Modular (TMPL-19)</div>
-          <div>Plantilla canónica disponible para vista previa técnica e impresión (2 páginas físicas A3 landscape, partición 20+20 filas, cálculo de UDs aprobadas y cuadro estadístico).</div>
-        </div>
-        <a href="#/evaluacion" class="btn btn-primary btn-sm"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Evaluación y Generar Acta (TMPL-19)</a>`;
+        <div class="context-step-box p-3 p-md-4">
+          <div class="alert alert-info mb-3 border-0 bg-white shadow-sm" id="doc-context-status">
+            <div class="fw-bold text-primary mb-1">
+              <i class="bi bi-file-earmark-spreadsheet me-1"></i>Acta Oficial de Evaluación Modular (${template.templateId})
+            </div>
+            <div class="text-secondary small">Plantilla ministerial oficial para vista previa e impresión (formato A3 landscape, 20+20 filas, cuadro de unidades aprobadas y estadística).</div>
+          </div>
+          <a href="#/evaluacion" class="btn btn-primary px-3 py-2 fw-bold"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Evaluación y Generar Acta (TMPL-19)</a>
+        </div>`;
     }
+
+    // TMPL-20: Certificado Modular
     if (template.templateId === 'TMPL-20') {
       return `
-        <div class="alert alert-secondary mb-3" id="doc-context-status">
-          <div class="fw-bold"><i class="bi bi-lock-fill me-1"></i>Certificado Modular (TMPL-20) — EMISIÓN BLOQUEADA</div>
-          <div>Mapeo vectorial físico completado (55 campos). Emisión oficial bloqueada bajo salvaguardas B-002 y B-006: requiere Libro y Folio oficial.</div>
-        </div>
-        <button class="btn btn-secondary btn-sm" disabled aria-disabled="true"><i class="bi bi-lock-fill me-1"></i>Bloqueado por B-006 (Libro/Folio)</button>`;
+        <div class="context-step-box p-3 p-md-4">
+          <div class="alert alert-secondary mb-3 border-0 bg-white shadow-sm" id="doc-context-status">
+            <div class="fw-bold text-secondary mb-1">
+              <i class="bi bi-lock-fill me-1"></i>Certificado Modular (TMPL-20) — EMISIÓN RESERVADA
+            </div>
+            <div class="text-secondary small">Mapeo oficial completado. Conforme a norma MINEDU, la emisión física requiere la asignación previa del Libro y Folio institucional.</div>
+          </div>
+          <button class="btn btn-secondary px-3 py-2 fw-bold" disabled aria-disabled="true"><i class="bi bi-lock-fill me-1"></i>Bloqueado por B-006 (Libro/Folio)</button>
+        </div>`;
     }
+
+    // TMPL-21: Título Técnico
     if (template.templateId === 'TMPL-21') {
       return `
-        <div class="alert alert-secondary mb-3" id="doc-context-status">
-          <div class="fw-bold"><i class="bi bi-lock-fill me-1"></i>Título Técnico (TMPL-21) — EMISIÓN BLOQUEADA</div>
-          <div>Mapeo vectorial completado. Emisión oficial bloqueada bajo salvaguarda B-006: requiere Código REGISTRA ministerial oficial.</div>
-        </div>
-        <button class="btn btn-secondary btn-sm" disabled aria-disabled="true"><i class="bi bi-lock-fill me-1"></i>Bloqueado por B-006 (Código REGISTRA)</button>`;
+        <div class="context-step-box p-3 p-md-4">
+          <div class="alert alert-secondary mb-3 border-0 bg-white shadow-sm" id="doc-context-status">
+            <div class="fw-bold text-secondary mb-1">
+              <i class="bi bi-lock-fill me-1"></i>Título Técnico (TMPL-21) — EMISIÓN RESERVADA
+            </div>
+            <div class="text-secondary small">Acreditación ministerial de titulación técnica. Requiere la asignación oficial del Código REGISTRA ministerial antes de su emisión formal.</div>
+          </div>
+          <button class="btn btn-secondary px-3 py-2 fw-bold" disabled aria-disabled="true"><i class="bi bi-lock-fill me-1"></i>Bloqueado por B-006 (Código REGISTRA)</button>
+        </div>`;
     }
+
+    // TMPL-02: Ficha Individual de Matrícula (Enrollment context)
     if (template.contextType === 'ENROLLMENT') {
       return `
-        <label class="form-label fw-bold small" for="doc-context-search">Buscar estudiante / matrícula</label>
-        <input id="doc-context-search" class="form-control form-control-sm" type="search" autocomplete="off"
-          value="${escapeHtml(this.searchQuery)}" placeholder="DNI, apellidos y nombres, matrícula, programa o grupo">
-        <div id="doc-search-status" class="small text-muted mt-2">Escriba un criterio para buscar matrículas.</div>
-        <div id="doc-flow-state" class="small fw-bold text-primary mt-2" aria-live="polite">${escapeHtml(this._stateMessage())}</div>
-        <div id="doc-search-results" class="list-group mt-2"></div>
-        <div id="doc-context-summary" class="mt-3"></div>
-        <div id="doc-document-status" class="mt-2" aria-live="polite"></div>
-        <button id="doc-generate-btn" class="btn btn-secondary btn-sm mt-3" disabled aria-disabled="true">Generar Ficha de Matrícula</button>
-        <p class="small text-muted mt-3 mb-0">Los datos académicos no confirmados permanecen vacíos.</p>`;
+        <div class="context-step-box p-3 p-md-4">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge bg-success text-white rounded-circle p-2" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;">2</span>
+            <h6 class="fw-bold m-0 text-dark">Paso 2: Busque y Seleccione al Estudiante</h6>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small text-dark mb-1" for="doc-context-search">
+              <i class="bi bi-search me-1 text-success"></i>Buscar estudiante o matrícula:
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-white text-muted"><i class="bi bi-person"></i></span>
+              <input id="doc-context-search" class="form-control" type="search" autocomplete="off"
+                value="${escapeHtml(this.searchQuery)}" placeholder="Escriba DNI, apellidos y nombres, programa o grupo...">
+            </div>
+            <div id="doc-search-status" class="small text-muted mt-2">Escriba un criterio para buscar matrículas.</div>
+            <div id="doc-flow-state" class="small fw-bold text-primary mt-1" aria-live="polite">${escapeHtml(this._stateMessage())}</div>
+          </div>
+
+          <div id="doc-search-results" class="list-group mb-3" style="max-height: 280px; overflow-y: auto;"></div>
+          <div id="doc-context-summary" class="mb-3"></div>
+          <div id="doc-document-status" class="mb-3" aria-live="polite"></div>
+
+          <div>
+            <button id="doc-generate-btn" class="btn btn-secondary px-4 py-2 fw-bold" disabled aria-disabled="true">
+              <i class="bi bi-file-earmark-pdf-fill me-1"></i>Generar Ficha de Matrícula
+            </button>
+            <p class="small text-muted mt-2 mb-0">Los datos académicos no confirmados permanecen vacíos conforme a directiva.</p>
+          </div>
+        </div>`;
     }
+
     const blockers = (template.blockers || []).join(', ') || 'fuente o regla oficial pendiente';
     return `
       <div class="alert alert-info mb-3" id="doc-context-status">
@@ -790,39 +1115,63 @@ export class DocumentsView {
 
   _renderEmptyWorkspace(template) {
     if (template?.templateId === 'TMPL-01') {
-      return `<div class="text-center py-5 text-muted">
-        <i class="bi bi-people fs-1 d-block mb-2 text-primary opacity-50"></i>
-        <h6 class="fw-bold mb-1">Nómina de Matrícula (TMPL-01)</h6>
-        <p class="small mb-0">Seleccione un grupo académico arriba y haga clic en <strong>Generar Nómina Oficial</strong> para visualizarla en este visor.</p>
-      </div>`;
+      return `
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-people fs-1 d-block mb-2 text-primary opacity-50"></i>
+          <h5 class="fw-bold mb-1 text-dark">Nómina Oficial de Matrícula (TMPL-01)</h5>
+          <p class="small mb-3 text-secondary" style="max-width: 500px; margin-left: auto; margin-right: auto;">
+            Seleccione el grupo académico arriba y haga clic en <strong>Generar Nómina Oficial</strong> para visualizar el documento listo para impresión.
+          </p>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+            <i class="bi bi-file-earmark-check me-1"></i>Foliación reglamentaria de 30 en 30
+          </span>
+        </div>`;
     }
     if (template?.templateId === 'TMPL-03') {
-      return `<div class="text-center py-5 text-muted">
-        <i class="bi bi-card-checklist fs-1 d-block mb-2 text-warning opacity-50"></i>
-        <h6 class="fw-bold mb-1">Registro de Matrícula Modular (TMPL-03)</h6>
-        <p class="small mb-0">Seleccione un grupo académico y haga clic en <strong>Generar Registro Modular (TMPL-03 Oficial)</strong> o en <strong>Reporte Administrativo Alternativo</strong>.</p>
-      </div>`;
+      return `
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-card-checklist fs-1 d-block mb-2 text-warning opacity-50"></i>
+          <h5 class="fw-bold mb-1 text-dark">Registro de Matrícula Modular (TMPL-03)</h5>
+          <p class="small mb-3 text-secondary" style="max-width: 500px; margin-left: auto; margin-right: auto;">
+            Seleccione un grupo académico y haga clic en <strong>Generar Registro Modular (TMPL-03 Oficial)</strong> o en <strong>Reporte Administrativo Alternativo</strong>.
+          </p>
+          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2">
+            <i class="bi bi-info-circle me-1"></i>Formato con partición de 20 estudiantes
+          </span>
+        </div>`;
     }
     if (template?.templateId === 'TMPL-04') {
-      return `<div class="text-center py-5 text-muted">
-        <i class="bi bi-journal-bookmark fs-1 d-block mb-2 text-info opacity-50"></i>
-        <h6 class="fw-bold mb-1">Portada de Carpeta Pedagógica (TMPL-04)</h6>
-        <p class="small mb-0">Seleccione un grupo académico arriba y haga clic en <strong>Generar Portada</strong> para visualizarla en este visor.</p>
-      </div>`;
+      return `
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-journal-bookmark fs-1 d-block mb-2 text-info opacity-50"></i>
+          <h5 class="fw-bold mb-1 text-dark">Portada de Carpeta Pedagógica (TMPL-04)</h5>
+          <p class="small mb-3 text-secondary" style="max-width: 500px; margin-left: auto; margin-right: auto;">
+            Seleccione un grupo académico arriba y haga clic en <strong>Generar Portada</strong> para visualizar la carátula institucional.
+          </p>
+          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-3 py-2">
+            <i class="bi bi-check2-circle me-1"></i>Carátula para Carpeta Docente
+          </span>
+        </div>`;
     }
     if (template?.contextType === 'ENROLLMENT') {
-      return `<div class="text-center py-5 text-muted">
-        <i class="bi bi-person-badge fs-1 d-block mb-2 text-success opacity-50"></i>
-        <h6 class="fw-bold mb-1">Ficha de Matrícula (TMPL-02)</h6>
-        <p class="small mb-0">Busque un estudiante por DNI o apellidos y haga clic en <strong>Generar Ficha de Matrícula</strong> para visualizarla en este visor.</p>
-      </div>`;
+      return `
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-person-badge fs-1 d-block mb-2 text-success opacity-50"></i>
+          <h5 class="fw-bold mb-1 text-dark">Ficha Individual de Matrícula (TMPL-02)</h5>
+          <p class="small mb-3 text-secondary" style="max-width: 500px; margin-left: auto; margin-right: auto;">
+            Busque un estudiante por DNI o apellidos arriba, selecciónelo y haga clic en <strong>Generar Ficha de Matrícula</strong>.
+          </p>
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+            <i class="bi bi-person-check me-1"></i>Expediente de Matrícula del Alumno
+          </span>
+        </div>`;
     }
-    if (template?.templateId >= 'TMPL-05' && template?.templateId <= 'TMPL-10') return `<div class="text-center py-5 text-muted"><p>El Registro de Asistencia (${escapeHtml(template?.name)}) se genera desde la sección Registro Académico (Asistencia).</p></div>`;
-    if (template?.templateId >= 'TMPL-11' && template?.templateId <= 'TMPL-17') return `<div class="text-center py-5 text-muted"><p>El Registro de Evaluación (${escapeHtml(template?.name)}) se genera desde la sección Registro Académico (Evaluación).</p></div>`;
-    if (template?.templateId === 'TMPL-18') return '<div class="text-center py-5 text-muted"><p>El Consolidado de EFSRT (TMPL-18) se genera desde la sección Prácticas / EFSRT.</p></div>';
-    if (template?.templateId === 'TMPL-19') return '<div class="text-center py-5 text-muted"><p>El Acta de Evaluación Modular (TMPL-19) se genera desde la sección Registro Académico (Evaluación).</p></div>';
-    if (template?.templateId === 'TMPL-20') return '<div class="text-center py-5 text-muted"><p>El Certificado Modular (TMPL-20) requiere Libro, Folio y firmas oficiales registradas (Salvaguarda B-006).</p></div>';
-    if (template?.templateId === 'TMPL-21') return '<div class="text-center py-5 text-muted"><p>El Título Técnico (TMPL-21) requiere Código REGISTRA ministerial oficial (Salvaguarda B-006).</p></div>';
+    if (template?.templateId >= 'TMPL-05' && template?.templateId <= 'TMPL-10') return `<div class="text-center py-5 text-muted"><p>El Registro de Asistencia (${escapeHtml(template?.name)}) se gestiona desde la sección Registro Académico (Asistencia).</p></div>`;
+    if (template?.templateId >= 'TMPL-11' && template?.templateId <= 'TMPL-17') return `<div class="text-center py-5 text-muted"><p>El Registro de Evaluación (${escapeHtml(template?.name)}) se gestiona desde la sección Registro Académico (Evaluación).</p></div>`;
+    if (template?.templateId === 'TMPL-18') return '<div class="text-center py-5 text-muted"><p>El Consolidado de EFSRT (TMPL-18) se gestiona desde la sección Prácticas / EFSRT.</p></div>';
+    if (template?.templateId === 'TMPL-19') return '<div class="text-center py-5 text-muted"><p>El Acta de Evaluación Modular (TMPL-19) se gestiona desde la sección Registro Académico (Evaluación).</p></div>';
+    if (template?.templateId === 'TMPL-20') return '<div class="text-center py-5 text-muted"><p>El Certificado Modular (TMPL-20) requiere Libro, Folio y firmas oficiales registradas (Norma MINEDU).</p></div>';
+    if (template?.templateId === 'TMPL-21') return '<div class="text-center py-5 text-muted"><p>El Título Técnico (TMPL-21) requiere Código REGISTRA ministerial oficial (Norma MINEDU).</p></div>';
     return `<div class="text-center py-5 text-muted"><p>${escapeHtml(template?.name || 'Esta plantilla')} — ${escapeHtml(template?.previewStatus || 'NOT_IMPLEMENTED')}.</p></div>`;
   }
 
@@ -830,6 +1179,23 @@ export class DocumentsView {
     const templateSelect = container.querySelector('#doc-template-select');
     const searchInput = container.querySelector('#doc-context-search');
     const generateButton = container.querySelector('#doc-generate-btn');
+    const quickSearchInput = container.querySelector('#doc-quick-search');
+    const quickSearchClear = container.querySelector('#doc-quick-search-clear');
+
+    // Buscador rápido de plantillas para secretaría
+    if (quickSearchInput) {
+      quickSearchInput.oninput = (e) => {
+        this.docFilterQuery = (e.target.value || '').toLowerCase().trim();
+        this._filterCardsByQuery(container);
+      };
+    }
+    if (quickSearchClear) {
+      quickSearchClear.onclick = () => {
+        this.docFilterQuery = '';
+        if (quickSearchInput) quickSearchInput.value = '';
+        this._filterCardsByQuery(container);
+      };
+    }
 
     // Sincronización del selector canónico (<select>)
     if (templateSelect) {
@@ -842,50 +1208,50 @@ export class DocumentsView {
     }
 
     // Navegación por pestañas de etapas
-    container.querySelectorAll('.stage-nav-pill').forEach(pill => {
-      pill.onclick = async () => {
-        const stageId = pill.getAttribute('data-stage-id');
-        if (stageId && stageId !== this.activeStageId) {
-          this.activeStageId = stageId;
-          const stage = DOCUMENT_STAGES.find(s => s.id === stageId);
-          if (stage && !stage.templates?.includes(this.selectedTemplateId)) {
-            // Seleccionar por defecto la primera plantilla de la etapa
-            this.selectedTemplateId = stage.templates ? stage.templates[0] : 'TMPL-01';
+    if (typeof container.querySelectorAll === 'function') {
+      container.querySelectorAll('.stage-nav-pill').forEach(pill => {
+        pill.onclick = async () => {
+          const stageId = pill.getAttribute('data-stage-id');
+          if (stageId && stageId !== this.activeStageId) {
+            this.activeStageId = stageId;
+            const stage = DOCUMENT_STAGES.find(s => s.id === stageId);
+            if (stage && !stage.templates?.includes(this.selectedTemplateId)) {
+              this.selectedTemplateId = stage.templates ? stage.templates[0] : 'TMPL-01';
+            }
+            this._resetContext();
+            await this.render(container);
           }
-          this._resetContext();
-          await this.render(container);
-        }
-      };
-      pill.onkeydown = event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          pill.click();
-        }
-      };
-    });
+        };
+        pill.onkeydown = event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            pill.click();
+          }
+        };
+      });
 
-    // Clics directos en tarjetas o botones data-select-tmpl
-    container.querySelectorAll('[data-select-tmpl]').forEach(el => {
-      el.onclick = async event => {
-        // Permitir navegación normal si el clic fue en un enlace <a> interno
-        if (event.target.closest('a')) return;
-        event.stopPropagation();
-        const tmplId = el.getAttribute('data-select-tmpl');
-        if (tmplId) {
-          this.selectedTemplateId = tmplId;
-          this.activeStageId = getStageIdForTemplate(tmplId);
-          this._resetContext();
-          await this.render(container);
-        }
-      };
-      el.onkeydown = event => {
-        if (event.key === 'Enter' || event.key === ' ') {
+      // Clics directos en tarjetas o botones data-select-tmpl
+      container.querySelectorAll('[data-select-tmpl]').forEach(el => {
+        el.onclick = async event => {
           if (event.target.closest('a')) return;
-          event.preventDefault();
-          el.click();
-        }
-      };
-    });
+          event.stopPropagation();
+          const tmplId = el.getAttribute('data-select-tmpl');
+          if (tmplId) {
+            this.selectedTemplateId = tmplId;
+            this.activeStageId = getStageIdForTemplate(tmplId);
+            this._resetContext();
+            await this.render(container);
+          }
+        };
+        el.onkeydown = event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            if (event.target.closest('a')) return;
+            event.preventDefault();
+            el.click();
+          }
+        };
+      });
+    }
 
     const groupSelect = container.querySelector('#doc-group-select');
     if (groupSelect) {
@@ -918,6 +1284,21 @@ export class DocumentsView {
 
     if (searchInput) searchInput.oninput = async event => this._searchEnrollments(container, event.target.value);
     if (generateButton) generateButton.onclick = async () => this._generateSelectedDocument(container);
+  }
+
+  _filterCardsByQuery(container) {
+    if (typeof container.querySelectorAll !== 'function') return;
+    const query = this.docFilterQuery;
+    const cards = container.querySelectorAll('.doc-item-card');
+    cards.forEach(card => {
+      if (!query) {
+        card.classList.remove('filtered-out');
+        return;
+      }
+      const text = (card.textContent || '').toLowerCase();
+      const match = text.includes(query);
+      card.classList.toggle('filtered-out', !match);
+    });
   }
 
   async _searchEnrollments(container, query) {
@@ -956,17 +1337,19 @@ export class DocumentsView {
           <button type="button" class="list-group-item list-group-item-action document-context-result" data-context-id="${escapeHtml(enrollment.id || '')}"
             aria-label="Seleccionar matrícula ${escapeHtml(enrollment.id || '')}" aria-pressed="false">
             <span class="d-flex justify-content-between align-items-start gap-3">
-              <span><strong>${escapeHtml(enrollment.estudianteNombreCompleto || '')}</strong>
-                <span class="d-block small">Documento: ${escapeHtml(enrollment.estudianteDocumento || '')}</span>
-                <span class="d-block small">Programa: ${escapeHtml(enrollment.programaNombre || '')}</span>
-                <span class="d-block small">Matrícula: ${escapeHtml(enrollment.id || '')} · Grupo: ${escapeHtml(enrollment.grupoCode || '')}</span>
+              <span>
+                <strong class="text-primary">${escapeHtml(enrollment.estudianteNombreCompleto || '')}</strong>
+                <span class="d-block small text-muted"><strong>Doc:</strong> ${escapeHtml(enrollment.estudianteDocumento || 'S/D')} · <strong>Matrícula:</strong> ${escapeHtml(enrollment.id || '')}</span>
+                <span class="d-block small text-secondary"><strong>Programa:</strong> ${escapeHtml(enrollment.programaNombre || '')} · <strong>Grupo:</strong> ${escapeHtml(enrollment.grupoCode || '')}</span>
               </span>
               <span class="badge bg-primary">Seleccionar</span>
             </span>
           </button>`).join('');
-        results.querySelectorAll('.document-context-result').forEach(button => {
-          button.onclick = async () => this._selectEnrollment(container, button.getAttribute('data-context-id'));
-        });
+        if (typeof results.querySelectorAll === 'function') {
+          results.querySelectorAll('.document-context-result').forEach(button => {
+            button.onclick = async () => this._selectEnrollment(container, button.getAttribute('data-context-id'));
+          });
+        }
       }
     } catch (error) {
       if (revision === this.searchRevision) {
@@ -989,21 +1372,30 @@ export class DocumentsView {
     this.selectedEnrollmentId = String(selected.id);
     this.previewEligibility = false;
     this._setState(container, DOCUMENT_STATES.SELECTED);
-    container.querySelectorAll('.document-context-result').forEach(button => {
-      const isSelected = button.getAttribute('data-context-id') === this.selectedEnrollmentId;
-      button.classList.toggle('active', isSelected);
-      button.setAttribute('aria-pressed', String(isSelected));
-    });
-    if (summary) summary.innerHTML = `<div class="alert alert-info small mb-0">
-      <div class="fw-bold mb-2">MATRÍCULA SELECCIONADA</div>
-      <div><strong>Estudiante:</strong> ${escapeHtml(selected.estudianteNombreCompleto || '')}</div>
-      <div><strong>Documento:</strong> ${escapeHtml(selected.estudianteDocumento || '')}</div>
-      <div><strong>Programa:</strong> ${escapeHtml(selected.programaNombre || '')}</div>
-      <div><strong>Matrícula:</strong> ${escapeHtml(selected.id)}</div>
-      <div><strong>Grupo:</strong> ${escapeHtml(selected.grupoCode || '')}</div>
-    </div>`;
+    if (typeof container.querySelectorAll === 'function') {
+      container.querySelectorAll('.document-context-result').forEach(button => {
+        const isSelected = button.getAttribute('data-context-id') === this.selectedEnrollmentId;
+        button.classList.toggle('active', isSelected);
+        button.setAttribute('aria-pressed', String(isSelected));
+      });
+    }
+    if (summary) summary.innerHTML = `
+      <div class="card border-primary-subtle bg-white shadow-sm p-3 mb-0" style="border-left: 4px solid #2563eb !important;">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small">
+            <i class="bi bi-person-check-fill me-1"></i>Estudiante Seleccionado
+          </span>
+          <span class="badge bg-light text-muted border">Matrícula: ${escapeHtml(selected.id)}</span>
+        </div>
+        <h6 class="fw-bold mb-2 text-dark">${escapeHtml(selected.estudianteNombreCompleto || '')}</h6>
+        <div class="row g-2 small text-secondary">
+          <div class="col-sm-6"><strong>Documento / DNI:</strong> ${escapeHtml(selected.estudianteDocumento || 'S/D')}</div>
+          <div class="col-sm-6"><strong>Grupo Académico:</strong> ${escapeHtml(selected.grupoCode || '')}</div>
+          <div class="col-12"><strong>Programa Formativo:</strong> ${escapeHtml(selected.programaNombre || '')}</div>
+        </div>
+      </div>`;
     const status = container.querySelector('#doc-document-status');
-    if (status) status.innerHTML = '<div class="small text-muted">Comprobando datos del documento…</div>';
+    if (status) status.innerHTML = '<div class="small text-muted"><i class="spinner-border spinner-border-sm me-1"></i>Comprobando datos del documento…</div>';
     const selectedId = this.selectedEnrollmentId;
     const revision = this.operationRevision;
     try {
@@ -1028,7 +1420,7 @@ export class DocumentsView {
       .filter((field, index, items) => items.findIndex(item => item.key === field.key) === index);
     const reason = field => field.blocker || field.emptyReason || 'dato pendiente';
     return `<div class="alert alert-warning small mb-0" id="doc-preflight-summary">
-      <div class="fw-bold">Estado del documento</div>
+      <div class="fw-bold"><i class="bi bi-shield-check me-1"></i>Estado del documento</div>
       <div>Datos disponibles: ${preflight.availableFields.length}</div>
       <div>Datos pendientes: ${pending.length}</div>
       <div>${preflight.canPreview ? 'Vista previa permitida. Emisión oficial bloqueada.' : 'Vista previa bloqueada hasta completar los datos necesarios.'}</div>
@@ -1045,7 +1437,7 @@ export class DocumentsView {
     const enrollmentId = this.selectedEnrollmentId;
     const operationRevision = ++this.operationRevision;
     this._setState(container, DOCUMENT_STATES.GENERATING);
-    workspace.innerHTML = '<div class="text-center py-5 text-muted">Generando documento…</div>';
+    workspace.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-2" role="status"></div><p>Generando documento…</p></div>';
     try {
       const context = await this.documentDataService.buildEnrollmentContext(enrollmentId);
       if (operationRevision !== this.operationRevision || this.selectedTemplateId !== template.templateId || this.selectedEnrollmentId !== enrollmentId) return;
@@ -1084,13 +1476,25 @@ export class DocumentsView {
     this.pdfBlobUrl = URL.createObjectURL(blob);
     const safeName = fileName.replace(/[^A-Za-z0-9_.-]/g, '_');
     const finalIframeTitle = iframeTitle || title;
-    workspace.innerHTML = `<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-      <h6 class="text-primary mb-0">${escapeHtml(title)}</h6>
-      <div class="d-flex gap-2">
-        <button id="doc-print-pdf-btn" type="button" class="btn btn-sm btn-outline-dark"><i class="bi bi-printer me-1"></i>Imprimir</button>
-        <a href="${this.pdfBlobUrl}" download="${escapeHtml(safeName)}" class="btn btn-sm btn-success"><i class="bi bi-download me-1"></i>Descargar PDF</a>
-      </div></div>
-      <iframe title="${escapeHtml(finalIframeTitle)}" src="${this.pdfBlobUrl}" width="100%" height="700px" style="border: none;"></iframe>`;
+    workspace.innerHTML = `
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 bg-white rounded border mb-3 shadow-sm">
+        <div>
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small mb-1">
+            <i class="bi bi-check-circle-fill me-1"></i>Documento Oficial Generado
+          </span>
+          <h6 class="text-primary fw-bold mb-0">${escapeHtml(title)}</h6>
+        </div>
+        <div class="d-flex gap-2">
+          <button id="doc-print-pdf-btn" type="button" class="btn btn-outline-dark fw-bold px-3">
+            <i class="bi bi-printer-fill me-1"></i>Imprimir
+          </button>
+          <a href="${this.pdfBlobUrl}" download="${escapeHtml(safeName)}" class="btn btn-success fw-bold px-3">
+            <i class="bi bi-download me-1"></i>Descargar PDF
+          </a>
+        </div>
+      </div>
+      <iframe title="${escapeHtml(finalIframeTitle)}" src="${this.pdfBlobUrl}" width="100%" height="720px" style="border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);"></iframe>`;
+
     const printButton = workspace.querySelector('#doc-print-pdf-btn');
     if (printButton) {
       printButton.onclick = () => {
