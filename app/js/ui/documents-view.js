@@ -957,6 +957,15 @@ export class DocumentsView {
     }).join('');
   }
 
+  _getTemplateRowCapacity(templateId) {
+    if (templateId === 'TMPL-01') return 30;
+    if (templateId === 'TMPL-03') return 20;
+    if (templateId === 'TMPL-11') return 47;
+    if (templateId >= 'TMPL-05' && templateId <= 'TMPL-17') return 40;
+    if (templateId === 'TMPL-18' || templateId === 'TMPL-19') return 40;
+    return 30;
+  }
+
   _renderGroupSummaryCard(selectedGroup) {
     if (!selectedGroup) {
       return `
@@ -969,7 +978,8 @@ export class DocumentsView {
     const progName = selectedGroup.program?.nombre || selectedGroup.programaNombre || selectedGroup.programaOriginal || 'Programa de Estudio General';
     const count = Number(selectedGroup.enrollmentCount) || 0;
     const turno = selectedGroup.turno || 'Regular / Único';
-    const foliosEst = Math.ceil(Math.max(count, 1) / 30);
+    const capacity = this._getTemplateRowCapacity(this.selectedTemplateId);
+    const foliosEst = Math.ceil(Math.max(count, 1) / capacity);
     const modName = selectedGroup.module?.nombre || selectedGroup.module?.nombreOficial || 'Módulo Oficial de Formación';
     const code = selectedGroup.visibleCode || selectedGroup.id || 'S/C';
 
@@ -1006,7 +1016,7 @@ export class DocumentsView {
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
                   <span class="text-secondary small fw-bold" style="font-size: 0.85rem; color: #475569;"><i class="bi bi-file-earmark-ruled text-success me-1"></i>Foliación:</span>
-                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold" style="font-size: 0.82rem; background: #dcfce7; color: #15803d; border-color: #86efac !important;">${foliosEst} pág. (30 por hoja)</span>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold" style="font-size: 0.82rem; background: #dcfce7; color: #15803d; border-color: #86efac !important;">${foliosEst} pág. (${capacity} por hoja)</span>
                 </div>
               </div>
             </div>
@@ -1897,15 +1907,60 @@ export class DocumentsView {
         ...rosterContext,
         unit: { orden: udNum, nombre: `Unidad Didáctica ${udNum}` }
       };
-      const blob = await this.pdfEngine.renderDocument({
-        documentType: tmplId,
-        context,
-        rows,
-        demoMode: isDemoRuntime()
-      });
+
+      const capacity = 40;
+      let blob;
+      const pageCount = Math.max(1, Math.ceil(rows.length / capacity));
+
+      if (rows.length <= capacity) {
+        blob = await this.pdfEngine.renderDocument({
+          documentType: tmplId,
+          context,
+          rows,
+          demoMode: isDemoRuntime()
+        });
+      } else {
+        // Paginación multipágina automática para grupos con > 40 estudiantes
+        const chunks = [];
+        for (let i = 0; i < rows.length; i += capacity) {
+          chunks.push(rows.slice(i, i + capacity));
+        }
+
+        const { PDFDocument, StandardFonts, rgb } = (typeof window !== 'undefined' && window.PDFLib)
+          ? window.PDFLib
+          : await import('pdf-lib');
+        const mergedDoc = await PDFDocument.create();
+        const boldFont = await mergedDoc.embedFont(StandardFonts.HelveticaBold);
+
+        for (let idx = 0; idx < chunks.length; idx++) {
+          const chunk = chunks[idx];
+          const singleBlob = await this.pdfEngine.renderDocument({
+            documentType: tmplId,
+            context,
+            rows: chunk,
+            demoMode: isDemoRuntime()
+          });
+          const chunkDoc = await PDFDocument.load(await singleBlob.arrayBuffer());
+          const [copiedPage] = await mergedDoc.copyPages(chunkDoc, [0]);
+          mergedDoc.addPage(copiedPage);
+
+          const startNum = idx * capacity + 1;
+          const endNum = startNum + chunk.length - 1;
+          copiedPage.drawText(`FOLIO ${idx + 1} DE ${chunks.length} · ESTUDIANTES ${startNum} AL ${endNum} (TOTAL GRUPO: ${rows.length})`, {
+            x: 40,
+            y: 12,
+            size: 7.5,
+            font: boldFont,
+            color: rgb(0.1, 0.3, 0.6)
+          });
+        }
+        const mergedBytes = await mergedDoc.save();
+        blob = new Blob([mergedBytes], { type: 'application/pdf' });
+      }
+
       const fileName = `${isDemoRuntime() ? 'DEMO_' : ''}ASISTENCIA_UD${udNum}_${group.visibleCode}.pdf`;
       this._displayPdfInWorkspace(container, blob, fileName, `Control de Asistencia Modular — UD ${udNum} (${group.visibleCode})`);
-      if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Asistencia generada con éxito (${rows.length} estudiantes, 40 sesiones A3).</span>`;
+      if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Asistencia generada con éxito (${rows.length} estudiantes, ${pageCount} folio(s) A3).</span>`;
     } catch (error) {
       console.error('[DocumentsView] Error al generar Asistencia', error);
       if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
@@ -1932,15 +1987,60 @@ export class DocumentsView {
         ...rosterContext,
         unit: { orden: udNum, nombre: `Unidad Didáctica ${udNum}` }
       };
-      const blob = await this.pdfEngine.renderDocument({
-        documentType: tmplId,
-        context,
-        rows,
-        demoMode: isDemoRuntime()
-      });
+
+      const capacity = tmplId === 'TMPL-11' ? 47 : 40;
+      let blob;
+      const pageCount = Math.max(1, Math.ceil(rows.length / capacity));
+
+      if (rows.length <= capacity) {
+        blob = await this.pdfEngine.renderDocument({
+          documentType: tmplId,
+          context,
+          rows,
+          demoMode: isDemoRuntime()
+        });
+      } else {
+        // Paginación multipágina automática para grupos con > 40 (o 47) estudiantes
+        const chunks = [];
+        for (let i = 0; i < rows.length; i += capacity) {
+          chunks.push(rows.slice(i, i + capacity));
+        }
+
+        const { PDFDocument, StandardFonts, rgb } = (typeof window !== 'undefined' && window.PDFLib)
+          ? window.PDFLib
+          : await import('pdf-lib');
+        const mergedDoc = await PDFDocument.create();
+        const boldFont = await mergedDoc.embedFont(StandardFonts.HelveticaBold);
+
+        for (let idx = 0; idx < chunks.length; idx++) {
+          const chunk = chunks[idx];
+          const singleBlob = await this.pdfEngine.renderDocument({
+            documentType: tmplId,
+            context,
+            rows: chunk,
+            demoMode: isDemoRuntime()
+          });
+          const chunkDoc = await PDFDocument.load(await singleBlob.arrayBuffer());
+          const [copiedPage] = await mergedDoc.copyPages(chunkDoc, [0]);
+          mergedDoc.addPage(copiedPage);
+
+          const startNum = idx * capacity + 1;
+          const endNum = startNum + chunk.length - 1;
+          copiedPage.drawText(`FOLIO ${idx + 1} DE ${chunks.length} · ESTUDIANTES ${startNum} AL ${endNum} (TOTAL GRUPO: ${rows.length})`, {
+            x: 40,
+            y: 12,
+            size: 7.5,
+            font: boldFont,
+            color: rgb(0.05, 0.4, 0.2)
+          });
+        }
+        const mergedBytes = await mergedDoc.save();
+        blob = new Blob([mergedBytes], { type: 'application/pdf' });
+      }
+
       const fileName = `${isDemoRuntime() ? 'DEMO_' : ''}EVALUACION_AUXILIAR_UD${udNum}_${group.visibleCode}.pdf`;
       this._displayPdfInWorkspace(container, blob, fileName, `Registro Auxiliar de Evaluación — UD ${udNum} (${group.visibleCode})`);
-      if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Registro de evaluación generado con éxito (${rows.length} estudiantes, escala vigesimal A3).</span>`;
+      if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Registro de evaluación generado con éxito (${rows.length} estudiantes, ${pageCount} folio(s) A3).</span>`;
     } catch (error) {
       console.error('[DocumentsView] Error al generar Evaluación', error);
       if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
