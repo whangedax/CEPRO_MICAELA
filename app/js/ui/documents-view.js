@@ -904,15 +904,106 @@ export class DocumentsView {
     `;
   }
 
+  _renderGroupOptions() {
+    if (!this.groups || this.groups.length === 0) {
+      return '<option value="">No hay grupos disponibles</option>';
+    }
+
+    // Agrupar grupos por Programa de Estudio
+    const groupsByProgram = new Map();
+    for (const g of this.groups) {
+      const progName = g.program?.nombre || g.programaNombre || g.programaOriginal || 'Programas de Estudio General';
+      if (!groupsByProgram.has(progName)) {
+        groupsByProgram.set(progName, []);
+      }
+      groupsByProgram.get(progName).push(g);
+    }
+
+    // Ordenar programas alfabéticamente
+    const sortedPrograms = Array.from(groupsByProgram.keys()).sort((a, b) => a.localeCompare(b, 'es'));
+
+    return sortedPrograms.map(progName => {
+      const progGroups = groupsByProgram.get(progName);
+      progGroups.sort((a, b) => (a.visibleCode || '').localeCompare(b.visibleCode || '', 'es'));
+
+      const options = progGroups.map(g => {
+        const isSelected = g.id === this.selectedGroupId ? 'selected' : '';
+        const turnoText = g.turno ? `Turno ${g.turno}` : 'Turno Regular';
+        const count = g.enrollmentCount || 0;
+        const countText = `${count} ${count === 1 ? 'estudiante' : 'estudiantes'}`;
+        const label = `${progName} — Grupo ${g.visibleCode} · ${turnoText} (${countText})`;
+        return `<option value="${escapeHtml(g.id)}" ${isSelected}>${escapeHtml(label)}</option>`;
+      }).join('');
+
+      return `<optgroup label="🎓 ${escapeHtml(progName)}">${options}</optgroup>`;
+    }).join('');
+  }
+
+  _renderGroupSummaryCard(selectedGroup) {
+    if (!selectedGroup) {
+      return `
+        <div class="alert alert-warning d-flex align-items-center gap-2 mb-3 p-3 rounded" style="border: 2px solid #fde68a !important;">
+          <i class="bi bi-exclamation-triangle-fill fs-5 text-warning"></i>
+          <div class="fw-semibold">No se ha seleccionado ningún grupo académico. Por favor seleccione uno de la lista superior.</div>
+        </div>`;
+    }
+
+    const progName = selectedGroup.program?.nombre || selectedGroup.programaNombre || selectedGroup.programaOriginal || 'Programa de Estudio General';
+    const count = Number(selectedGroup.enrollmentCount) || 0;
+    const turno = selectedGroup.turno || 'Regular / Único';
+    const foliosEst = Math.ceil(Math.max(count, 1) / 30);
+    const modName = selectedGroup.module?.nombre || selectedGroup.module?.nombreOficial || 'Módulo Oficial de Formación';
+    const code = selectedGroup.visibleCode || selectedGroup.id || 'S/C';
+
+    return `
+      <div class="card mb-3 shadow-sm" style="border: 2px solid #94a3b8; border-radius: 12px; background: #ffffff; overflow: hidden;">
+        <div class="card-header bg-white py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2" style="border-bottom: 2px solid #e2e8f0; background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);">
+          <div class="d-flex align-items-center gap-2" style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="badge bg-primary px-2 py-1 fw-bold" style="font-size: 0.78rem; background: #1d4ed8 !important; color: #ffffff;">GRUPO SELECCIONADO</span>
+            <span class="badge bg-dark px-2 py-1 fw-bold font-monospace" style="font-size: 0.82rem; background: #0f172a !important; color: #ffffff;" title="Código Oficial">${escapeHtml(code)}</span>
+          </div>
+          <span class="badge bg-light text-secondary border fw-bold" style="font-size: 0.78rem; border-color: #cbd5e1 !important; color: #475569;">
+            <i class="bi bi-clock-history me-1 text-primary"></i>${escapeHtml(turno)}
+          </span>
+        </div>
+        <div class="card-body p-3">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+            <div style="flex: 1; min-width: 280px;">
+              <div class="text-uppercase text-secondary fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px; color: #64748b;">
+                <i class="bi bi-mortarboard-fill me-1 text-primary"></i>Carrera / Programa de Estudio:
+              </div>
+              <div class="fw-extrabold text-dark mt-1" style="font-size: 1.22rem; color: #0f172a; font-weight: 800; line-height: 1.25;">
+                ${escapeHtml(progName)}
+              </div>
+              <div class="text-secondary small mt-2 d-flex align-items-center gap-1" style="font-size: 0.85rem; color: #475569;">
+                <i class="bi bi-journal-text text-primary"></i>
+                <span>Módulo formativo: <strong class="text-dark" style="color: #0f172a;">${escapeHtml(modName)}</strong></span>
+              </div>
+            </div>
+            <div style="min-width: 260px;">
+              <div class="p-2.5 rounded" style="background: #f8fafc; border: 2px solid #cbd5e1; display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                  <span class="text-secondary small fw-bold" style="font-size: 0.85rem; color: #475569;"><i class="bi bi-people-fill text-primary me-1"></i>Matriculados:</span>
+                  <span class="badge bg-primary px-2.5 py-1 fw-bold" style="font-size: 0.92rem; background: #2563eb !important; color: #ffffff;">${count} alumnos</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                  <span class="text-secondary small fw-bold" style="font-size: 0.85rem; color: #475569;"><i class="bi bi-file-earmark-ruled text-success me-1"></i>Foliación:</span>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold" style="font-size: 0.82rem; background: #dcfce7; color: #15803d; border-color: #86efac !important;">${foliosEst} pág. (30 por hoja)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
   _renderContextControls(template) {
     if (!template) return '<div class="alert alert-secondary mb-0">Plantilla no disponible.</div>';
 
     // TMPL-01: Nómina de Matrícula (Grupo)
     if (template.templateId === 'TMPL-01') {
       const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
-      const groupOptions = this.groups.map(g =>
-        `<option value="${escapeHtml(g.id)}" ${g.id === this.selectedGroupId ? 'selected' : ''}>${escapeHtml(g.visibleCode)} — ${escapeHtml(g.programaNombre || '')} (${g.enrollmentCount} matrículas)</option>`
-      ).join('');
+      const groupOptions = this._renderGroupOptions();
 
       return `
         <div class="context-step-box p-3 p-md-4">
@@ -920,28 +1011,25 @@ export class DocumentsView {
             <span class="badge bg-primary text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800;">2</span>
             <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico para emitir la Nómina</h5>
           </div>
-          <div class="row align-items-end g-3 mb-3">
-            <div class="col-md-7 col-lg-6">
-              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select">
-                <i class="bi bi-collection-fill me-1 text-primary"></i>Grupo Académico:
+          <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1; min-width: 320px;">
+              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
+                <i class="bi bi-collection-fill me-1 text-primary"></i>Programa y Grupo Académico:
               </label>
-              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%;">
-                ${groupOptions || '<option value="">No hay grupos disponibles</option>'}
+              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
+                ${groupOptions}
               </select>
             </div>
-            <div class="col-md-5 col-lg-6 d-flex flex-wrap gap-2 align-items-center">
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
               <button id="doc-generate-tmpl01-btn" type="button" class="btn btn-primary px-4 py-2 fw-bold" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.95rem;">
                 <i class="bi bi-file-earmark-pdf-fill me-1"></i>Generar Nómina Oficial
               </button>
               <button id="doc-generate-btn" type="button" class="btn btn-secondary btn-sm" style="display: none;" disabled aria-disabled="true">Generar Nómina</button>
             </div>
           </div>
-          ${selectedGroup ? `
-            <div class="p-3 bg-white rounded border d-flex flex-wrap gap-3 align-items-center text-secondary mb-2" style="border: 2px solid #e2e8f0 !important; font-size: 0.9rem;">
-              <span><strong>Grupo:</strong> ${escapeHtml(selectedGroup.visibleCode)}</span>
-              <span><strong>Programa:</strong> ${escapeHtml(selectedGroup.programaNombre || 'General')}</span>
-              <span><i class="bi bi-people-fill me-1 text-primary"></i><strong>${selectedGroup.enrollmentCount}</strong> estudiantes matriculados</span>
-            </div>` : ''}
+          <div id="doc-selected-group-card">
+            ${this._renderGroupSummaryCard(selectedGroup)}
+          </div>
           <div id="doc-group-status" class="fw-semibold text-secondary" style="font-size: 0.88rem;" aria-live="polite">
             <i class="bi bi-info-circle me-1 text-primary"></i>Foliación ministerial automática de 30 en 30 para la presentación formal.
           </div>
@@ -951,9 +1039,7 @@ export class DocumentsView {
     // TMPL-04: Portada de Carpeta (Grupo)
     if (template.templateId === 'TMPL-04') {
       const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
-      const groupOptions = this.groups.map(g =>
-        `<option value="${escapeHtml(g.id)}" ${g.id === this.selectedGroupId ? 'selected' : ''}>${escapeHtml(g.visibleCode)} — ${escapeHtml(g.programaNombre || '')} (${g.enrollmentCount} matrículas)</option>`
-      ).join('');
+      const groupOptions = this._renderGroupOptions();
 
       return `
         <div class="context-step-box p-3 p-md-4">
@@ -961,26 +1047,24 @@ export class DocumentsView {
             <span class="badge bg-primary text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800;">2</span>
             <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico para la Portada</h5>
           </div>
-          <div class="row align-items-end g-3 mb-3">
-            <div class="col-md-7 col-lg-6">
-              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select">
-                <i class="bi bi-journal-bookmark-fill me-1 text-info"></i>Grupo Académico:
+          <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1; min-width: 320px;">
+              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
+                <i class="bi bi-journal-bookmark-fill me-1 text-info"></i>Programa y Grupo Académico:
               </label>
-              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%;">
-                ${groupOptions || '<option value="">No hay grupos disponibles</option>'}
+              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
+                ${groupOptions}
               </select>
             </div>
-            <div class="col-md-5 col-lg-6 d-flex flex-wrap gap-2 align-items-center">
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
               <button id="doc-generate-tmpl04-btn" type="button" class="btn btn-info text-white px-4 py-2 fw-bold" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.95rem;">
                 <i class="bi bi-journal-check me-1"></i>Generar Portada de Carpeta
               </button>
             </div>
           </div>
-          ${selectedGroup ? `
-            <div class="p-3 bg-white rounded border d-flex flex-wrap gap-3 align-items-center text-secondary mb-2" style="border: 2px solid #e2e8f0 !important; font-size: 0.9rem;">
-              <span><strong>Grupo:</strong> ${escapeHtml(selectedGroup.visibleCode)}</span>
-              <span><strong>Programa:</strong> ${escapeHtml(selectedGroup.programaNombre || 'General')}</span>
-            </div>` : ''}
+          <div id="doc-selected-group-card">
+            ${this._renderGroupSummaryCard(selectedGroup)}
+          </div>
           <div id="doc-group-status" class="fw-semibold text-secondary" style="font-size: 0.88rem;" aria-live="polite">
             <i class="bi bi-info-circle me-1 text-info"></i>Carátula formal para la carpeta pedagógica con datos del docente e institución.
           </div>
@@ -990,9 +1074,7 @@ export class DocumentsView {
     // TMPL-03: Registro Modular (Grupo)
     if (template.templateId === 'TMPL-03') {
       const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
-      const groupOptions = this.groups.map(g =>
-        `<option value="${escapeHtml(g.id)}" ${g.id === this.selectedGroupId ? 'selected' : ''}>${escapeHtml(g.visibleCode)} — ${escapeHtml(g.programaNombre || '')} (${g.enrollmentCount} matrículas)</option>`
-      ).join('');
+      const groupOptions = this._renderGroupOptions();
 
       return `
         <div class="context-step-box p-3 p-md-4">
@@ -1000,16 +1082,16 @@ export class DocumentsView {
             <span class="badge bg-warning text-dark rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800;">2</span>
             <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico para el Registro Modular</h5>
           </div>
-          <div class="row align-items-end g-3 mb-3">
-            <div class="col-md-6 col-lg-5">
-              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select">
-                <i class="bi bi-card-checklist me-1 text-warning"></i>Grupo Académico:
+          <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1; min-width: 320px;">
+              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
+                <i class="bi bi-card-checklist me-1 text-warning"></i>Programa y Grupo Académico:
               </label>
-              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%;">
-                ${groupOptions || '<option value="">No hay grupos disponibles</option>'}
+              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
+                ${groupOptions}
               </select>
             </div>
-            <div class="col-md-6 col-lg-7 d-flex flex-wrap gap-2 align-items-center">
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
               <button id="doc-generate-tmpl03-oficial-btn" type="button" class="btn btn-primary btn-sm fw-bold px-3 py-2" ${!this.selectedGroupId ? 'disabled' : ''}>
                 <i class="bi bi-file-earmark-ruled me-1"></i>Generar Registro Modular (TMPL-03 Oficial)
               </button>
@@ -1017,6 +1099,9 @@ export class DocumentsView {
                 <i class="bi bi-table me-1"></i>Reporte Administrativo Alternativo
               </button>
             </div>
+          </div>
+          <div id="doc-selected-group-card">
+            ${this._renderGroupSummaryCard(selectedGroup)}
           </div>
           <div id="doc-group-status" class="fw-semibold text-secondary" style="font-size: 0.88rem;" aria-live="polite">
             <i class="bi bi-info-circle me-1 text-warning"></i>Elija entre la plantilla oficial o el reporte administrativo directo.
@@ -1306,6 +1391,22 @@ export class DocumentsView {
         this.selectedGroupId = event.target.value;
         const g = this.groups.find(item => item.id === this.selectedGroupId);
         if (g) this.selectedGroupCode = g.visibleCode;
+
+        // Actualizar tarjeta resumen en tiempo real
+        const cardBox = container.querySelector('#doc-selected-group-card');
+        if (cardBox) {
+          cardBox.innerHTML = this._renderGroupSummaryCard(g);
+        }
+
+        // Sincronizar estado habilitado/deshabilitado de los botones de emisión
+        const tmpl01Btn = container.querySelector('#doc-generate-tmpl01-btn');
+        if (tmpl01Btn) tmpl01Btn.disabled = !this.selectedGroupId;
+        const tmpl04Btn = container.querySelector('#doc-generate-tmpl04-btn');
+        if (tmpl04Btn) tmpl04Btn.disabled = !this.selectedGroupId;
+        const tmpl03OficialBtn = container.querySelector('#doc-generate-tmpl03-oficial-btn');
+        if (tmpl03OficialBtn) tmpl03OficialBtn.disabled = !this.selectedGroupId;
+        const tmpl03AltBtn = container.querySelector('#doc-generate-tmpl03-alt-btn');
+        if (tmpl03AltBtn) tmpl03AltBtn.disabled = !this.selectedGroupId;
       };
     }
 
