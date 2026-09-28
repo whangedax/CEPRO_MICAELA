@@ -359,6 +359,18 @@ export class DocumentsView {
           border-color: #1d4ed8;
           box-shadow: 0 3px 8px rgba(29, 78, 216, 0.3);
         }
+        .ud-selector-pill.active-ud-blue {
+          background: #1d4ed8;
+          color: #ffffff;
+          border-color: #1d4ed8;
+          box-shadow: 0 3px 8px rgba(29, 78, 216, 0.35);
+        }
+        .ud-selector-pill.active-ud-green {
+          background: #059669;
+          color: #ffffff;
+          border-color: #059669;
+          box-shadow: 0 3px 8px rgba(5, 150, 105, 0.35);
+        }
         .doc-badge-pill {
           display: inline-flex;
           align-items: center;
@@ -713,18 +725,18 @@ export class DocumentsView {
     const currentAsistenciaTmpl = 'TMPL-' + String(this.selectedAsistenciaUD + 4).padStart(2, '0');
     const currentEvaluacionTmpl = 'TMPL-' + String(this.selectedEvaluacionUD + 10).padStart(2, '0');
 
-    // Pills de Asistencia UD1..UD6
+    // Pills de Asistencia UD1..UD6 con estilo activo azul
     const asistenciaPills = [1, 2, 3, 4, 5, 6].map(n => {
       const tmplId = `TMPL-${String(n + 4).padStart(2, '0')}`;
-      const isSelected = this.selectedTemplateId === tmplId;
-      return `<button type="button" class="ud-selector-pill ${isSelected ? 'active-ud' : ''}" data-select-tmpl="${tmplId}" title="Asistencia Unidad Didáctica ${n}">UD${n}</button>`;
+      const isSelected = isAsistencia && this.selectedTemplateId === tmplId;
+      return `<button type="button" class="ud-selector-pill ${isSelected ? 'active-ud active-ud-blue' : ''}" data-select-tmpl="${tmplId}" title="Asistencia Unidad Didáctica ${n} (${tmplId})">${isSelected ? '<i class="bi bi-check2"></i> ' : ''}UD ${n}</button>`;
     }).join(' ');
 
-    // Pills de Evaluación UD1..UD7
+    // Pills de Evaluación UD1..UD7 con estilo activo verde esmeralda
     const evaluacionPills = [1, 2, 3, 4, 5, 6, 7].map(n => {
       const tmplId = `TMPL-${String(n + 10).padStart(2, '0')}`;
-      const isSelected = this.selectedTemplateId === tmplId;
-      return `<button type="button" class="ud-selector-pill ${isSelected ? 'active-ud' : ''}" data-select-tmpl="${tmplId}" title="Evaluación Unidad Didáctica ${n}">UD${n}</button>`;
+      const isSelected = isEvaluacion && this.selectedTemplateId === tmplId;
+      return `<button type="button" class="ud-selector-pill ${isSelected ? 'active-ud active-ud-green' : ''}" data-select-tmpl="${tmplId}" title="Evaluación Unidad Didáctica ${n} (${tmplId})">${isSelected ? '<i class="bi bi-check2"></i> ' : ''}UD ${n}</button>`;
     }).join(' ');
 
     return `
@@ -742,7 +754,7 @@ export class DocumentsView {
               <i class="bi bi-calendar2-week-fill me-1 text-primary"></i>Control de Asistencia Modular
             </h5>
             <p class="card-doc-desc">
-              Hojas de asistencia ministerial (40 sesiones). Seleccione la Unidad Didáctica para emitir el formato:
+              Hojas oficiales de asistencia ministerial (40 sesiones en formato A3 landscape). Seleccione la Unidad Didáctica para emitir el formato:
             </p>
             <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
               <span class="fw-bold text-dark me-1" style="font-size: 0.9rem;">Unidad Didáctica:</span>
@@ -750,8 +762,11 @@ export class DocumentsView {
             </div>
           </div>
           <div class="card-footer-action">
-            <a href="#/asistencia" class="btn btn-sm btn-outline-primary fw-bold px-3 py-2"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Registro de Asistencia</a>
-            <span class="fw-bold ${isAsistencia ? 'text-primary' : 'text-secondary'}" style="font-size: 0.9rem;">${isAsistencia ? 'UD' + this.selectedAsistenciaUD + ' activa' : 'Seleccione UD'}</span>
+            ${isAsistencia
+              ? `<span class="badge bg-primary px-3 py-2 text-white fw-bold" style="font-size: 0.85rem; background: #1d4ed8 !important;"><i class="bi bi-check-circle-fill me-1"></i>✓ ACTIVO: UD ${this.selectedAsistenciaUD} (${this.selectedTemplateId})</span>`
+              : `<span class="text-primary fw-bold" style="font-size: 0.9rem;"><i class="bi bi-hand-index-thumb me-1"></i>👉 Clic para seleccionar</span>`
+            }
+            <span class="fw-bold text-secondary small">40 sesiones · A3</span>
           </div>
         </div>
 
@@ -768,7 +783,7 @@ export class DocumentsView {
               <i class="bi bi-clipboard-check-fill me-1 text-success"></i>Registro de Evaluación Auxiliar
             </h5>
             <p class="card-doc-desc">
-              Calificaciones vigesimales por criterios de logro. Seleccione la Unidad Didáctica para emitir el formato:
+              Calificaciones vigesimales por criterios e indicadores de logro de la capacidad terminal. Seleccione la Unidad Didáctica para emitir:
             </p>
             <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
               <span class="fw-bold text-dark me-1" style="font-size: 0.9rem;">Unidad Didáctica:</span>
@@ -776,8 +791,11 @@ export class DocumentsView {
             </div>
           </div>
           <div class="card-footer-action">
-            <a href="#/evaluacion" class="btn btn-sm btn-outline-success fw-bold px-3 py-2"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Registro de Evaluación</a>
-            <span class="fw-bold ${isEvaluacion ? 'text-success' : 'text-secondary'}" style="font-size: 0.9rem;">${isEvaluacion ? 'UD' + this.selectedEvaluacionUD + ' activa' : 'Seleccione UD'}</span>
+            ${isEvaluacion
+              ? `<span class="badge bg-success px-3 py-2 text-white fw-bold" style="font-size: 0.85rem; background: #059669 !important;"><i class="bi bi-check-circle-fill me-1"></i>✓ ACTIVO: UD ${this.selectedEvaluacionUD} (${this.selectedTemplateId})</span>`
+              : `<span class="text-success fw-bold" style="font-size: 0.9rem;"><i class="bi bi-hand-index-thumb me-1"></i>👉 Clic para seleccionar</span>`
+            }
+            <span class="fw-bold text-secondary small">Escala vigesimal · A3</span>
           </div>
         </div>
       </div>
@@ -1112,16 +1130,49 @@ export class DocumentsView {
     // TMPL-05..10: Asistencia
     if (template.templateId >= 'TMPL-05' && template.templateId <= 'TMPL-10') {
       const udNum = parseInt(template.templateId.replace('TMPL-', ''), 10) - 4;
+      const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
+      const groupOptions = this._renderGroupOptions();
+
       return `
         <div class="context-step-box p-3 p-md-4">
-          <div class="alert alert-info mb-3 border-0 bg-white shadow-sm p-3 rounded" id="doc-context-status" style="border: 2px solid #bfdbfe !important;">
-            <div class="fw-bold text-primary mb-1" style="font-size: 1.05rem;">
-              <i class="bi bi-calendar2-week-fill me-1"></i>Registro de Asistencia — Unidad Didáctica ${udNum} (${template.templateId})
-            </div>
-            <div class="text-dark" style="font-size: 0.92rem;">Formato ministerial de 40 sesiones para el control de asistencia de los estudiantes del módulo formativo.</div>
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; background: #1d4ed8 !important;">2</span>
+            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico para el Control de Asistencia</h5>
           </div>
-          <div class="d-flex flex-wrap gap-2">
-            <a href="#/asistencia" class="btn btn-primary px-4 py-2 fw-bold" style="font-size: 0.95rem;"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Asistencia (UD${udNum})</a>
+
+          <div class="d-flex align-items-center justify-content-between p-2.5 px-3 rounded mb-3" style="background: #eff6ff; border: 2px solid #93c5fd; border-radius: 10px;">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-primary px-2.5 py-1.5 fw-bold" style="background: #1d4ed8 !important; font-size: 0.85rem;">UD ${udNum}</span>
+              <span class="fw-bold text-primary" style="font-size: 0.95rem;">${escapeHtml(template.name)} (${template.templateId})</span>
+            </div>
+            <span class="badge bg-light text-secondary border fw-bold" style="font-size: 0.8rem; border-color: #bfdbfe !important;">
+              <i class="bi bi-calendar2-week me-1 text-primary"></i>40 sesiones · Formato A3
+            </span>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1; min-width: 320px;">
+              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
+                <i class="bi bi-collection-fill me-1 text-primary"></i>Programa y Grupo Académico:
+              </label>
+              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
+                ${groupOptions}
+              </select>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+              <button id="doc-generate-asistencia-btn" type="button" class="btn btn-primary px-4 py-2 fw-bold" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.95rem; background: #1d4ed8; border-color: #1d4ed8;">
+                <i class="bi bi-calendar2-check-fill me-1"></i>Generar Asistencia Oficial (UD ${udNum})
+              </button>
+              <a href="#/asistencia" class="btn btn-outline-primary fw-bold px-3 py-2" style="font-size: 0.92rem;">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Abrir Control Diario
+              </a>
+            </div>
+          </div>
+          <div id="doc-selected-group-card">
+            ${this._renderGroupSummaryCard(selectedGroup)}
+          </div>
+          <div id="doc-group-status" class="fw-semibold text-secondary" style="font-size: 0.88rem;" aria-live="polite">
+            <i class="bi bi-info-circle me-1 text-primary"></i>Emisión ministerial de la matriz de 40 sesiones con datos del grupo seleccionado.
           </div>
         </div>`;
     }
@@ -1129,16 +1180,49 @@ export class DocumentsView {
     // TMPL-11..17: Evaluación
     if (template.templateId >= 'TMPL-11' && template.templateId <= 'TMPL-17') {
       const udNum = parseInt(template.templateId.replace('TMPL-', ''), 10) - 10;
+      const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
+      const groupOptions = this._renderGroupOptions();
+
       return `
         <div class="context-step-box p-3 p-md-4">
-          <div class="alert alert-info mb-3 border-0 bg-white shadow-sm p-3 rounded" id="doc-context-status" style="border: 2px solid #a7f3d0 !important;">
-            <div class="fw-bold text-success mb-1" style="font-size: 1.05rem;">
-              <i class="bi bi-card-checklist me-1"></i>Registro de Evaluación Auxiliar — Unidad Didáctica ${udNum} (${template.templateId})
-            </div>
-            <div class="text-dark" style="font-size: 0.92rem;">Hojas auxiliares de calificación vigesimal organizadas por indicadores de logro de la capacidad terminal.</div>
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; background: #059669 !important;">2</span>
+            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico para el Registro Auxiliar de Evaluación</h5>
           </div>
-          <div class="d-flex flex-wrap gap-2">
-            <a href="#/evaluacion" class="btn btn-success px-4 py-2 fw-bold text-white" style="font-size: 0.95rem;"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Evaluación (UD${udNum})</a>
+
+          <div class="d-flex align-items-center justify-content-between p-2.5 px-3 rounded mb-3" style="background: #f0fdf4; border: 2px solid #86efac; border-radius: 10px;">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success px-2.5 py-1.5 fw-bold" style="background: #059669 !important; font-size: 0.85rem;">UD ${udNum}</span>
+              <span class="fw-bold text-success" style="font-size: 0.95rem;">${escapeHtml(template.name)} (${template.templateId})</span>
+            </div>
+            <span class="badge bg-light text-secondary border fw-bold" style="font-size: 0.8rem; border-color: #a7f3d0 !important;">
+              <i class="bi bi-card-checklist me-1 text-success"></i>Escala Vigesimal · Formato A3
+            </span>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1; min-width: 320px;">
+              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
+                <i class="bi bi-collection-fill me-1 text-success"></i>Programa y Grupo Académico:
+              </label>
+              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
+                ${groupOptions}
+              </select>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+              <button id="doc-generate-evaluacion-btn" type="button" class="btn btn-success px-4 py-2 fw-bold text-white" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.95rem; background: #059669; border-color: #059669;">
+                <i class="bi bi-clipboard-check-fill me-1"></i>Generar Registro Auxiliar (UD ${udNum})
+              </button>
+              <a href="#/evaluacion" class="btn btn-outline-success fw-bold px-3 py-2" style="font-size: 0.92rem;">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Abrir Calificaciones
+              </a>
+            </div>
+          </div>
+          <div id="doc-selected-group-card">
+            ${this._renderGroupSummaryCard(selectedGroup)}
+          </div>
+          <div id="doc-group-status" class="fw-semibold text-secondary" style="font-size: 0.88rem;" aria-live="polite">
+            <i class="bi bi-info-circle me-1 text-success"></i>Emisión auxiliar con cálculo y desglose vigesimal por criterios de evaluación del programa formativo.
           </div>
         </div>`;
     }
@@ -1298,8 +1382,34 @@ export class DocumentsView {
           </span>
         </div>`;
     }
-    if (template?.templateId >= 'TMPL-05' && template?.templateId <= 'TMPL-10') return `<div class="text-center py-5 text-muted"><p>El Registro de Asistencia (${escapeHtml(template?.name)}) se gestiona desde la sección Registro Académico (Asistencia).</p></div>`;
-    if (template?.templateId >= 'TMPL-11' && template?.templateId <= 'TMPL-17') return `<div class="text-center py-5 text-muted"><p>El Registro de Evaluación (${escapeHtml(template?.name)}) se gestiona desde la sección Registro Académico (Evaluación).</p></div>`;
+    if (template?.templateId >= 'TMPL-05' && template?.templateId <= 'TMPL-10') {
+      const udNum = parseInt(template.templateId.replace('TMPL-', ''), 10) - 4;
+      return `
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-calendar2-week fs-1 d-block mb-2 text-primary opacity-50" style="font-size: 3rem;"></i>
+          <h4 class="fw-bold mb-2 text-dark" style="font-size: 1.25rem;">Control de Asistencia Modular — UD ${udNum} (${template.templateId})</h4>
+          <p class="mb-3 text-secondary" style="max-width: 520px; margin-left: auto; margin-right: auto; font-size: 0.95rem;">
+            Seleccione el grupo académico arriba y haga clic en <strong>Generar Asistencia Oficial (UD ${udNum})</strong> para emitir la sábana ministerial de 40 sesiones en formato A3 landscape.
+          </p>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+            <i class="bi bi-calendar-check me-1"></i>Formato Oficial A3 · 40 Sesiones
+          </span>
+        </div>`;
+    }
+    if (template?.templateId >= 'TMPL-11' && template?.templateId <= 'TMPL-17') {
+      const udNum = parseInt(template.templateId.replace('TMPL-', ''), 10) - 10;
+      return `
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-clipboard-check fs-1 d-block mb-2 text-success opacity-50" style="font-size: 3rem;"></i>
+          <h4 class="fw-bold mb-2 text-dark" style="font-size: 1.25rem;">Registro de Evaluación Auxiliar — UD ${udNum} (${template.templateId})</h4>
+          <p class="mb-3 text-secondary" style="max-width: 520px; margin-left: auto; margin-right: auto; font-size: 0.95rem;">
+            Seleccione el grupo académico arriba y haga clic en <strong>Generar Registro Auxiliar (UD ${udNum})</strong> para emitir la sábana de calificaciones en escala vigesimal (0 a 20) en formato A3.
+          </p>
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+            <i class="bi bi-clipboard2-data me-1"></i>Formato Oficial A3 · Escala Vigesimal
+          </span>
+        </div>`;
+    }
     if (template?.templateId === 'TMPL-18') return '<div class="text-center py-5 text-muted"><p>El Consolidado de EFSRT (TMPL-18) se gestiona desde la sección Prácticas / EFSRT.</p></div>';
     if (template?.templateId === 'TMPL-19') return '<div class="text-center py-5 text-muted"><p>El Acta de Evaluación Modular (TMPL-19) se gestiona desde la sección Registro Académico (Evaluación).</p></div>';
     if (template?.templateId === 'TMPL-20') return '<div class="text-center py-5 text-muted"><p>El Certificado Modular (TMPL-20) requiere Libro, Folio y firmas oficiales registradas (Norma MINEDU).</p></div>';
@@ -1407,6 +1517,10 @@ export class DocumentsView {
         if (tmpl03OficialBtn) tmpl03OficialBtn.disabled = !this.selectedGroupId;
         const tmpl03AltBtn = container.querySelector('#doc-generate-tmpl03-alt-btn');
         if (tmpl03AltBtn) tmpl03AltBtn.disabled = !this.selectedGroupId;
+        const asistenciaBtn = container.querySelector('#doc-generate-asistencia-btn');
+        if (asistenciaBtn) asistenciaBtn.disabled = !this.selectedGroupId;
+        const evaluacionBtn = container.querySelector('#doc-generate-evaluacion-btn');
+        if (evaluacionBtn) evaluacionBtn.disabled = !this.selectedGroupId;
       };
     }
 
@@ -1428,6 +1542,16 @@ export class DocumentsView {
     const tmpl03AltBtn = container.querySelector('#doc-generate-tmpl03-alt-btn');
     if (tmpl03AltBtn) {
       tmpl03AltBtn.onclick = async () => this._generateTmpl03(container, true);
+    }
+
+    const asistenciaBtn = container.querySelector('#doc-generate-asistencia-btn');
+    if (asistenciaBtn) {
+      asistenciaBtn.onclick = async () => this._generateTmplAttendance(container);
+    }
+
+    const evaluacionBtn = container.querySelector('#doc-generate-evaluacion-btn');
+    if (evaluacionBtn) {
+      evaluacionBtn.onclick = async () => this._generateTmplEvaluation(container);
     }
 
     if (searchInput) searchInput.oninput = async event => this._searchEnrollments(container, event.target.value);
@@ -1751,6 +1875,76 @@ export class DocumentsView {
       console.error('[DocumentsView] Error al generar TMPL-03', error);
       if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
       if (workspace) workspace.innerHTML = `<div class="alert alert-danger">No se pudo generar el documento: ${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async _generateTmplAttendance(container) {
+    const groupId = this.selectedGroupId;
+    const workspace = container.querySelector('#doc-render-workspace');
+    const status = container.querySelector('#doc-group-status');
+    if (!groupId) {
+      if (status) status.innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i>Seleccione un grupo académico primero.</span>';
+      return;
+    }
+    const tmplId = this.selectedTemplateId;
+    const udNum = parseInt(tmplId.replace('TMPL-', ''), 10) - 4;
+    if (status) status.innerHTML = `<span class="text-primary fw-bold"><i class="spinner-border spinner-border-sm me-1"></i>Generando Hoja de Asistencia (UD ${udNum})…</span>`;
+    if (workspace) workspace.innerHTML = `<div class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-2" role="status"></div><p class="fw-bold text-dark">Generando Hoja de Asistencia (UD ${udNum}) en PDF…</p></div>`;
+    try {
+      const rosterContext = await this.adminService.buildGroupRoster(groupId);
+      const { rows, group } = rosterContext;
+      const context = {
+        ...rosterContext,
+        unit: { orden: udNum, nombre: `Unidad Didáctica ${udNum}` }
+      };
+      const blob = await this.pdfEngine.renderDocument({
+        documentType: tmplId,
+        context,
+        rows,
+        demoMode: isDemoRuntime()
+      });
+      const fileName = `${isDemoRuntime() ? 'DEMO_' : ''}ASISTENCIA_UD${udNum}_${group.visibleCode}.pdf`;
+      this._displayPdfInWorkspace(container, blob, fileName, `Control de Asistencia Modular — UD ${udNum} (${group.visibleCode})`);
+      if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Asistencia generada con éxito (${rows.length} estudiantes, 40 sesiones A3).</span>`;
+    } catch (error) {
+      console.error('[DocumentsView] Error al generar Asistencia', error);
+      if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
+      if (workspace) workspace.innerHTML = `<div class="alert alert-danger">No se pudo generar la hoja de asistencia: ${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async _generateTmplEvaluation(container) {
+    const groupId = this.selectedGroupId;
+    const workspace = container.querySelector('#doc-render-workspace');
+    const status = container.querySelector('#doc-group-status');
+    if (!groupId) {
+      if (status) status.innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i>Seleccione un grupo académico primero.</span>';
+      return;
+    }
+    const tmplId = this.selectedTemplateId;
+    const udNum = parseInt(tmplId.replace('TMPL-', ''), 10) - 10;
+    if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="spinner-border spinner-border-sm me-1"></i>Generando Registro Auxiliar de Evaluación (UD ${udNum})…</span>`;
+    if (workspace) workspace.innerHTML = `<div class="text-center py-5 text-muted"><div class="spinner-border text-success mb-2" role="status"></div><p class="fw-bold text-dark">Generando Registro de Evaluación (UD ${udNum}) en PDF…</p></div>`;
+    try {
+      const rosterContext = await this.adminService.buildGroupRoster(groupId);
+      const { rows, group } = rosterContext;
+      const context = {
+        ...rosterContext,
+        unit: { orden: udNum, nombre: `Unidad Didáctica ${udNum}` }
+      };
+      const blob = await this.pdfEngine.renderDocument({
+        documentType: tmplId,
+        context,
+        rows,
+        demoMode: isDemoRuntime()
+      });
+      const fileName = `${isDemoRuntime() ? 'DEMO_' : ''}EVALUACION_AUXILIAR_UD${udNum}_${group.visibleCode}.pdf`;
+      this._displayPdfInWorkspace(container, blob, fileName, `Registro Auxiliar de Evaluación — UD ${udNum} (${group.visibleCode})`);
+      if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Registro de evaluación generado con éxito (${rows.length} estudiantes, escala vigesimal A3).</span>`;
+    } catch (error) {
+      console.error('[DocumentsView] Error al generar Evaluación', error);
+      if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
+      if (workspace) workspace.innerHTML = `<div class="alert alert-danger">No se pudo generar el registro de evaluación: ${escapeHtml(error.message)}</div>`;
     }
   }
 
