@@ -65,12 +65,12 @@ async function run() {
 
   let server;
   if (!await up()) { server = fork(require.resolve('../scripts/v2-candidate-server.js'), [], { silent: true }); await waitServer(); }
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   try {
     const page = await browser.newPage();
     const runtimeErrors = [];
     page.on('pageerror', error => runtimeErrors.push(error.message));
-    await page.goto(BASE, { waitUntil: 'networkidle0', timeout: 60000 });
+    await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(() => document.querySelector('#candidate-runtime-banner')?.textContent === 'OPERACIÓN LOCAL' && document.querySelector('h2')?.textContent.includes('Inicio'), { timeout: 30000 });
     const shell = await page.evaluate(() => ({ text: document.body.innerText, nav: [...document.querySelectorAll('.nav-link')].map(node => node.getAttribute('href')) }));
     check('T-MVP08-15-SHELL', ['#/nominas', '#/registros/matricula', '#/configuracion-academica', '#/respaldo'].every(route => shell.nav.includes(route)), 'flujo administrativo visible');
@@ -213,3 +213,6 @@ if (require.main === module) run().then(result => {
   console.log(`PRIORITY_PRODUCTION_MVP_08 ${result.passed}/${result.total}, failed=${result.failed}`);
   process.exit(result.failed ? 1 : 0);
 }).catch(error => { console.error(error); process.exit(1); });
+
+
+

@@ -105,7 +105,7 @@ async function run() {
 
   const edgeProfile = path.join(ROOT, 'tmp', 'edge-profiles', `mvp-tmpl19-${Date.now()}`);
   fs.mkdirSync(edgeProfile, { recursive: true });
-  const browser = await puppeteer.launch({ headless: true, executablePath: EDGE, userDataDir: edgeProfile });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true, executablePath: EDGE, userDataDir: edgeProfile });
 
   const errors = [];
   const networkRequests = [];
@@ -122,7 +122,8 @@ async function run() {
     });
 
     // 5. Invariantes de la base candidata
-    await page.goto(BASE, { waitUntil: 'networkidle0' });
+    await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => document.querySelector('#db-status-badge')?.textContent.includes('Datos locales disponibles'));
     const invariants = await page.evaluate(async () => {
       const openDb = name => new Promise((resolve, reject) => {
         const req = indexedDB.open(name);
@@ -131,10 +132,14 @@ async function run() {
       });
       const db = await openDb('CETPRO_V2_CANDIDATE');
       const count = store => new Promise((resolve, reject) => {
-        const tx = db.transaction(store, 'readonly');
-        const req = tx.objectStore(store).count();
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
+        try {
+          const tx = db.transaction(store, 'readonly');
+          const req = tx.objectStore(store).count();
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        } catch (e) {
+          reject(new Error(`Error starting transaction on store '${store}': ${e.message}`));
+        }
       });
       const [students, enrollments, groups, periods] = await Promise.all([
         count('estudiantes'), count('matriculas'), count('grupos_academicos'), count('periodos')
@@ -146,7 +151,7 @@ async function run() {
     check('T-TMPL19-05-CANDIDATE-INVARIANTS', invOk, `Invariantes candidata: ${invariants.students} est, ${invariants.enrollments} mat, ${invariants.groups} grp, ${invariants.periods} per`);
 
     // 6. Navegación a Evaluación (#/evaluacion) y presencia de botón TMPL-19
-    await page.goto(`${BASE}#/evaluacion`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE}#/evaluacion`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#btn-generate-tmpl19-candidate', { timeout: 10000 });
     const hasTmpl19Btn = await page.evaluate(() => Boolean(document.querySelector('#btn-generate-tmpl19-candidate')));
     check('T-TMPL19-06-UI-BUTTON', hasTmpl19Btn, 'Botón #btn-generate-tmpl19-candidate presente en vista #/evaluacion');
@@ -380,10 +385,10 @@ async function run() {
   console.log('========================================\n');
   console.log(`Reporte guardado en: ${RESULT_FILE}\n`);
 
-  if (failCount > 0) process.exit(1);
+  return { passed: passCount, failed: failCount };
 }
 
-run().catch(err => {
-  console.error('Error durante la ejecución de la suite:', err);
-  process.exit(1);
-});
+module.exports = { name: 'MVP_ACTA_MODULAR_19', run };
+
+
+

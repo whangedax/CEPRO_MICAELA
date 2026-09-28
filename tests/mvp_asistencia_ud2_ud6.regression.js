@@ -100,7 +100,7 @@ async function run() {
 
   const edgeProfile = path.join(ROOT, 'tmp', 'edge-profiles', `mvp-exp-att-${Date.now()}`);
   fs.mkdirSync(edgeProfile, { recursive: true });
-  const browser = await puppeteer.launch({ headless: true, executablePath: EDGE, userDataDir: edgeProfile });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true, executablePath: EDGE, userDataDir: edgeProfile });
 
   const errors = [];
   const networkRequests = [];
@@ -117,7 +117,8 @@ async function run() {
     });
 
     // 5. Invariantes de la base candidata
-    await page.goto(BASE, { waitUntil: 'networkidle0' });
+    await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => document.querySelector('#db-status-badge')?.textContent.includes('Datos locales disponibles'));
     const invariants = await page.evaluate(async () => {
       const openDb = name => new Promise((resolve, reject) => {
         const req = indexedDB.open(name);
@@ -430,7 +431,10 @@ ${results.map(r => `| \`${r.name}\` | ${r.detail.split(' - ')[0]} | ${r.pass ? '
   if (failed > 0) process.exit(1);
 }
 
-run().catch(err => {
-  console.error('Error fatal en ejecución de pruebas:', err);
-  process.exit(1);
-});
+
+
+module.exports = { name: 'MVP_ASISTENCIA_UD2_UD6', run };
+
+
+
+

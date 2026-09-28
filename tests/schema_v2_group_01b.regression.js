@@ -32,7 +32,7 @@ async function run() {
     if (!await serverUp()) throw new Error('Servidor local no disponible.');
   }
 
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   try {
     const page = await browser.newPage();
     const externalRequests = [];
@@ -40,7 +40,7 @@ async function run() {
       const url = request.url();
       if (!url.startsWith('http://127.0.0.1:8080/') && !url.startsWith('data:') && !url.startsWith('blob:')) externalRequests.push(url);
     });
-    await page.goto(URL, { waitUntil: 'networkidle0' });
+    await page.goto(URL, { waitUntil: 'domcontentloaded' });
     const outcome = await page.evaluate(async backupSource => {
       const { CONFIG } = await import('/app/js/config.js');
       const { SCHEMA_V1, applySchemaUpgrade } = await import('/app/js/db/schema.js');
@@ -225,3 +225,6 @@ async function run() {
 }
 
 module.exports = { name: 'SCHEMA-V2-GROUP-01B', run };
+
+
+

@@ -1,6 +1,6 @@
 # Reporte de Resultados de Pruebas — Expansión Asistencia UD2 a UD6 (TMPL-06 a TMPL-10)
 
-Fecha: 2026-09-21
+Fecha: 2026-09-28
 Entorno: Microsoft Edge Headless (`Edg/153.0.4234.32`)
 Host: `http://127.0.0.1:8081/`
 DB Evaluada: `CETPRO_V2_CANDIDATE` y `CETPRO_V2_DEMO` (aislamiento estricto de `CETPRO_DB` en puerto 8080)

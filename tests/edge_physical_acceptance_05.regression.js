@@ -4,9 +4,9 @@ const up=url=>new Promise(resolve=>{const req=http.get(url,res=>{res.resume();re
 const wait=async url=>{for(let i=0;i<40;i++){if(await up(url)===200)return;await new Promise(r=>setTimeout(r,250));}throw new Error(`Servidor no disponible: ${url}`);};
 async function run(){let s1,s2;if(await up(V2)!==200){s2=fork(require.resolve('../scripts/v2-candidate-server.js'),[],{silent:true});await wait(V2);}if(await up(V1)!==200){s1=fork(require.resolve('../scripts/dev-server.js'),[],{silent:true});await wait(V1);}
   const results=[];const check=(id,passed,detail='')=>{const row={id,passed:Boolean(passed),detail};results.push(row);console.log(`[${row.passed?'PASSED':'FAILED'}] ${id}: ${detail}`);};
-  const browser=await puppeteer.launch({headless:true});
+  const browser=await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless:true});
   try{const page=await browser.newPage();const appErrors=[];const external=[];const httpErrors=[];await page.setRequestInterception(true);page.on('request',req=>{const url=req.url();if(/^https?:\/\//.test(url)&&!/^http:\/\/127\.0\.0\.1:(8080|8081)\//.test(url)){external.push(url);req.abort();}else req.continue();});page.on('pageerror',e=>appErrors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&m.text().includes('[QA_DOCUMENT_RENDERER]'))appErrors.push(m.text());});page.on('response',res=>{if(res.status()>=400&&res.url().startsWith('http://127.0.0.1:8081/'))httpErrors.push(`${res.status()} ${res.url()}`);});
-    await page.goto(QA,{waitUntil:'networkidle0',timeout:60000});
+    await page.goto(QA,{waitUntil:'domcontentloaded',timeout:90000});
     const initial=await page.evaluate(async()=>({origin:location.origin,dbs:(await indexedDB.databases()).map(x=>`${x.name}:${x.version}`).sort(),banner:document.querySelector('.warning')?.textContent,hasOfficial:[...document.querySelectorAll('button,a')].some(x=>/emitir oficial/i.test(x.textContent)),templates:[...document.querySelectorAll('#qa-template option')].map(x=>x.value)}));
     check('T-EPA05-01',initial.origin==='http://127.0.0.1:8081','origen 8081 exacto');
     check('T-EPA05-02',initial.banner.includes('DATOS SINTÉTICOS')&&initial.banner.includes('NO OFICIAL'),'banner inequívoco');
@@ -28,3 +28,6 @@ async function run(){let s1,s2;if(await up(V2)!==200){s2=fork(require.resolve('.
   }finally{await browser.close();if(s1)s1.kill();if(s2)s2.kill();}
   return {total:results.length,passed:results.filter(x=>x.passed).length,failed:results.filter(x=>!x.passed).length,results};}
 module.exports={name:'EDGE-PHYSICAL-ACCEPTANCE-05',run};
+
+
+

@@ -65,15 +65,15 @@ async function run() {
     }
   }
 
-  const browser = await puppeteer.launch({
-    headless: true,
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true,
     executablePath: EDGE,
     userDataDir: testUserDataDir
   });
 
   try {
     const page = await browser.newPage();
-    await page.goto(`${BASE}#/inicio`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE}#/inicio`, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => document.querySelector('#db-status-badge')?.textContent.includes('Datos locales disponibles'));
 
     // 2.1 Verificar estado de la DB candidata
     const dbState = await page.evaluate(async () => {
@@ -242,4 +242,7 @@ if (require.main === module) {
   });
 }
 
-module.exports = { run };
+module.exports = { name: 'MVP_SANITIZATION_VERIFICATION', run };
+
+
+

@@ -43,7 +43,7 @@
     },
     "finalScore": {
       "x": 795.4,
-      "width": 35.0
+      "width": 35
     }
   },
   "previewStatus": "AVAILABLE",
@@ -54,76 +54,106 @@
       "geometryStatus": "VERIFIED",
       "styleProfile": "HEADER_TITLE",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 95.0, "y": 263.0, "w": 450.0, "h": 14.0 }
+      "box": {
+        "x": 95,
+        "y": 263,
+        "w": 450,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "module.name",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 95.0, "y": 277.5, "w": 450.0, "h": 14.0 }
+      "box": {
+        "x": 95,
+        "y": 277.5,
+        "w": 450,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "efsrt.hours",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 670.0, "y": 277.5, "w": 140.0, "h": 14.0 }
+      "box": {
+        "x": 670,
+        "y": 277.5,
+        "w": 140,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "document.teacherName",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 95.0, "y": 292.0, "w": 380.0, "h": 14.0 }
+      "box": {
+        "x": 95,
+        "y": 292,
+        "w": 380,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "efsrt.startDate",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 565.0, "y": 292.0, "w": 70.0, "h": 14.0 }
+      "box": {
+        "x": 565,
+        "y": 292,
+        "w": 70,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "efsrt.endDate",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 720.0, "y": 292.0, "w": 90.0, "h": 14.0 }
+      "box": {
+        "x": 720,
+        "y": 292,
+        "w": 90,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "enrollment.code",
-      "geometryStatus": "VERIFIED",
+      "geometryStatus": "REVIEW_REQUIRED",
       "styleProfile": "DOCUMENT_NUMBER",
       "overflowPolicy": "FIELD_OVERFLOW"
     },
     {
       "canonicalKey": "student.fullName",
-      "geometryStatus": "VERIFIED",
+      "geometryStatus": "REVIEW_REQUIRED",
       "styleProfile": "PRIMARY_PERSON_NAME",
       "overflowPolicy": "FIELD_OVERFLOW"
     },
     {
       "canonicalKey": "efsrt.companyName",
-      "geometryStatus": "VERIFIED",
+      "geometryStatus": "REVIEW_REQUIRED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "FIELD_OVERFLOW"
     },
     {
       "canonicalKey": "efsrt.companyAddress",
-      "geometryStatus": "VERIFIED",
+      "geometryStatus": "REVIEW_REQUIRED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "FIELD_OVERFLOW"
     },
     {
       "canonicalKey": "efsrt.criterionScore",
-      "geometryStatus": "VERIFIED",
+      "geometryStatus": "REVIEW_REQUIRED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "FIELD_OVERFLOW"
     },
     {
       "canonicalKey": "efsrt.finalGrade",
-      "geometryStatus": "VERIFIED",
+      "geometryStatus": "REVIEW_REQUIRED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "FIELD_OVERFLOW"
     }
@@ -211,5 +241,6 @@
     }
   ],
   "rendererStatus": "RENDERER_IMPLEMENTED",
-  "fitStatus": "FAIL_CLOSED"
+  "fitStatus": "FAIL_CLOSED",
+  "officialIssueStatus": "BLOCKED"
 }

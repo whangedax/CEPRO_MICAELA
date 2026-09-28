@@ -66,7 +66,7 @@ async function run() {
 
   let server;
   if (!await up()) { server = fork(require.resolve('../scripts/v2-candidate-server.js'), [], { silent: true }); await waitServer(); }
-  const browser = await puppeteer.launch({ headless: true, executablePath: EDGE });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true, executablePath: EDGE });
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 1440, height: 900 });
@@ -80,7 +80,7 @@ async function run() {
         if (['http:', 'https:'].includes(url.protocol) && url.hostname !== '127.0.0.1') external.push(request.url());
       } catch { /* blob/data */ }
     });
-    await page.goto(`${BASE}#/demo`, { waitUntil: 'networkidle0', timeout: 60000 });
+    await page.goto(`${BASE}#/demo`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(() => document.querySelector('#candidate-runtime-banner')?.textContent.includes('MODO DEMOSTRACIÓN'));
     check('T-HOTFIX11-05-EDGE', /Edg/i.test(await browser.version()), await browser.version());
 
@@ -298,7 +298,7 @@ async function run() {
     });
     check('T-HOTFIX11-17-REAL-UNCHANGED', after.hash === baseline.hash &&
       JSON.stringify(after.counts) === JSON.stringify(baseline.counts), 'fingerprint y conteos idénticos');
-    check('T-HOTFIX11-18-RUNTIME', errors.length === 0, `${errors.length} errores JS/promise`);
+    check('T-HOTFIX11-18-RUNTIME', errors.length === 0, `${errors.length} errores JS/promise: ${errors.join(' | ')}`);
     check('T-HOTFIX11-19-OFFLINE', external.length === 0, `${external.length} solicitudes externas`);
   } finally {
     await browser.close();
@@ -315,3 +315,6 @@ if (require.main === module) run().then(result => {
   console.log(`MVP_DOCUMENT_PAGINATION_AND_REGISTRY_HOTFIX_11 ${result.passed}/${result.total}, failed=${result.failed}`);
   process.exit(result.failed ? 1 : 0);
 }).catch(error => { console.error(error); process.exit(1); });
+
+
+

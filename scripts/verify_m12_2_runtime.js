@@ -44,7 +44,7 @@ async function readCounts(page) {
 
 async function run() {
   const realCase = await buildOneRealCase();
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   const page = await browser.newPage();
   const consoleIssues = [];
   const appJsErrors = [];
@@ -197,3 +197,4 @@ run().catch(error => {
   console.error(error);
   process.exitCode = 1;
 });
+

@@ -24,13 +24,13 @@ async function run(){
   check('T-ATT07-08-IDS',read('app/js/services/attendance-v2-domain.js').includes('randomUUID')&&read('app/js/repositories/attendance-v2-repository.js').includes("generateAttendanceId('ATM')"),'IDs ATS/ATM estables');
 
   let server;if(!await up()){server=fork(require.resolve('../scripts/v2-candidate-server.js'),[],{silent:true});await waitServer();}
-  const browser=await puppeteer.launch({headless:true});
+  const browser=await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless:true});
   try{
     const page=await browser.newPage();
-    await page.goto(`${BASE}app/data/pdf-manifests/TMPL-05.json`,{waitUntil:'networkidle0'});
+    await page.goto(`${BASE}app/data/pdf-manifests/TMPL-05.json`,{waitUntil:'domcontentloaded'});
     const beforeDatabases=await page.evaluate(async()=>indexedDB.databases?await indexedDB.databases():[]);
     await page.evaluate(()=>new Promise(resolve=>{const request=indexedDB.deleteDatabase('CETPRO_V2_ATTENDANCE_LAB_QA');request.onsuccess=resolve;request.onerror=resolve;request.onblocked=resolve;}));
-    await page.goto(`${BASE}tools/attendance-qa.html`,{waitUntil:'networkidle0',timeout:30000});
+    await page.goto(`${BASE}tools/attendance-qa.html`,{waitUntil:'domcontentloaded',timeout:30000});
     await page.waitForFunction(()=>document.querySelectorAll('#body tr').length===40&&document.querySelector('#status')?.textContent.includes('Laboratorio listo'),{timeout:30000});
     check('T-ATT07-09-ORIGIN',await page.$eval('#origin',node=>node.textContent)===BASE.slice(0,-1),'origen 8081 exacto');
     check('T-ATT07-10-UI',await page.$$eval('#body tr',rows=>rows.length)===40&&await page.$$eval('#head th',cells=>cells.length)===8,'40 matrículas y 5 sesiones');
@@ -134,3 +134,6 @@ async function run(){
   return {total:results.length,passed:results.filter(row=>row.passed).length,failed:results.filter(row=>!row.passed).length};
 }
 module.exports={name:'ATTENDANCE_ENGINE_V2_07',run};
+
+
+

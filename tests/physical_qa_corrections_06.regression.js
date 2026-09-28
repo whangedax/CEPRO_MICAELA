@@ -38,11 +38,11 @@ async function run() {
     server = fork(require.resolve('../scripts/v2-candidate-server.js'), [], { silent: true });
     await wait();
   }
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   let before;
   try {
     const page = await browser.newPage();
-    await page.goto(BASE_URL, { waitUntil: 'networkidle0', timeout: 60000 });
+    await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(() => document.querySelector('#db-status-badge')?.textContent.includes('Datos locales disponibles'));
     const snapshot = () => page.evaluate(async () => {
       const { getDB } = await import('/app/js/db/database.js');
@@ -69,7 +69,7 @@ async function run() {
     check('T-PQC06-DB-03', before.groupsUnassigned && before.academicEmpty,
       'sin módulos/periodos asignados y sin escrituras académicas');
 
-    await page.goto(`${BASE_URL}#/configuracion`, { waitUntil: 'networkidle0', timeout: 60000 });
+    await page.goto(`${BASE_URL}#/configuracion`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForSelector('#inst-source-status-dre');
     const provenanceUi = await page.evaluate(() => {
       const fields = ['dre', 'codigoModular', 'departamento', 'provincia', 'distrito'];
@@ -261,3 +261,6 @@ async function run() {
 }
 
 module.exports = { name: 'PHYSICAL_QA_CORRECTIONS_06', run };
+
+
+

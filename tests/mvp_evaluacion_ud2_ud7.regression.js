@@ -95,7 +95,7 @@ async function run() {
 
   const edgeProfile = path.join(ROOT, 'tmp', 'edge-profiles', `mvp-evalexp-${Date.now()}`);
   fs.mkdirSync(edgeProfile, { recursive: true });
-  const browser = await puppeteer.launch({ headless: true, executablePath: EDGE, userDataDir: edgeProfile });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true, executablePath: EDGE, userDataDir: edgeProfile });
 
   const errors = [];
   const networkRequests = [];
@@ -112,7 +112,8 @@ async function run() {
     });
 
     // 5. Invariantes de la base candidata
-    await page.goto(BASE, { waitUntil: 'networkidle0' });
+    await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => document.querySelector('#db-status-badge')?.textContent.includes('Datos locales disponibles'));
     const invariants = await page.evaluate(async () => {
       const openDb = name => new Promise((resolve, reject) => {
         const req = indexedDB.open(name);
@@ -138,7 +139,7 @@ async function run() {
       `Invariantes candidata: ${invariants.students} est, ${invariants.enrollments} mat, ${invariants.groups} grp, ${invariants.periods} per`);
 
     // 6. Navegación a Evaluación (#/evaluacion) y presencia de controles
-    await page.goto(`${BASE}#/evaluacion`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE}#/evaluacion`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#btn-generate-tmpl11-candidate', { timeout: 10000 });
     const hasControls = await page.evaluate(() => {
       return Boolean(document.querySelector('#btn-generate-tmpl11-candidate') && document.querySelector('#eval-unit-selector'));
@@ -455,7 +456,10 @@ ${results.map(r => `| \`${r.name}\` | ${r.detail.split(' - ')[0]} | ${r.pass ? '
   if (failed > 0) process.exit(1);
 }
 
-run().catch(err => {
-  console.error('Error fatal en ejecución de pruebas:', err);
-  process.exit(1);
-});
+
+
+module.exports = { name: 'MVP_EVALUACION_UD2_UD7', run };
+
+
+
+

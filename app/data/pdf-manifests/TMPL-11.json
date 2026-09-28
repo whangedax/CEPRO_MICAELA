@@ -20,20 +20,35 @@
     "indicators": 5,
     "studentX": 34.55,
     "studentW": 210.42,
-    "originX": 245.0,
+    "originX": 245,
     "originY": 369.22,
     "stepY": 14.215,
     "stepX_IL": 106.86,
     "subcols": {
-      "ia1": { "offsetX": 0.0, "width": 19.26 },
-      "ia2": { "offsetX": 19.26, "width": 19.26 },
-      "ia3": { "offsetX": 38.52, "width": 19.26 },
-      "il": { "offsetX": 57.78, "width": 31.28 },
-      "r": { "offsetX": 89.06, "width": 17.80 }
+      "ia1": {
+        "offsetX": 0,
+        "width": 19.26
+      },
+      "ia2": {
+        "offsetX": 19.26,
+        "width": 19.26
+      },
+      "ia3": {
+        "offsetX": 38.52,
+        "width": 19.26
+      },
+      "il": {
+        "offsetX": 57.78,
+        "width": 31.28
+      },
+      "r": {
+        "offsetX": 89.06,
+        "width": 17.8
+      }
     },
     "finalResult": {
       "x": 779.3,
-      "width": 42.0
+      "width": 42
     }
   },
   "previewStatus": "AVAILABLE",
@@ -44,90 +59,150 @@
       "geometryStatus": "VERIFIED",
       "styleProfile": "HEADER_TITLE",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 520.0, "y": 98.0, "w": 300.0, "h": 14.0 }
+      "box": {
+        "x": 520,
+        "y": 98,
+        "w": 300,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "program.name",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 255.0, "y": 112.0, "w": 565.0, "h": 13.0 }
+      "box": {
+        "x": 255,
+        "y": 112,
+        "w": 565,
+        "h": 13
+      }
     },
     {
       "canonicalKey": "period.name",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 255.0, "y": 124.0, "w": 565.0, "h": 13.0 }
+      "box": {
+        "x": 255,
+        "y": 124,
+        "w": 565,
+        "h": 13
+      }
     },
     {
       "canonicalKey": "module.name",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 255.0, "y": 136.0, "w": 565.0, "h": 13.0 }
+      "box": {
+        "x": 255,
+        "y": 136,
+        "w": 565,
+        "h": 13
+      }
     },
     {
       "canonicalKey": "curriculum.unit.name",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 255.0, "y": 148.0, "w": 565.0, "h": 13.0 }
+      "box": {
+        "x": 255,
+        "y": 148,
+        "w": 565,
+        "h": 13
+      }
     },
     {
       "canonicalKey": "curriculum.unit.capacity",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 255.0, "y": 167.0, "w": 565.0, "h": 13.0 }
+      "box": {
+        "x": 255,
+        "y": 167,
+        "w": 565,
+        "h": 13
+      }
     },
     {
       "canonicalKey": "curriculum.indicator.1",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 255.0, "y": 194.0, "w": 565.0, "h": 14.0 }
+      "box": {
+        "x": 255,
+        "y": 194,
+        "w": 565,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "curriculum.indicator.2",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 255.0, "y": 222.0, "w": 565.0, "h": 14.0 }
+      "box": {
+        "x": 255,
+        "y": 222,
+        "w": 565,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "curriculum.indicator.3",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 255.0, "y": 250.0, "w": 565.0, "h": 14.0 }
+      "box": {
+        "x": 255,
+        "y": 250,
+        "w": 565,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "curriculum.indicator.4",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 255.0, "y": 277.0, "w": 565.0, "h": 14.0 }
+      "box": {
+        "x": 255,
+        "y": 277,
+        "w": 565,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "curriculum.indicator.5",
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_TEXT",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 255.0, "y": 305.0, "w": 565.0, "h": 14.0 }
+      "box": {
+        "x": 255,
+        "y": 305,
+        "w": 565,
+        "h": 14
+      }
     },
     {
       "canonicalKey": "student.fullName",
       "geometryStatus": "VERIFIED",
       "styleProfile": "PRIMARY_PERSON_NAME",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 34.55, "y": 369.22, "w": 210.42, "h": 14.215 },
+      "box": {
+        "x": 34.55,
+        "y": 369.22,
+        "w": 210.42,
+        "h": 14.215
+      },
       "repeat": 47,
       "stepY": 14.215
     },
     {
       "canonicalKey": "evaluation.indicatorScore",
-      "geometryStatus": "VERIFIED",
+      "geometryStatus": "REVIEW_REQUIRED",
       "styleProfile": "TABLE_NUMBER",
       "overflowPolicy": "AUTOFIT_OR_FAIL"
     },
@@ -136,7 +211,12 @@
       "geometryStatus": "VERIFIED",
       "styleProfile": "TABLE_NUMBER",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": { "x": 779.3, "y": 369.22, "w": 42.0, "h": 14.215 },
+      "box": {
+        "x": 779.3,
+        "y": 369.22,
+        "w": 42,
+        "h": 14.215
+      },
       "repeat": 47,
       "stepY": 14.215
     }

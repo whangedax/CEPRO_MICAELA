@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: 'new' });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: 'new' });
   const page = await browser.newPage();
   
   // We don't even need to load the full app, just a page with IndexedDB access to CETPRO_DB
@@ -42,3 +42,4 @@ const fs = require('fs');
 
   await browser.close();
 })();
+

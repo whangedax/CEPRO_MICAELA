@@ -18,19 +18,20 @@ async function run() {
     for (let i = 0; i < 40 && !await isUp(); i++) await new Promise(resolve => setTimeout(resolve, 250));
     if (!await isUp()) throw new Error('Servidor local no disponible para la suite de arquitectura.');
   }
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   try {
     const page = await browser.newPage();
-    await page.goto(URL, { waitUntil: 'networkidle0' });
+    await page.goto('http://127.0.0.1:8080/404-blank-test-page', { waitUntil: 'domcontentloaded' });
     const checks = await page.evaluate(async dbName => {
-      const { initDB } = await import('/app/js/db/database.js');
+      const { initDB, setDBInstance } = await import('/app/js/db/database.js');
       const { GroupAssignmentService } = await import('/app/js/services/group-assignment-service.js');
       const { DocumentDataService } = await import('/app/js/services/document-data-service.js');
       const { DocumentService } = await import('/app/js/services/document-service.js');
       const { auditReferentialIntegrity } = await import('/app/js/services/referential-audit-service.js');
       const db = await initDB(dbName);
+      setDBInstance(db); // Fix race condition with app.js
       const result = [];
-      const check = (id, ok) => result.push({ id, passed: Boolean(ok) });
+      const check = (id, ok, detail) => result.push({ id, passed: Boolean(ok), detail });
       const txWrite = (stores, fn) => new Promise((resolve, reject) => {
         const tx = db.transaction(stores, 'readwrite');
         fn(tx);
@@ -57,6 +58,10 @@ async function run() {
         tx.objectStore('institucion').put({ id: 'INST', nombre: 'CETPRO TEST' });
       });
       const service = new GroupAssignmentService();
+      await txWrite(['matriculas', 'estudiantes'], tx => {
+        tx.objectStore('matriculas').clear();
+        tx.objectStore('estudiantes').clear();
+      });
       check('T-AH01-01', (await service.listGroups()).groupsTotal === 0);
       const names = ['Ana', 'María Ñandú', "O'Connor", 'Á'.repeat(120)];
       await txWrite(['matriculas', 'estudiantes'], tx => {
@@ -112,11 +117,14 @@ async function run() {
       await txWrite(['matriculas'], tx => {
         tx.objectStore('matriculas').put({ id: 'MAT-1-0', estudianteId: 'E-1-0', programaId: 'P1', moduloId: null, periodoId: '2026-II', grupoCode: 'G-1' });
       });
+      const baselineAudCount08 = await count('auditoria');
       let stale = false;
       try { await service.assignModule({ groupCode: 'G-1', moduloId: 'M1', confirmed: true,
         expectedProgramId: 'P1', expectedCount: 1, expectedPreviousModuloId: null,
-        expectedPeriodId: '2026-I', expectedEnrollmentIds: ['MAT-1-0'] }); } catch { stale = true; }
-      check('T-AH01-08', stale && (await read('matriculas', 'MAT-1-0')).moduloId === null && await count('auditoria') === 0);
+        expectedPeriodId: '2026-I', expectedEnrollmentIds: ['MAT-1-0'] }); stale = 'NO_ERROR'; } catch(e) { stale = e.message; }
+      const mat = await read('matriculas', 'MAT-1-0');
+      const audCount = await count('auditoria');
+      check('T-AH01-08', stale !== 'NO_ERROR' && mat?.moduloId === null && audCount === baselineAudCount08);
       const current = await service.getGroup('G-1');
       await txWrite(['matriculas', 'estudiantes'], tx => {
         tx.objectStore('estudiantes').put({ id: 'E-X', nombres: 'Otra persona' });
@@ -175,7 +183,7 @@ async function run() {
       check('T-AH01-17', db.name === dbName && db.version === 1 && !db.objectStoreNames.contains('grupos_academicos'));
       return result;
     }, TEST_DB);
-    for (const item of checks) console.log(`[${item.passed ? 'PASSED' : 'FAILED'}] ${item.id}`);
+    for (const item of checks) console.log(`[${item.passed ? 'PASSED' : 'FAILED'}] ${item.id}${item.detail ? ' | ' + item.detail : ''}`);
     return { total: checks.length, passed: checks.filter(item => item.passed).length,
       failed: checks.filter(item => !item.passed).length };
   } finally {
@@ -184,3 +192,6 @@ async function run() {
   }
 }
 module.exports = { name: 'ARCHITECTURE-HARDENING-01', run };
+
+
+

@@ -1,16 +1,16 @@
 # RESULTADO DE PRUEBAS: GATE 18 (PILOTO TMPL-18 CONSOLIDADO EFSRT)
 
-**Fecha:** 2026-09-21T02:48:06.455Z
+**Fecha:** 2026-09-28T02:20:00.912Z
 **Entorno:** Microsoft Edge Headless
 **Servidor:** http://127.0.0.1:8081/
-**Resultado:** 15/15 pruebas superadas (100% PASS)
+**Resultado:** 14/15 pruebas superadas (CON FALLOS)
 
 ## Detalle de Pruebas
 
 | Código | Estado | Descripción |
 |---|---|---|
 | `T-EFSRT-18-01-CANONICAL-HASHES` | ✅ PASS | 21/21 hashes SHA-256 canónicos intactos |
-| `T-EFSRT-18-02-MANIFEST-CALIBRATION` | ✅ PASS | TMPL-18.json: AVAILABLE, 40 filas x 9 criterios, dy=13.6, campos verificados |
+| `T-EFSRT-18-02-MANIFEST-CALIBRATION` | ❌ FAIL | TMPL-18.json: AVAILABLE, 40 filas x 9 criterios, dy=13.6, campos verificados |
 | `T-EFSRT-18-03-PURE-RENDERER` | ✅ PASS | pdf-template-engine.js puro sin dependencias de IndexedDB |
 | `T-EFSRT-18-04-SERVER-PORT` | ✅ PASS | Servidor candidato activo en puerto 8081 |
 | `T-EFSRT-18-05-CANDIDATE-INVARIANTS` | ✅ PASS | Invariantes candidata: 269 est, 295 mat, 12 grp, 0 per |

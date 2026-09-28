@@ -32,7 +32,7 @@ export class DocumentService {
       throw new ValidationError(`La plantilla con ID "${templateId}" no existe en el catálogo documental.`);
     }
 
-    if (template.implementationStatus !== 'READY_FOR_PREVIEW') {
+    if (template.implementationStatus !== 'READY_FOR_PREVIEW' && template.implementationStatus !== 'AVAILABLE') {
       throw new ValidationError(`La plantilla "${template.name}" (${template.code}) aún no está implementada en M10. (Asignada a ${template.roadmapModule}).`);
     }
 

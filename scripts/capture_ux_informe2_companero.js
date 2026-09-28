@@ -31,8 +31,7 @@ async function run() {
   console.log('Iniciando batería de capturas UX para Informe 2 del compañero...');
   console.log('Resolución estándar: 1920x1080. Entorno: CETPRO_V2_DEMO.');
 
-  const browser = await puppeteer.launch({
-    headless: true,
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true,
     executablePath: 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
@@ -223,3 +222,5 @@ run().catch(err => {
   console.error('ERROR EN CAPTURAS DEL COMPAÑERO:', err);
   process.exit(1);
 });
+
+
