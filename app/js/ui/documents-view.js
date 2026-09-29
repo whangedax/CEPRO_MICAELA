@@ -1256,57 +1256,189 @@ export class DocumentsView {
 
     // TMPL-18: EFSRT
     if (template.templateId === 'TMPL-18') {
+      const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
+      const groupOptions = this._renderGroupOptions();
+
       return `
         <div class="context-step-box p-3 p-md-4">
-          <div class="alert alert-info mb-3 border-0 bg-white shadow-sm p-3 rounded" id="doc-context-status" style="border: 2px solid #a7f3d0 !important;">
-            <div class="fw-bold text-success mb-1" style="font-size: 1.05rem;">
-              <i class="bi bi-briefcase-fill me-1"></i>Consolidado de EFSRT (${template.templateId})
-            </div>
-            <div class="text-dark" style="font-size: 0.92rem;">Experiencias Formativas en Situaciones Reales de Trabajo (40 estudiantes, 9 criterios de evaluación formativa).</div>
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; background: #059669 !important;">2</span>
+            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico para el Consolidado de EFSRT</h5>
           </div>
-          <a href="#/efsrt" class="btn btn-success px-4 py-2 fw-bold text-white" style="font-size: 0.95rem;"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Consolidado EFSRT (TMPL-18)</a>
+
+          <div class="d-flex align-items-center justify-content-between p-2.5 px-3 rounded mb-3" style="background: #f0fdf4; border: 2px solid #86efac; border-radius: 10px;">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success px-2.5 py-1.5 fw-bold" style="background: #059669 !important; font-size: 0.85rem;">EFSRT</span>
+              <span class="fw-bold text-success" style="font-size: 0.95rem;">${escapeHtml(template.name)} (${template.templateId})</span>
+            </div>
+            <span class="badge bg-light text-secondary border fw-bold" style="font-size: 0.8rem; border-color: #a7f3d0 !important;">
+              <i class="bi bi-briefcase me-1 text-success"></i>40 estudiantes · 9 criterios · Formato A4 Landscape
+            </span>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1; min-width: 320px;">
+              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
+                <i class="bi bi-collection-fill me-1 text-success"></i>Programa y Grupo Académico:
+              </label>
+              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
+                ${groupOptions}
+              </select>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+              <button id="doc-generate-tmpl18-btn" type="button" class="btn btn-success px-4 py-2 fw-bold text-white" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.95rem; background: #059669; border-color: #059669;">
+                <i class="bi bi-briefcase-fill me-1"></i>Generar Consolidado EFSRT
+              </button>
+              <a href="#/efsrt" class="btn btn-outline-success fw-bold px-3 py-2" style="font-size: 0.92rem;">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Gestión de Prácticas
+              </a>
+            </div>
+          </div>
+          <div id="doc-selected-group-card">
+            ${this._renderGroupSummaryCard(selectedGroup)}
+          </div>
+          <div id="doc-group-status" class="fw-semibold text-secondary" style="font-size: 0.88rem;" aria-live="polite">
+            <i class="bi bi-info-circle me-1 text-success"></i>Emisión ministerial del consolidado de prácticas pre-profesionales con evaluación de criterios formativos.
+          </div>
         </div>`;
     }
 
     // TMPL-19: Acta Modular
     if (template.templateId === 'TMPL-19') {
+      const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
+      const groupOptions = this._renderGroupOptions();
+
       return `
         <div class="context-step-box p-3 p-md-4">
-          <div class="alert alert-info mb-3 border-0 bg-white shadow-sm p-3 rounded" id="doc-context-status" style="border: 2px solid #bfdbfe !important;">
-            <div class="fw-bold text-primary mb-1" style="font-size: 1.05rem;">
-              <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i>Acta Oficial de Evaluación Modular (${template.templateId})
-            </div>
-            <div class="text-dark" style="font-size: 0.92rem;">Plantilla ministerial oficial para vista previa e impresión (formato A3 landscape, 20+20 filas, cuadro de unidades aprobadas y estadística).</div>
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; background: #1d4ed8 !important;">2</span>
+            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico para el Acta Oficial de Evaluación</h5>
           </div>
-          <a href="#/evaluacion" class="btn btn-primary px-4 py-2 fw-bold" style="font-size: 0.95rem;"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir Evaluación y Generar Acta (TMPL-19)</a>
+
+          <div class="d-flex align-items-center justify-content-between p-2.5 px-3 rounded mb-3" style="background: #eff6ff; border: 2px solid #93c5fd; border-radius: 10px;">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-primary px-2.5 py-1.5 fw-bold" style="background: #1d4ed8 !important; font-size: 0.85rem;">ACTA OFICIAL</span>
+              <span class="fw-bold text-primary" style="font-size: 0.95rem;">${escapeHtml(template.name)} (${template.templateId})</span>
+            </div>
+            <span class="badge bg-light text-secondary border fw-bold" style="font-size: 0.8rem; border-color: #bfdbfe !important;">
+              <i class="bi bi-file-earmark-spreadsheet me-1 text-primary"></i>2 Páginas Físicas A3 Landscape · 20+20 Filas
+            </span>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1; min-width: 320px;">
+              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
+                <i class="bi bi-collection-fill me-1 text-primary"></i>Programa y Grupo Académico:
+              </label>
+              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
+                ${groupOptions}
+              </select>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+              <button id="doc-generate-tmpl19-btn" type="button" class="btn btn-primary px-4 py-2 fw-bold text-white" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.95rem; background: #1d4ed8; border-color: #1d4ed8;">
+                <i class="bi bi-file-earmark-check-fill me-1"></i>Generar Acta Oficial (TMPL-19)
+              </button>
+              <a href="#/evaluacion" class="btn btn-outline-primary fw-bold px-3 py-2" style="font-size: 0.92rem;">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Registro de Calificaciones
+              </a>
+            </div>
+          </div>
+          <div id="doc-selected-group-card">
+            ${this._renderGroupSummaryCard(selectedGroup)}
+          </div>
+          <div id="doc-group-status" class="fw-semibold text-secondary" style="font-size: 0.88rem;" aria-live="polite">
+            <i class="bi bi-info-circle me-1 text-primary"></i>Acta oficial ministerial de dos páginas físicas A3 landscape con cuadro de unidades y estadísticas generales.
+          </div>
         </div>`;
     }
 
     // TMPL-20: Certificado Modular
     if (template.templateId === 'TMPL-20') {
+      const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
+      const groupOptions = this._renderGroupOptions();
+
       return `
         <div class="context-step-box p-3 p-md-4">
-          <div class="alert alert-secondary mb-3 border-0 bg-white shadow-sm p-3 rounded" id="doc-context-status" style="border: 2px solid #cbd5e1 !important;">
-            <div class="fw-bold text-secondary mb-1" style="font-size: 1.05rem;">
-              <i class="bi bi-lock-fill me-1"></i>Certificado Modular (TMPL-20) — EMISIÓN RESERVADA
-            </div>
-            <div class="text-dark" style="font-size: 0.92rem;">Mapeo oficial completado. Conforme a norma MINEDU, la emisión física requiere la asignación previa del Libro y Folio institucional.</div>
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; background: #64748b !important;">2</span>
+            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico y Verifique Requisitos</h5>
           </div>
-          <button class="btn btn-secondary px-4 py-2 fw-bold" disabled aria-disabled="true"><i class="bi bi-lock-fill me-1"></i>Bloqueado por B-006 (Libro/Folio)</button>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1; min-width: 320px;">
+              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
+                <i class="bi bi-collection-fill me-1 text-secondary"></i>Programa y Grupo Académico:
+              </label>
+              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
+                ${groupOptions}
+              </select>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+              <button class="btn btn-secondary px-4 py-2 fw-bold" disabled aria-disabled="true" style="font-size: 0.95rem;">
+                <i class="bi bi-shield-lock me-1"></i>Bloqueado por B-006 (Libro/Folio)
+              </button>
+            </div>
+          </div>
+          <div id="doc-selected-group-card">
+            ${this._renderGroupSummaryCard(selectedGroup)}
+          </div>
+          <div class="alert alert-secondary mb-0 border-0 bg-white shadow-sm p-3 rounded" id="doc-context-status" style="border: 2px solid #cbd5e1 !important;">
+            <div class="fw-bold text-secondary mb-1" style="font-size: 1rem;">
+              <i class="bi bi-lock-fill me-1"></i>Certificado Modular (TMPL-20) — Emisión Oficial Reservada
+            </div>
+            <div class="text-dark small mb-2" style="font-size: 0.88rem;">
+              Mapeo de datos completado conforme al formato oficial MINEDU (2 páginas). La emisión formal requiere asignación de Libro y Folio institucional.
+            </div>
+            <div class="d-flex flex-wrap gap-3 text-secondary small fw-semibold">
+              <span><i class="bi bi-check-circle-fill text-success me-1"></i>Mapeo y Geometría: 100% Conforme</span>
+              <span><i class="bi bi-dash-circle-fill text-warning me-1"></i>Libro y Folio: Pendiente de Registro</span>
+            </div>
+          </div>
         </div>`;
     }
 
     // TMPL-21: Título Técnico
     if (template.templateId === 'TMPL-21') {
+      const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
+      const groupOptions = this._renderGroupOptions();
+
       return `
         <div class="context-step-box p-3 p-md-4">
-          <div class="alert alert-secondary mb-3 border-0 bg-white shadow-sm p-3 rounded" id="doc-context-status" style="border: 2px solid #cbd5e1 !important;">
-            <div class="fw-bold text-secondary mb-1" style="font-size: 1.05rem;">
-              <i class="bi bi-lock-fill me-1"></i>Título Técnico (TMPL-21) — EMISIÓN RESERVADA
-            </div>
-            <div class="text-dark" style="font-size: 0.92rem;">Acreditación ministerial de titulación técnica. Requiere la asignación oficial del Código REGISTRA ministerial antes de su emisión formal.</div>
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; background: #64748b !important;">2</span>
+            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico y Verifique Requisitos</h5>
           </div>
-          <button class="btn btn-secondary px-4 py-2 fw-bold" disabled aria-disabled="true"><i class="bi bi-lock-fill me-1"></i>Bloqueado por B-006 (Código REGISTRA)</button>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1; min-width: 320px;">
+              <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
+                <i class="bi bi-collection-fill me-1 text-secondary"></i>Programa y Grupo Académico:
+              </label>
+              <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
+                ${groupOptions}
+              </select>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+              <button class="btn btn-secondary px-4 py-2 fw-bold" disabled aria-disabled="true" style="font-size: 0.95rem;">
+                <i class="bi bi-shield-lock me-1"></i>Bloqueado por B-006 (Código REGISTRA)
+              </button>
+            </div>
+          </div>
+          <div id="doc-selected-group-card">
+            ${this._renderGroupSummaryCard(selectedGroup)}
+          </div>
+          <div class="alert alert-secondary mb-0 border-0 bg-white shadow-sm p-3 rounded" id="doc-context-status" style="border: 2px solid #cbd5e1 !important;">
+            <div class="fw-bold text-secondary mb-1" style="font-size: 1rem;">
+              <i class="bi bi-lock-fill me-1"></i>Título Técnico (TMPL-21) — Emisión Oficial Reservada
+            </div>
+            <div class="text-dark small mb-2" style="font-size: 0.88rem;">
+              Acreditación ministerial de egreso y titulación técnica oficial. Requiere asignación oficial del Código REGISTRA provisto por el MINEDU.
+            </div>
+            <div class="d-flex flex-wrap gap-3 text-secondary small fw-semibold">
+              <span><i class="bi bi-check-circle-fill text-success me-1"></i>Mapeo y Geometría: 100% Conforme</span>
+              <span><i class="bi bi-dash-circle-fill text-warning me-1"></i>Código REGISTRA: Pendiente de Recepción MINEDU</span>
+            </div>
+          </div>
         </div>`;
     }
 
@@ -1437,10 +1569,58 @@ export class DocumentsView {
           </span>
         </div>`;
     }
-    if (template?.templateId === 'TMPL-18') return '<div class="text-center py-5 text-muted"><p>El Consolidado de EFSRT (TMPL-18) se gestiona desde la sección Prácticas / EFSRT.</p></div>';
-    if (template?.templateId === 'TMPL-19') return '<div class="text-center py-5 text-muted"><p>El Acta de Evaluación Modular (TMPL-19) se gestiona desde la sección Registro Académico (Evaluación).</p></div>';
-    if (template?.templateId === 'TMPL-20') return '<div class="text-center py-5 text-muted"><p>El Certificado Modular (TMPL-20) requiere Libro, Folio y firmas oficiales registradas (Norma MINEDU).</p></div>';
-    if (template?.templateId === 'TMPL-21') return '<div class="text-center py-5 text-muted"><p>El Título Técnico (TMPL-21) requiere Código REGISTRA ministerial oficial (Norma MINEDU).</p></div>';
+    if (template?.templateId === 'TMPL-18') {
+      return `
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-briefcase fs-1 d-block mb-2 text-success opacity-50" style="font-size: 3rem;"></i>
+          <h4 class="fw-bold mb-2 text-dark" style="font-size: 1.25rem;">Consolidado de EFSRT (TMPL-18)</h4>
+          <p class="mb-3 text-secondary" style="max-width: 520px; margin-left: auto; margin-right: auto; font-size: 0.95rem;">
+            Seleccione el grupo académico arriba y haga clic en <strong>Generar Consolidado EFSRT</strong> para emitir la sábana ministerial con los 9 criterios de evaluación formativa.
+          </p>
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+            <i class="bi bi-check2-circle me-1"></i>Formato Oficial de Prácticas Pre-Profesionales
+          </span>
+        </div>`;
+    }
+    if (template?.templateId === 'TMPL-19') {
+      return `
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-file-earmark-spreadsheet fs-1 d-block mb-2 text-primary opacity-50" style="font-size: 3rem;"></i>
+          <h4 class="fw-bold mb-2 text-dark" style="font-size: 1.25rem;">Acta Oficial de Evaluación Modular (TMPL-19)</h4>
+          <p class="mb-3 text-secondary" style="max-width: 520px; margin-left: auto; margin-right: auto; font-size: 0.95rem;">
+            Seleccione el grupo académico arriba y haga clic en <strong>Generar Acta Oficial (TMPL-19)</strong> para emitir el acta ministerial de 2 páginas físicas A3 landscape con cuadro de unidades y estadísticas generales.
+          </p>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+            <i class="bi bi-file-earmark-ruled me-1"></i>Formato Oficial A3 Landscape · 2 Páginas Físicas
+          </span>
+        </div>`;
+    }
+    if (template?.templateId === 'TMPL-20') {
+      return `
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-mortarboard fs-1 d-block mb-2 text-secondary opacity-50" style="font-size: 3rem;"></i>
+          <h4 class="fw-bold mb-2 text-dark" style="font-size: 1.25rem;">Certificado Modular (TMPL-20)</h4>
+          <p class="mb-3 text-secondary" style="max-width: 520px; margin-left: auto; margin-right: auto; font-size: 0.95rem;">
+            Documento de acreditación oficial con formato MINEDU de 2 páginas. Su emisión física formal se activa tras el registro oficial del Libro y Folio institucional.
+          </p>
+          <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+            <i class="bi bi-shield-lock me-1"></i>Emisión Reservada según Directiva MINEDU
+          </span>
+        </div>`;
+    }
+    if (template?.templateId === 'TMPL-21') {
+      return `
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-award fs-1 d-block mb-2 text-secondary opacity-50" style="font-size: 3rem;"></i>
+          <h4 class="fw-bold mb-2 text-dark" style="font-size: 1.25rem;">Título Técnico Oficial (TMPL-21)</h4>
+          <p class="mb-3 text-secondary" style="max-width: 520px; margin-left: auto; margin-right: auto; font-size: 0.95rem;">
+            Documento oficial de titulación técnica del MINEDU. Su emisión ministerial requiere la recepción previa del Código REGISTRA otorgado por el Ministerio de Educación.
+          </p>
+          <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+            <i class="bi bi-shield-lock me-1"></i>Emisión Reservada según Directiva MINEDU
+          </span>
+        </div>`;
+    }
     return `<div class="text-center py-5 text-muted"><p>${escapeHtml(template?.name || 'Esta plantilla')} — ${escapeHtml(template?.previewStatus || 'NOT_IMPLEMENTED')}.</p></div>`;
   }
 
@@ -1548,6 +1728,10 @@ export class DocumentsView {
         if (asistenciaBtn) asistenciaBtn.disabled = !this.selectedGroupId;
         const evaluacionBtn = container.querySelector('#doc-generate-evaluacion-btn');
         if (evaluacionBtn) evaluacionBtn.disabled = !this.selectedGroupId;
+        const tmpl18Btn = container.querySelector('#doc-generate-tmpl18-btn');
+        if (tmpl18Btn) tmpl18Btn.disabled = !this.selectedGroupId;
+        const tmpl19Btn = container.querySelector('#doc-generate-tmpl19-btn');
+        if (tmpl19Btn) tmpl19Btn.disabled = !this.selectedGroupId;
       };
     }
 
@@ -1579,6 +1763,16 @@ export class DocumentsView {
     const evaluacionBtn = container.querySelector('#doc-generate-evaluacion-btn');
     if (evaluacionBtn) {
       evaluacionBtn.onclick = async () => this._generateTmplEvaluation(container);
+    }
+
+    const tmpl18Btn = container.querySelector('#doc-generate-tmpl18-btn');
+    if (tmpl18Btn) {
+      tmpl18Btn.onclick = async () => this._generateTmpl18(container);
+    }
+
+    const tmpl19Btn = container.querySelector('#doc-generate-tmpl19-btn');
+    if (tmpl19Btn) {
+      tmpl19Btn.onclick = async () => this._generateTmpl19(container);
     }
 
     if (searchInput) searchInput.oninput = async event => this._searchEnrollments(container, event.target.value);
@@ -2062,6 +2256,149 @@ export class DocumentsView {
       console.error('[DocumentsView] Error al generar Evaluación', error);
       if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
       if (workspace) workspace.innerHTML = `<div class="alert alert-danger">No se pudo generar el registro de evaluación: ${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async _generateTmpl18(container) {
+    const groupId = this.selectedGroupId;
+    const workspace = container.querySelector('#doc-render-workspace');
+    const status = container.querySelector('#doc-group-status');
+    if (!groupId) {
+      if (status) status.innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i>Seleccione un grupo académico primero.</span>';
+      return;
+    }
+    if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="spinner-border spinner-border-sm me-1"></i>Generando Consolidado de EFSRT (TMPL-18)…</span>`;
+    if (workspace) workspace.innerHTML = `<div class="text-center py-5 text-muted"><div class="spinner-border text-success mb-2" role="status"></div><p class="fw-bold text-dark">Generando Consolidado de EFSRT en PDF…</p></div>`;
+    try {
+      const rosterContext = await this.adminService.buildGroupRoster(groupId);
+      const { rows, group } = rosterContext;
+      const capacity = 40;
+      let blob;
+      const pageCount = Math.max(1, Math.ceil(rows.length / capacity));
+
+      if (rows.length <= capacity) {
+        blob = await this.pdfEngine.renderTMPL18({
+          ...rosterContext,
+          studentsList: rows,
+          rows,
+          demoMode: isDemoRuntime()
+        });
+      } else {
+        const chunks = [];
+        for (let i = 0; i < rows.length; i += capacity) {
+          chunks.push(rows.slice(i, i + capacity));
+        }
+        const { PDFDocument, StandardFonts, rgb } = (typeof window !== 'undefined' && window.PDFLib)
+          ? window.PDFLib
+          : await import('pdf-lib');
+        const mergedDoc = await PDFDocument.create();
+        const boldFont = await mergedDoc.embedFont(StandardFonts.HelveticaBold);
+
+        for (let idx = 0; idx < chunks.length; idx++) {
+          const chunk = chunks[idx];
+          const singleBlob = await this.pdfEngine.renderTMPL18({
+            ...rosterContext,
+            studentsList: chunk,
+            rows: chunk,
+            demoMode: isDemoRuntime()
+          });
+          const chunkDoc = await PDFDocument.load(await singleBlob.arrayBuffer());
+          const [copiedPage] = await mergedDoc.copyPages(chunkDoc, [0]);
+          mergedDoc.addPage(copiedPage);
+
+          const startNum = idx * capacity + 1;
+          const endNum = startNum + chunk.length - 1;
+          copiedPage.drawText(`FOLIO ${idx + 1} DE ${chunks.length} · ESTUDIANTES ${startNum} AL ${endNum} (TOTAL GRUPO: ${rows.length})`, {
+            x: 40,
+            y: 12,
+            size: 7.5,
+            font: boldFont,
+            color: rgb(0.1, 0.4, 0.2)
+          });
+        }
+        const mergedBytes = await mergedDoc.save();
+        blob = new Blob([mergedBytes], { type: 'application/pdf' });
+      }
+
+      const fileName = `${isDemoRuntime() ? 'DEMO_' : ''}EFSRT_${group.visibleCode}.pdf`;
+      this._displayPdfInWorkspace(container, blob, fileName, `Consolidado de EFSRT — ${group.visibleCode}`);
+      if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Consolidado EFSRT generado con éxito (${rows.length} estudiantes, ${pageCount} folio(s)).</span>`;
+    } catch (error) {
+      console.error('[DocumentsView] Error al generar EFSRT', error);
+      if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
+      if (workspace) workspace.innerHTML = `<div class="alert alert-danger">No se pudo generar el consolidado de EFSRT: ${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async _generateTmpl19(container) {
+    const groupId = this.selectedGroupId;
+    const workspace = container.querySelector('#doc-render-workspace');
+    const status = container.querySelector('#doc-group-status');
+    if (!groupId) {
+      if (status) status.innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i>Seleccione un grupo académico primero.</span>';
+      return;
+    }
+    if (status) status.innerHTML = `<span class="text-primary fw-bold"><i class="spinner-border spinner-border-sm me-1"></i>Generando Acta Oficial de Evaluación Modular (TMPL-19)…</span>`;
+    if (workspace) workspace.innerHTML = `<div class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-2" role="status"></div><p class="fw-bold text-dark">Generando Acta Oficial de Evaluación Modular en PDF…</p></div>`;
+    try {
+      const rosterContext = await this.adminService.buildGroupRoster(groupId);
+      const { rows, group, program } = rosterContext;
+      let effectiveModule = rosterContext.module;
+      if (!effectiveModule || !effectiveModule.nombre) {
+        try {
+          const meta = await this.adminService.getAdminMetadata();
+          effectiveModule = (meta.modules || []).find(m => m.programaId === group.programaId)
+            || { id: 'MOD-01', nombre: `Módulo Formativo Oficial — ${program?.nombre || 'General'}` };
+        } catch {
+          effectiveModule = { id: 'MOD-01', nombre: `Módulo Formativo Oficial — ${program?.nombre || 'General'}` };
+        }
+      }
+      const capacity = 40;
+      let blob;
+      const pageCount = Math.max(1, Math.ceil(rows.length / capacity));
+
+      if (rows.length <= capacity) {
+        blob = await this.pdfEngine.renderTMPL19({
+          ...rosterContext,
+          module: effectiveModule,
+          studentsList: rows,
+          rows,
+          demoMode: isDemoRuntime()
+        });
+      } else {
+        const chunks = [];
+        for (let i = 0; i < rows.length; i += capacity) {
+          chunks.push(rows.slice(i, i + capacity));
+        }
+        const { PDFDocument } = (typeof window !== 'undefined' && window.PDFLib)
+          ? window.PDFLib
+          : await import('pdf-lib');
+        const mergedDoc = await PDFDocument.create();
+
+        for (let idx = 0; idx < chunks.length; idx++) {
+          const chunk = chunks[idx];
+          const singleBlob = await this.pdfEngine.renderTMPL19({
+            ...rosterContext,
+            module: effectiveModule,
+            studentsList: chunk,
+            rows: chunk,
+            demoMode: isDemoRuntime()
+          });
+          const chunkDoc = await PDFDocument.load(await singleBlob.arrayBuffer());
+          const copiedPages = await mergedDoc.copyPages(chunkDoc, chunkDoc.getPageIndices());
+          copiedPages.forEach(p => mergedDoc.addPage(p));
+        }
+        const mergedBytes = await mergedDoc.save();
+        blob = new Blob([mergedBytes], { type: 'application/pdf' });
+      }
+
+      const fileName = `${isDemoRuntime() ? 'DEMO_' : ''}ACTA_MODULAR_${group.visibleCode}.pdf`;
+      this._displayPdfInWorkspace(container, blob, fileName, `Acta Oficial de Evaluación Modular — ${group.visibleCode}`);
+      if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Acta oficial generada con éxito (${rows.length} estudiantes, ${pageCount * 2} páginas físicas A3).</span>`;
+    } catch (error) {
+      console.error('[DocumentsView] Error al generar Acta Modular', error);
+      if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
+      if (workspace) workspace.innerHTML = `<div class="alert alert-danger">No se pudo generar el acta oficial: ${escapeHtml(error.message)}</div>`;
     }
   }
 

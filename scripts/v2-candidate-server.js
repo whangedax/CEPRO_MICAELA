@@ -27,7 +27,7 @@ const server = http.createServer((req,res)=>{
   }
   fs.stat(file,(error,stat)=>{
     if(error||!stat.isFile()){res.writeHead(404,{'Content-Type':'text/plain'});res.end('404');return;}
-    res.writeHead(200,{'Content-Type':TYPES[path.extname(file).toLowerCase()]||'application/octet-stream','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
+    res.writeHead(200,{'Content-Type':TYPES[path.extname(file).toLowerCase()]||'application/octet-stream','Content-Length':stat.size,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
     fs.createReadStream(file).pipe(res);
   });
 });

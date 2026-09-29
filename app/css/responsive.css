@@ -51,13 +51,16 @@
   }
 
   .toast-container {
-    left: 1rem;
+    top: 1rem;
+    left: auto;
     right: 1rem;
-    bottom: 1rem;
+    bottom: auto;
+    pointer-events: none !important;
   }
   .toast {
     min-width: auto;
-    width: 100%;
+    max-width: calc(100vw - 2rem);
+    pointer-events: none !important;
   }
 
   .grid, .grid-3 {
