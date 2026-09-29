@@ -924,7 +924,7 @@ export class DocumentsView {
 
   _renderGroupOptions() {
     if (!this.groups || this.groups.length === 0) {
-      return '<option value="">No hay grupos disponibles</option>';
+      return '<option value="">⚠️ No hay grupos disponibles en este entorno (Abra Puerto 8081)</option>';
     }
 
     // Agrupar grupos por Programa de Estudio
@@ -968,6 +968,23 @@ export class DocumentsView {
 
   _renderGroupSummaryCard(selectedGroup) {
     if (!selectedGroup) {
+      if (!this.groups || this.groups.length === 0) {
+        return `
+          <div class="alert alert-warning border border-warning shadow-sm mb-3 p-3 rounded-3" style="background-color: #fffbeb; border-color: #fde68a !important;">
+            <div class="d-flex align-items-start gap-3">
+              <div class="fs-3 text-warning"><i class="bi bi-exclamation-triangle-fill"></i></div>
+              <div>
+                <h6 class="fw-bold text-dark mb-1">No se detectaron grupos académicos en esta sesión</h6>
+                <p class="mb-2 text-secondary small">
+                  Está conectado a una sesión sin grupos académicos cargados (por ejemplo, si ingresó por el Puerto 8080 en vez del Puerto 8081).
+                </p>
+                <a href="http://127.0.0.1:8081/#/documentos" class="btn btn-sm btn-primary fw-bold text-white px-3 py-1.5" style="text-decoration: none;">
+                  <i class="bi bi-box-arrow-up-right me-1"></i>Abrir Sistema Académico V2 (Puerto 8081 con 12 Grupos)
+                </a>
+              </div>
+            </div>
+          </div>`;
+      }
       return `
         <div class="alert alert-warning d-flex align-items-center gap-2 mb-3 p-3 rounded" style="border: 2px solid #fde68a !important;">
           <i class="bi bi-exclamation-triangle-fill fs-5 text-warning"></i>

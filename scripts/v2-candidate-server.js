@@ -10,6 +10,11 @@ const TYPES = { '.html':'text/html; charset=UTF-8','.css':'text/css; charset=UTF
 const server = http.createServer((req,res)=>{
   const pathname = decodeURIComponent(new URL(req.url, `http://${HOST}:${PORT}`).pathname);
   if (pathname === '/favicon.ico') { res.writeHead(204, { 'Cache-Control': 'no-store' }); res.end(); return; }
+  if (pathname === '/app/index.html' || pathname === '/index.html' || pathname === '/app' || pathname === '/app/') {
+    res.writeHead(302, { 'Location': '/', 'Cache-Control': 'no-store' });
+    res.end();
+    return;
+  }
   if (pathname === '/_candidate/real-backup') {
     if (!fs.existsSync(BACKUP)) { res.writeHead(503,{'Content-Type':'text/plain'});res.end('Backup candidato no disponible.');return; }
     res.writeHead(200,{'Content-Type':'application/json; charset=UTF-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
