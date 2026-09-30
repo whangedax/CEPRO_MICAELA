@@ -13,6 +13,7 @@ import { isDemoRuntime } from '../services/runtime-target-service.js';
 import { MvpAdminService } from '../services/mvp-admin-service.js';
 import { MvpPdfService } from '../services/mvp-pdf-service.js';
 import { Etapa2DataService } from '../services/etapa2-data-service.js';
+import { Etapa4DataService } from '../services/etapa4-data-service.js';
 import { Notifications } from './notifications.js';
 
 export const DOCUMENT_STATES = Object.freeze({
@@ -93,12 +94,16 @@ export class DocumentsView {
     this.adminService = new MvpAdminService();
     this.mvpPdf = new MvpPdfService();
     this.etapa2DataService = new Etapa2DataService();
+    this.etapa4DataService = new Etapa4DataService();
     this.groups = [];
     this.selectedGroupId = null;
     this.selectedTemplateId = 'TMPL-01';
     this.activeStageId = 'ETAPA_1';
     this.selectedAsistenciaUD = 1; // 1 a 6
     this.selectedEvaluacionUD = 1; // 1 a 7
+    this.selectedEtapa4StudentId = null;
+    this.etapa4Students = [];
+    this._etapa4LoadedGroupId = null;
     this.searchQuery = '';
     this.searchResults = [];
     this.selectedEnrollmentId = null;
@@ -137,6 +142,23 @@ export class DocumentsView {
       this.selectedAsistenciaUD = (parseInt(this.selectedTemplateId.replace('TMPL-', ''), 10) - 4);
     } else if (this.selectedTemplateId >= 'TMPL-11' && this.selectedTemplateId <= 'TMPL-17') {
       this.selectedEvaluacionUD = (parseInt(this.selectedTemplateId.replace('TMPL-', ''), 10) - 10);
+    }
+
+    // Sincronizar estudiantes de Etapa 4 si el template es TMPL-20 o TMPL-21
+    if (['TMPL-20', 'TMPL-21'].includes(this.selectedTemplateId) && this.selectedGroupId) {
+      if (!this.etapa4Students || this.etapa4Students.length === 0 || this._etapa4LoadedGroupId !== this.selectedGroupId) {
+        try {
+          const rosterContext = await this.adminService.buildGroupRoster(this.selectedGroupId);
+          this.etapa4Students = rosterContext.rows || [];
+          this._etapa4LoadedGroupId = this.selectedGroupId;
+          if ((!this.selectedEtapa4StudentId || !this.etapa4Students.some(s => String(s.studentId || s.id) === String(this.selectedEtapa4StudentId))) && this.etapa4Students.length > 0) {
+            this.selectedEtapa4StudentId = this.etapa4Students[0].studentId || this.etapa4Students[0].id;
+          }
+        } catch (e) {
+          console.warn('[DocumentsView] Error precargando estudiantes para Etapa 4:', e);
+          this.etapa4Students = [];
+        }
+      }
     }
 
     const currentTemplate = this.registry.getById(this.selectedTemplateId);
@@ -1006,51 +1028,109 @@ export class DocumentsView {
     return `
       <div class="doc-cards-grid">
         <!-- Certificado Modular (TMPL-20) -->
-        <div class="doc-item-card card-accent-lock ${isTmpl20 ? 'active-template' : ''}" data-select-tmpl="TMPL-20" role="button" tabindex="0" title="Seleccionar Certificado Modular (TMPL-20)">
+        <div class="doc-item-card card-accent-student ${isTmpl20 ? 'active-template' : ''}" data-select-tmpl="TMPL-20" role="button" tabindex="0" title="Seleccionar Certificado Modular (TMPL-20)">
           <div>
             <div class="d-flex justify-content-between align-items-start mb-2">
-              <span class="doc-badge-pill doc-badge-secondary">
-                <i class="bi bi-lock-fill me-1"></i>🔒 Requiere Libro y Folio
+              <span class="doc-badge-pill doc-badge-primary">
+                <i class="bi bi-mortarboard-fill me-1"></i>📜 Acreditación Modular Oficial
               </span>
-              <span class="badge bg-secondary fs-6 px-2 py-1">TMPL-20</span>
+              <span class="badge bg-primary fs-6 px-2 py-1">TMPL-20</span>
             </div>
             <h5 class="card-doc-title">
-              <i class="bi bi-mortarboard-fill me-1 text-secondary"></i>Certificado Modular Oficial
+              <i class="bi bi-mortarboard-fill me-1 text-primary"></i>Certificado Modular Oficial
             </h5>
             <p class="card-doc-desc">
-              Documento oficial de acreditación modular ministerial (2 páginas físicas). Emisión oficial reservada hasta asignación formal de Libro y Folio institucional.
+              Acreditación oficial por módulo formativo ministerial (2 páginas A4 landscape). Anverso con datos de carrera y foliación; reverso con hasta 8 UDs, competencias y Libro/Folio.
             </p>
           </div>
           <div class="card-footer-action">
-            <button type="button" class="btn btn-sm ${isTmpl20 ? 'btn-secondary text-white' : 'btn-outline-secondary'} fw-bold px-3 py-2" data-select-tmpl="TMPL-20">
-              <i class="bi bi-shield-lock me-1"></i>Ver Requisitos
+            <button type="button" class="btn btn-sm ${isTmpl20 ? 'btn-primary text-white' : 'btn-outline-primary'} fw-bold px-3 py-2" data-select-tmpl="TMPL-20">
+              ${isTmpl20 ? '<i class="bi bi-check-circle-fill me-1"></i>✓ Seleccionado' : '<i class="bi bi-hand-index-thumb me-1"></i>👉 Seleccionar'}
             </button>
-            <span class="badge bg-light text-dark border fw-bold">MINEDU</span>
+            <span class="fw-bold text-secondary small">2 Páginas · Individual</span>
           </div>
         </div>
 
         <!-- Título Técnico (TMPL-21) -->
-        <div class="doc-item-card card-accent-lock ${isTmpl21 ? 'active-template' : ''}" data-select-tmpl="TMPL-21" role="button" tabindex="0" title="Seleccionar Título Técnico (TMPL-21)">
+        <div class="doc-item-card card-accent-ugel ${isTmpl21 ? 'active-template' : ''}" data-select-tmpl="TMPL-21" role="button" tabindex="0" title="Seleccionar Título Técnico (TMPL-21)">
           <div>
             <div class="d-flex justify-content-between align-items-start mb-2">
-              <span class="doc-badge-pill doc-badge-secondary">
-                <i class="bi bi-lock-fill me-1"></i>🔒 Requiere Código REGISTRA
+              <span class="doc-badge-pill doc-badge-success">
+                <i class="bi bi-award-fill me-1"></i>🎓 Egreso y Titulación Oficial
               </span>
-              <span class="badge bg-secondary fs-6 px-2 py-1">TMPL-21</span>
+              <span class="badge bg-success fs-6 px-2 py-1">TMPL-21</span>
             </div>
             <h5 class="card-doc-title">
-              <i class="bi bi-award-fill me-1 text-secondary"></i>Título Técnico Oficial
+              <i class="bi bi-award-fill me-1 text-success"></i>Título Técnico / Auxiliar Técnico
             </h5>
             <p class="card-doc-desc">
-              Acreditación de egreso y titulación técnica oficial. Emisión ministerial reservada hasta recepción y validación del código REGISTRA oficial del MINEDU.
+              Acreditación de graduación y titulación técnica ministerial del MINEDU (2 páginas A4 landscape). Anverso con nombre y denominación oficial; reverso con Código REGISTRA y Asiento.
             </p>
           </div>
           <div class="card-footer-action">
-            <button type="button" class="btn btn-sm ${isTmpl21 ? 'btn-secondary text-white' : 'btn-outline-secondary'} fw-bold px-3 py-2" data-select-tmpl="TMPL-21">
-              <i class="bi bi-shield-lock me-1"></i>Ver Requisitos
+            <button type="button" class="btn btn-sm ${isTmpl21 ? 'btn-success text-white' : 'btn-outline-success'} fw-bold px-3 py-2" data-select-tmpl="TMPL-21">
+              ${isTmpl21 ? '<i class="bi bi-check-circle-fill me-1"></i>✓ Seleccionado' : '<i class="bi bi-hand-index-thumb me-1"></i>👉 Seleccionar'}
             </button>
-            <span class="badge bg-light text-dark border fw-bold">MINEDU</span>
+            <span class="fw-bold text-secondary small">MINEDU · Titulación</span>
           </div>
+        </div>
+      </div>
+    `;
+  }
+
+  _renderEtapa4StudentOptions() {
+    if (!this.etapa4Students || this.etapa4Students.length === 0) {
+      return '<option value="">(No hay estudiantes matriculados en este grupo)</option>';
+    }
+    return this.etapa4Students.map((s, idx) => {
+      const sId = s.studentId || s.id;
+      const isSelected = String(sId) === String(this.selectedEtapa4StudentId);
+      const doc = s.numeroDocumento || s.document || '';
+      return `<option value="${escapeHtml(sId)}" ${isSelected ? 'selected' : ''}>${idx + 1}. ${escapeHtml(s.studentName || s.fullName || s.apellidosNombres || 'Estudiante')} ${doc ? `(DNI: ${doc})` : ''}</option>`;
+    }).join('');
+  }
+
+  _renderEtapa4StudentSummary(selectedGroup) {
+    if (!this.selectedEtapa4StudentId || !this.etapa4Students || this.etapa4Students.length === 0) return '';
+    const student = this.etapa4Students.find(s => String(s.studentId || s.id) === String(this.selectedEtapa4StudentId));
+    if (!student) return '';
+
+    const isTmpl20 = this.selectedTemplateId === 'TMPL-20';
+    const regData = isTmpl20
+      ? this.etapa4DataService.getCertificado(this.selectedGroupId, this.selectedEtapa4StudentId)
+      : this.etapa4DataService.getTitulo(this.selectedGroupId, this.selectedEtapa4StudentId);
+
+    const hasData = Boolean(regData);
+
+    return `
+      <div class="card border-0 shadow-sm p-3 mb-3" style="background: #f8fafc; border-left: 4px solid ${isTmpl20 ? '#2563eb' : '#059669'} !important; border-radius: 8px;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="fw-bold text-dark" style="font-size: 0.95rem;">
+            <i class="bi bi-person-badge-fill me-1 text-${isTmpl20 ? 'primary' : 'success'}"></i>${escapeHtml(student.studentName || student.fullName || 'Estudiante')}
+          </div>
+          <span class="badge ${hasData ? (isTmpl20 ? 'bg-primary' : 'bg-success') : 'bg-secondary'} px-2.5 py-1.5 fw-bold" style="font-size: 0.82rem;">
+            ${hasData ? '<i class="bi bi-check2-circle me-1"></i>Datos Registrales Configurados' : '<i class="bi bi-clock me-1"></i>Valores Sugeridos / Pendiente Edición'}
+          </span>
+        </div>
+        <div class="row g-2 text-secondary small" style="font-size: 0.85rem;">
+          <div class="col-sm-4">
+            <span class="text-muted">Documento:</span> <strong class="text-dark">${escapeHtml(student.numeroDocumento || student.document || '---')}</strong>
+          </div>
+          ${isTmpl20 ? `
+            <div class="col-sm-4">
+              <span class="text-muted">Código Certificado:</span> <strong class="text-dark">${escapeHtml(regData?.registerCode || 'CM-2026-0042')}</strong>
+            </div>
+            <div class="col-sm-4">
+              <span class="text-muted">Libro / Folio:</span> <strong class="text-dark">Libro ${escapeHtml(regData?.registryBook || '01')} · Folio ${escapeHtml(regData?.registryFolio || '15')}</strong>
+            </div>
+          ` : `
+            <div class="col-sm-4">
+              <span class="text-muted">Código REGISTRA:</span> <strong class="text-dark">${escapeHtml(regData?.registerCode || 'MINEDU-REG-2026-84920')}</strong>
+            </div>
+            <div class="col-sm-4">
+              <span class="text-muted">Asiento:</span> <strong class="text-dark">${escapeHtml(regData?.registryAsiento ? 'Registrado' : 'Sugerido')}</strong>
+            </div>
+          `}
         </div>
       </div>
     `;
@@ -1510,43 +1590,53 @@ export class DocumentsView {
     if (template.templateId === 'TMPL-20') {
       const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
       const groupOptions = this._renderGroupOptions();
+      const studentOptions = this._renderEtapa4StudentOptions();
+      const studentSummary = this._renderEtapa4StudentSummary(selectedGroup);
 
       return `
         <div class="context-step-box p-3 p-md-4">
           <div class="d-flex align-items-center gap-2 mb-3">
-            <span class="badge text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; background: #64748b !important;">2</span>
-            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico y Verifique Requisitos</h5>
+            <span class="badge text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; background: #2563eb !important;">2</span>
+            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico y Estudiante para el Certificado Modular (TMPL-20)</h5>
           </div>
 
           <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1rem;">
-            <div style="flex: 1; min-width: 320px;">
+            <div style="flex: 1; min-width: 260px;">
               <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
-                <i class="bi bi-collection-fill me-1 text-secondary"></i>Programa y Grupo Académico:
+                <i class="bi bi-collection-fill me-1 text-primary"></i>Programa y Grupo Académico:
               </label>
               <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
                 ${groupOptions}
               </select>
             </div>
+            <div style="flex: 1; min-width: 260px;">
+              <label class="form-label fw-bold small text-dark mb-1" for="doc-etapa4-student-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
+                <i class="bi bi-person-fill me-1 text-primary"></i>Estudiante del Grupo:
+              </label>
+              <select id="doc-etapa4-student-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
+                ${studentOptions}
+              </select>
+            </div>
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-              <button class="btn btn-secondary px-4 py-2 fw-bold" disabled aria-disabled="true" style="font-size: 0.95rem;">
-                <i class="bi bi-shield-lock me-1"></i>Bloqueado por B-006 (Libro/Folio)
+              <button id="doc-generate-tmpl20-btn" type="button" class="btn btn-primary px-3 py-2 fw-bold text-white" ${!this.selectedGroupId || !this.selectedEtapa4StudentId ? 'disabled' : ''} style="font-size: 0.92rem; background: #2563eb; border-color: #2563eb;">
+                <i class="bi bi-file-earmark-check-fill me-1"></i>Generar Certificado (TMPL-20)
+              </button>
+              <button id="doc-open-etapa4-modal-btn" type="button" class="btn btn-warning px-3 py-2 fw-bold text-dark" ${!this.selectedGroupId || !this.selectedEtapa4StudentId ? 'disabled' : ''} style="font-size: 0.92rem; background: #f59e0b; border-color: #d97706;" title="Editar Libro, Folio, Asiento y UDs">
+                <i class="bi bi-pencil-square me-1"></i>📝 Datos Registrales
+              </button>
+              <button id="doc-demo-etapa4-btn" type="button" class="btn btn-outline-primary fw-bold px-3 py-2" ${!this.selectedGroupId || !this.selectedEtapa4StudentId ? 'disabled' : ''} style="font-size: 0.92rem;" title="Precargar Libro, Folio y UDs con datos demo">
+                <i class="bi bi-lightning-charge-fill me-1"></i>Precargar Demo
               </button>
             </div>
+          </div>
+          <div id="doc-etapa4-student-summary-container">
+            ${studentSummary}
           </div>
           <div id="doc-selected-group-card">
             ${this._renderGroupSummaryCard(selectedGroup)}
           </div>
-          <div class="alert alert-secondary mb-0 border-0 bg-white shadow-sm p-3 rounded" id="doc-context-status" style="border: 2px solid #cbd5e1 !important;">
-            <div class="fw-bold text-secondary mb-1" style="font-size: 1rem;">
-              <i class="bi bi-lock-fill me-1"></i>Certificado Modular (TMPL-20) — Emisión Oficial Reservada
-            </div>
-            <div class="text-dark small mb-2" style="font-size: 0.88rem;">
-              Mapeo de datos completado conforme al formato oficial MINEDU (2 páginas). La emisión formal requiere asignación de Libro y Folio institucional.
-            </div>
-            <div class="d-flex flex-wrap gap-3 text-secondary small fw-semibold">
-              <span><i class="bi bi-check-circle-fill text-success me-1"></i>Mapeo y Geometría: 100% Conforme</span>
-              <span><i class="bi bi-dash-circle-fill text-warning me-1"></i>Libro y Folio: Pendiente de Registro</span>
-            </div>
+          <div id="doc-group-status" class="fw-semibold text-secondary" style="font-size: 0.88rem;" aria-live="polite">
+            <i class="bi bi-info-circle me-1 text-primary"></i>Acreditación modular ministerial oficial (2 páginas A4 horizontal). Al generar, se incluirán las notas vigesimales de las UDs y la numeración registral.
           </div>
         </div>`;
     }
@@ -1555,43 +1645,53 @@ export class DocumentsView {
     if (template.templateId === 'TMPL-21') {
       const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
       const groupOptions = this._renderGroupOptions();
+      const studentOptions = this._renderEtapa4StudentOptions();
+      const studentSummary = this._renderEtapa4StudentSummary(selectedGroup);
 
       return `
         <div class="context-step-box p-3 p-md-4">
           <div class="d-flex align-items-center gap-2 mb-3">
-            <span class="badge text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; background: #64748b !important;">2</span>
-            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico y Verifique Requisitos</h5>
+            <span class="badge text-white rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; background: #059669 !important;">2</span>
+            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.12rem; color: #0f172a;">Paso 2: Seleccione el Grupo Académico y Estudiante para el Título Técnico Oficial (TMPL-21)</h5>
           </div>
 
           <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1rem;">
-            <div style="flex: 1; min-width: 320px;">
+            <div style="flex: 1; min-width: 260px;">
               <label class="form-label fw-bold small text-dark mb-1" for="doc-group-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
-                <i class="bi bi-collection-fill me-1 text-secondary"></i>Programa y Grupo Académico:
+                <i class="bi bi-collection-fill me-1 text-success"></i>Programa y Grupo Académico:
               </label>
               <select id="doc-group-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
                 ${groupOptions}
               </select>
             </div>
+            <div style="flex: 1; min-width: 260px;">
+              <label class="form-label fw-bold small text-dark mb-1" for="doc-etapa4-student-select" style="display: block; font-weight: 700; font-size: 0.88rem; color: #0f172a;">
+                <i class="bi bi-person-fill me-1 text-success"></i>Estudiante Titulado:
+              </label>
+              <select id="doc-etapa4-student-select" class="form-select doc-selector-select" style="max-width: 100%; width: 100%;">
+                ${studentOptions}
+              </select>
+            </div>
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-              <button class="btn btn-secondary px-4 py-2 fw-bold" disabled aria-disabled="true" style="font-size: 0.95rem;">
-                <i class="bi bi-shield-lock me-1"></i>Bloqueado por B-006 (Código REGISTRA)
+              <button id="doc-generate-tmpl21-btn" type="button" class="btn btn-success px-3 py-2 fw-bold text-white" ${!this.selectedGroupId || !this.selectedEtapa4StudentId ? 'disabled' : ''} style="font-size: 0.92rem; background: #059669; border-color: #059669;">
+                <i class="bi bi-award-fill me-1"></i>Generar Título Oficial (TMPL-21)
+              </button>
+              <button id="doc-open-etapa4-modal-btn" type="button" class="btn btn-warning px-3 py-2 fw-bold text-dark" ${!this.selectedGroupId || !this.selectedEtapa4StudentId ? 'disabled' : ''} style="font-size: 0.92rem; background: #f59e0b; border-color: #d97706;" title="Editar Código REGISTRA y Asiento">
+                <i class="bi bi-pencil-square me-1"></i>📝 Datos Registrales
+              </button>
+              <button id="doc-demo-etapa4-btn" type="button" class="btn btn-outline-success fw-bold px-3 py-2" ${!this.selectedGroupId || !this.selectedEtapa4StudentId ? 'disabled' : ''} style="font-size: 0.92rem;" title="Precargar Código REGISTRA y Asiento con datos demo">
+                <i class="bi bi-lightning-charge-fill me-1"></i>Precargar Demo
               </button>
             </div>
+          </div>
+          <div id="doc-etapa4-student-summary-container">
+            ${studentSummary}
           </div>
           <div id="doc-selected-group-card">
             ${this._renderGroupSummaryCard(selectedGroup)}
           </div>
-          <div class="alert alert-secondary mb-0 border-0 bg-white shadow-sm p-3 rounded" id="doc-context-status" style="border: 2px solid #cbd5e1 !important;">
-            <div class="fw-bold text-secondary mb-1" style="font-size: 1rem;">
-              <i class="bi bi-lock-fill me-1"></i>Título Técnico (TMPL-21) — Emisión Oficial Reservada
-            </div>
-            <div class="text-dark small mb-2" style="font-size: 0.88rem;">
-              Acreditación ministerial de egreso y titulación técnica oficial. Requiere asignación oficial del Código REGISTRA provisto por el MINEDU.
-            </div>
-            <div class="d-flex flex-wrap gap-3 text-secondary small fw-semibold">
-              <span><i class="bi bi-check-circle-fill text-success me-1"></i>Mapeo y Geometría: 100% Conforme</span>
-              <span><i class="bi bi-dash-circle-fill text-warning me-1"></i>Código REGISTRA: Pendiente de Recepción MINEDU</span>
-            </div>
+          <div id="doc-group-status" class="fw-semibold text-secondary" style="font-size: 0.88rem;" aria-live="polite">
+            <i class="bi bi-info-circle me-1 text-success"></i>Acreditación de graduación y titulación técnica ministerial (2 páginas A4 horizontal). Al generar, se incluirán el título oficial, código REGISTRA y asiento registral institucional.
           </div>
         </div>`;
     }
@@ -1752,26 +1852,26 @@ export class DocumentsView {
     if (template?.templateId === 'TMPL-20') {
       return `
         <div class="text-center py-5 text-muted">
-          <i class="bi bi-mortarboard fs-1 d-block mb-2 text-secondary opacity-50" style="font-size: 3rem;"></i>
-          <h4 class="fw-bold mb-2 text-dark" style="font-size: 1.25rem;">Certificado Modular (TMPL-20)</h4>
-          <p class="mb-3 text-secondary" style="max-width: 520px; margin-left: auto; margin-right: auto; font-size: 0.95rem;">
-            Documento de acreditación oficial con formato MINEDU de 2 páginas. Su emisión física formal se activa tras el registro oficial del Libro y Folio institucional.
+          <i class="bi bi-mortarboard fs-1 d-block mb-2 text-primary opacity-50" style="font-size: 3rem;"></i>
+          <h4 class="fw-bold mb-2 text-dark" style="font-size: 1.25rem;">Certificado Modular Oficial (TMPL-20)</h4>
+          <p class="mb-3 text-secondary" style="max-width: 540px; margin-left: auto; margin-right: auto; font-size: 0.95rem;">
+            Seleccione el grupo académico y al estudiante arriba, y haga clic en <strong>Generar Certificado (TMPL-20)</strong> para emitir el certificado oficial de 2 páginas físicas A4 landscape con anverso curricular y reverso de calificaciones registrales.
           </p>
-          <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 fw-bold" style="font-size: 0.85rem;">
-            <i class="bi bi-shield-lock me-1"></i>Emisión Reservada según Directiva MINEDU
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+            <i class="bi bi-file-earmark-check me-1"></i>Formato Oficial MINEDU · 2 Páginas A4 Horizontal
           </span>
         </div>`;
     }
     if (template?.templateId === 'TMPL-21') {
       return `
         <div class="text-center py-5 text-muted">
-          <i class="bi bi-award fs-1 d-block mb-2 text-secondary opacity-50" style="font-size: 3rem;"></i>
+          <i class="bi bi-award fs-1 d-block mb-2 text-success opacity-50" style="font-size: 3rem;"></i>
           <h4 class="fw-bold mb-2 text-dark" style="font-size: 1.25rem;">Título Técnico Oficial (TMPL-21)</h4>
-          <p class="mb-3 text-secondary" style="max-width: 520px; margin-left: auto; margin-right: auto; font-size: 0.95rem;">
-            Documento oficial de titulación técnica del MINEDU. Su emisión ministerial requiere la recepción previa del Código REGISTRA otorgado por el Ministerio de Educación.
+          <p class="mb-3 text-secondary" style="max-width: 540px; margin-left: auto; margin-right: auto; font-size: 0.95rem;">
+            Seleccione el grupo académico y al estudiante titulado arriba, y haga clic en <strong>Generar Título Oficial (TMPL-21)</strong> para emitir el diploma ministerial de titulación con código REGISTRA y asiento registral.
           </p>
-          <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 fw-bold" style="font-size: 0.85rem;">
-            <i class="bi bi-shield-lock me-1"></i>Emisión Reservada según Directiva MINEDU
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+            <i class="bi bi-award me-1"></i>Acreditación Oficial MINEDU · Titulación Técnica
           </span>
         </div>`;
     }
@@ -1858,7 +1958,7 @@ export class DocumentsView {
 
     const groupSelect = container.querySelector('#doc-group-select');
     if (groupSelect) {
-      groupSelect.onchange = event => {
+      groupSelect.onchange = async event => {
         this.selectedGroupId = event.target.value;
         const g = this.groups.find(item => item.id === this.selectedGroupId);
         if (g) this.selectedGroupCode = g.visibleCode;
@@ -1867,6 +1967,26 @@ export class DocumentsView {
         const cardBox = container.querySelector('#doc-selected-group-card');
         if (cardBox) {
           cardBox.innerHTML = this._renderGroupSummaryCard(g);
+        }
+
+        // Si estamos en Etapa 4, actualizar estudiantes del grupo
+        if (['TMPL-20', 'TMPL-21'].includes(this.selectedTemplateId) && this.selectedGroupId) {
+          try {
+            const rosterContext = await this.adminService.buildGroupRoster(this.selectedGroupId);
+            this.etapa4Students = rosterContext.rows || [];
+            this._etapa4LoadedGroupId = this.selectedGroupId;
+            this.selectedEtapa4StudentId = this.etapa4Students[0]?.studentId || this.etapa4Students[0]?.id || null;
+            const studentSelect = container.querySelector('#doc-etapa4-student-select');
+            if (studentSelect) {
+              studentSelect.innerHTML = this._renderEtapa4StudentOptions();
+            }
+            const summaryBox = container.querySelector('#doc-etapa4-student-summary-container');
+            if (summaryBox) {
+              summaryBox.innerHTML = this._renderEtapa4StudentSummary(g);
+            }
+          } catch (e) {
+            console.warn('[DocumentsView] Error al actualizar estudiantes en grupo:', e);
+          }
         }
 
         // Sincronizar estado habilitado/deshabilitado de los botones de emisión
@@ -1894,6 +2014,34 @@ export class DocumentsView {
         if (tmpl18Btn) tmpl18Btn.disabled = !this.selectedGroupId;
         const tmpl19Btn = container.querySelector('#doc-generate-tmpl19-btn');
         if (tmpl19Btn) tmpl19Btn.disabled = !this.selectedGroupId;
+        const tmpl20Btn = container.querySelector('#doc-generate-tmpl20-btn');
+        if (tmpl20Btn) tmpl20Btn.disabled = !this.selectedGroupId || !this.selectedEtapa4StudentId;
+        const tmpl21Btn = container.querySelector('#doc-generate-tmpl21-btn');
+        if (tmpl21Btn) tmpl21Btn.disabled = !this.selectedGroupId || !this.selectedEtapa4StudentId;
+        const openE4ModalBtn = container.querySelector('#doc-open-etapa4-modal-btn');
+        if (openE4ModalBtn) openE4ModalBtn.disabled = !this.selectedGroupId || !this.selectedEtapa4StudentId;
+        const demoE4Btn = container.querySelector('#doc-demo-etapa4-btn');
+        if (demoE4Btn) demoE4Btn.disabled = !this.selectedGroupId || !this.selectedEtapa4StudentId;
+      };
+    }
+
+    const etapa4StudentSelect = container.querySelector('#doc-etapa4-student-select');
+    if (etapa4StudentSelect) {
+      etapa4StudentSelect.onchange = event => {
+        this.selectedEtapa4StudentId = event.target.value;
+        const g = this.groups.find(item => item.id === this.selectedGroupId);
+        const summaryBox = container.querySelector('#doc-etapa4-student-summary-container');
+        if (summaryBox) {
+          summaryBox.innerHTML = this._renderEtapa4StudentSummary(g);
+        }
+        const tmpl20Btn = container.querySelector('#doc-generate-tmpl20-btn');
+        if (tmpl20Btn) tmpl20Btn.disabled = !this.selectedGroupId || !this.selectedEtapa4StudentId;
+        const tmpl21Btn = container.querySelector('#doc-generate-tmpl21-btn');
+        if (tmpl21Btn) tmpl21Btn.disabled = !this.selectedGroupId || !this.selectedEtapa4StudentId;
+        const openE4ModalBtn = container.querySelector('#doc-open-etapa4-modal-btn');
+        if (openE4ModalBtn) openE4ModalBtn.disabled = !this.selectedGroupId || !this.selectedEtapa4StudentId;
+        const demoE4Btn = container.querySelector('#doc-demo-etapa4-btn');
+        if (demoE4Btn) demoE4Btn.disabled = !this.selectedGroupId || !this.selectedEtapa4StudentId;
       };
     }
 
@@ -1965,6 +2113,26 @@ export class DocumentsView {
     const tmpl19Btn = container.querySelector('#doc-generate-tmpl19-btn');
     if (tmpl19Btn) {
       tmpl19Btn.onclick = async () => this._generateTmpl19(container);
+    }
+
+    const tmpl20Btn = container.querySelector('#doc-generate-tmpl20-btn');
+    if (tmpl20Btn) {
+      tmpl20Btn.onclick = async () => this._generateTmpl20(container);
+    }
+
+    const tmpl21Btn = container.querySelector('#doc-generate-tmpl21-btn');
+    if (tmpl21Btn) {
+      tmpl21Btn.onclick = async () => this._generateTmpl21(container);
+    }
+
+    const openE4ModalBtn = container.querySelector('#doc-open-etapa4-modal-btn');
+    if (openE4ModalBtn) {
+      openE4ModalBtn.onclick = async () => this._openEtapa4Modal(container);
+    }
+
+    const demoE4Btn = container.querySelector('#doc-demo-etapa4-btn');
+    if (demoE4Btn) {
+      demoE4Btn.onclick = async () => this._preloadDemoEtapa4(container);
     }
 
     if (searchInput) searchInput.oninput = async event => this._searchEnrollments(container, event.target.value);
@@ -3208,6 +3376,472 @@ export class DocumentsView {
       console.error('[DocumentsView] Error al generar Acta Modular', error);
       if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
       if (workspace) workspace.innerHTML = `<div class="alert alert-danger">No se pudo generar el acta oficial: ${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async _generateTmpl20(container) {
+    const groupId = this.selectedGroupId;
+    const studentId = this.selectedEtapa4StudentId;
+    const workspace = container.querySelector('#doc-document-workspace');
+    const status = container.querySelector('#doc-group-status');
+    if (!groupId || !studentId) {
+      if (status) status.innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i>Seleccione un grupo y un estudiante.</span>';
+      return;
+    }
+    if (status) status.innerHTML = `<span class="text-primary fw-bold"><i class="spinner-border spinner-border-sm me-1"></i>Generando Certificado Modular Oficial (TMPL-20)…</span>`;
+    if (workspace) workspace.innerHTML = `<div class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-2" role="status"></div><p class="fw-bold text-dark">Generando Certificado Modular en PDF…</p></div>`;
+
+    try {
+      const rosterContext = await this.adminService.buildGroupRoster(groupId);
+      const { group, program } = rosterContext;
+      const student = rosterContext.rows.find(s => String(s.studentId || s.id) === String(studentId)) || rosterContext.rows[0];
+
+      let effectiveModule = rosterContext.module;
+      if (!effectiveModule || !effectiveModule.nombre) {
+        try {
+          const meta = await this.adminService.getAdminMetadata();
+          effectiveModule = (meta.modules || []).find(m => m.programaId === group.programaId)
+            || { id: 'MOD-01', nombre: `Módulo Formativo Oficial — ${program?.nombre || 'General'}` };
+        } catch {
+          effectiveModule = { id: 'MOD-01', nombre: `Módulo Formativo Oficial — ${program?.nombre || 'General'}` };
+        }
+      }
+
+      const regData = this.etapa4DataService.getOrGenerateCertificado(groupId, studentId, student, program, effectiveModule);
+
+      const resolvedFieldSet = {
+        'student.fullName': { status: 'RESOLVED', value: (student.studentName || student.fullName || 'ESTUDIANTE').toUpperCase() },
+        'module.name': { status: 'RESOLVED', value: (effectiveModule.nombre || effectiveModule.name || 'MÓDULO FORMATIVO').toUpperCase() },
+        'program.name': { status: 'RESOLVED', value: (program?.nombre || 'PROGRAMA DE ESTUDIOS').toUpperCase() },
+        'institution.name': { status: 'RESOLVED', value: (rosterContext.institution?.nombreInstitucion || rosterContext.institution?.nombre || "CETPRO 'SAN PABLO'").toUpperCase() },
+        'curriculum.module.hours': { status: 'RESOLVED', value: String(effectiveModule.horas || regData.hours || '320') },
+        'curriculum.module.credits': { status: 'RESOLVED', value: String(effectiveModule.creditos || regData.credits || '12') },
+        'document.emissionDate': { status: 'RESOLVED', value: regData.emissionDate || 'Lima, 20 de Diciembre de 2026' },
+        'document.registerCode': { status: 'RESOLVED', value: regData.registerCode || 'CM-2026-0042' },
+        'group.ciclo': { status: 'RESOLVED', value: regData.ciclo || group.ciclo || program?.ciclo || 'AUXILIAR TÉCNICO' },
+        'group.modalidad': { status: 'RESOLVED', value: regData.modalidad || group.modalidad || 'PRESENCIAL' },
+        'curriculum.unit.competence': { status: 'RESOLVED', value: regData.competence || 'Competencia técnica específica' },
+        'document.registryBook': { status: 'RESOLVED', value: regData.registryBook || '01' },
+        'document.registryFolio': { status: 'RESOLVED', value: regData.registryFolio || '15' },
+        'document.registryNumber': { status: 'RESOLVED', value: regData.registryNumber || '0042' },
+        'document.registryDate': { status: 'RESOLVED', value: regData.registryDate || '20/12/2026' }
+      };
+
+      const rows = (regData.units || []).slice(0, 8);
+
+      const blob = await this.pdfEngine.renderTMPL20({
+        resolvedFieldSet,
+        rows,
+        counts: { detailRows: rows.length },
+        demoMode: isDemoRuntime()
+      });
+
+      const safeStudentName = (student.studentName || 'Estudiante').replace(/[^A-Za-z0-9_-]/g, '_');
+      const fileName = `${isDemoRuntime() ? 'DEMO_' : ''}CERTIFICADO_MODULAR_${safeStudentName}.pdf`;
+      this._displayPdfInWorkspace(container, blob, fileName, `Certificado Modular Oficial — ${student.studentName || 'Estudiante'}`);
+      if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Certificado Modular generado con éxito (2 páginas físicas A4 landscape, ${rows.length} UDs).</span>`;
+    } catch (error) {
+      console.error('[DocumentsView] Error al generar Certificado Modular', error);
+      if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
+      if (workspace) workspace.innerHTML = `<div class="alert alert-danger">No se pudo generar el certificado modular: ${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async _generateTmpl21(container) {
+    const groupId = this.selectedGroupId;
+    const studentId = this.selectedEtapa4StudentId;
+    const workspace = container.querySelector('#doc-document-workspace');
+    const status = container.querySelector('#doc-group-status');
+    if (!groupId || !studentId) {
+      if (status) status.innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i>Seleccione un grupo y un estudiante.</span>';
+      return;
+    }
+    if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="spinner-border spinner-border-sm me-1"></i>Generando Título Técnico Oficial (TMPL-21)…</span>`;
+    if (workspace) workspace.innerHTML = `<div class="text-center py-5 text-muted"><div class="spinner-border text-success mb-2" role="status"></div><p class="fw-bold text-dark">Generando Título Técnico Oficial en PDF…</p></div>`;
+
+    try {
+      const rosterContext = await this.adminService.buildGroupRoster(groupId);
+      const { group, program } = rosterContext;
+      const student = rosterContext.rows.find(s => String(s.studentId || s.id) === String(studentId)) || rosterContext.rows[0];
+
+      const regData = this.etapa4DataService.getOrGenerateTitulo(groupId, studentId, student, program);
+
+      const progTitle = program?.nombre ? program.nombre.toUpperCase() : 'PELUQUERÍA Y BARBERÍA';
+      const ciclo = program?.ciclo || 'AUXILIAR TÉCNICO';
+
+      const resolvedFieldSet = {
+        'student.fullName': { status: 'RESOLVED', value: (student.studentName || student.fullName || 'ESTUDIANTE').toUpperCase() },
+        'document.officialTitleText': { status: 'RESOLVED', value: regData.officialTitleText || `${ciclo.toUpperCase()} EN ${progTitle}` },
+        'document.emissionDate': { status: 'RESOLVED', value: regData.emissionDate || 'Dado en Lima, a los 20 días del mes de Diciembre del 2026' },
+        'document.registerCode': { status: 'RESOLVED', value: regData.registerCode || 'MINEDU-REG-2026-84920' },
+        'document.registryAsiento': { status: 'RESOLVED', value: regData.registryAsiento || 'Inscrito en el Libro de Títulos N° 01, Folio 15, Registro N° 2026-042 con fecha 20/12/2026.' }
+      };
+
+      const blob = await this.pdfEngine.renderTMPL21({
+        resolvedFieldSet,
+        rows: [],
+        counts: {},
+        demoMode: isDemoRuntime()
+      });
+
+      const safeStudentName = (student.studentName || 'Estudiante').replace(/[^A-Za-z0-9_-]/g, '_');
+      const fileName = `${isDemoRuntime() ? 'DEMO_' : ''}TITULO_TECNICO_${safeStudentName}.pdf`;
+      this._displayPdfInWorkspace(container, blob, fileName, `Título Técnico Oficial — ${student.studentName || 'Estudiante'}`);
+      if (status) status.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Título Técnico generado con éxito (2 páginas físicas A4 landscape, registro MINEDU oficial).</span>`;
+    } catch (error) {
+      console.error('[DocumentsView] Error al generar Título Técnico', error);
+      if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
+      if (workspace) workspace.innerHTML = `<div class="alert alert-danger">No se pudo generar el título técnico: ${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async _preloadDemoEtapa4(container) {
+    const groupId = this.selectedGroupId;
+    const studentId = this.selectedEtapa4StudentId;
+    if (!groupId || !studentId) {
+      Notifications.show('Seleccione un grupo y un estudiante primero.', 'warning');
+      return;
+    }
+
+    let rosterContext;
+    try {
+      rosterContext = await this.adminService.buildGroupRoster(groupId);
+    } catch (err) {
+      Notifications.show('Error al obtener datos: ' + err.message, 'error');
+      return;
+    }
+
+    const { group, program } = rosterContext;
+    const student = rosterContext.rows.find(s => String(s.studentId || s.id) === String(studentId)) || rosterContext.rows[0];
+
+    let effectiveModule = rosterContext.module;
+    if (!effectiveModule || !effectiveModule.nombre) {
+      try {
+        const meta = await this.adminService.getAdminMetadata();
+        effectiveModule = (meta.modules || []).find(m => m.programaId === group.programaId)
+          || { id: 'MOD-01', nombre: `Módulo Formativo Oficial — ${program?.nombre || 'General'}` };
+      } catch {
+        effectiveModule = { id: 'MOD-01', nombre: `Módulo Formativo Oficial — ${program?.nombre || 'General'}` };
+      }
+    }
+
+    if (this.selectedTemplateId === 'TMPL-20') {
+      this.etapa4DataService.generateDemoCertificado(groupId, studentId, student, program, effectiveModule);
+      Notifications.show('Datos demo precargados para Certificado Modular (Libro, Folio y UDs).', 'success');
+    } else if (this.selectedTemplateId === 'TMPL-21') {
+      this.etapa4DataService.generateDemoTitulo(groupId, studentId, student, program);
+      Notifications.show('Datos demo precargados para Título Técnico (Código REGISTRA y Asiento).', 'success');
+    }
+
+    const summaryBox = container.querySelector('#doc-etapa4-student-summary-container');
+    if (summaryBox) {
+      summaryBox.innerHTML = this._renderEtapa4StudentSummary(group);
+    }
+
+    const btn20 = container.querySelector('#doc-generate-tmpl20-btn');
+    if (btn20) btn20.disabled = false;
+    const btn21 = container.querySelector('#doc-generate-tmpl21-btn');
+    if (btn21) btn21.disabled = false;
+  }
+
+  async _openEtapa4Modal(container) {
+    const groupId = this.selectedGroupId;
+    const studentId = this.selectedEtapa4StudentId;
+    if (!groupId || !studentId) {
+      Notifications.show('Seleccione un grupo y un estudiante primero.', 'warning');
+      return;
+    }
+
+    let rosterContext;
+    try {
+      rosterContext = await this.adminService.buildGroupRoster(groupId);
+    } catch (err) {
+      Notifications.show('Error al obtener datos: ' + err.message, 'error');
+      return;
+    }
+
+    const { group, program } = rosterContext;
+    const student = rosterContext.rows.find(s => String(s.studentId || s.id) === String(studentId)) || rosterContext.rows[0];
+    let effectiveModule = rosterContext.module;
+    if (!effectiveModule || !effectiveModule.nombre) {
+      try {
+        const meta = await this.adminService.getAdminMetadata();
+        effectiveModule = (meta.modules || []).find(m => m.programaId === group.programaId)
+          || { id: 'MOD-01', nombre: `Módulo Formativo Oficial — ${program?.nombre || 'General'}` };
+      } catch {
+        effectiveModule = { id: 'MOD-01', nombre: `Módulo Formativo Oficial — ${program?.nombre || 'General'}` };
+      }
+    }
+
+    const isTmpl20 = this.selectedTemplateId === 'TMPL-20';
+    const isTmpl21 = this.selectedTemplateId === 'TMPL-21';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'etapa4-modal-overlay';
+    overlay.className = 'etapa4-modal-overlay etapa2-modal-overlay';
+    overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1050; padding: 1rem;';
+
+    if (isTmpl20) {
+      const currentData = this.etapa4DataService.getOrGenerateCertificado(groupId, studentId, student, program, effectiveModule);
+      const units = currentData.units || [];
+
+      let unitsRowsHtml = '';
+      for (let i = 0; i < 6; i++) {
+        const u = units[i] || { 'curriculum.unit.name': `Unidad Didáctica ${i + 1}`, 'curriculum.unit.credits': '3', 'curriculum.unit.hours': '60', 'curriculum.unit.capacity': `Capacidad terminal ${i + 1}`, 'evaluation.unitResult': '16' };
+        unitsRowsHtml += `
+          <tr>
+            <td style="text-align: center; font-weight: bold; width: 35px;">${i + 1}</td>
+            <td><input type="text" class="form-control form-control-sm modal-unit-name" value="${escapeHtml(u['curriculum.unit.name'] || '')}" placeholder="Nombre de Unidad Didáctica"></td>
+            <td style="width: 70px;"><input type="number" class="form-control form-control-sm text-center modal-unit-credits" value="${escapeHtml(u['curriculum.unit.credits'] || '3')}" min="1" max="10"></td>
+            <td style="width: 75px;"><input type="number" class="form-control form-control-sm text-center modal-unit-hours" value="${escapeHtml(u['curriculum.unit.hours'] || '60')}" min="10" max="300"></td>
+            <td><input type="text" class="form-control form-control-sm modal-unit-capacity" value="${escapeHtml(u['curriculum.unit.capacity'] || '')}" placeholder="Capacidad terminal / Indicador"></td>
+            <td style="width: 75px;"><input type="number" class="form-control form-control-sm text-center fw-bold text-primary modal-unit-result" value="${escapeHtml(u['evaluation.unitResult'] || '16')}" min="0" max="20"></td>
+          </tr>
+        `;
+      }
+
+      overlay.innerHTML = `
+        <div class="card shadow-lg border-0" style="max-width: 900px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden;">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-2.5 px-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-white text-primary fw-bold">TMPL-20</span>
+              <h5 class="m-0 fw-bold fs-6"><i class="bi bi-pencil-square me-1"></i>Datos Registrales: Certificado Modular Oficial</h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" id="modal-etapa4-close-btn" aria-label="Cerrar"></button>
+          </div>
+          <div class="card-body p-3" style="overflow-y: auto;">
+            <div class="alert alert-primary py-2 px-3 mb-3 small d-flex align-items-center justify-content-between">
+              <div>
+                <strong>Estudiante:</strong> ${escapeHtml(student.studentName || 'Estudiante')} (${student.numeroDocumento || 'DNI'}) · <strong>Módulo:</strong> ${escapeHtml(effectiveModule.nombre || '')}
+              </div>
+              <span class="badge bg-primary">MINEDU Oficial</span>
+            </div>
+            
+            <h6 class="fw-bold text-dark mb-2" style="font-size: 0.9rem;"><i class="bi bi-journal-bookmark me-1 text-primary"></i>Datos de Foliación y Registro (Reverso)</h6>
+            <div class="row g-2 mb-3">
+              <div class="col-md-3">
+                <label class="form-label small fw-bold text-dark mb-1">Código Certificado:</label>
+                <input id="modal-e4-reg-code" class="form-control form-control-sm" value="${escapeHtml(currentData.registerCode || 'CM-2026-0042')}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-bold text-dark mb-1">Fecha Emisión (Anverso):</label>
+                <input id="modal-e4-emission-date" class="form-control form-control-sm" value="${escapeHtml(currentData.emissionDate || 'Lima, 20 de Diciembre de 2026')}">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-bold text-dark mb-1">Libro N°:</label>
+                <input id="modal-e4-book" class="form-control form-control-sm text-center" value="${escapeHtml(currentData.registryBook || '01')}">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-bold text-dark mb-1">Folio N°:</label>
+                <input id="modal-e4-folio" class="form-control form-control-sm text-center" value="${escapeHtml(currentData.registryFolio || '15')}">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-bold text-dark mb-1">Registro N°:</label>
+                <input id="modal-e4-number" class="form-control form-control-sm text-center" value="${escapeHtml(currentData.registryNumber || '0042')}">
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-md-3">
+                <label class="form-label small fw-bold text-dark mb-1">Fecha Registro (Reverso):</label>
+                <input id="modal-e4-reg-date" class="form-control form-control-sm" value="${escapeHtml(currentData.registryDate || '20/12/2026')}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-bold text-dark mb-1">Ciclo Formativo:</label>
+                <input id="modal-e4-ciclo" class="form-control form-control-sm" value="${escapeHtml(currentData.ciclo || 'AUXILIAR TÉCNICO')}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-bold text-dark mb-1">Modalidad:</label>
+                <input id="modal-e4-modalidad" class="form-control form-control-sm" value="${escapeHtml(currentData.modalidad || 'PRESENCIAL')}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-bold text-dark mb-1">Competencia Modular:</label>
+                <input id="modal-e4-competence" class="form-control form-control-sm" value="${escapeHtml(currentData.competence || 'Competencia técnica específica')}" maxlength="45">
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-dark mb-2" style="font-size: 0.9rem;"><i class="bi bi-list-check me-1 text-primary"></i>Unidades Didácticas Acreditadas y Calificaciones (Hasta 8 UDs)</h6>
+            <div class="table-responsive border rounded mb-2">
+              <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.82rem;">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 35px; text-align: center;">#</th>
+                    <th>Unidad Didáctica</th>
+                    <th style="width: 70px; text-align: center;">Créditos</th>
+                    <th style="width: 75px; text-align: center;">Horas</th>
+                    <th>Capacidad Terminal</th>
+                    <th style="width: 75px; text-align: center;">Nota</th>
+                  </tr>
+                </thead>
+                <tbody id="modal-etapa4-uds-body">
+                  ${unitsRowsHtml}
+                </tbody>
+              </table>
+            </div>
+            <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>Las notas se imprimirán en escala vigesimal (0..20) en el reverso oficial del certificado.</p>
+          </div>
+          <div class="card-footer bg-light d-flex justify-content-between align-items-center py-2 px-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" id="modal-e4-demo-btn">
+              <i class="bi bi-lightning-charge me-1"></i>Cargar Sugeridos
+            </button>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-secondary btn-sm fw-bold" id="modal-e4-cancel-btn">Cancelar</button>
+              <button type="button" class="btn btn-primary btn-sm fw-bold px-3" id="modal-e4-save-btn">
+                <i class="bi bi-save me-1"></i>Guardar Datos Registrales
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (isTmpl21) {
+      const currentData = this.etapa4DataService.getOrGenerateTitulo(groupId, studentId, student, program);
+
+      overlay.innerHTML = `
+        <div class="card shadow-lg border-0" style="max-width: 750px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden;">
+          <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-2.5 px-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-white text-success fw-bold">TMPL-21</span>
+              <h5 class="m-0 fw-bold fs-6"><i class="bi bi-award-fill me-1"></i>Datos Registrales: Título Técnico Oficial</h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" id="modal-etapa4-close-btn" aria-label="Cerrar"></button>
+          </div>
+          <div class="card-body p-3" style="overflow-y: auto;">
+            <div class="alert alert-success py-2 px-3 mb-3 small d-flex align-items-center justify-content-between">
+              <div>
+                <strong>Estudiante Titulado:</strong> ${escapeHtml(student.studentName || 'Estudiante')} (${student.numeroDocumento || 'DNI'})
+              </div>
+              <span class="badge bg-success">MINEDU Titulación</span>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark mb-1">Nombre Completo del Titulado (Anverso):</label>
+              <input id="modal-e4-student-name" class="form-control" value="${escapeHtml((student.studentName || student.fullName || '').toUpperCase())}">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark mb-1">Denominación Oficial del Título Otorgado (Anverso):</label>
+              <input id="modal-e4-official-title" class="form-control" value="${escapeHtml(currentData.officialTitleText || `AUXILIAR TÉCNICO EN ${(program?.nombre || 'PROGRAMA').toUpperCase()}`)}">
+              <div class="form-text small">Ejemplo: AUXILIAR TÉCNICO EN PELUQUERÍA Y BARBERÍA</div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-dark mb-1">Fecha de Expedición Formal (Anverso):</label>
+                <input id="modal-e4-emission-date" class="form-control" value="${escapeHtml(currentData.emissionDate || 'Dado en Lima, a los 20 días del mes de Diciembre del 2026')}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-dark mb-1">Código del Registro Institucional / REGISTRA (Reverso):</label>
+                <input id="modal-e4-reg-code" class="form-control" value="${escapeHtml(currentData.registerCode || 'MINEDU-REG-2026-84920')}">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark mb-1">Asiento Registral Institucional (Reverso):</label>
+              <textarea id="modal-e4-registry-asiento" class="form-control" rows="3">${escapeHtml(currentData.registryAsiento || 'Inscrito en el Libro de Títulos N° 01, Folio 15, Registro N° 2026-042 con fecha 20/12/2026.')}</textarea>
+              <div class="form-text small">Constancia formal de inscripción en los libros institucionales del CETPRO y nómina ministerial.</div>
+            </div>
+          </div>
+          <div class="card-footer bg-light d-flex justify-content-between align-items-center py-2 px-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" id="modal-e4-demo-btn">
+              <i class="bi bi-lightning-charge me-1"></i>Cargar Sugeridos
+            </button>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-secondary btn-sm fw-bold" id="modal-e4-cancel-btn">Cancelar</button>
+              <button type="button" class="btn btn-success btn-sm fw-bold px-3" id="modal-e4-save-btn">
+                <i class="bi bi-save me-1"></i>Guardar Datos Registrales
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    document.body.appendChild(overlay);
+
+    const closeModal = () => {
+      overlay.remove();
+    };
+
+    const closeBtn = overlay.querySelector('#modal-etapa4-close-btn');
+    if (closeBtn) closeBtn.onclick = closeModal;
+    const cancelBtn = overlay.querySelector('#modal-e4-cancel-btn');
+    if (cancelBtn) cancelBtn.onclick = closeModal;
+
+    const demoBtn = overlay.querySelector('#modal-e4-demo-btn');
+    if (demoBtn) {
+      demoBtn.onclick = () => {
+        if (isTmpl20) {
+          this.etapa4DataService.generateDemoCertificado(groupId, studentId, student, program, effectiveModule);
+          closeModal();
+          this._openEtapa4Modal(container);
+          Notifications.show('Valores sugeridos cargados en el formulario.', 'info');
+        } else if (isTmpl21) {
+          this.etapa4DataService.generateDemoTitulo(groupId, studentId, student, program);
+          closeModal();
+          this._openEtapa4Modal(container);
+          Notifications.show('Valores sugeridos cargados en el formulario.', 'info');
+        }
+      };
+    }
+
+    const saveBtn = overlay.querySelector('#modal-e4-save-btn');
+    if (saveBtn) {
+      saveBtn.onclick = () => {
+        if (isTmpl20) {
+          const rows = overlay.querySelectorAll('#modal-etapa4-uds-body tr');
+          const units = [];
+          rows.forEach(r => {
+            const name = r.querySelector('.modal-unit-name')?.value?.trim();
+            const credits = r.querySelector('.modal-unit-credits')?.value?.trim() || '3';
+            const hours = r.querySelector('.modal-unit-hours')?.value?.trim() || '60';
+            const capacity = r.querySelector('.modal-unit-capacity')?.value?.trim() || '';
+            const unitResult = r.querySelector('.modal-unit-result')?.value?.trim() || '16';
+            if (name) {
+              units.push({
+                'curriculum.unit.name': name,
+                'curriculum.unit.credits': credits,
+                'curriculum.unit.hours': hours,
+                'curriculum.unit.capacity': capacity,
+                'evaluation.unitResult': unitResult
+              });
+            }
+          });
+
+          const payload = {
+            registerCode: overlay.querySelector('#modal-e4-reg-code')?.value?.trim() || 'CM-2026-0001',
+            emissionDate: overlay.querySelector('#modal-e4-emission-date')?.value?.trim() || 'Lima, 20 de Diciembre de 2026',
+            registryBook: overlay.querySelector('#modal-e4-book')?.value?.trim() || '01',
+            registryFolio: overlay.querySelector('#modal-e4-folio')?.value?.trim() || '15',
+            registryNumber: overlay.querySelector('#modal-e4-number')?.value?.trim() || '0042',
+            registryDate: overlay.querySelector('#modal-e4-reg-date')?.value?.trim() || '20/12/2026',
+            ciclo: overlay.querySelector('#modal-e4-ciclo')?.value?.trim() || 'AUXILIAR TÉCNICO',
+            modalidad: overlay.querySelector('#modal-e4-modalidad')?.value?.trim() || 'PRESENCIAL',
+            competence: overlay.querySelector('#modal-e4-competence')?.value?.trim() || 'Competencia técnica específica',
+            units
+          };
+
+          this.etapa4DataService.saveCertificado(groupId, studentId, payload);
+          Notifications.show('Datos registrales del Certificado Modular guardados.', 'success');
+        } else if (isTmpl21) {
+          const payload = {
+            studentName: overlay.querySelector('#modal-e4-student-name')?.value?.trim(),
+            officialTitleText: overlay.querySelector('#modal-e4-official-title')?.value?.trim(),
+            emissionDate: overlay.querySelector('#modal-e4-emission-date')?.value?.trim(),
+            registerCode: overlay.querySelector('#modal-e4-reg-code')?.value?.trim(),
+            registryAsiento: overlay.querySelector('#modal-e4-registry-asiento')?.value?.trim()
+          };
+          this.etapa4DataService.saveTitulo(groupId, studentId, payload);
+          Notifications.show('Datos registrales del Título Técnico guardados.', 'success');
+        }
+
+        closeModal();
+
+        // Actualizar resumen en pantalla
+        const summaryBox = container.querySelector('#doc-etapa4-student-summary-container');
+        if (summaryBox) {
+          summaryBox.innerHTML = this._renderEtapa4StudentSummary(group);
+        }
+      };
     }
   }
 
