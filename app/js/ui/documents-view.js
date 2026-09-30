@@ -12,6 +12,8 @@ import { escapeHtml } from '../utils/dom-utils.js';
 import { isDemoRuntime } from '../services/runtime-target-service.js';
 import { MvpAdminService } from '../services/mvp-admin-service.js';
 import { MvpPdfService } from '../services/mvp-pdf-service.js';
+import { Etapa2DataService } from '../services/etapa2-data-service.js';
+import { Notifications } from './notifications.js';
 
 export const DOCUMENT_STATES = Object.freeze({
   IDLE: 'IDLE',
@@ -90,6 +92,7 @@ export class DocumentsView {
     this.documentValidationService = new DocumentValidationService(this.registry);
     this.adminService = new MvpAdminService();
     this.mvpPdf = new MvpPdfService();
+    this.etapa2DataService = new Etapa2DataService();
     this.groups = [];
     this.selectedGroupId = null;
     this.selectedTemplateId = 'TMPL-01';
@@ -417,6 +420,121 @@ export class DocumentsView {
           border-radius: 12px;
           overflow: hidden;
         }
+        /* Modal Interactivo Sábana Etapa 2 (Asistencia y Evaluación) */
+        .etapa2-modal-overlay {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(15, 23, 42, 0.75);
+          backdrop-filter: blur(5px);
+          z-index: 99999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1rem;
+        }
+        .etapa2-modal-dialog {
+          width: 98vw;
+          max-width: 1450px;
+          height: 92vh;
+          background: #ffffff;
+          border-radius: 14px;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+          overflow: hidden;
+          border: 1px solid #cbd5e1;
+        }
+        .etapa2-modal-header {
+          padding: 1rem 1.5rem;
+          background: #f8fafc;
+          border-bottom: 2px solid #e2e8f0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-shrink: 0;
+        }
+        .etapa2-modal-body {
+          padding: 1rem 1.25rem;
+          overflow: auto;
+          flex: 1;
+          background: #ffffff;
+        }
+        .etapa2-modal-footer {
+          padding: 0.85rem 1.5rem;
+          background: #f8fafc;
+          border-top: 2px solid #e2e8f0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+          flex-shrink: 0;
+        }
+        .etapa2-table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+          font-size: 0.86rem;
+        }
+        .etapa2-table th, .etapa2-table td {
+          border-right: 1px solid #e2e8f0;
+          border-bottom: 1px solid #e2e8f0;
+          padding: 0.35rem 0.5rem;
+          vertical-align: middle;
+          white-space: nowrap;
+        }
+        .etapa2-table thead th {
+          position: sticky;
+          top: 0;
+          background: #f1f5f9;
+          z-index: 10;
+          font-weight: 700;
+          color: #1e293b;
+        }
+        .etapa2-table .col-sticky-student {
+          position: sticky;
+          left: 0;
+          background: #ffffff;
+          z-index: 5;
+          min-width: 220px;
+          max-width: 280px;
+          border-right: 2px solid #cbd5e1 !important;
+          box-shadow: 2px 0 4px rgba(0,0,0,0.03);
+        }
+        .etapa2-table thead .col-sticky-student {
+          z-index: 15;
+          background: #f1f5f9;
+        }
+        .att-cell-btn {
+          width: 28px;
+          height: 28px;
+          padding: 0;
+          font-weight: 800;
+          font-size: 0.82rem;
+          border-radius: 4px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.1s ease;
+          user-select: none;
+        }
+        .att-P { background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; }
+        .att-F { background: #fee2e2; color: #b91c1c; border: 1.5px solid #fca5a5; }
+        .att-J { background: #fef3c7; color: #b45309; border: 1.5px solid #fcd34d; }
+        .att-dash { background: #f1f5f9; color: #94a3b8; border: 1px solid #cbd5e1; }
+        .eval-grade-input {
+          width: 48px;
+          text-align: center;
+          font-weight: 800;
+          font-size: 0.92rem;
+          border-radius: 6px;
+          padding: 0.25rem 0.1rem;
+          transition: border-color 0.15s, background-color 0.15s;
+        }
+        .eval-pass { background: #dcfce7 !important; color: #166534 !important; border: 2px solid #86efac !important; }
+        .eval-fail { background: #fee2e2 !important; color: #991b1b !important; border: 2px solid #fca5a5 !important; }
+        .eval-empty { background: #ffffff; color: #334155; border: 1.5px solid #cbd5e1; }
       </style>
 
       <div class="documents-module-container p-3 p-md-4">
@@ -725,18 +843,28 @@ export class DocumentsView {
     const currentAsistenciaTmpl = 'TMPL-' + String(this.selectedAsistenciaUD + 4).padStart(2, '0');
     const currentEvaluacionTmpl = 'TMPL-' + String(this.selectedEvaluacionUD + 10).padStart(2, '0');
 
+    // Verificar si existen datos guardados en la UD activa
+    const attData = this.selectedGroupId ? this.etapa2DataService?.getAttendance(this.selectedGroupId, this.selectedAsistenciaUD) : null;
+    const hasAtt = attData && Array.isArray(attData.sessions) && attData.sessions.length > 0;
+    const evalData = this.selectedGroupId ? this.etapa2DataService?.getEvaluation(this.selectedGroupId, this.selectedEvaluacionUD) : null;
+    const hasEval = evalData && evalData.evaluationsByEnrollment && Object.keys(evalData.evaluationsByEnrollment).length > 0;
+
     // Pills de Asistencia UD1..UD6 con estilo activo azul
     const asistenciaPills = [1, 2, 3, 4, 5, 6].map(n => {
       const tmplId = `TMPL-${String(n + 4).padStart(2, '0')}`;
       const isSelected = isAsistencia && this.selectedTemplateId === tmplId;
-      return `<button type="button" class="ud-selector-pill ${isSelected ? 'active-ud active-ud-blue' : ''}" data-select-tmpl="${tmplId}" title="Asistencia Unidad Didáctica ${n} (${tmplId})">${isSelected ? '<i class="bi bi-check2"></i> ' : ''}UD ${n}</button>`;
+      const uData = this.selectedGroupId ? this.etapa2DataService?.getAttendance(this.selectedGroupId, n) : null;
+      const hasUData = uData && Array.isArray(uData.sessions) && uData.sessions.length > 0;
+      return `<button type="button" class="ud-selector-pill ${isSelected ? 'active-ud active-ud-blue' : ''}" data-select-tmpl="${tmplId}" title="Asistencia Unidad Didáctica ${n} (${tmplId})">${isSelected ? '<i class="bi bi-check2"></i> ' : ''}UD ${n}${hasUData ? ' •' : ''}</button>`;
     }).join(' ');
 
     // Pills de Evaluación UD1..UD7 con estilo activo verde esmeralda
     const evaluacionPills = [1, 2, 3, 4, 5, 6, 7].map(n => {
       const tmplId = `TMPL-${String(n + 10).padStart(2, '0')}`;
       const isSelected = isEvaluacion && this.selectedTemplateId === tmplId;
-      return `<button type="button" class="ud-selector-pill ${isSelected ? 'active-ud active-ud-green' : ''}" data-select-tmpl="${tmplId}" title="Evaluación Unidad Didáctica ${n} (${tmplId})">${isSelected ? '<i class="bi bi-check2"></i> ' : ''}UD ${n}</button>`;
+      const uEval = this.selectedGroupId ? this.etapa2DataService?.getEvaluation(this.selectedGroupId, n) : null;
+      const hasUEval = uEval && uEval.evaluationsByEnrollment && Object.keys(uEval.evaluationsByEnrollment).length > 0;
+      return `<button type="button" class="ud-selector-pill ${isSelected ? 'active-ud active-ud-green' : ''}" data-select-tmpl="${tmplId}" title="Evaluación Unidad Didáctica ${n} (${tmplId})">${isSelected ? '<i class="bi bi-check2"></i> ' : ''}UD ${n}${hasUEval ? ' •' : ''}</button>`;
     }).join(' ');
 
     return `
@@ -766,7 +894,10 @@ export class DocumentsView {
               ? `<span class="badge bg-primary px-3 py-2 text-white fw-bold" style="font-size: 0.85rem; background: #1d4ed8 !important;"><i class="bi bi-check-circle-fill me-1"></i>✓ ACTIVO: UD ${this.selectedAsistenciaUD} (${this.selectedTemplateId})</span>`
               : `<span class="text-primary fw-bold" style="font-size: 0.9rem;"><i class="bi bi-hand-index-thumb me-1"></i>👉 Clic para seleccionar</span>`
             }
-            <span class="fw-bold text-secondary small">40 sesiones · A3</span>
+            <div class="d-flex align-items-center gap-1.5">
+              ${hasAtt ? '<span class="badge bg-success text-white fw-bold" style="font-size: 0.74rem;"><i class="bi bi-check2-circle me-1"></i>Con marcas</span>' : ''}
+              <span class="fw-bold text-secondary small">40 sesiones · A3</span>
+            </div>
           </div>
         </div>
 
@@ -795,7 +926,10 @@ export class DocumentsView {
               ? `<span class="badge bg-success px-3 py-2 text-white fw-bold" style="font-size: 0.85rem; background: #059669 !important;"><i class="bi bi-check-circle-fill me-1"></i>✓ ACTIVO: UD ${this.selectedEvaluacionUD} (${this.selectedTemplateId})</span>`
               : `<span class="text-success fw-bold" style="font-size: 0.9rem;"><i class="bi bi-hand-index-thumb me-1"></i>👉 Clic para seleccionar</span>`
             }
-            <span class="fw-bold text-secondary small">Escala vigesimal · A3</span>
+            <div class="d-flex align-items-center gap-1.5">
+              ${hasEval ? '<span class="badge bg-success text-white fw-bold" style="font-size: 0.74rem;"><i class="bi bi-check2-circle me-1"></i>Con notas</span>' : ''}
+              <span class="fw-bold text-secondary small">Escala vigesimal · A3</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1159,6 +1293,8 @@ export class DocumentsView {
       const udNum = parseInt(template.templateId.replace('TMPL-', ''), 10) - 4;
       const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
       const groupOptions = this._renderGroupOptions();
+      const attData = this.selectedGroupId ? this.etapa2DataService?.getAttendance(this.selectedGroupId, udNum) : null;
+      const hasAtt = attData && Array.isArray(attData.sessions) && attData.sessions.length > 0;
 
       return `
         <div class="context-step-box p-3 p-md-4">
@@ -1171,6 +1307,7 @@ export class DocumentsView {
             <div class="d-flex align-items-center gap-2">
               <span class="badge bg-primary px-2.5 py-1.5 fw-bold" style="background: #1d4ed8 !important; font-size: 0.85rem;">UD ${udNum}</span>
               <span class="fw-bold text-primary" style="font-size: 0.95rem;">${escapeHtml(template.name)} (${template.templateId})</span>
+              ${hasAtt ? '<span class="badge bg-success text-white fw-bold"><i class="bi bi-check2-circle me-1"></i>Asistencia Guardada (' + attData.sessions.length + ' sesiones)</span>' : '<span class="badge bg-light text-secondary border">Plantilla en blanco</span>'}
             </div>
             <span class="badge bg-light text-secondary border fw-bold" style="font-size: 0.8rem; border-color: #bfdbfe !important;">
               <i class="bi bi-calendar2-week me-1 text-primary"></i>40 sesiones · Formato A3
@@ -1187,19 +1324,26 @@ export class DocumentsView {
               </select>
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-              <button id="doc-generate-asistencia-btn" type="button" class="btn btn-primary px-4 py-2 fw-bold" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.95rem; background: #1d4ed8; border-color: #1d4ed8;">
-                <i class="bi bi-calendar2-check-fill me-1"></i>Generar Asistencia Oficial (UD ${udNum})
+              <button id="doc-generate-asistencia-btn" type="button" class="btn btn-primary px-3 py-2 fw-bold" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.92rem; background: #1d4ed8; border-color: #1d4ed8;">
+                <i class="bi bi-calendar2-check-fill me-1"></i>Generar Asistencia (UD ${udNum})
               </button>
-              <a href="#/asistencia" class="btn btn-outline-primary fw-bold px-3 py-2" style="font-size: 0.92rem;">
-                <i class="bi bi-box-arrow-up-right me-1"></i>Abrir Control Diario
-              </a>
+              <button id="doc-open-asistencia-modal-btn" type="button" class="btn btn-warning px-3 py-2 fw-bold text-dark" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.92rem; background: #f59e0b; border-color: #d97706;">
+                <i class="bi bi-pencil-square me-1"></i>📝 Llenar Asistencia
+              </button>
+              <button id="doc-demo-asistencia-btn" type="button" class="btn btn-outline-primary fw-bold px-3 py-2" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.92rem;" title="Precargar asistencia de prueba para este grupo y UD">
+                <i class="bi bi-lightning-charge-fill me-1"></i>Precargar Demo
+              </button>
+              ${hasAtt ? '<button id="doc-clear-asistencia-btn" type="button" class="btn btn-outline-danger fw-bold px-2.5 py-2" title="Limpiar datos de asistencia guardados"><i class="bi bi-trash"></i></button>' : ''}
             </div>
           </div>
           <div id="doc-selected-group-card">
             ${this._renderGroupSummaryCard(selectedGroup)}
           </div>
           <div id="doc-group-status" class="fw-semibold text-secondary" style="font-size: 0.88rem;" aria-live="polite">
-            <i class="bi bi-info-circle me-1 text-primary"></i>Emisión ministerial de la matriz de 40 sesiones con datos del grupo seleccionado.
+            ${hasAtt
+              ? `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Asistencia registrada para UD ${udNum} (${attData.sessions.length} sesiones). Al generar, se incluirán las marcas P/F/J y totales.</span>`
+              : `<i class="bi bi-info-circle me-1 text-primary"></i>Sin asistencia registrada para UD ${udNum}. Puede hacer clic en "📝 Llenar Asistencia" o "⚡ Precargar Demo", o generar la plantilla en blanco.`
+            }
           </div>
         </div>`;
     }
@@ -1209,6 +1353,8 @@ export class DocumentsView {
       const udNum = parseInt(template.templateId.replace('TMPL-', ''), 10) - 10;
       const selectedGroup = this.groups.find(g => g.id === this.selectedGroupId);
       const groupOptions = this._renderGroupOptions();
+      const evalData = this.selectedGroupId ? this.etapa2DataService?.getEvaluation(this.selectedGroupId, udNum) : null;
+      const hasEval = evalData && evalData.evaluationsByEnrollment && Object.keys(evalData.evaluationsByEnrollment).length > 0;
 
       return `
         <div class="context-step-box p-3 p-md-4">
@@ -1221,6 +1367,7 @@ export class DocumentsView {
             <div class="d-flex align-items-center gap-2">
               <span class="badge bg-success px-2.5 py-1.5 fw-bold" style="background: #059669 !important; font-size: 0.85rem;">UD ${udNum}</span>
               <span class="fw-bold text-success" style="font-size: 0.95rem;">${escapeHtml(template.name)} (${template.templateId})</span>
+              ${hasEval ? '<span class="badge bg-success text-white fw-bold"><i class="bi bi-check2-circle me-1"></i>Calificaciones Guardadas (5 IL)</span>' : '<span class="badge bg-light text-secondary border">Plantilla en blanco</span>'}
             </div>
             <span class="badge bg-light text-secondary border fw-bold" style="font-size: 0.8rem; border-color: #a7f3d0 !important;">
               <i class="bi bi-card-checklist me-1 text-success"></i>Escala Vigesimal · Formato A3
@@ -1237,19 +1384,26 @@ export class DocumentsView {
               </select>
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-              <button id="doc-generate-evaluacion-btn" type="button" class="btn btn-success px-4 py-2 fw-bold text-white" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.95rem; background: #059669; border-color: #059669;">
+              <button id="doc-generate-evaluacion-btn" type="button" class="btn btn-success px-3 py-2 fw-bold text-white" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.92rem; background: #059669; border-color: #059669;">
                 <i class="bi bi-clipboard-check-fill me-1"></i>Generar Registro Auxiliar (UD ${udNum})
               </button>
-              <a href="#/evaluacion" class="btn btn-outline-success fw-bold px-3 py-2" style="font-size: 0.92rem;">
-                <i class="bi bi-box-arrow-up-right me-1"></i>Abrir Calificaciones
-              </a>
+              <button id="doc-open-evaluacion-modal-btn" type="button" class="btn btn-warning px-3 py-2 fw-bold text-dark" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.92rem; background: #f59e0b; border-color: #d97706;">
+                <i class="bi bi-pencil-square me-1"></i>📊 Llenar Calificaciones
+              </button>
+              <button id="doc-demo-evaluacion-btn" type="button" class="btn btn-outline-success fw-bold px-3 py-2" ${!this.selectedGroupId ? 'disabled' : ''} style="font-size: 0.92rem;" title="Precargar notas vigesimales de prueba para este grupo y UD">
+                <i class="bi bi-lightning-charge-fill me-1"></i>Precargar Demo
+              </button>
+              ${hasEval ? '<button id="doc-clear-evaluacion-btn" type="button" class="btn btn-outline-danger fw-bold px-2.5 py-2" title="Limpiar calificaciones guardadas"><i class="bi bi-trash"></i></button>' : ''}
             </div>
           </div>
           <div id="doc-selected-group-card">
             ${this._renderGroupSummaryCard(selectedGroup)}
           </div>
           <div id="doc-group-status" class="fw-semibold text-secondary" style="font-size: 0.88rem;" aria-live="polite">
-            <i class="bi bi-info-circle me-1 text-success"></i>Emisión auxiliar con cálculo y desglose vigesimal por criterios de evaluación del programa formativo.
+            ${hasEval
+              ? `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Calificaciones registradas para UD ${udNum} (5 IL). Al generar, se incluirán las notas vigesimales y Logro final.</span>`
+              : `<i class="bi bi-info-circle me-1 text-success"></i>Sin notas registradas para UD ${udNum}. Puede hacer clic en "📊 Llenar Calificaciones" o "⚡ Precargar Demo", o generar la plantilla en blanco.`
+            }
           </div>
         </div>`;
     }
@@ -1726,8 +1880,16 @@ export class DocumentsView {
         if (tmpl03AltBtn) tmpl03AltBtn.disabled = !this.selectedGroupId;
         const asistenciaBtn = container.querySelector('#doc-generate-asistencia-btn');
         if (asistenciaBtn) asistenciaBtn.disabled = !this.selectedGroupId;
+        const openAttModalBtn = container.querySelector('#doc-open-asistencia-modal-btn');
+        if (openAttModalBtn) openAttModalBtn.disabled = !this.selectedGroupId;
+        const demoAttBtn = container.querySelector('#doc-demo-asistencia-btn');
+        if (demoAttBtn) demoAttBtn.disabled = !this.selectedGroupId;
         const evaluacionBtn = container.querySelector('#doc-generate-evaluacion-btn');
         if (evaluacionBtn) evaluacionBtn.disabled = !this.selectedGroupId;
+        const openEvalModalBtn = container.querySelector('#doc-open-evaluacion-modal-btn');
+        if (openEvalModalBtn) openEvalModalBtn.disabled = !this.selectedGroupId;
+        const demoEvalBtn = container.querySelector('#doc-demo-evaluacion-btn');
+        if (demoEvalBtn) demoEvalBtn.disabled = !this.selectedGroupId;
         const tmpl18Btn = container.querySelector('#doc-generate-tmpl18-btn');
         if (tmpl18Btn) tmpl18Btn.disabled = !this.selectedGroupId;
         const tmpl19Btn = container.querySelector('#doc-generate-tmpl19-btn');
@@ -1760,9 +1922,39 @@ export class DocumentsView {
       asistenciaBtn.onclick = async () => this._generateTmplAttendance(container);
     }
 
+    const openAttModalBtn = container.querySelector('#doc-open-asistencia-modal-btn');
+    if (openAttModalBtn) {
+      openAttModalBtn.onclick = async () => this._openAttendanceModal(container);
+    }
+
+    const demoAttBtn = container.querySelector('#doc-demo-asistencia-btn');
+    if (demoAttBtn) {
+      demoAttBtn.onclick = async () => this._preloadDemoAttendance(container);
+    }
+
+    const clearAttBtn = container.querySelector('#doc-clear-asistencia-btn');
+    if (clearAttBtn) {
+      clearAttBtn.onclick = async () => this._clearAttendanceData(container);
+    }
+
     const evaluacionBtn = container.querySelector('#doc-generate-evaluacion-btn');
     if (evaluacionBtn) {
       evaluacionBtn.onclick = async () => this._generateTmplEvaluation(container);
+    }
+
+    const openEvalModalBtn = container.querySelector('#doc-open-evaluacion-modal-btn');
+    if (openEvalModalBtn) {
+      openEvalModalBtn.onclick = async () => this._openEvaluationModal(container);
+    }
+
+    const demoEvalBtn = container.querySelector('#doc-demo-evaluacion-btn');
+    if (demoEvalBtn) {
+      demoEvalBtn.onclick = async () => this._preloadDemoEvaluation(container);
+    }
+
+    const clearEvalBtn = container.querySelector('#doc-clear-evaluacion-btn');
+    if (clearEvalBtn) {
+      clearEvalBtn.onclick = async () => this._clearEvaluationData(container);
     }
 
     const tmpl18Btn = container.querySelector('#doc-generate-tmpl18-btn');
@@ -2113,11 +2305,31 @@ export class DocumentsView {
     if (workspace) workspace.innerHTML = `<div class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-2" role="status"></div><p class="fw-bold text-dark">Generando Hoja de Asistencia (UD ${udNum}) en PDF…</p></div>`;
     try {
       const rosterContext = await this.adminService.buildGroupRoster(groupId);
-      const { rows, group } = rosterContext;
+      let { rows, group } = rosterContext;
       const context = {
         ...rosterContext,
         unit: { orden: udNum, nombre: `Unidad Didáctica ${udNum}` }
       };
+
+      // Inyección de asistencia guardada para este grupo y UD
+      const storedAtt = this.etapa2DataService?.getAttendance(groupId, udNum);
+      if (storedAtt && Array.isArray(storedAtt.sessions) && storedAtt.sessions.length > 0) {
+        context.sessions = storedAtt.sessions;
+        rows = rows.map(r => {
+          const studentMarks = storedAtt.marksByEnrollment?.[r.enrollmentId] || storedAtt.marksByEnrollment?.[r.id];
+          if (studentMarks) {
+            return {
+              ...r,
+              marksBySession: studentMarks.marks || [],
+              'attendance.presentCount': studentMarks.presentCount,
+              'attendance.absentCount': studentMarks.absentCount,
+              presentCount: studentMarks.presentCount,
+              absentCount: studentMarks.absentCount
+            };
+          }
+          return r;
+        });
+      }
 
       const capacity = 40;
       let blob;
@@ -2193,11 +2405,31 @@ export class DocumentsView {
     if (workspace) workspace.innerHTML = `<div class="text-center py-5 text-muted"><div class="spinner-border text-success mb-2" role="status"></div><p class="fw-bold text-dark">Generando Registro de Evaluación (UD ${udNum}) en PDF…</p></div>`;
     try {
       const rosterContext = await this.adminService.buildGroupRoster(groupId);
-      const { rows, group } = rosterContext;
+      let { rows, group } = rosterContext;
       const context = {
         ...rosterContext,
         unit: { orden: udNum, nombre: `Unidad Didáctica ${udNum}` }
       };
+
+      // Inyección de calificaciones guardadas para este grupo y UD
+      const storedEval = this.etapa2DataService?.getEvaluation(groupId, udNum);
+      if (storedEval) {
+        if (Array.isArray(storedEval.indicators)) {
+          context.indicators = storedEval.indicators;
+        }
+        rows = rows.map(r => {
+          const studentEval = storedEval.evaluationsByEnrollment?.[r.enrollmentId] || storedEval.evaluationsByEnrollment?.[r.id];
+          if (studentEval) {
+            return {
+              ...r,
+              evaluations: studentEval.evaluations || [],
+              finalResult: studentEval.finalLogro,
+              logro: studentEval.finalLogro
+            };
+          }
+          return r;
+        });
+      }
 
       const capacity = tmplId === 'TMPL-11' ? 47 : 40;
       let blob;
@@ -2257,6 +2489,583 @@ export class DocumentsView {
       if (status) status.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Error: ${escapeHtml(error.message)}</span>`;
       if (workspace) workspace.innerHTML = `<div class="alert alert-danger">No se pudo generar el registro de evaluación: ${escapeHtml(error.message)}</div>`;
     }
+  }
+
+  async _openAttendanceModal(container) {
+    const groupId = this.selectedGroupId;
+    if (!groupId) {
+      Notifications.show('Seleccione un grupo académico primero.', 'warning');
+      return;
+    }
+    const udNum = this.selectedAsistenciaUD || 1;
+    let rosterContext;
+    try {
+      rosterContext = await this.adminService.buildGroupRoster(groupId);
+    } catch (err) {
+      Notifications.show('Error al obtener estudiantes: ' + err.message, 'error');
+      return;
+    }
+    const { rows, group } = rosterContext;
+    if (!rows || rows.length === 0) {
+      Notifications.show('El grupo no tiene estudiantes matriculados.', 'warning');
+      return;
+    }
+
+    // Cargar o inicializar estructura de 40 sesiones
+    let attData = this.etapa2DataService.getAttendance(groupId, udNum);
+    if (!attData || !attData.sessions || attData.sessions.length === 0) {
+      const sessions = [];
+      const curDate = new Date('2026-03-02T08:00:00');
+      while (sessions.length < 40) {
+        if (curDate.getDay() !== 0 && curDate.getDay() !== 6) {
+          const y = curDate.getFullYear();
+          const m = String(curDate.getMonth() + 1).padStart(2, '0');
+          const d = String(curDate.getDate()).padStart(2, '0');
+          sessions.push({ sessionId: sessions.length + 1, fecha: `${y}-${m}-${d}`, day: d });
+        }
+        curDate.setDate(curDate.getDate() + 1);
+      }
+      const marksByEnrollment = {};
+      rows.forEach(r => {
+        const id = r.enrollmentId || r.id;
+        marksByEnrollment[id] = {
+          marks: sessions.map(s => ({ sessionId: s.sessionId, estadoRegistro: '—' })),
+          presentCount: 0,
+          absentCount: 0
+        };
+      });
+      attData = { groupId, udNum, sessions, marksByEnrollment };
+    }
+
+    const workingData = JSON.parse(JSON.stringify(attData));
+
+    // Crear overlay del modal
+    const overlay = document.createElement('div');
+    overlay.className = 'etapa2-modal-overlay';
+    overlay.id = 'etapa2-attendance-modal';
+
+    const renderTableContent = () => {
+      const { sessions, marksByEnrollment } = workingData;
+      let theadHtml = `
+        <tr>
+          <th style="width: 40px; text-align: center;">#</th>
+          <th class="col-sticky-student">Estudiante (${rows.length})</th>`;
+      sessions.forEach((s, idx) => {
+        theadHtml += `
+          <th style="width: 32px; text-align: center; font-size: 0.76rem; padding: 0.25rem 0.1rem;" title="Sesión ${s.sessionId} (${s.fecha || ''})">
+            <div>S${s.sessionId}</div>
+            <div class="text-secondary fw-normal" style="font-size: 0.68rem;">${s.day || (idx + 1)}</div>
+          </th>`;
+      });
+      theadHtml += `
+          <th style="width: 55px; text-align: center; color: #166534; background: #f0fdf4;" title="Total Asistencias">Tot. P</th>
+          <th style="width: 55px; text-align: center; color: #991b1b; background: #fef2f2;" title="Total Faltas">Tot. F</th>
+        </tr>`;
+
+      let tbodyHtml = '';
+      rows.forEach((student, sIdx) => {
+        const id = student.enrollmentId || student.id;
+        const sData = marksByEnrollment[id] || { marks: [], presentCount: 0, absentCount: 0 };
+        tbodyHtml += `
+          <tr data-student-id="${id}">
+            <td style="text-align: center; color: #64748b; font-weight: 600;">${sIdx + 1}</td>
+            <td class="col-sticky-student fw-bold text-dark" style="font-size: 0.84rem;">
+              <div class="text-truncate" title="${escapeHtml(student.studentName)}">${escapeHtml(student.studentName)}</div>
+              <div class="text-muted fw-normal" style="font-size: 0.72rem;">${escapeHtml(student.document || student.numeroDocumento || '')}</div>
+            </td>`;
+        sessions.forEach((s, jIdx) => {
+          const markObj = sData.marks[jIdx] || { estadoRegistro: '—' };
+          const state = String(markObj.estadoRegistro || '—').toUpperCase();
+          const cls = state === 'P' ? 'att-P' : (state === 'F' ? 'att-F' : (state === 'J' ? 'att-J' : 'att-dash'));
+          tbodyHtml += `
+            <td style="text-align: center; padding: 2px;">
+              <button type="button" class="att-cell-btn ${cls}" data-sidx="${sIdx}" data-jidx="${jIdx}" data-enrollment-id="${id}" title="Sesión ${s.sessionId}: Clic para alternar (P / F / J / —)">${state}</button>
+            </td>`;
+        });
+        tbodyHtml += `
+            <td style="text-align: center; font-weight: 800; color: #15803d; background: #f0fdf4;" class="tot-p-cell" id="tot-p-${id}">${sData.presentCount}</td>
+            <td style="text-align: center; font-weight: 800; color: #b91c1c; background: #fef2f2;" class="tot-f-cell" id="tot-f-${id}">${sData.absentCount}</td>
+          </tr>`;
+      });
+
+      return `
+        <table class="etapa2-table">
+          <thead>${theadHtml}</thead>
+          <tbody>${tbodyHtml}</tbody>
+        </table>`;
+    };
+
+    overlay.innerHTML = `
+      <div class="etapa2-modal-dialog">
+        <div class="etapa2-modal-header">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary px-3 py-1.5 fw-bold" style="background: #1d4ed8 !important; font-size: 0.9rem;">
+              <i class="bi bi-calendar2-check me-1"></i>Asistencia UD ${udNum}
+            </span>
+            <h5 class="m-0 fw-bold text-dark" style="font-size: 1.15rem;">
+              Grupo: <span class="text-primary">${escapeHtml(group.visibleCode)}</span>
+            </h5>
+            <span class="badge bg-light text-secondary border ms-2">${rows.length} Estudiantes · 40 Sesiones</span>
+          </div>
+          <button type="button" class="btn-close" id="btn-close-att-modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between p-2.5 px-3 bg-light border-bottom gap-2">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="small fw-bold text-secondary text-uppercase tracking-wider" style="font-size: 0.78rem;">Acciones Rápidas:</span>
+            <button type="button" class="btn btn-sm btn-outline-success fw-bold" id="btn-modal-all-p" title="Marcar todas las 40 sesiones como Presente">
+              <i class="bi bi-check-all me-1"></i>Marcar Todos Presente (P)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary fw-bold" id="btn-modal-demo-att" title="Cargar asistencia realista de demostración">
+              <i class="bi bi-lightning-charge me-1"></i>Llenar Demo Realista
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-modal-clear-att" title="Limpiar todas las marcas">
+              <i class="bi bi-eraser me-1"></i>Limpiar Todo
+            </button>
+          </div>
+          <div class="d-flex align-items-center gap-2 small text-secondary">
+            <span>Leyenda:</span>
+            <span class="badge att-P px-2 py-0.5">P = Presente</span>
+            <span class="badge att-F px-2 py-0.5">F = Falta</span>
+            <span class="badge att-J px-2 py-0.5">J = Justificada</span>
+            <span class="badge att-dash px-2 py-0.5">— = En blanco</span>
+          </div>
+        </div>
+
+        <div class="etapa2-modal-body" id="att-modal-body">
+          ${renderTableContent()}
+        </div>
+
+        <div class="etapa2-modal-footer">
+          <div class="small text-secondary">
+            <i class="bi bi-info-circle me-1 text-primary"></i>Haga clic sobre cualquier celda para alternar su estado (P ➔ F ➔ J ➔ —). Los totales se calculan automáticamente.
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-outline-secondary fw-semibold px-3" id="btn-cancel-att-modal">Cancelar</button>
+            <button type="button" class="btn btn-primary fw-bold px-4" id="btn-save-att-modal" style="background: #1d4ed8; border-color: #1d4ed8;">
+              <i class="bi bi-floppy-fill me-1"></i>Guardar Asistencia
+            </button>
+            <button type="button" class="btn btn-success fw-bold px-4" id="btn-save-generate-att-modal" style="background: #059669; border-color: #059669;">
+              <i class="bi bi-file-earmark-pdf-fill me-1"></i>Guardar y Emitir PDF
+            </button>
+          </div>
+        </div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+
+    const recalculateTotalsForStudent = (enrollmentId) => {
+      const sData = workingData.marksByEnrollment[enrollmentId];
+      if (!sData) return;
+      let p = 0, f = 0;
+      sData.marks.forEach(m => {
+        const st = String(m.estadoRegistro || '').toUpperCase();
+        if (st === 'P') p++;
+        else if (st === 'F') f++;
+      });
+      sData.presentCount = p;
+      sData.absentCount = f;
+      const cellP = overlay.querySelector(`#tot-p-${enrollmentId}`);
+      const cellF = overlay.querySelector(`#tot-f-${enrollmentId}`);
+      if (cellP) cellP.textContent = p;
+      if (cellF) cellF.textContent = f;
+    };
+
+    // Alternar celdas al hacer clic
+    const modalBody = overlay.querySelector('#att-modal-body');
+    modalBody.onclick = (e) => {
+      const btn = e.target.closest('.att-cell-btn');
+      if (!btn) return;
+      const enrollmentId = btn.getAttribute('data-enrollment-id');
+      const jIdx = parseInt(btn.getAttribute('data-jidx'), 10);
+      const sData = workingData.marksByEnrollment[enrollmentId];
+      if (!sData || !sData.marks[jIdx]) return;
+
+      const curState = String(sData.marks[jIdx].estadoRegistro || '—').toUpperCase();
+      let nextState = 'P';
+      if (curState === 'P') nextState = 'F';
+      else if (curState === 'F') nextState = 'J';
+      else if (curState === 'J') nextState = '—';
+      else nextState = 'P';
+
+      sData.marks[jIdx].estadoRegistro = nextState;
+      sData.marks[jIdx].state = nextState;
+
+      btn.textContent = nextState;
+      btn.className = `att-cell-btn ${nextState === 'P' ? 'att-P' : (nextState === 'F' ? 'att-F' : (nextState === 'J' ? 'att-J' : 'att-dash'))}`;
+      recalculateTotalsForStudent(enrollmentId);
+    };
+
+    // Marcar Todos Presente
+    overlay.querySelector('#btn-modal-all-p').onclick = () => {
+      workingData.sessions.forEach((s, jIdx) => {
+        rows.forEach(r => {
+          const id = r.enrollmentId || r.id;
+          if (workingData.marksByEnrollment[id]?.marks[jIdx]) {
+            workingData.marksByEnrollment[id].marks[jIdx].estadoRegistro = 'P';
+            workingData.marksByEnrollment[id].marks[jIdx].state = 'P';
+          }
+        });
+      });
+      rows.forEach(r => recalculateTotalsForStudent(r.enrollmentId || r.id));
+      modalBody.innerHTML = renderTableContent();
+    };
+
+    // Demo
+    overlay.querySelector('#btn-modal-demo-att').onclick = () => {
+      const demoResult = this.etapa2DataService.generateDemoAttendance(groupId, udNum, rows);
+      if (demoResult) {
+        workingData.sessions = demoResult.sessions;
+        workingData.marksByEnrollment = demoResult.marksByEnrollment;
+        modalBody.innerHTML = renderTableContent();
+      }
+    };
+
+    // Limpiar Todo
+    overlay.querySelector('#btn-modal-clear-att').onclick = () => {
+      workingData.sessions.forEach((s, jIdx) => {
+        rows.forEach(r => {
+          const id = r.enrollmentId || r.id;
+          if (workingData.marksByEnrollment[id]?.marks[jIdx]) {
+            workingData.marksByEnrollment[id].marks[jIdx].estadoRegistro = '—';
+            workingData.marksByEnrollment[id].marks[jIdx].state = '—';
+          }
+        });
+      });
+      rows.forEach(r => recalculateTotalsForStudent(r.enrollmentId || r.id));
+      modalBody.innerHTML = renderTableContent();
+    };
+
+    const closeModal = () => {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+
+    overlay.querySelector('#btn-close-att-modal').onclick = closeModal;
+    overlay.querySelector('#btn-cancel-att-modal').onclick = closeModal;
+
+    overlay.querySelector('#btn-save-att-modal').onclick = async () => {
+      this.etapa2DataService.saveAttendance(groupId, udNum, workingData);
+      closeModal();
+      Notifications.show(`✓ Asistencia guardada para UD ${udNum} (${rows.length} estudiantes).`, 'success');
+      await this.render(container);
+    };
+
+    overlay.querySelector('#btn-save-generate-att-modal').onclick = async () => {
+      this.etapa2DataService.saveAttendance(groupId, udNum, workingData);
+      closeModal();
+      Notifications.show(`✓ Asistencia guardada. Generando PDF oficial…`, 'success');
+      await this.render(container);
+      await this._generateTmplAttendance(container);
+    };
+  }
+
+  async _openEvaluationModal(container) {
+    const groupId = this.selectedGroupId;
+    if (!groupId) {
+      Notifications.show('Seleccione un grupo académico primero.', 'warning');
+      return;
+    }
+    const udNum = this.selectedEvaluacionUD || 1;
+    let rosterContext;
+    try {
+      rosterContext = await this.adminService.buildGroupRoster(groupId);
+    } catch (err) {
+      Notifications.show('Error al obtener estudiantes: ' + err.message, 'error');
+      return;
+    }
+    const { rows, group } = rosterContext;
+    if (!rows || rows.length === 0) {
+      Notifications.show('El grupo no tiene estudiantes matriculados.', 'warning');
+      return;
+    }
+
+    let evalData = this.etapa2DataService.getEvaluation(groupId, udNum);
+    if (!evalData || !evalData.evaluationsByEnrollment) {
+      const indicators = this.etapa2DataService.getDefaultIndicators(udNum);
+      const evaluationsByEnrollment = {};
+      rows.forEach(r => {
+        const id = r.enrollmentId || r.id;
+        evaluationsByEnrollment[id] = {
+          evaluations: [0, 1, 2, 3, 4].map(() => ({ ia1: null, ia2: null, ia3: null, score: null, recovery: null })),
+          finalLogro: null
+        };
+      });
+      evalData = { groupId, udNum, indicators, evaluationsByEnrollment };
+    }
+
+    const workingData = JSON.parse(JSON.stringify(evalData));
+
+    const overlay = document.createElement('div');
+    overlay.className = 'etapa2-modal-overlay';
+    overlay.id = 'etapa2-evaluation-modal';
+
+    const renderTableContent = () => {
+      const { indicators, evaluationsByEnrollment } = workingData;
+      let theadHtml = `
+        <tr>
+          <th style="width: 40px; text-align: center;">#</th>
+          <th class="col-sticky-student">Estudiante (${rows.length})</th>
+          <th style="width: 80px; text-align: center;" title="${escapeHtml(indicators[0] || 'IL1')}">IL 1</th>
+          <th style="width: 80px; text-align: center;" title="${escapeHtml(indicators[1] || 'IL2')}">IL 2</th>
+          <th style="width: 80px; text-align: center;" title="${escapeHtml(indicators[2] || 'IL3')}">IL 3</th>
+          <th style="width: 80px; text-align: center;" title="${escapeHtml(indicators[3] || 'IL4')}">IL 4</th>
+          <th style="width: 80px; text-align: center;" title="${escapeHtml(indicators[4] || 'IL5')}">IL 5</th>
+          <th style="width: 90px; text-align: center; background: #ecfdf5; color: #065f46;" title="Promedio de los 5 Indicadores">Logro Final</th>
+          <th style="width: 95px; text-align: center;">Estado</th>
+        </tr>`;
+
+      let tbodyHtml = '';
+      rows.forEach((student, sIdx) => {
+        const id = student.enrollmentId || student.id;
+        const sData = evaluationsByEnrollment[id] || { evaluations: [], finalLogro: null };
+        const logro = sData.finalLogro;
+        const logroFormatted = logro != null ? String(logro).padStart(2, '0') : '—';
+        const isPass = logro != null && logro >= 13;
+        const statusBadge = logro != null 
+          ? (isPass ? '<span class="badge bg-success">Aprobado</span>' : '<span class="badge bg-danger">Desaprobado</span>')
+          : '<span class="badge bg-light text-secondary border">Sin evaluar</span>';
+
+        tbodyHtml += `
+          <tr data-student-id="${id}">
+            <td style="text-align: center; color: #64748b; font-weight: 600;">${sIdx + 1}</td>
+            <td class="col-sticky-student fw-bold text-dark" style="font-size: 0.84rem;">
+              <div class="text-truncate" title="${escapeHtml(student.studentName)}">${escapeHtml(student.studentName)}</div>
+              <div class="text-muted fw-normal" style="font-size: 0.72rem;">${escapeHtml(student.document || student.numeroDocumento || '')}</div>
+            </td>`;
+
+        for (let k = 0; k < 5; k++) {
+          const ev = sData.evaluations[k] || { score: null };
+          const val = ev.score != null ? ev.score : (ev.ia1 != null ? ev.ia1 : '');
+          const cls = val === '' || val == null ? 'eval-empty' : (Number(val) >= 13 ? 'eval-pass' : 'eval-fail');
+          tbodyHtml += `
+            <td style="text-align: center; padding: 4px;">
+              <input type="number" min="0" max="20" step="1" 
+                class="form-control form-control-sm eval-grade-input ${cls}" 
+                data-enrollment-id="${id}" data-kidx="${k}" 
+                value="${val !== '' && val != null ? String(val).padStart(2, '0') : ''}" 
+                placeholder="—" />
+            </td>`;
+        }
+
+        tbodyHtml += `
+            <td style="text-align: center; font-weight: 800; font-size: 1.05rem; background: #ecfdf5; color: ${isPass ? '#15803d' : (logro != null ? '#b91c1c' : '#64748b')};" id="logro-${id}">
+              ${logroFormatted}
+            </td>
+            <td style="text-align: center;" id="status-${id}">
+              ${statusBadge}
+            </td>
+          </tr>`;
+      });
+
+      return `
+        <table class="etapa2-table">
+          <thead>${theadHtml}</thead>
+          <tbody>${tbodyHtml}</tbody>
+        </table>`;
+    };
+
+    overlay.innerHTML = `
+      <div class="etapa2-modal-dialog">
+        <div class="etapa2-modal-header">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success px-3 py-1.5 fw-bold" style="background: #059669 !important; font-size: 0.9rem;">
+              <i class="bi bi-clipboard-check me-1"></i>Calificaciones UD ${udNum}
+            </span>
+            <h5 class="m-0 fw-bold text-dark" style="font-size: 1.15rem;">
+              Grupo: <span class="text-success">${escapeHtml(group.visibleCode)}</span>
+            </h5>
+            <span class="badge bg-light text-secondary border ms-2">${rows.length} Estudiantes · Escala Vigesimal (00-20)</span>
+          </div>
+          <button type="button" class="btn-close" id="btn-close-eval-modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between p-2.5 px-3 bg-light border-bottom gap-2">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="small fw-bold text-secondary text-uppercase tracking-wider" style="font-size: 0.78rem;">Herramientas:</span>
+            <button type="button" class="btn btn-sm btn-outline-success fw-bold" id="btn-modal-demo-eval" title="Generar notas vigesimales de prueba realistas">
+              <i class="bi bi-lightning-charge me-1"></i>Llenar Notas Demo
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-modal-clear-eval" title="Borrar todas las calificaciones">
+              <i class="bi bi-eraser me-1"></i>Limpiar Todo
+            </button>
+          </div>
+          <div class="d-flex align-items-center gap-3 small">
+            <span class="badge bg-success-subtle text-success border border-success fw-semibold">>= 13 Aprobatorio (Verde)</span>
+            <span class="badge bg-danger-subtle text-danger border border-danger fw-semibold">< 13 Desaprobatorio (Rojo)</span>
+            <span class="text-secondary fw-bold">Logro: Promedio IL1..IL5</span>
+          </div>
+        </div>
+
+        <div class="etapa2-modal-body" id="eval-modal-body">
+          ${renderTableContent()}
+        </div>
+
+        <div class="etapa2-modal-footer">
+          <div class="small text-secondary">
+            <i class="bi bi-info-circle me-1 text-success"></i>Ingrese notas numéricas del 00 al 20. El Logro Final se recalcula instantáneamente.
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-outline-secondary fw-semibold px-3" id="btn-cancel-eval-modal">Cancelar</button>
+            <button type="button" class="btn btn-primary fw-bold px-4" id="btn-save-eval-modal" style="background: #1d4ed8; border-color: #1d4ed8;">
+              <i class="bi bi-floppy-fill me-1"></i>Guardar Calificaciones
+            </button>
+            <button type="button" class="btn btn-success fw-bold px-4" id="btn-save-generate-eval-modal" style="background: #059669; border-color: #059669;">
+              <i class="bi bi-file-earmark-pdf-fill me-1"></i>Guardar y Emitir PDF
+            </button>
+          </div>
+        </div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+
+    const recalculateFinalForStudent = (enrollmentId) => {
+      const sData = workingData.evaluationsByEnrollment[enrollmentId];
+      if (!sData) return;
+      let sum = 0, count = 0;
+      sData.evaluations.forEach(ev => {
+        const val = ev.score != null ? ev.score : (ev.ia1 != null ? ev.ia1 : null);
+        if (val != null && !isNaN(val)) {
+          sum += Number(val);
+          count++;
+        }
+      });
+      const finalLogro = count > 0 ? Math.round(sum / count) : null;
+      sData.finalLogro = finalLogro;
+
+      const logroEl = overlay.querySelector(`#logro-${enrollmentId}`);
+      const statusEl = overlay.querySelector(`#status-${enrollmentId}`);
+      if (logroEl) {
+        logroEl.textContent = finalLogro != null ? String(finalLogro).padStart(2, '0') : '—';
+        logroEl.style.color = finalLogro != null ? (finalLogro >= 13 ? '#15803d' : '#b91c1c') : '#64748b';
+      }
+      if (statusEl) {
+        statusEl.innerHTML = finalLogro != null
+          ? (finalLogro >= 13 ? '<span class="badge bg-success">Aprobado</span>' : '<span class="badge bg-danger">Desaprobado</span>')
+          : '<span class="badge bg-light text-secondary border">Sin evaluar</span>';
+      }
+    };
+
+    const modalBody = overlay.querySelector('#eval-modal-body');
+    modalBody.oninput = (e) => {
+      const input = e.target.closest('.eval-grade-input');
+      if (!input) return;
+      const enrollmentId = input.getAttribute('data-enrollment-id');
+      const kidx = parseInt(input.getAttribute('data-kidx'), 10);
+      let rawVal = input.value.trim();
+
+      let num = rawVal === '' ? null : Number(rawVal);
+      if (num != null) {
+        if (isNaN(num)) num = null;
+        else num = Math.min(20, Math.max(0, Math.round(num)));
+      }
+
+      const sData = workingData.evaluationsByEnrollment[enrollmentId];
+      if (sData && sData.evaluations[kidx]) {
+        sData.evaluations[kidx].score = num;
+        sData.evaluations[kidx].ia1 = num;
+        sData.evaluations[kidx].ia2 = num;
+        sData.evaluations[kidx].ia3 = num;
+      }
+
+      input.className = `form-control form-control-sm eval-grade-input ${num == null ? 'eval-empty' : (num >= 13 ? 'eval-pass' : 'eval-fail')}`;
+      recalculateFinalForStudent(enrollmentId);
+    };
+
+    overlay.querySelector('#btn-modal-demo-eval').onclick = () => {
+      const demoResult = this.etapa2DataService.generateDemoEvaluation(groupId, udNum, rows);
+      if (demoResult) {
+        workingData.indicators = demoResult.indicators;
+        workingData.evaluationsByEnrollment = demoResult.evaluationsByEnrollment;
+        modalBody.innerHTML = renderTableContent();
+      }
+    };
+
+    overlay.querySelector('#btn-modal-clear-eval').onclick = () => {
+      rows.forEach(r => {
+        const id = r.enrollmentId || r.id;
+        workingData.evaluationsByEnrollment[id] = {
+          evaluations: [0, 1, 2, 3, 4].map(() => ({ ia1: null, ia2: null, ia3: null, score: null, recovery: null })),
+          finalLogro: null
+        };
+      });
+      modalBody.innerHTML = renderTableContent();
+    };
+
+    const closeModal = () => {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+
+    overlay.querySelector('#btn-close-eval-modal').onclick = closeModal;
+    overlay.querySelector('#btn-cancel-eval-modal').onclick = closeModal;
+
+    overlay.querySelector('#btn-save-eval-modal').onclick = async () => {
+      this.etapa2DataService.saveEvaluation(groupId, udNum, workingData);
+      closeModal();
+      Notifications.show(`✓ Calificaciones guardadas para UD ${udNum} (${rows.length} estudiantes).`, 'success');
+      await this.render(container);
+    };
+
+    overlay.querySelector('#btn-save-generate-eval-modal').onclick = async () => {
+      this.etapa2DataService.saveEvaluation(groupId, udNum, workingData);
+      closeModal();
+      Notifications.show(`✓ Calificaciones guardadas. Generando registro auxiliar PDF…`, 'success');
+      await this.render(container);
+      await this._generateTmplEvaluation(container);
+    };
+  }
+
+  async _preloadDemoAttendance(container) {
+    const groupId = this.selectedGroupId;
+    if (!groupId) {
+      Notifications.show('Seleccione un grupo académico primero.', 'warning');
+      return;
+    }
+    const udNum = this.selectedAsistenciaUD || 1;
+    try {
+      const rosterContext = await this.adminService.buildGroupRoster(groupId);
+      this.etapa2DataService.generateDemoAttendance(groupId, udNum, rosterContext.rows);
+      Notifications.show(`✓ Asistencia de prueba generada para UD ${udNum} (${rosterContext.rows.length} estudiantes). Generando PDF…`, 'success');
+      await this.render(container);
+      await this._generateTmplAttendance(container);
+    } catch (err) {
+      Notifications.show('Error al precargar demo: ' + err.message, 'error');
+    }
+  }
+
+  async _clearAttendanceData(container) {
+    const groupId = this.selectedGroupId;
+    if (!groupId) return;
+    const udNum = this.selectedAsistenciaUD || 1;
+    this.etapa2DataService.clearAttendance(groupId, udNum);
+    Notifications.show(`Asistencia limpiada para UD ${udNum}.`, 'info');
+    await this.render(container);
+  }
+
+  async _preloadDemoEvaluation(container) {
+    const groupId = this.selectedGroupId;
+    if (!groupId) {
+      Notifications.show('Seleccione un grupo académico primero.', 'warning');
+      return;
+    }
+    const udNum = this.selectedEvaluacionUD || 1;
+    try {
+      const rosterContext = await this.adminService.buildGroupRoster(groupId);
+      this.etapa2DataService.generateDemoEvaluation(groupId, udNum, rosterContext.rows);
+      Notifications.show(`✓ Calificaciones de prueba generadas para UD ${udNum} (${rosterContext.rows.length} estudiantes). Generando PDF…`, 'success');
+      await this.render(container);
+      await this._generateTmplEvaluation(container);
+    } catch (err) {
+      Notifications.show('Error al precargar demo: ' + err.message, 'error');
+    }
+  }
+
+  async _clearEvaluationData(container) {
+    const groupId = this.selectedGroupId;
+    if (!groupId) return;
+    const udNum = this.selectedEvaluacionUD || 1;
+    this.etapa2DataService.clearEvaluation(groupId, udNum);
+    Notifications.show(`Calificaciones limpiadas para UD ${udNum}.`, 'info');
+    await this.render(container);
   }
 
   async _generateTmpl18(container) {
