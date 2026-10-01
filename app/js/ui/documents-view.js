@@ -15,6 +15,7 @@ import { MvpPdfService } from '../services/mvp-pdf-service.js';
 import { Etapa2DataService } from '../services/etapa2-data-service.js';
 import { Etapa4DataService } from '../services/etapa4-data-service.js';
 import { Notifications } from './notifications.js';
+import { AuthService } from '../services/auth-service.js';
 
 export const DOCUMENT_STATES = Object.freeze({
   IDLE: 'IDLE',
@@ -561,11 +562,17 @@ export class DocumentsView {
 
       <div class="documents-module-container p-3 p-md-4">
         <!-- Hero Header Secretaría -->
+        ${(() => {
+          const currentRole = AuthService.getCurrentRole();
+          return `
         <div class="hero-banner">
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
               <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-white text-primary fw-bold px-2 py-1" style="font-size: 0.78rem; letter-spacing: 0.5px;">SECRETARÍA ACADÉMICA</span>
+                <span class="badge bg-white text-primary fw-bold px-2 py-1" style="font-size: 0.78rem; letter-spacing: 0.5px;">${escapeHtml(currentRole.title.toUpperCase())}</span>
+                <span class="badge role-badge-${currentRole.id} px-2 py-1" style="font-size: 0.78rem;">
+                  ${currentRole.avatar} ${escapeHtml(currentRole.userName)}
+                </span>
                 <span class="badge ${isDemoRuntime() ? 'bg-warning text-dark' : 'bg-light text-primary'} px-2 py-1" style="font-size: 0.78rem;">
                   <i class="bi bi-${isDemoRuntime() ? 'flask' : 'shield-check'} me-1"></i>
                   ${isDemoRuntime() ? 'DEMOSTRACIÓN — NO OFICIAL' : 'MODO CANDIDATO V2 (8081)'}
@@ -577,7 +584,7 @@ export class DocumentsView {
               </h3>
               <p class="mb-0 text-white-50" style="font-size: 0.92rem;">Emisión oficial de nóminas, fichas de matrícula, registros auxiliares y actas ministeriales.</p>
             </div>
-            <!-- Buscador Rápido de Documentos para Secretaría -->
+            <!-- Buscador Rápido de Documentos -->
             <div style="min-width: 290px; max-width: 440px; flex: 1;">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-white border-0 text-primary"><i class="bi bi-search"></i></span>
@@ -591,6 +598,27 @@ export class DocumentsView {
             </div>
           </div>
         </div>
+
+        <!-- Banner Contextual de Atribuciones del Rol (RBAC) -->
+        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center justify-content-between" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; font-size: 0.85rem;">
+          <div class="d-flex align-items-center gap-2">
+            <span style="font-size: 1.25rem;">${currentRole.avatar}</span>
+            <div>
+              <strong>Perfil Activo: ${escapeHtml(currentRole.userName)} (${escapeHtml(currentRole.title)})</strong> · 
+              <span class="text-secondary">${
+                currentRole.id === 'DIRECTOR'
+                  ? 'Facultades Plenas: Refrendo de Título Técnico Oficial (TMPL-21), Actas Modulares (TMPL-19) y Certificados (TMPL-20).'
+                  : currentRole.id === 'SECRETARIA'
+                    ? 'Atribuciones: Nóminas (TMPL-01..03), Actas Modulares (TMPL-19) y Certificados Modulares (TMPL-20). Títulos (TMPL-21) requieren Dirección.'
+                    : 'Atribuciones pedagógicas: Asistencia Modular (TMPL-05..10), Calificaciones auxiliares (TMPL-11..17) y Portada Docente (TMPL-04).'
+              }</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 fw-bold" id="doc-header-switch-role-btn" style="font-size: 0.78rem; white-space: nowrap;">
+            <i class="bi bi-person-badge me-1"></i>Cambiar Rol
+          </button>
+        </div>`;
+        })()}
 
         <!-- Flujo Visual de 3 Pasos -->
         <div class="flow-stepper">
@@ -3448,10 +3476,16 @@ export class DocumentsView {
   }
 
   async _generateTmpl21(container) {
+    const role = AuthService.getCurrentRole();
+    const status = container.querySelector('#doc-group-status');
+    if (!AuthService.canEmitTemplate('TMPL-21')) {
+      Notifications.warning('La emisión del Título Técnico Oficial (TMPL-21) requiere atribución exclusiva de la Dirección General con refrendo del MINEDU. Por favor conmute al perfil de Director.');
+      if (status) status.innerHTML = '<span class="text-warning fw-bold"><i class="bi bi-shield-lock me-1"></i>Emisión bloqueada: Requiere perfil de Dirección General.</span>';
+      return;
+    }
     const groupId = this.selectedGroupId;
     const studentId = this.selectedEtapa4StudentId;
     const workspace = container.querySelector('#doc-document-workspace');
-    const status = container.querySelector('#doc-group-status');
     if (!groupId || !studentId) {
       if (status) status.innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i>Seleccione un grupo y un estudiante.</span>';
       return;

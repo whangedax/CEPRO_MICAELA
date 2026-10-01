@@ -233,3 +233,145 @@
 .check-icon { color: var(--success-color); font-weight: 700; }
 .margin-top { margin-top: 1.5rem; }
 .margin-top-sm { margin-top: 0.8rem; }
+
+/* ==========================================================================
+   CONTROL DE ACCESO Y ROLES (RBAC)
+   ========================================================================== */
+.user-role-widget {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.user-role-widget:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.user-role-avatar {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+.user-role-details {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.user-role-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+.user-role-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+.role-badge-DIRECTOR { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.role-badge-SECRETARIA { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.role-badge-DOCENTE { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
+
+.role-switcher-btn {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.role-switcher-btn:hover {
+  background: #ffffff;
+  color: #1e293b;
+}
+
+/* Modal de Selección de Rol */
+.role-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(5px);
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+.role-modal-card {
+  background: #ffffff;
+  border-radius: 16px;
+  max-width: 780px;
+  width: 100%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  animation: roleModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes roleModalPop {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.role-card-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.15rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #ffffff;
+}
+.role-card-option:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+.role-card-option.is-active-role {
+  border-color: #10b981;
+  background: #f0fdf4;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.12);
+}
+.role-option-avatar {
+  font-size: 2.2rem;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #f1f5f9;
+  flex-shrink: 0;
+}
+.role-card-option.is-active-role .role-option-avatar {
+  background: #dcfce7;
+}
+
+/* Vista de Acceso Restringido */
+.access-denied-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #fecaca;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  max-width: 640px;
+  margin: 3rem auto;
+  box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.1);
+}
+.access-denied-icon {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
