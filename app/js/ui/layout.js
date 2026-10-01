@@ -106,8 +106,10 @@ export const Layout = {
       headerActions.prepend(widget);
     }
 
+    const activeGroup = TeacherContextService.getActiveGroupInfo();
+    const activeProg = TeacherContextService.getActiveProgram();
     const teacherBadgeHtml = role.id === 'DOCENTE'
-      ? `<span class="user-role-badge role-badge-${role.id}" title="Especialidad Asignada: ${escapeHtml(TeacherContextService.getActiveProgram().nombre)}">👨‍🏫 ${escapeHtml(TeacherContextService.getActiveProgram().nombre)}</span>`
+      ? `<span class="user-role-badge role-badge-${role.id}" title="Aula Activa: Grupo ${escapeHtml(activeGroup.grupoCode)} · ${escapeHtml(activeProg.nombre)}">👥 Aula: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})</span>`
       : `<span class="user-role-badge role-badge-${role.id}">${escapeHtml(role.title)}</span>`;
 
     widget.innerHTML = `

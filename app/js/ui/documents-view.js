@@ -17,6 +17,7 @@ import { Etapa4DataService } from '../services/etapa4-data-service.js';
 import { Notifications } from './notifications.js';
 import { AuthService } from '../services/auth-service.js';
 import { TeacherContextService } from '../services/teacher-context-service.js';
+import { SyncPackageService } from '../services/sync-package-service.js';
 
 export const DOCUMENT_STATES = Object.freeze({
   IDLE: 'IDLE',
@@ -150,6 +151,12 @@ export class DocumentsView {
     if (activeRole.id === 'DOCENTE') {
       const activeProg = TeacherContextService.getActiveProgram();
       this.groups = TeacherContextService.filterGroups(this._allGroups, activeProg.id);
+      const activeGroupCode = TeacherContextService.getActiveGroupCode();
+      const matched = this.groups.find(g => (g.visibleCode === activeGroupCode || (g.id && g.id.includes(activeGroupCode))));
+      if (matched) {
+        this.selectedGroupId = matched.id;
+        this.selectedGroupCode = matched.visibleCode;
+      }
     } else {
       this.groups = this._allGroups;
     }
@@ -693,12 +700,25 @@ export class DocumentsView {
           </div>
           <div class="d-flex align-items-center gap-2">
             ${currentRole.id === 'DOCENTE' ? `
+              <select id="doc-teacher-classroom-select" class="form-select form-select-sm" style="font-size: 0.82rem; padding: 0.35rem 0.65rem; border-radius: 8px; border: 1.5px solid #3b82f6; font-weight: 700; color: #1e293b;" title="Cambiar Aula / Grupo">
+                ${TeacherContextService.getGroupsForProgram().map(g => `
+                  <option value="${g.grupoCode}" ${g.grupoCode === TeacherContextService.getActiveGroupCode() ? 'selected' : ''}>👥 ${escapeHtml(g.grupoCode)} · ${escapeHtml(g.turno || g.modalidad || '')} (${g.count} est.)</option>
+                `).join('')}
+              </select>
               <select id="doc-teacher-program-select" class="form-select form-select-sm" style="font-size: 0.82rem; padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 600; color: #334155;" title="Cambiar Especialidad Asignada">
                 ${TeacherContextService.getPrograms().map(p => `
                   <option value="${p.id}" ${p.id === TeacherContextService.getActiveProgramId() ? 'selected' : ''}>📚 ${escapeHtml(p.nombre)}</option>
                 `).join('')}
               </select>
-            ` : ''}
+              <button type="button" id="doc-export-notas-sync-btn" class="btn btn-outline-primary btn-sm fw-bold px-2.5 py-1" style="font-size: 0.8rem; border-radius: 8px;" title="Exportar mis notas y asistencias a memoria USB para entregar a Secretaría">
+                📦 Exportar Notas (USB)
+              </button>
+            ` : `
+              <button type="button" id="doc-import-notas-sync-btn" class="btn btn-outline-success btn-sm fw-bold px-2.5 py-1" style="font-size: 0.8rem; border-radius: 8px;" title="Consolidar notas y asistencias entregadas en USB por los docentes">
+                📥 Consolidar Notas (USB)
+              </button>
+              <input type="file" id="doc-input-sync-notas" accept=".cetpro,.json" style="display:none;">
+            `}
             <button type="button" class="btn btn-outline-secondary btn-sm fw-bold px-3 py-1" id="doc-header-switch-role-btn" style="white-space: nowrap; border-radius: 8px;">
               <i class="bi bi-person-badge me-1"></i>Cambiar Perfil
             </button>
@@ -2350,6 +2370,15 @@ export class DocumentsView {
     if (searchInput) searchInput.oninput = async event => this._searchEnrollments(container, event.target.value);
     if (generateButton) generateButton.onclick = async () => this._generateSelectedDocument(container);
 
+    const teacherClassroomSelect = container.querySelector('#doc-teacher-classroom-select');
+    if (teacherClassroomSelect) {
+      teacherClassroomSelect.onchange = async () => {
+        TeacherContextService.setActiveGroupCode(teacherClassroomSelect.value);
+        this.selectedGroupId = null;
+        await this.render(container);
+      };
+    }
+
     const teacherProgSelect = container.querySelector('#doc-teacher-program-select');
     if (teacherProgSelect) {
       teacherProgSelect.onchange = async () => {
@@ -2364,6 +2393,34 @@ export class DocumentsView {
       headerSwitchBtn.onclick = () => {
         const widget = document.getElementById('user-role-widget');
         if (widget) widget.click();
+      };
+    }
+
+    const btnExportNotasSync = container.querySelector('#doc-export-notas-sync-btn');
+    if (btnExportNotasSync) {
+      btnExportNotasSync.onclick = async () => {
+        const syncService = new SyncPackageService();
+        await syncService.exportTeacherGradesPackage();
+      };
+    }
+
+    const btnImportNotasSync = container.querySelector('#doc-import-notas-sync-btn');
+    const inputSyncNotas = container.querySelector('#doc-input-sync-notas');
+    if (btnImportNotasSync && inputSyncNotas) {
+      btnImportNotasSync.onclick = () => inputSyncNotas.click();
+      inputSyncNotas.onchange = async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          try {
+            const content = await SyncPackageService.readFileAsText(file);
+            const syncService = new SyncPackageService();
+            await syncService.importTeacherGradesPackage(content);
+            inputSyncNotas.value = '';
+            await this.render(container);
+          } catch (err) {
+            console.error('[DocumentsView] Error consolidando notas:', err);
+          }
+        }
       };
     }
   }
