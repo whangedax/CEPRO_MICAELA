@@ -25,7 +25,7 @@ const path = require('path');
   });
 
   console.log('1. Cargando aplicación en http://127.0.0.1:8081/#/inicio...');
-  await page.goto('http://127.0.0.1:8081/#/inicio', { waitUntil: 'networkidle2' });
+  await page.goto('http://127.0.0.1:8081/#/inicio', { waitUntil: 'load' });
   await page.waitForSelector('#user-role-widget');
   await new Promise(r => setTimeout(r, 600));
 
@@ -38,7 +38,7 @@ const path = require('path');
   await page.screenshot({ path: path.join(artifactDir, '61_rbac_director_dashboard.png'), fullPage: false });
 
   // Verificar que Director ve Etapa 4 con TMPL-21
-  await page.goto('http://127.0.0.1:8081/#/documentos', { waitUntil: 'networkidle2' });
+  await page.goto('http://127.0.0.1:8081/#/documentos', { waitUntil: 'load' });
   await page.waitForSelector('.stage-nav-pill[data-stage-id="ETAPA_4"]');
   await page.click('.stage-nav-pill[data-stage-id="ETAPA_4"]');
   await new Promise(r => setTimeout(r, 500));
@@ -65,7 +65,7 @@ const path = require('path');
 
   // Validar que Secretaría ve Documentos pero NO ve TMPL-21 en Etapa 4
   console.log('5. Verificando Etapa 4 de Secretaría (TMPL-21 debe estar OCULTO)...');
-  await page.goto('http://127.0.0.1:8081/#/documentos', { waitUntil: 'networkidle2' });
+  await page.goto('http://127.0.0.1:8081/#/documentos', { waitUntil: 'load' });
   await page.waitForSelector('.stage-nav-pill[data-stage-id="ETAPA_4"]');
   await page.click('.stage-nav-pill[data-stage-id="ETAPA_4"]');
   await new Promise(r => setTimeout(r, 500));
@@ -80,7 +80,7 @@ const path = require('path');
 
   // Validar que en Respaldo, Secretaría NO tiene botón de restaurar base de datos
   console.log('6. Verificando Respaldo como Secretaría (Restauración debe estar OCULTA)...');
-  await page.goto('http://127.0.0.1:8081/#/respaldo', { waitUntil: 'networkidle2' });
+  await page.goto('http://127.0.0.1:8081/#/respaldo', { waitUntil: 'load' });
   await page.waitForSelector('#btn-export-backup');
   const hasRestoreBtnSec = await page.evaluate(() => Boolean(document.querySelector('#btn-restore-backup')));
   console.log('Secretaría tiene botón de Restauración (debe ser false):', hasRestoreBtnSec);
@@ -99,13 +99,13 @@ const path = require('path');
   console.log(`Docente activado: ${roleNameDoc}`);
 
   // Verificar Inicio del Docente
-  await page.goto('http://127.0.0.1:8081/#/inicio', { waitUntil: 'networkidle2' });
+  await page.goto('http://127.0.0.1:8081/#/inicio', { waitUntil: 'load' });
   await new Promise(r => setTimeout(r, 500));
   await page.screenshot({ path: path.join(artifactDir, '65_rbac_docente_dashboard.png'), fullPage: false });
 
   // Validar Padrón de Estudiantes: NO botón de nuevo estudiante
   console.log('8. Verificando Padrón como Docente (#btn-new-student debe estar OCULTO)...');
-  await page.goto('http://127.0.0.1:8081/#/estudiantes', { waitUntil: 'networkidle2' });
+  await page.goto('http://127.0.0.1:8081/#/estudiantes', { waitUntil: 'load' });
   await page.waitForSelector('#student-search-input');
   const hasNewStudentBtnDoc = await page.evaluate(() => Boolean(document.querySelector('#btn-new-student')));
   console.log('Docente ve botón + Nuevo Estudiante (debe ser false):', hasNewStudentBtnDoc);
@@ -114,7 +114,7 @@ const path = require('path');
 
   // Validar Documentos: Etapa 3 y Etapa 4 deben estar OCULTAS
   console.log('9. Verificando Documentos como Docente (Etapa 3 y 4 deben estar OCULTAS)...');
-  await page.goto('http://127.0.0.1:8081/#/documentos', { waitUntil: 'networkidle2' });
+  await page.goto('http://127.0.0.1:8081/#/documentos', { waitUntil: 'load' });
   await page.waitForSelector('.stage-nav-pill');
   const stageIdsDoc = await page.evaluate(() => {
     return Array.from(document.querySelectorAll('.stage-nav-pill')).map(el => el.getAttribute('data-stage-id'));
@@ -123,11 +123,14 @@ const path = require('path');
   if (stageIdsDoc.includes('ETAPA_3') || stageIdsDoc.includes('ETAPA_4')) {
     throw new Error('Docente no debe ver ETAPA_3 ni ETAPA_4');
   }
+  const bodyFont = await page.evaluate(() => window.getComputedStyle(document.body).fontFamily);
+  console.log('Fuente activa en el navegador:', bodyFont);
   await page.screenshot({ path: path.join(artifactDir, '69_rbac_docente_etapas_ocultas.png'), fullPage: false });
+  await page.screenshot({ path: path.join(artifactDir, '73_modern_docente_documentos.png'), fullPage: false });
 
   // Validar Router Guard para #/respaldo
   console.log('10. Verificando Router Guard para ruta #/respaldo como Docente...');
-  await page.goto('http://127.0.0.1:8081/#/respaldo', { waitUntil: 'networkidle2' });
+  await page.goto('http://127.0.0.1:8081/#/respaldo', { waitUntil: 'load' });
   await page.waitForSelector('.access-denied-card');
   await page.screenshot({ path: path.join(artifactDir, '66_rbac_docente_acceso_restringido.png'), fullPage: false });
 

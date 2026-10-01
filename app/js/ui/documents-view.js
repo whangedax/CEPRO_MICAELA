@@ -181,21 +181,34 @@ export class DocumentsView {
     container.innerHTML = `
       <style>
         .documents-module-container {
-          max-width: 1300px;
+          max-width: 1360px;
           margin: 0 auto;
         }
         .hero-banner {
-          background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-          border-radius: 14px;
+          background: linear-gradient(135deg, #090d16 0%, #1e293b 55%, #1e3a8a 100%);
+          border-radius: 18px;
           color: #ffffff;
-          padding: 1.6rem 1.85rem;
+          padding: 1.75rem 2rem;
           margin-bottom: 1.5rem;
-          box-shadow: 0 6px 18px rgba(37, 99, 235, 0.18);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.25);
+          position: relative;
+          overflow: hidden;
+        }
+        .hero-banner::before {
+          content: '';
+          position: absolute;
+          top: -40%;
+          right: -10%;
+          width: 400px;
+          height: 400px;
+          background: radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, transparent 70%);
+          pointer-events: none;
         }
         .flow-stepper {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 0.85rem;
+          gap: 1rem;
           margin-bottom: 1.5rem;
         }
         @media (max-width: 768px) {
@@ -204,50 +217,59 @@ export class DocumentsView {
           }
         }
         .stepper-item {
-          padding: 0.95rem 1.15rem;
-          border-radius: 10px;
-          border: 2px solid #cbd5e1;
+          padding: 1.05rem 1.3rem;
+          border-radius: 14px;
+          border: 1px solid #e2e8f0;
           background: #ffffff;
           display: flex;
           align-items: center;
-          gap: 0.85rem;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-          transition: all 0.2s ease;
+          gap: 0.95rem;
+          box-shadow: var(--shadow-sm);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stepper-item:hover {
+          border-color: #cbd5e1;
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
         }
         .stepper-item.active {
-          border-color: #2563eb;
-          background: #eff6ff;
+          border-color: #3b82f6;
+          background: #f8faff;
+          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.12);
         }
         .stepper-item.completed {
-          border-color: #059669;
+          border-color: #10b981;
           background: #f0fdf4;
         }
         .stepper-badge {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: 800;
-          font-size: 0.92rem;
-          background: #e2e8f0;
-          color: #334155;
+          font-weight: 700;
+          font-size: 0.95rem;
+          background: #f1f5f9;
+          color: #64748b;
           flex-shrink: 0;
+          transition: all 0.2s ease;
         }
         .stepper-item.active .stepper-badge {
-          background: #2563eb;
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
           color: #ffffff;
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.32);
         }
         .stepper-item.completed .stepper-badge {
-          background: #059669;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
           color: #ffffff;
+          box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
         }
         .stage-nav-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 0.95rem;
-          margin-bottom: 1.35rem;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
         }
         @media (max-width: 1100px) {
           .stage-nav-grid {
@@ -261,41 +283,44 @@ export class DocumentsView {
         }
         .stage-nav-pill {
           cursor: pointer;
-          border: 2px solid #94a3b8;
-          border-radius: 12px;
-          padding: 1.15rem 1.25rem;
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 1.25rem 1.35rem;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           background: #ffffff;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+          box-shadow: var(--shadow-sm);
           display: flex;
           flex-direction: column;
           justify-content: space-between;
           box-sizing: border-box;
           user-select: none;
+          position: relative;
         }
         .stage-nav-pill:hover {
-          border-color: #2563eb;
-          background: #f8fafc;
+          border-color: #93c5fd;
+          background: #f8faff;
           transform: translateY(-2px);
-          box-shadow: 0 6px 16px rgba(37, 99, 235, 0.12);
+          box-shadow: var(--shadow-md);
         }
         .stage-nav-pill.active {
-          background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
-          border: 3px solid #1d4ed8;
-          box-shadow: 0 0 0 3.5px rgba(37, 99, 235, 0.2), 0 8px 18px rgba(29, 78, 216, 0.15);
+          background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
+          border: 1.5px solid #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16), var(--shadow-md);
+          transform: translateY(-2px);
         }
         .stage-pill-title {
           font-size: 1.08rem;
-          font-weight: 800;
-          color: #0f172a;
+          font-weight: 700;
+          color: var(--neutral-heading);
           margin-bottom: 0.35rem;
           line-height: 1.3;
+          letter-spacing: -0.015em;
         }
         .stage-pill-subtitle {
           font-size: 0.85rem;
-          color: #334155;
-          line-height: 1.35;
-          font-weight: 500;
+          color: var(--neutral-muted);
+          line-height: 1.45;
+          font-weight: 400;
         }
         .doc-cards-grid {
           display: grid;
@@ -309,60 +334,61 @@ export class DocumentsView {
         }
         .doc-item-card {
           cursor: pointer;
-          border: 2px solid #94a3b8;
-          border-radius: 12px;
-          padding: 1.35rem 1.45rem;
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 1.4rem 1.5rem;
           background: #ffffff;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+          box-shadow: var(--shadow-sm);
           box-sizing: border-box;
           user-select: none;
           position: relative;
           min-height: 220px;
           overflow: hidden;
         }
-        .doc-item-card.card-accent-ugel { border-top: 5px solid #1d4ed8; }
-        .doc-item-card.card-accent-student { border-top: 5px solid #059669; }
-        .doc-item-card.card-accent-teacher { border-top: 5px solid #0284c7; }
-        .doc-item-card.card-accent-review { border-top: 5px solid #d97706; }
-        .doc-item-card.card-accent-eval { border-top: 5px solid #4f46e5; }
-        .doc-item-card.card-accent-lock { border-top: 5px solid #64748b; }
+        .doc-item-card.card-accent-ugel { border-top: 4px solid #2563eb; }
+        .doc-item-card.card-accent-student { border-top: 4px solid #10b981; }
+        .doc-item-card.card-accent-teacher { border-top: 4px solid #7c3aed; }
+        .doc-item-card.card-accent-review { border-top: 4px solid #f59e0b; }
+        .doc-item-card.card-accent-eval { border-top: 4px solid #6366f1; }
+        .doc-item-card.card-accent-lock { border-top: 4px solid #64748b; }
 
         .doc-item-card:hover {
-          border-color: #2563eb;
-          background: #f8fafc;
+          border-color: #93c5fd;
+          background: #fcfdff;
           transform: translateY(-3px);
-          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.09);
+          box-shadow: var(--shadow-lg);
         }
         .doc-item-card.active-template {
-          border: 3.5px solid #1d4ed8;
-          background: #f0f7ff;
-          box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.22), 0 10px 28px rgba(29, 78, 216, 0.16);
+          border: 2px solid #3b82f6;
+          background: #f8faff;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16), var(--shadow-md);
         }
         .doc-item-card.filtered-out {
           opacity: 0.35;
           filter: grayscale(80%);
         }
         .card-doc-title {
-          font-size: 1.18rem;
-          font-weight: 800;
-          color: #0f172a;
-          margin: 0.45rem 0 0.4rem 0;
+          font-size: 1.15rem;
+          font-weight: 700;
+          color: var(--neutral-heading);
+          margin: 0.5rem 0 0.4rem 0;
           line-height: 1.3;
+          letter-spacing: -0.015em;
         }
         .card-doc-desc {
-          font-size: 0.92rem;
-          color: #1e293b;
-          line-height: 1.48;
-          font-weight: 450;
+          font-size: 0.88rem;
+          color: var(--neutral-muted);
+          line-height: 1.5;
+          font-weight: 400;
           margin-bottom: 1.15rem;
         }
         .card-footer-action {
-          border-top: 2px solid #e2e8f0;
-          padding-top: 0.85rem;
+          border-top: 1px solid #f1f5f9;
+          padding-top: 0.95rem;
           margin-top: auto;
           display: flex;
           justify-content: space-between;
@@ -371,91 +397,99 @@ export class DocumentsView {
         .ud-pills-bar {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.45rem;
+          gap: 0.5rem;
           align-items: center;
           margin-top: 0.5rem;
           margin-bottom: 0.85rem;
         }
         .ud-selector-pill {
-          padding: 0.5rem 0.95rem;
+          padding: 0.45rem 0.9rem;
           border-radius: 8px;
-          border: 2px solid #94a3b8;
+          border: 1px solid #cbd5e1;
           background: #ffffff;
-          font-size: 0.9rem;
-          font-weight: 800;
-          color: #0f172a;
+          font-size: 0.88rem;
+          font-weight: 600;
+          color: #334155;
           cursor: pointer;
-          transition: all 0.15s;
+          transition: all 0.15s ease;
         }
         .ud-selector-pill:hover {
           background: #eff6ff;
-          border-color: #2563eb;
+          border-color: #3b82f6;
           color: #1d4ed8;
           transform: translateY(-1px);
         }
         .ud-selector-pill.active-ud {
-          background: #1d4ed8;
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
           color: #ffffff;
-          border-color: #1d4ed8;
-          box-shadow: 0 3px 8px rgba(29, 78, 216, 0.3);
+          border-color: #2563eb;
+          box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
         }
         .ud-selector-pill.active-ud-blue {
-          background: #1d4ed8;
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
           color: #ffffff;
-          border-color: #1d4ed8;
-          box-shadow: 0 3px 8px rgba(29, 78, 216, 0.35);
+          border-color: #2563eb;
+          box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
         }
         .ud-selector-pill.active-ud-green {
-          background: #059669;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
           color: #ffffff;
           border-color: #059669;
-          box-shadow: 0 3px 8px rgba(5, 150, 105, 0.35);
+          box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
         }
         .doc-badge-pill {
           display: inline-flex;
           align-items: center;
           gap: 0.35rem;
-          padding: 0.35rem 0.75rem;
-          font-size: 0.8rem;
-          font-weight: 800;
-          border-radius: 6px;
+          padding: 0.3rem 0.7rem;
+          font-size: 0.75rem;
+          font-weight: 700;
+          border-radius: 9999px;
           text-transform: uppercase;
-          letter-spacing: 0.3px;
+          letter-spacing: 0.02em;
         }
-        .doc-badge-primary { background: #dbeafe; color: #1e40af; border: 1.5px solid #bfdbfe; }
-        .doc-badge-success { background: #d1fae5; color: #065f46; border: 1.5px solid #a7f3d0; }
-        .doc-badge-warning { background: #fef3c7; color: #92400e; border: 1.5px solid #fde68a; }
-        .doc-badge-info { background: #e0f2fe; color: #0369a1; border: 1.5px solid #bae6fd; }
-        .doc-badge-secondary { background: #f1f5f9; color: #334155; border: 1.5px solid #cbd5e1; }
+        .doc-badge-primary { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .doc-badge-success { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .doc-badge-warning { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .doc-badge-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .doc-badge-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
         .doc-selector-toolbar {
           display: flex;
           flex-wrap: wrap;
           justify-content: space-between;
           align-items: center;
-          gap: 0.85rem;
-          padding: 0.85rem 1.15rem;
-          background: #f8fafc;
-          border: 2px solid #cbd5e1;
-          border-radius: 10px;
-          margin-bottom: 1.35rem;
+          gap: 1rem;
+          padding: 1rem 1.35rem;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          margin-bottom: 1.5rem;
+          box-shadow: var(--shadow-xs);
         }
         .doc-selector-select {
           flex: 1;
           min-width: 280px;
           max-width: 520px;
-          padding: 0.5rem 0.85rem;
-          font-size: 0.9rem;
-          font-weight: 600;
-          border: 2px solid #cbd5e1;
+          padding: 0.6rem 0.95rem;
+          font-size: 0.88rem;
+          font-weight: 500;
+          border: 1px solid #cbd5e1;
           border-radius: 8px;
           background: #ffffff;
-          color: #0f172a;
+          color: #1e293b;
+          transition: all 0.15s ease;
+        }
+        .doc-selector-select:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
         .context-step-box {
-          background: #f8fafc;
-          border: 2px solid #94a3b8;
-          border-radius: 12px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
           overflow: hidden;
+          box-shadow: var(--shadow-sm);
         }
         /* Modal Interactivo Sábana Etapa 2 (Asistencia y Evaluación) */
         .etapa2-modal-overlay {
@@ -582,54 +616,62 @@ export class DocumentsView {
         <div class="hero-banner">
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
-              <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-white text-primary fw-bold px-2 py-1" style="font-size: 0.78rem; letter-spacing: 0.5px;">${escapeHtml(currentRole.title.toUpperCase())}</span>
-                <span class="badge role-badge-${currentRole.id} px-2 py-1" style="font-size: 0.78rem;">
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="badge" style="background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); color: #ffffff; font-weight: 700; font-size: 0.74rem; border: 1px solid rgba(255, 255, 255, 0.25);">
+                  ${escapeHtml(currentRole.title.toUpperCase())}
+                </span>
+                <span class="badge role-badge-${currentRole.id}" style="font-size: 0.74rem; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                   ${currentRole.avatar} ${escapeHtml(currentRole.userName)}
                 </span>
-                <span class="badge ${isDemoRuntime() ? 'bg-warning text-dark' : 'bg-light text-primary'} px-2 py-1" style="font-size: 0.78rem;">
+                <span class="badge" style="background: rgba(255, 255, 255, 0.14); backdrop-filter: blur(8px); color: #e2e8f0; font-size: 0.74rem; border: 1px solid rgba(255, 255, 255, 0.2);">
                   <i class="bi bi-${isDemoRuntime() ? 'flask' : 'shield-check'} me-1"></i>
-                  ${isDemoRuntime() ? 'DEMOSTRACIÓN — NO OFICIAL' : 'MODO CANDIDATO V2 (8081)'}
+                  ${isDemoRuntime() ? 'DEMOSTRACIÓN — NO OFICIAL' : 'OPERACIÓN LOCAL V2 (8081)'}
                 </span>
               </div>
-              <h3 class="fw-bold mb-1 d-flex align-items-center gap-2" style="font-size: 1.65rem;">
-                <i class="bi bi-file-earmark-ruled-fill"></i>
+              <h3 class="fw-bold mb-1 d-flex align-items-center gap-2" style="font-size: 1.7rem; letter-spacing: -0.025em;">
+                <i class="bi bi-file-earmark-ruled-fill text-primary-light"></i>
                 <span>Centro de Emisión Documental</span>
               </h3>
-              <p class="mb-0 text-white-50" style="font-size: 0.92rem;">Emisión oficial de nóminas, fichas de matrícula, registros auxiliares y actas ministeriales.</p>
+              <p class="mb-0" style="color: #94a3b8; font-size: 0.92rem; font-weight: 400;">
+                Emisión ministerial de nóminas, fichas de matrícula, registros auxiliares y actas de notas.
+              </p>
             </div>
-            <!-- Buscador Rápido de Documentos -->
-            <div style="min-width: 290px; max-width: 440px; flex: 1;">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text bg-white border-0 text-primary"><i class="bi bi-search"></i></span>
-                <input type="search" id="doc-quick-search" class="form-control border-0" placeholder="Buscar documento (ej. nómina, ficha, carpeta, asistencia)..." value="${escapeHtml(this.docFilterQuery || '')}" autocomplete="off" style="font-size: 0.9rem; padding: 0.55rem 0.75rem;">
-                ${this.docFilterQuery ? '<button class="btn btn-light border-0" id="doc-quick-search-clear" type="button" title="Limpiar filtro"><i class="bi bi-x-circle"></i></button>' : ''}
+            <!-- Buscador Rápido de Documentos con Estilo Píldora -->
+            <div style="min-width: 300px; max-width: 440px; flex: 1;">
+              <div style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.95); border-radius: 9999px; padding: 0.4rem 0.95rem; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18); border: 1px solid rgba(255, 255, 255, 0.4);">
+                <span style="color: #3b82f6; font-size: 0.95rem; margin-right: 0.5rem; display: flex; align-items: center;"><i class="bi bi-search"></i>🔍</span>
+                <input type="search" id="doc-quick-search" placeholder="Buscar documento (ej. nómina, asistencia, UD)..." value="${escapeHtml(this.docFilterQuery || '')}" autocomplete="off" style="border: none; outline: none; background: transparent; font-size: 0.88rem; font-family: inherit; width: 100%; color: #0f172a;">
+                ${this.docFilterQuery ? '<button class="btn btn-sm btn-light border-0 py-0 px-1" id="doc-quick-search-clear" type="button" title="Limpiar filtro" style="background:none; color:#64748b; font-size:0.9rem;">✕</button>' : ''}
               </div>
-              <div class="text-white-50 mt-1 d-flex justify-content-between" style="font-size: 0.75rem;">
-                <span>Filtro instantáneo de plantillas</span>
-                <span><strong>${this.selectedTemplateId}</strong> activa</span>
+              <div style="display: flex; justify-content: space-between; font-size: 0.74rem; color: #94a3b8; margin-top: 0.45rem; padding: 0 0.5rem;">
+                <span>Filtrado instantáneo</span>
+                <span>Plantilla activa: <strong style="color: #ffffff;">${this.selectedTemplateId}</strong></span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Banner Contextual de Atribuciones del Rol (RBAC) -->
-        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center justify-content-between" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; font-size: 0.85rem;">
-          <div class="d-flex align-items-center gap-2">
-            <span style="font-size: 1.25rem;">${currentRole.avatar}</span>
+        <!-- Tarjeta Contextual de Atribuciones del Rol (RBAC) -->
+        <div class="card p-3 mb-3 d-flex flex-row align-items-center justify-content-between" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: var(--shadow-xs);">
+          <div class="d-flex align-items-center gap-3">
+            <span style="font-size: 1.6rem; line-height: 1; padding: 0.5rem; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">${currentRole.avatar}</span>
             <div>
-              <strong>Perfil Activo: ${escapeHtml(currentRole.userName)} (${escapeHtml(currentRole.title)})</strong> · 
-              <span class="text-secondary">${
-                currentRole.id === 'DIRECTOR'
-                  ? 'Facultades Plenas: Refrendo de Título Técnico Oficial (TMPL-21), Actas Modulares (TMPL-19) y Certificados (TMPL-20).'
-                  : currentRole.id === 'SECRETARIA'
-                    ? 'Atribuciones: Nóminas (TMPL-01..03), Actas Modulares (TMPL-19) y Certificados Modulares (TMPL-20). Títulos (TMPL-21) requieren Dirección.'
-                    : 'Atribuciones pedagógicas: Asistencia Modular (TMPL-05..10), Calificaciones auxiliares (TMPL-11..17) y Portada Docente (TMPL-04).'
-              }</span>
+              <div style="font-weight: 700; color: #0f172a; font-size: 0.92rem; margin-bottom: 0.15rem;">
+                Perfil Activo: ${escapeHtml(currentRole.userName)} <span class="user-role-badge role-badge-${currentRole.id} ms-1">${escapeHtml(currentRole.title)}</span>
+              </div>
+              <div style="color: #64748b; font-size: 0.84rem;">
+                ${
+                  currentRole.id === 'DIRECTOR'
+                    ? 'Facultades Plenas: Refrendo de Título Técnico Oficial (TMPL-21), Actas Modulares (TMPL-19) y Certificados (TMPL-20).'
+                    : currentRole.id === 'SECRETARIA'
+                      ? 'Atribuciones Oficiales: Nóminas (TMPL-01..03), Actas Modulares (TMPL-19) y Certificados Modulares (TMPL-20).'
+                      : 'Atribuciones Pedagógicas: Control de Asistencia Modular (TMPL-05..10), Calificaciones auxiliares (TMPL-11..17) y Portada Docente (TMPL-04).'
+                }
+              </div>
             </div>
           </div>
-          <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 fw-bold" id="doc-header-switch-role-btn" style="font-size: 0.78rem; white-space: nowrap;">
-            <i class="bi bi-person-badge me-1"></i>Cambiar Rol
+          <button type="button" class="btn btn-outline-secondary btn-sm fw-bold px-3 py-1" id="doc-header-switch-role-btn" style="white-space: nowrap; border-radius: 8px;">
+            <i class="bi bi-person-badge me-1"></i>Cambiar Perfil
           </button>
         </div>`;
         })()}
@@ -665,14 +707,25 @@ export class DocumentsView {
         </div>
 
         <!-- Contenedor Principal: Paso 1 y Paso 2 -->
-        <div class="card mb-4 shadow-sm" style="border: 2px solid #cbd5e1; border-radius: 14px; overflow: hidden;">
-          <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2" style="border-bottom: 2px solid #e2e8f0 !important;">
+        ${(() => {
+          const currentStage = DOCUMENT_STAGES.find(s => s.id === this.activeStageId);
+          const currentRole = AuthService.getCurrentRole();
+          const stageTitle = (currentRole.id === 'DOCENTE' && this.activeStageId === 'ETAPA_1')
+            ? 'Carpeta Pedagógica Docente'
+            : (currentStage?.title || '');
+          const stageSubtitle = (currentRole.id === 'DOCENTE' && this.activeStageId === 'ETAPA_1')
+            ? 'Portada oficial y documentación inicial de aula a cargo del docente'
+            : (currentStage?.subtitle || '');
+          return `
+        <div class="card mb-4" style="border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm);">
+          <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2" style="border-bottom: 1px solid #e2e8f0 !important; background: #fafbfc !important;">
             <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-primary fs-6 px-3 py-1 fw-bold" style="background: #1d4ed8; color: #fff; border-radius: 8px;">ETAPA ${DOCUMENT_STAGES.find(s => s.id === this.activeStageId)?.number || '1'}</span>
-              <h5 class="m-0 text-dark fw-bold" style="font-size: 1.22rem; color: #0f172a;">${DOCUMENT_STAGES.find(s => s.id === this.activeStageId)?.title || ''}</h5>
+              <span class="badge bg-primary px-3 py-1 fw-bold" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; border-radius: 8px; font-size: 0.8rem;">ETAPA ${currentStage?.number || '1'}</span>
+              <h5 class="m-0 fw-bold" style="font-size: 1.2rem; color: #0f172a; letter-spacing: -0.015em;">${escapeHtml(stageTitle)}</h5>
             </div>
-            <div class="text-secondary fw-semibold" style="font-size: 0.9rem;">${DOCUMENT_STAGES.find(s => s.id === this.activeStageId)?.subtitle || ''}</div>
-          </div>
+            <div class="text-secondary" style="font-size: 0.88rem; color: #64748b;">${escapeHtml(stageSubtitle)}</div>
+          </div>`;
+        })()}
           <div class="card-body p-3 p-md-4">
             <!-- Barra de Selección Canónica con <optgroup> para compatibilidad de accesibilidad y pruebas -->
             <div class="doc-selector-toolbar">
@@ -703,17 +756,17 @@ export class DocumentsView {
             </div>
 
             <!-- Paso 2: Controles contextuales específicos para emisión -->
-            <div id="doc-context-controls" class="mt-4 pt-4 border-top" style="border-top: 2px solid #e2e8f0 !important;">
+            <div id="doc-context-controls" class="mt-4 pt-4 border-top" style="border-top: 1px solid #f1f5f9 !important;">
               ${this._renderContextControls(currentTemplate)}
             </div>
           </div>
         </div>
 
         <!-- Paso 3: Espacio de Vista Previa y Descarga -->
-        <div class="card shadow-sm" style="border: 2px solid #cbd5e1; border-radius: 14px; overflow: hidden;">
-          <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2" style="border-bottom: 2px solid #e2e8f0 !important;">
+        <div class="card" style="border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm);">
+          <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2" style="border-bottom: 1px solid #e2e8f0 !important; background: #fafbfc !important;">
             <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-success rounded-circle p-1" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">3</span>
+              <span class="badge bg-success rounded-circle p-1" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">3</span>
               <span class="fw-bold text-dark" style="font-size: 1.05rem;">
                 <i class="bi bi-eye-fill me-1 text-primary"></i>Visor y Descarga Oficial: <strong>${escapeHtml(currentTemplate?.name || this.selectedTemplateId)}</strong>
               </span>
@@ -731,18 +784,31 @@ export class DocumentsView {
   }
 
   _renderStageNav() {
+    const role = AuthService.getCurrentRole();
     return DOCUMENT_STAGES
       .filter(stage => AuthService.canAccessStage(stage.id))
       .map(stage => {
-      const isActive = stage.id === this.activeStageId;
-      return `
+        const isActive = stage.id === this.activeStageId;
+        const stageBadge = (role.id === 'DOCENTE' && stage.id === 'ETAPA_1')
+          ? '1 DOC. PEDAGÓGICO'
+          : (role.id === 'DOCENTE' && stage.id === 'ETAPA_2')
+            ? '13 FORMATOS AUXILIARES'
+            : stage.badge;
+        const stageTitle = (role.id === 'DOCENTE' && stage.id === 'ETAPA_1')
+          ? 'Carpeta Pedagógica'
+          : stage.title;
+        const stageSubtitle = (role.id === 'DOCENTE' && stage.id === 'ETAPA_1')
+          ? 'Portada y documentación de aula del docente'
+          : stage.subtitle;
+
+        return `
         <div class="stage-nav-pill ${isActive ? 'active' : ''}" data-stage-id="${stage.id}" role="tab" aria-selected="${isActive}">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="badge ${isActive ? 'bg-primary' : 'bg-secondary'} px-2 py-1 fw-bold" style="font-size: 0.78rem;">ETAPA ${stage.number}</span>
-            <span class="badge bg-light text-secondary border fw-semibold" style="font-size: 0.72rem;">${stage.badge}</span>
+            <span class="badge ${isActive ? 'badge-primary' : 'badge-secondary'} px-2 py-1 fw-bold" style="font-size: 0.74rem;">ETAPA ${stage.number}</span>
+            <span class="badge bg-light text-secondary border fw-semibold" style="font-size: 0.72rem;">${stageBadge}</span>
           </div>
-          <div class="stage-pill-title"><i class="bi ${stage.icon} me-1 text-primary"></i>${escapeHtml(stage.title)}</div>
-          <div class="stage-pill-subtitle">${escapeHtml(stage.subtitle)}</div>
+          <div class="stage-pill-title"><i class="bi ${stage.icon} me-1 text-primary"></i>${escapeHtml(stageTitle)}</div>
+          <div class="stage-pill-subtitle">${escapeHtml(stageSubtitle)}</div>
         </div>`;
     }).join('');
   }
