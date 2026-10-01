@@ -2636,7 +2636,7 @@ export class DocumentsView {
           </a>
         </div>
       </div>
-      <iframe title="${escapeHtml(finalIframeTitle)}" src="${this.pdfBlobUrl}" width="100%" height="740px" style="border: 2px solid #cbd5e1; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.08);"></iframe>`;
+      <iframe title="${escapeHtml(finalIframeTitle)}" src="${this.pdfBlobUrl}#view=FitH" width="100%" height="740px" style="border: 2px solid #cbd5e1; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.08);"></iframe>`;
 
     const printButton = workspace.querySelector('#doc-print-pdf-btn');
     if (printButton) {

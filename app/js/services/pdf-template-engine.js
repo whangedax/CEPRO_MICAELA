@@ -1129,10 +1129,10 @@ export class PdfTemplateEngine {
     const totPX = presField?.box?.x || (originX + maxSessions * stepX);
     const totFX = absField?.box?.x || (totPX + 37.0);
 
-    // Cabecera institucional
+    // Cabecera institucional (alineada al borde izquierdo del cuadro informativo y sin chocar con 'CENTRO DE EDUCACIÓN TÉCNICO PRODUCTIVA' que inicia en x: 474.4)
     if (institutionName) {
       try {
-        const instFit = this.fitTextOrThrow(institutionName, boldFont, { x: originX, y: 22.0, w: 463.63, h: 12.0 }, pageHeight, {
+        const instFit = this.fitTextOrThrow(institutionName, boldFont, { x: 103.2, y: 22.0, w: 360.0, h: 12.0 }, pageHeight, {
           maxFontSize: 8.5, minFontSize: 4.0, paddingX: 1, align: 'left', fieldKey: 'institution.name'
         });
         page.drawText(instFit.text, { x: instFit.x, y: instFit.y, size: instFit.size, font: boldFont, color });
@@ -1388,9 +1388,9 @@ export class PdfTemplateEngine {
     // Cabecera institucional
     if (institutionName) {
       try {
-        const instBox = getFieldBox('institution.name', { x: 520.0, y: 98.0, w: 300.0, h: 14.0 });
+        const instBox = getFieldBox('institution.name', { x: 542.0, y: 98.0, w: 270.0, h: 14.0 });
         const instFit = this.fitTextOrThrow(institutionName, boldFont, instBox, pageHeight, {
-          maxFontSize: 8.5, minFontSize: 4.5, paddingX: 1, align: 'left', fieldKey: 'institution.name'
+          maxFontSize: 8.0, minFontSize: 4.5, paddingX: 1, align: 'left', fieldKey: 'institution.name'
         });
         page.drawText(instFit.text, { x: instFit.x, y: instFit.y, size: instFit.size, font: boldFont, color });
       } catch (e) {}

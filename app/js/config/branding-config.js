@@ -5,17 +5,17 @@
  */
 
 const ATTENDANCE_COORDS = Object.freeze({
-  x: 48.0,
-  y: 745.0,
-  width: 68.0,
-  height: 66.2
+  x: 38.0,
+  y: 755.0,
+  width: 48.0,
+  height: 46.8
 });
 
 const EVALUATION_COORDS = Object.freeze({
-  x: 42.0,
-  y: 748.0,
-  width: 68.0,
-  height: 66.2
+  x: 45.0,
+  y: 1105.0,
+  width: 52.0,
+  height: 50.7
 });
 
 export const BRANDING_CONFIG = Object.freeze({
@@ -30,6 +30,7 @@ export const BRANDING_CONFIG = Object.freeze({
   /**
    * Coordenadas y dimensiones (en puntos tipográficos PDF) por plantilla
    * Sistema de coordenadas PDF: Origen (0,0) en la esquina inferior izquierda.
+   * Calibrado armónico mediante auditoría geométrica estricta hoja por hoja.
    */
   templates: Object.freeze({
     // TMPL-01: Nómina de Matrícula Oficial A4 Vertical (595.3 x 841.9 pt)
@@ -37,30 +38,30 @@ export const BRANDING_CONFIG = Object.freeze({
     'TMPL-01': Object.freeze({
       x: 485.0,
       y: 752.0,
-      width: 60.0,
-      height: 58.5
-    }),
-
-    // TMPL-02: Ficha Individual de Matrícula A4 Horizontal (841.9 x 595.3 pt)
-    // Esquina superior derecha sobre tabla de datos del estudiante
-    'TMPL-02': Object.freeze({
-      x: 730.0,
-      y: 518.0,
       width: 58.0,
       height: 56.5
     }),
 
+    // TMPL-02: Ficha Individual de Matrícula A4 Horizontal (841.9 x 595.3 pt)
+    // Esquina superior derecha: Al ras con el borde de la tabla (776 pt) y nivelado con MINEDU
+    'TMPL-02': Object.freeze({
+      x: 728.0,
+      y: 525.0,
+      width: 48.0,
+      height: 46.8
+    }),
+
     // TMPL-03: Consolidado de Matrícula A3 Vertical (841.9 x 1190.5 pt)
-    // Esquina superior izquierda antes del título institucional
+    // Cabecera superior izquierda: Despeje total de la fila 5 de la tabla (y: 1120.6)
     'TMPL-03': Object.freeze({
-      x: 55.0,
-      y: 1120.0,
-      width: 62.0,
-      height: 60.4
+      x: 45.0,
+      y: 1128.0,
+      width: 46.0,
+      height: 44.8
     }),
 
     // TMPL-04: Carátula / Portada A4 Vertical (595.3 x 841.9 pt)
-    // Centrado horizontal en cabecera: (595.28 - 80) / 2 = 257.6, sobre y=721
+    // Centrado horizontal geométrico perfecto sobre el membrete
     'TMPL-04': Object.freeze({
       x: 257.6,
       y: 742.0,
@@ -69,7 +70,7 @@ export const BRANDING_CONFIG = Object.freeze({
     }),
 
     // TMPL-05..10: Registro Auxiliar de Asistencia A3 Horizontal (1190.55 x 841.89 pt)
-    // Esquina superior izquierda antes de "PROGRAMA DE ESTUDIOS:" (x: 162, y: 795)
+    // Centrado verticalmente respecto al cuadro informativo de 4 filas (y: 753.6..804.5)
     'TMPL-05': ATTENDANCE_COORDS,
     'TMPL-06': ATTENDANCE_COORDS,
     'TMPL-07': ATTENDANCE_COORDS,
@@ -77,8 +78,8 @@ export const BRANDING_CONFIG = Object.freeze({
     'TMPL-09': ATTENDANCE_COORDS,
     'TMPL-10': ATTENDANCE_COORDS,
 
-    // TMPL-11..17: Registro Auxiliar de Evaluación A3 Horizontal (1190.55 x 841.89 pt)
-    // Esquina superior izquierda antes de "PROGRAMA DE ESTUDIOS:" (x: 128, y: 770)
+    // TMPL-11..17: Registro Auxiliar de Evaluación A3 Vertical (841.89 x 1190.55 pt)
+    // Cabecera superior izquierda en franja limpia sobre el cuadro de capacidades
     'TMPL-11': EVALUATION_COORDS,
     'TMPL-12': EVALUATION_COORDS,
     'TMPL-13': EVALUATION_COORDS,
@@ -88,39 +89,39 @@ export const BRANDING_CONFIG = Object.freeze({
     'TMPL-17': EVALUATION_COORDS,
 
     // TMPL-18: Acta de Evaluación EFSRT A3 Vertical (841.89 x 1190.55 pt)
-    // Cabecera superior izquierda sobre "CETPRO :" (x: 51, y: 917)
+    // Centrado horizontal majestuoso sobre el título oficial
     'TMPL-18': Object.freeze({
-      x: 55.0,
-      y: 955.0,
+      x: 388.9,
+      y: 990.0,
+      width: 64.0,
+      height: 62.4
+    }),
+
+    // TMPL-19: Acta Modular A3 Horizontal (1190.55 x 841.89 pt)
+    // Esquina superior derecha: Simetría perfecta frente al Escudo MINEDU izquierdo (x: 50)
+    'TMPL-19': Object.freeze({
+      x: 1085.0,
+      y: 720.0,
+      width: 58.0,
+      height: 56.5
+    }),
+
+    // TMPL-20: Certificado Modular A4 Horizontal (841.89 x 595.28 pt)
+    // Centrado geométrico exacto al interior del cajetín normativo rotulado "LOGO" (x: 55..164, y: 414..488)
+    'TMPL-20': Object.freeze({
+      x: 74.0,
+      y: 416.0,
       width: 70.0,
       height: 68.2
     }),
 
-    // TMPL-19: Acta Modular A3 Horizontal (1190.55 x 841.89 pt)
-    // Cabecera superior izquierda del acta (x: 55, y: 745) a la izquierda de "ACTA DE EVALUACIÓN MODULAR"
-    'TMPL-19': Object.freeze({
-      x: 55.0,
-      y: 745.0,
-      width: 68.0,
-      height: 66.2
-    }),
-
-    // TMPL-20: Certificado Modular A4 Horizontal (841.89 x 595.28 pt)
-    // Cabecera superior izquierda / membrete oficial
-    'TMPL-20': Object.freeze({
-      x: 55.0,
-      y: 515.0,
-      width: 60.0,
-      height: 58.5
-    }),
-
     // TMPL-21: Título Técnico Profesional A4 Horizontal (841.89 x 595.28 pt)
-    // Cabecera superior izquierda
+    // Centrado geométrico exacto al interior del cajetín normativo oficial
     'TMPL-21': Object.freeze({
-      x: 75.0,
-      y: 485.0,
-      width: 65.0,
-      height: 63.3
+      x: 74.0,
+      y: 416.0,
+      width: 70.0,
+      height: 68.2
     })
   })
 });

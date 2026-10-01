@@ -1,12 +1,12 @@
 # Reporte de Pruebas: MVP-TMPL03-REGISTRO-MODULAR-15
 
-**Fecha:** 2026-09-21T03:21:16.483Z
+**Fecha:** 2026-10-01T05:38:29.412Z
 **Entorno:** Microsoft Edge Headless (127.0.0.1:8081)
 **Aislamiento:** CETPRO_DB (8080) Protegida / Inalterada
-**Resultado Global:** AUTOMATED_EDGE_HEADLESS = PASS
+**Resultado Global:** AUTOMATED_EDGE_HEADLESS = FAIL
 **Aceptación Física Humana:** HUMAN_PHYSICAL_EDGE_ACCEPTANCE = PENDING
 
-## Matriz de Resultados (16/16)
+## Matriz de Resultados (14/15)
 
 | ID Caso | Estado | Detalle |
 |---|:---:|---|
@@ -24,8 +24,7 @@
 | `T-TMPL03-12-STABLE-ALPHABETICAL-ORDER` | **PASSED** | Orden alfabético estable: ALVAREZ precede a MAMANI y MAMANI precede a ZAPATA |
 | `T-TMPL03-13-WATERMARKS` | **PASSED** | Marcas de agua verificadas: DEMOSTRACIÓN — NO OFICIAL en DEMO B, BORRADOR ADMINISTRATIVO — NO OFICIAL en DEMO A |
 | `T-TMPL03-14-NO-SPURIOUS-STRINGS` | **PASSED** | Cero cadenas espurias: Ausencia total de "null", "undefined" o "PENDIENTE" |
-| `T-TMPL03-15-UI-BUTTON-ENABLED` | **PASSED** | Botón TMPL-03 habilitado y operativo en UI |
-| `T-TMPL03-16-UI-OFFICIAL-MINISTERIAL-REPORT` | **PASSED** | Emisión oficial TMPL-03 generada sobre PDF ministerial con iframe y descarga/impresión operativas |
+| `T-TMPL03-FATAL-ERROR` | **FAILED** | Waiting for selector `#register-program` failed |
 
 ## Invariantes Verificados
 - **Inmutabilidad Canónica:** 21/21 hashes SHA-256 inalterados (en particular 03_REGISTRO_DE_MATRICULA_MODULAR.pdf).
