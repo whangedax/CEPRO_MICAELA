@@ -286,6 +286,8 @@ export class PdfTemplateEngine {
       });
     }
 
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-01');
+
     // 6. Generar PDF
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
@@ -453,6 +455,8 @@ export class PdfTemplateEngine {
       });
     }
 
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-02');
+
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
   }
@@ -543,6 +547,9 @@ export class PdfTemplateEngine {
       drawnBounds.push({ canonicalKey: field.canonicalKey, page: field.page, bounds });
       this.lastRenderDiagnostics.fields.push({ canonicalKey: field.canonicalKey, page: field.page, status: 'DRAWN' });
     }
+
+    await this._drawInstitutionalLogo(pdfDoc, pages[0], templateId);
+
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
   }
@@ -947,6 +954,8 @@ export class PdfTemplateEngine {
         color: rgb(0.48, 0.48, 0.48)
       });
     }
+
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-03');
 
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
