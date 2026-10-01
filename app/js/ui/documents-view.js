@@ -16,6 +16,7 @@ import { Etapa2DataService } from '../services/etapa2-data-service.js';
 import { Etapa4DataService } from '../services/etapa4-data-service.js';
 import { Notifications } from './notifications.js';
 import { AuthService } from '../services/auth-service.js';
+import { TeacherContextService } from '../services/teacher-context-service.js';
 
 export const DOCUMENT_STATES = Object.freeze({
   IDLE: 'IDLE',
@@ -96,6 +97,7 @@ export class DocumentsView {
     this.mvpPdf = new MvpPdfService();
     this.etapa2DataService = new Etapa2DataService();
     this.etapa4DataService = new Etapa4DataService();
+    this._allGroups = [];
     this.groups = [];
     this.selectedGroupId = null;
     this.selectedTemplateId = 'TMPL-01';
@@ -135,21 +137,34 @@ export class DocumentsView {
     }
     this.activeStageId = getStageIdForTemplate(this.selectedTemplateId);
 
-    // Cargar grupos académicos para selectores de Etapa 1
-    if (!this.groups || this.groups.length === 0) {
+    // Cargar grupos académicos para selectores
+    if (!this._allGroups || this._allGroups.length === 0) {
       try {
-        this.groups = await this.adminService.listGroupSummaries();
+        this._allGroups = await this.adminService.listGroupSummaries();
       } catch (err) {
         console.warn('[DocumentsView] Error cargando grupos:', err);
-        this.groups = [];
+        this._allGroups = [];
       }
     }
-    if (this.groups.length > 0 && !this.selectedGroupId) {
-      this.selectedGroupId = this.groups[0].id;
-      this.selectedGroupCode = this.groups[0].visibleCode;
-    } else if (this.selectedGroupId) {
-      const g = this.groups.find(item => item.id === this.selectedGroupId);
-      if (g) this.selectedGroupCode = g.visibleCode;
+
+    if (activeRole.id === 'DOCENTE') {
+      const activeProg = TeacherContextService.getActiveProgram();
+      this.groups = TeacherContextService.filterGroups(this._allGroups, activeProg.id);
+    } else {
+      this.groups = this._allGroups;
+    }
+
+    if (this.groups.length > 0) {
+      if (!this.selectedGroupId || !this.groups.some(item => item.id === this.selectedGroupId)) {
+        this.selectedGroupId = this.groups[0].id;
+        this.selectedGroupCode = this.groups[0].visibleCode;
+      } else {
+        const g = this.groups.find(item => item.id === this.selectedGroupId);
+        if (g) this.selectedGroupCode = g.visibleCode;
+      }
+    } else {
+      this.selectedGroupId = null;
+      this.selectedGroupCode = null;
     }
 
     // Sincronizar UDs activas si el templateId seleccionado es de Etapa 2
@@ -652,12 +667,18 @@ export class DocumentsView {
         </div>
 
         <!-- Tarjeta Contextual de Atribuciones del Rol (RBAC) -->
-        <div class="card p-3 mb-3 d-flex flex-row align-items-center justify-content-between" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: var(--shadow-xs);">
+        <div class="card p-3 mb-3 d-flex flex-row align-items-center justify-content-between flex-wrap gap-2" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: var(--shadow-xs);">
           <div class="d-flex align-items-center gap-3">
             <span style="font-size: 1.6rem; line-height: 1; padding: 0.5rem; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">${currentRole.avatar}</span>
             <div>
-              <div style="font-weight: 700; color: #0f172a; font-size: 0.92rem; margin-bottom: 0.15rem;">
-                Perfil Activo: ${escapeHtml(currentRole.userName)} <span class="user-role-badge role-badge-${currentRole.id} ms-1">${escapeHtml(currentRole.title)}</span>
+              <div style="font-weight: 700; color: #0f172a; font-size: 0.92rem; margin-bottom: 0.15rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span>Perfil Activo: ${escapeHtml(currentRole.userName)}</span>
+                <span class="user-role-badge role-badge-${currentRole.id}">${escapeHtml(currentRole.title)}</span>
+                ${currentRole.id === 'DOCENTE' ? `
+                  <span class="badge" style="background: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; font-size: 0.78rem;">
+                    👨‍🏫 ESPECIALIDAD: ${escapeHtml(TeacherContextService.getActiveProgram().nombre)}
+                  </span>
+                ` : ''}
               </div>
               <div style="color: #64748b; font-size: 0.84rem;">
                 ${
@@ -670,9 +691,18 @@ export class DocumentsView {
               </div>
             </div>
           </div>
-          <button type="button" class="btn btn-outline-secondary btn-sm fw-bold px-3 py-1" id="doc-header-switch-role-btn" style="white-space: nowrap; border-radius: 8px;">
-            <i class="bi bi-person-badge me-1"></i>Cambiar Perfil
-          </button>
+          <div class="d-flex align-items-center gap-2">
+            ${currentRole.id === 'DOCENTE' ? `
+              <select id="doc-teacher-program-select" class="form-select form-select-sm" style="font-size: 0.82rem; padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 600; color: #334155;" title="Cambiar Especialidad Asignada">
+                ${TeacherContextService.getPrograms().map(p => `
+                  <option value="${p.id}" ${p.id === TeacherContextService.getActiveProgramId() ? 'selected' : ''}>📚 ${escapeHtml(p.nombre)}</option>
+                `).join('')}
+              </select>
+            ` : ''}
+            <button type="button" class="btn btn-outline-secondary btn-sm fw-bold px-3 py-1" id="doc-header-switch-role-btn" style="white-space: nowrap; border-radius: 8px;">
+              <i class="bi bi-person-badge me-1"></i>Cambiar Perfil
+            </button>
+          </div>
         </div>`;
         })()}
 
@@ -2319,6 +2349,23 @@ export class DocumentsView {
 
     if (searchInput) searchInput.oninput = async event => this._searchEnrollments(container, event.target.value);
     if (generateButton) generateButton.onclick = async () => this._generateSelectedDocument(container);
+
+    const teacherProgSelect = container.querySelector('#doc-teacher-program-select');
+    if (teacherProgSelect) {
+      teacherProgSelect.onchange = async () => {
+        TeacherContextService.setActiveProgramId(teacherProgSelect.value);
+        this.selectedGroupId = null;
+        await this.render(container);
+      };
+    }
+
+    const headerSwitchBtn = container.querySelector('#doc-header-switch-role-btn');
+    if (headerSwitchBtn) {
+      headerSwitchBtn.onclick = () => {
+        const widget = document.getElementById('user-role-widget');
+        if (widget) widget.click();
+      };
+    }
   }
 
   _filterCardsByQuery(container) {

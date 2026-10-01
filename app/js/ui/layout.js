@@ -37,6 +37,7 @@ import { AcademicReadinessService, PENDING_PREREQUISITES } from '../services/aca
 import { ProductiveImportService } from '../services/productive-import-service.js';
 import { StagingRecoveryService } from '../services/staging-recovery-service.js';
 import { AuthService, ROLES } from '../services/auth-service.js';
+import { TeacherContextService } from '../services/teacher-context-service.js';
 
 const stagingService = new StagingService();
 const academicReadinessService = new AcademicReadinessService();
@@ -76,6 +77,17 @@ export const Layout = {
         window.location.hash = '#/inicio';
       }
     });
+
+    // Reaccionar a cambios de especialidad docente dinámicamente
+    TeacherContextService.subscribe((program) => {
+      this.renderUserRoleWidget();
+      if (AuthService.getCurrentRole().id === 'DOCENTE') {
+        const currentHash = window.location.hash || '#/inicio';
+        const routeKey = currentHash.split('?')[0];
+        const routeInfo = CONFIG.ROUTES[routeKey] || { id: 'inicio', hash: '#/inicio' };
+        this.renderView({ hash: currentHash, ...routeInfo });
+      }
+    });
   },
 
   renderUserRoleWidget() {
@@ -94,11 +106,15 @@ export const Layout = {
       headerActions.prepend(widget);
     }
 
+    const teacherBadgeHtml = role.id === 'DOCENTE'
+      ? `<span class="user-role-badge role-badge-${role.id}" title="Especialidad Asignada: ${escapeHtml(TeacherContextService.getActiveProgram().nombre)}">👨‍🏫 ${escapeHtml(TeacherContextService.getActiveProgram().nombre)}</span>`
+      : `<span class="user-role-badge role-badge-${role.id}">${escapeHtml(role.title)}</span>`;
+
     widget.innerHTML = `
       <div class="user-role-avatar">${role.avatar}</div>
       <div class="user-role-details">
         <span class="user-role-name">${escapeHtml(role.userName)}</span>
-        <span class="user-role-badge role-badge-${role.id}">${escapeHtml(role.title)}</span>
+        ${teacherBadgeHtml}
       </div>
       <button type="button" class="role-switcher-btn" id="btn-switch-role" title="Cambiar de Rol">
         Cambiar ▾
@@ -196,7 +212,8 @@ export const Layout = {
                 ${ROLES.DOCENTE.description}
               </p>
               <div style="font-size: 0.75rem; color: #64748b; background: #f8fafc; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #e2e8f0;">
-                <strong>Atribuciones:</strong> Control de Asistencia diaria (TMPL-05..10), Registro Auxiliar de Calificaciones (TMPL-11..17) y Portada Docente (TMPL-04).
+                <strong>Atribuciones:</strong> Control de Asistencia diaria (TMPL-05..10), Registro Auxiliar de Calificaciones (TMPL-11..17) y Portada Docente (TMPL-04).<br>
+                <strong style="color: #7c3aed;">Especialidad Activa:</strong> ${escapeHtml(TeacherContextService.getActiveProgram().nombre)} (Delimitación contextual de BD: solo grupos y alumnos asignados).
               </div>
             </div>
             <div style="display: flex; align-items: center;">

@@ -7,6 +7,7 @@ import { StudentService } from '../services/student-service.js';
 import { EnrollmentService } from '../services/enrollment-service.js';
 import { Notifications } from './notifications.js';
 import { AuthService } from '../services/auth-service.js';
+import { TeacherContextService } from '../services/teacher-context-service.js';
 import { ErrorService } from '../services/error-service.js';
 import { escapeHtml as escapeHtmlUtil } from '../utils/dom-utils.js';
 
@@ -24,7 +25,17 @@ export const StudentsView = {
   currentStudents: [],
 
   async render(container) {
-    this.currentStudents = await StudentService.searchStudents();
+    const role = AuthService.getCurrentRole();
+    const allStudents = await StudentService.searchStudents();
+    const enrollmentService = new EnrollmentService();
+    const allEnrollments = await enrollmentService.listEnrollments();
+
+    if (role.id === 'DOCENTE') {
+      const activeProg = TeacherContextService.getActiveProgram();
+      this.currentStudents = TeacherContextService.filterStudents(allStudents, allEnrollments, activeProg.id);
+    } else {
+      this.currentStudents = allStudents;
+    }
 
     container.innerHTML = `
       <section class="view-header">
@@ -33,12 +44,17 @@ export const StudentsView = {
           <p class="subtitle">Registro Manual, Consulta y Expediente del Estudiante</p>
         </div>
         ${(() => {
-          const role = AuthService.getCurrentRole();
           if (role.id === 'DOCENTE') {
+            const activeProg = TeacherContextService.getActiveProgram();
             return `
-              <div style="display:flex; gap:0.75rem; align-items:center;">
-                <span class="badge role-badge-DOCENTE">👨‍🏫 VISTA DE CONSULTA DOCENTE</span>
+              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                <span class="badge role-badge-DOCENTE">👨‍🏫 ESPECIALIDAD: ${escapeHtml(activeProg.nombre)}</span>
                 <span id="student-count-badge" class="badge badge-primary" style="font-size:0.85rem; padding:0.4rem 0.8rem; background:var(--primary-color); color:#fff;">${this.currentStudents.length} Estudiantes Asignados</span>
+                <select id="teacher-program-filter-select" class="form-select form-select-sm" style="font-size:0.82rem; padding:0.35rem 0.75rem; border-radius:8px; border:1px solid #cbd5e1; background:#ffffff; font-weight:600; color:#334155;" title="Cambiar Especialidad Docente">
+                  ${TeacherContextService.getPrograms().map(p => `
+                    <option value="${p.id}" ${p.id === activeProg.id ? 'selected' : ''}>📚 ${escapeHtml(p.nombre)}</option>
+                  `).join('')}
+                </select>
               </div>`;
           }
           return `
@@ -255,15 +271,30 @@ export const StudentsView = {
         estado: filterStatus.value || undefined,
         tipoDocumento: filterDoc.value || undefined
       };
-      this.currentStudents = await StudentService.searchStudents(q, filters);
+      let students = await StudentService.searchStudents(q, filters);
+      const role = AuthService.getCurrentRole();
+      if (role.id === 'DOCENTE') {
+        const activeProg = TeacherContextService.getActiveProgram();
+        const enrollments = await (new EnrollmentService()).listEnrollments();
+        students = TeacherContextService.filterStudents(students, enrollments, activeProg.id);
+      }
+      this.currentStudents = students;
       container.querySelector('#student-list-container').innerHTML = this.renderStudentsList(this.currentStudents);
-      container.querySelector('#student-count-badge').textContent = `${this.currentStudents.length} Estudiantes`;
+      container.querySelector('#student-count-badge').textContent = `${this.currentStudents.length} Estudiantes Asignados`;
       this.bindTableEvents(container, openModal);
     };
 
     if (searchInput) searchInput.oninput = updateFilter;
     if (filterStatus) filterStatus.onchange = updateFilter;
     if (filterDoc) filterDoc.onchange = updateFilter;
+
+    const progSelect = container.querySelector('#teacher-program-filter-select');
+    if (progSelect) {
+      progSelect.onchange = async () => {
+        TeacherContextService.setActiveProgramId(progSelect.value);
+        await this.render(container);
+      };
+    }
 
     this.bindTableEvents(container, openModal);
 
