@@ -119,6 +119,20 @@ export class DocumentsView {
 
   async render(container) {
     if (!container) return;
+    // Saneamiento de etapa y plantilla inicial por Rol (RBAC)
+    const activeRole = AuthService.getCurrentRole();
+    if (activeRole.id === 'DOCENTE') {
+      if (this.activeStageId !== 'ETAPA_2' && this.activeStageId !== 'ETAPA_1') {
+        this.activeStageId = 'ETAPA_2';
+        this.selectedTemplateId = 'TMPL-05';
+      } else if (this.activeStageId === 'ETAPA_1' && this.selectedTemplateId !== 'TMPL-04') {
+        this.selectedTemplateId = 'TMPL-04';
+      }
+    } else if (activeRole.id === 'SECRETARIA') {
+      if (this.selectedTemplateId === 'TMPL-21') {
+        this.selectedTemplateId = 'TMPL-20';
+      }
+    }
     this.activeStageId = getStageIdForTemplate(this.selectedTemplateId);
 
     // Cargar grupos académicos para selectores de Etapa 1
@@ -717,7 +731,9 @@ export class DocumentsView {
   }
 
   _renderStageNav() {
-    return DOCUMENT_STAGES.map(stage => {
+    return DOCUMENT_STAGES
+      .filter(stage => AuthService.canAccessStage(stage.id))
+      .map(stage => {
       const isActive = stage.id === this.activeStageId;
       return `
         <div class="stage-nav-pill ${isActive ? 'active' : ''}" data-stage-id="${stage.id}" role="tab" aria-selected="${isActive}">
@@ -731,36 +747,77 @@ export class DocumentsView {
     }).join('');
   }
 
-  _renderOptGroups() {
-    return `
-      <optgroup label="ETAPA 1: MATRÍCULA E INICIO DE GRUPO">
+    _renderOptGroups() {
+    const role = AuthService.getCurrentRole();
+
+    let etapa1Opts = '';
+    if (role.id === 'DOCENTE') {
+      etapa1Opts = `<option value="TMPL-04" ${this.selectedTemplateId === 'TMPL-04' ? 'selected' : ''}>TMPL-04 - Portada de Carpeta Pedagógica</option>`;
+    } else {
+      etapa1Opts = `
         <option value="TMPL-01" ${this.selectedTemplateId === 'TMPL-01' ? 'selected' : ''}>TMPL-01 - Nómina de Matrícula (Oficial UGEL)</option>
         <option value="TMPL-02" ${this.selectedTemplateId === 'TMPL-02' ? 'selected' : ''}>TMPL-02 - Ficha de Matrícula (Expediente del Alumno)</option>
         <option value="TMPL-04" ${this.selectedTemplateId === 'TMPL-04' ? 'selected' : ''}>TMPL-04 - Portada de Carpeta Pedagógica</option>
         <option value="TMPL-03" ${this.selectedTemplateId === 'TMPL-03' ? 'selected' : ''}>TMPL-03 - Registro de Matrícula Modular [En Revisión]</option>
-      </optgroup>
-      <optgroup label="ETAPA 2: REGISTRO AUXILIAR DOCENTE (SEGUIMIENTO)">
-        <option value="TMPL-05" ${this.selectedTemplateId === 'TMPL-05' ? 'selected' : ''}>TMPL-05 - Asistencia UD1</option>
-        <option value="TMPL-06" ${this.selectedTemplateId === 'TMPL-06' ? 'selected' : ''}>TMPL-06 - Asistencia UD2</option>
-        <option value="TMPL-07" ${this.selectedTemplateId === 'TMPL-07' ? 'selected' : ''}>TMPL-07 - Asistencia UD3</option>
-        <option value="TMPL-08" ${this.selectedTemplateId === 'TMPL-08' ? 'selected' : ''}>TMPL-08 - Asistencia UD4</option>
-        <option value="TMPL-09" ${this.selectedTemplateId === 'TMPL-09' ? 'selected' : ''}>TMPL-09 - Asistencia UD5</option>
-        <option value="TMPL-10" ${this.selectedTemplateId === 'TMPL-10' ? 'selected' : ''}>TMPL-10 - Asistencia UD6</option>
-        <option value="TMPL-11" ${this.selectedTemplateId === 'TMPL-11' ? 'selected' : ''}>TMPL-11 - Evaluación Indicadores UD1</option>
-        <option value="TMPL-12" ${this.selectedTemplateId === 'TMPL-12' ? 'selected' : ''}>TMPL-12 - Evaluación UD2</option>
-        <option value="TMPL-13" ${this.selectedTemplateId === 'TMPL-13' ? 'selected' : ''}>TMPL-13 - Evaluación UD3</option>
-        <option value="TMPL-14" ${this.selectedTemplateId === 'TMPL-14' ? 'selected' : ''}>TMPL-14 - Evaluación UD4</option>
-        <option value="TMPL-15" ${this.selectedTemplateId === 'TMPL-15' ? 'selected' : ''}>TMPL-15 - Evaluación UD5</option>
-        <option value="TMPL-16" ${this.selectedTemplateId === 'TMPL-16' ? 'selected' : ''}>TMPL-16 - Evaluación UD6</option>
-        <option value="TMPL-17" ${this.selectedTemplateId === 'TMPL-17' ? 'selected' : ''}>TMPL-17 - Evaluación UD7</option>
-      </optgroup>
-      <optgroup label="ETAPA 3: CIERRE MODULAR Y PRÁCTICAS">
-        <option value="TMPL-18" ${this.selectedTemplateId === 'TMPL-18' ? 'selected' : ''}>TMPL-18 - Consolidado de EFSRT</option>
-        <option value="TMPL-19" ${this.selectedTemplateId === 'TMPL-19' ? 'selected' : ''}>TMPL-19 - Acta de Evaluación Modular</option>
-      </optgroup>
-      <optgroup label="ETAPA 4: CERTIFICACIÓN Y EGRESO">
+      `;
+    }
+
+    const etapa2Opts = `
+      <option value="TMPL-05" ${this.selectedTemplateId === 'TMPL-05' ? 'selected' : ''}>TMPL-05 - Asistencia UD1</option>
+      <option value="TMPL-06" ${this.selectedTemplateId === 'TMPL-06' ? 'selected' : ''}>TMPL-06 - Asistencia UD2</option>
+      <option value="TMPL-07" ${this.selectedTemplateId === 'TMPL-07' ? 'selected' : ''}>TMPL-07 - Asistencia UD3</option>
+      <option value="TMPL-08" ${this.selectedTemplateId === 'TMPL-08' ? 'selected' : ''}>TMPL-08 - Asistencia UD4</option>
+      <option value="TMPL-09" ${this.selectedTemplateId === 'TMPL-09' ? 'selected' : ''}>TMPL-09 - Asistencia UD5</option>
+      <option value="TMPL-10" ${this.selectedTemplateId === 'TMPL-10' ? 'selected' : ''}>TMPL-10 - Asistencia UD6</option>
+      <option value="TMPL-11" ${this.selectedTemplateId === 'TMPL-11' ? 'selected' : ''}>TMPL-11 - Evaluación Indicadores UD1</option>
+      <option value="TMPL-12" ${this.selectedTemplateId === 'TMPL-12' ? 'selected' : ''}>TMPL-12 - Evaluación UD2</option>
+      <option value="TMPL-13" ${this.selectedTemplateId === 'TMPL-13' ? 'selected' : ''}>TMPL-13 - Evaluación UD3</option>
+      <option value="TMPL-14" ${this.selectedTemplateId === 'TMPL-14' ? 'selected' : ''}>TMPL-14 - Evaluación UD4</option>
+      <option value="TMPL-15" ${this.selectedTemplateId === 'TMPL-15' ? 'selected' : ''}>TMPL-15 - Evaluación UD5</option>
+      <option value="TMPL-16" ${this.selectedTemplateId === 'TMPL-16' ? 'selected' : ''}>TMPL-16 - Evaluación UD6</option>
+      <option value="TMPL-17" ${this.selectedTemplateId === 'TMPL-17' ? 'selected' : ''}>TMPL-17 - Evaluación UD7</option>
+    `;
+
+    const etapa3Opts = `
+      <option value="TMPL-18" ${this.selectedTemplateId === 'TMPL-18' ? 'selected' : ''}>TMPL-18 - Consolidado de EFSRT</option>
+      <option value="TMPL-19" ${this.selectedTemplateId === 'TMPL-19' ? 'selected' : ''}>TMPL-19 - Acta de Evaluación Modular</option>
+    `;
+
+    let etapa4Opts = '';
+    if (role.id === 'DIRECTOR') {
+      etapa4Opts = `
         <option value="TMPL-20" ${this.selectedTemplateId === 'TMPL-20' ? 'selected' : ''}>TMPL-20 - Certificado Modular [Requiere Libro/Folio]</option>
         <option value="TMPL-21" ${this.selectedTemplateId === 'TMPL-21' ? 'selected' : ''}>TMPL-21 - Título Técnico [Requiere Código REGISTRA]</option>
+      `;
+    } else if (role.id === 'SECRETARIA') {
+      etapa4Opts = `
+        <option value="TMPL-20" ${this.selectedTemplateId === 'TMPL-20' ? 'selected' : ''}>TMPL-20 - Certificado Modular [Requiere Libro/Folio]</option>
+      `;
+    }
+
+    if (role.id === 'DOCENTE') {
+      return `
+        <optgroup label="REGISTRO AUXILIAR DOCENTE (ASISTENCIA Y EVALUACIÓN)">
+          ${etapa2Opts}
+        </optgroup>
+        <optgroup label="CARPETA PEDAGÓGICA DOCENTE">
+          ${etapa1Opts}
+        </optgroup>
+      `;
+    }
+
+    return `
+      <optgroup label="ETAPA 1: MATRÍCULA E INICIO DE GRUPO">
+        ${etapa1Opts}
+      </optgroup>
+      <optgroup label="ETAPA 2: REGISTRO AUXILIAR DOCENTE (SEGUIMIENTO)">
+        ${etapa2Opts}
+      </optgroup>
+      <optgroup label="ETAPA 3: CIERRE MODULAR Y PRÁCTICAS">
+        ${etapa3Opts}
+      </optgroup>
+      <optgroup label="ETAPA 4: CERTIFICACIÓN Y EGRESO">
+        ${etapa4Opts}
       </optgroup>
     `;
   }
@@ -781,10 +838,39 @@ export class DocumentsView {
   }
 
   _renderEtapa1Cards() {
+    const role = AuthService.getCurrentRole();
     const isTmpl01 = this.selectedTemplateId === 'TMPL-01';
     const isTmpl02 = this.selectedTemplateId === 'TMPL-02';
     const isTmpl04 = this.selectedTemplateId === 'TMPL-04';
     const isTmpl03 = this.selectedTemplateId === 'TMPL-03';
+
+    if (role.id === 'DOCENTE') {
+      return `
+        <div class="doc-cards-grid" style="grid-template-columns: 1fr; max-width: 580px;">
+          <!-- Portada de Carpeta Pedagógica (TMPL-04) -->
+          <div class="doc-item-card card-accent-teacher active-template" data-select-tmpl="TMPL-04" role="button" tabindex="0" title="Portada de Carpeta Pedagógica (TMPL-04)">
+            <div>
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="doc-badge-pill doc-badge-info">
+                  <i class="bi bi-journal-text me-1"></i>📂 Carpeta Pedagógica Docente
+                </span>
+                <span class="badge bg-info text-dark fs-6 px-2 py-1">TMPL-04</span>
+              </div>
+              <h5 class="card-doc-title">
+                <i class="bi bi-journal-bookmark-fill me-1 text-info"></i>Portada Oficial de Carpeta Pedagógica
+              </h5>
+              <p class="card-doc-desc">
+                Carátula formal de carpeta docente con membrete institucional, programa de estudios, módulo formativo y firma del docente responsable.
+              </p>
+            </div>
+            <div class="card-footer-action">
+              <span class="badge bg-info px-3 py-2 text-dark fw-bold" style="font-size: 0.85rem;"><i class="bi bi-check-circle-fill me-1"></i>✓ SELECCIONADO PARA EMITIR</span>
+              <span class="fw-bold text-secondary small">Por grupo pedagógico</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
 
     return `
       <div class="doc-cards-grid">
@@ -1079,7 +1165,8 @@ export class DocumentsView {
           </div>
         </div>
 
-        <!-- Título Técnico (TMPL-21) -->
+                ${AuthService.getCurrentRole().id === 'DIRECTOR' ? `
+        <!-- Título Técnico (TMPL-21) - Exclusivo de Dirección General -->
         <div class="doc-item-card card-accent-ugel ${isTmpl21 ? 'active-template' : ''}" data-select-tmpl="TMPL-21" role="button" tabindex="0" title="Seleccionar Título Técnico (TMPL-21)">
           <div>
             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -1102,6 +1189,7 @@ export class DocumentsView {
             <span class="fw-bold text-secondary small">MINEDU · Titulación</span>
           </div>
         </div>
+        ` : ''}
       </div>
     `;
   }

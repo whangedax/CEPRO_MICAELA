@@ -6,6 +6,7 @@
 import { StudentService } from '../services/student-service.js';
 import { EnrollmentService } from '../services/enrollment-service.js';
 import { Notifications } from './notifications.js';
+import { AuthService } from '../services/auth-service.js';
 import { ErrorService } from '../services/error-service.js';
 import { escapeHtml as escapeHtmlUtil } from '../utils/dom-utils.js';
 
@@ -31,10 +32,21 @@ export const StudentsView = {
           <h2>Padrón de Estudiantes</h2>
           <p class="subtitle">Registro Manual, Consulta y Expediente del Estudiante</p>
         </div>
-        <div style="display:flex; gap:0.75rem; align-items:center;">
-          <span id="student-count-badge" class="badge badge-primary" style="font-size:0.85rem; padding:0.4rem 0.8rem; background:var(--primary-color); color:#fff;">${this.currentStudents.length} Estudiantes</span>
-          <button id="btn-new-student" class="btn btn-primary">+ Nuevo Estudiante</button>
-        </div>
+        ${(() => {
+          const role = AuthService.getCurrentRole();
+          if (role.id === 'DOCENTE') {
+            return `
+              <div style="display:flex; gap:0.75rem; align-items:center;">
+                <span class="badge role-badge-DOCENTE">👨‍🏫 VISTA DE CONSULTA DOCENTE</span>
+                <span id="student-count-badge" class="badge badge-primary" style="font-size:0.85rem; padding:0.4rem 0.8rem; background:var(--primary-color); color:#fff;">${this.currentStudents.length} Estudiantes Asignados</span>
+              </div>`;
+          }
+          return `
+            <div style="display:flex; gap:0.75rem; align-items:center;">
+              <span id="student-count-badge" class="badge badge-primary" style="font-size:0.85rem; padding:0.4rem 0.8rem; background:var(--primary-color); color:#fff;">${this.currentStudents.length} Estudiantes</span>
+              <button id="btn-new-student" class="btn btn-primary">+ Nuevo Estudiante</button>
+            </div>`;
+        })()}
       </section>
 
       <!-- Barra de Filtros y Búsqueda -->

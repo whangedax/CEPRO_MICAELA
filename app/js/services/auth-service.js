@@ -47,7 +47,7 @@ export const ROLES = Object.freeze({
     description: 'Gestión de matrícula, nóminas oficiales, actas modulares y certificados.',
     allowedRoutes: [
       '#/inicio', '#/estudiantes', '#/grupos', '#/documentos',
-      '#/programas', '#/configuracion', '#/evaluacion', '#/efsrt', '#/cierre', '#/demo', '#/demo/evaluacion'
+      '#/programas', '#/configuracion', '#/respaldo', '#/evaluacion', '#/efsrt', '#/cierre', '#/demo', '#/demo/evaluacion'
     ],
     allowedStages: ['ETAPA_1', 'ETAPA_2', 'ETAPA_3', 'ETAPA_4'],
     allowedTemplates: [
@@ -79,7 +79,7 @@ export const ROLES = Object.freeze({
       '#/inicio', '#/estudiantes', '#/grupos', '#/documentos',
       '#/evaluacion', '#/configuracion', '#/demo', '#/demo/evaluacion'
     ],
-    allowedStages: ['ETAPA_1', 'ETAPA_2', 'ETAPA_3'],
+    allowedStages: ['ETAPA_1', 'ETAPA_2'],
     allowedTemplates: [
       'TMPL-04', // Portada de Carpeta Docente
       'TMPL-05', 'TMPL-06', 'TMPL-07', 'TMPL-08', 'TMPL-09', 'TMPL-10', // Asistencia UDs

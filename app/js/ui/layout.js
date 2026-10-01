@@ -1461,18 +1461,29 @@ export const Layout = {
         <p><strong>Advertencia:</strong> esta acción reemplazará los datos actuales después de crear un respaldo de seguridad previo.</p>
         <button id="btn-restore-backup" class="btn btn-danger" type="button" disabled>Restaurar</button>
       </div>`;
+    const role = AuthService.getCurrentRole();
+    const canRestore = role.canRestoreBackup;
+
     return `
       <section class="view-header">
-        <h2>Respaldo y Restauración</h2>
-        <span class="badge ${demoMode ? 'badge-warning' : 'badge-success'}">${demoMode ? 'DEMO · NO OFICIAL' : 'SISTEMA M02'}</span>
+        <div>
+          <h2>${canRestore ? 'Respaldo y Restauración Institucional' : 'Copia de Respaldo Operativo'}</h2>
+          <p class="subtitle">${canRestore ? 'Gestión técnica y restauración de base de datos — Dirección General' : 'Exportación de respaldo de seguridad — Secretaría Académica'}</p>
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <span class="user-role-badge role-badge-${role.id}">${escapeHtml(role.title)}</span>
+          <span class="badge ${demoMode ? 'badge-warning' : 'badge-success'}">${demoMode ? 'DEMO · NO OFICIAL' : 'SISTEMA M02'}</span>
+        </div>
       </section>
 
       <div class="card">
-        <h3>Crear respaldo</h3>
-        <p>Exporta todos los datos locales a un archivo JSON con bitácora, conteos y checksum SHA-256.${demoMode ? ' El envelope queda marcado environment=DEMO y official=false.' : ''}</p>
-        <button id="btn-export-backup" class="btn btn-primary margin-top-sm">Exportar Respaldo ${demoMode ? 'DEMO ' : 'Local '}(JSON)</button>
+        <h3>Crear respaldo de seguridad (Exportación JSON)</h3>
+        <p>Exporta todos los datos locales a un archivo JSON firmado con bitácora, conteos y checksum SHA-256.${demoMode ? ' El envelope queda marcado environment=DEMO y official=false.' : ''}</p>
+        <button id="btn-export-backup" class="btn btn-primary margin-top-sm">
+          <i class="bi bi-download me-1"></i>Exportar Respaldo ${demoMode ? 'DEMO ' : 'Local '}(JSON)
+        </button>
       </div>
-      ${restorePanel}
+      ${canRestore ? restorePanel : ''}
     `;
   }
 };
