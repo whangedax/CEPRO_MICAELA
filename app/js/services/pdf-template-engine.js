@@ -2,6 +2,7 @@ import { getDrawableBindings } from './document-binding-service.js';
 import { DocumentFitService, DOCUMENT_STYLE_PROFILES } from './document-fit-service.js';
 import { getV2PdfManifest, physicalFieldsOf } from './v2-document-manifest-registry.js';
 import { DocumentPaginationPolicy, TMPL01_CANONICAL_CAPACITY } from './document-pagination-policy.js';
+import { BRANDING_CONFIG } from '../config/branding-config.js';
 
 /**
  * Motor Documental en base a PDF nativo (pdf-lib)
@@ -133,6 +134,35 @@ export class PdfTemplateEngine {
       return type === 'json' ? JSON.parse(buf.toString('utf8')) : buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
     } catch (fsErr) {
       throw new Error(`No se pudo cargar recurso: ${url}`);
+    }
+  }
+
+  /**
+   * Incrusta el logotipo oficial del CETPRO en una página PDF de forma dinámica en memoria.
+   * Regla de no-regresión: Preserva intactas las plantillas canónicas base y sus 21 hashes SHA-256.
+   * @param {object} pdfDoc Instancia de PDFDocument de pdf-lib
+   * @param {object} page Instancia de PDFPage de pdf-lib
+   * @param {string} templateId Identificador (ej. 'TMPL-04', 'TMPL-05', 'TMPL-11', 'TMPL-18', 'TMPL-19')
+   * @param {object} [customBox] Coordenadas opcionales { x, y, width, height }
+   */
+  async _drawInstitutionalLogo(pdfDoc, page, templateId, customBox = null) {
+    try {
+      if (!BRANDING_CONFIG?.enabledInPdfs || !pdfDoc || !page) return;
+      const box = customBox || BRANDING_CONFIG?.templates?.[templateId];
+      if (!box) return;
+
+      const logoBuffer = await this._loadResource(BRANDING_CONFIG.logoUrl, 'arrayBuffer');
+      if (!logoBuffer) return;
+
+      const embeddedLogo = await pdfDoc.embedJpg(logoBuffer);
+      page.drawImage(embeddedLogo, {
+        x: box.x,
+        y: box.y,
+        width: box.width,
+        height: box.height
+      });
+    } catch (err) {
+      console.warn(`[PdfTemplateEngine] Aviso: No se pudo incrustar el logo en ${templateId}:`, err?.message || err);
     }
   }
 
@@ -625,6 +655,8 @@ export class PdfTemplateEngine {
         color: rgb(0.48, 0.18, 0.18)
       });
     }
+
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-04');
 
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
@@ -1254,6 +1286,8 @@ export class PdfTemplateEngine {
       color: rgb(0.35, 0.35, 0.35)
     });
 
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-05');
+
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
   }
@@ -1519,6 +1553,8 @@ export class PdfTemplateEngine {
       color: rgb(0.35, 0.35, 0.35)
     });
 
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-11');
+
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
   }
@@ -1757,6 +1793,8 @@ export class PdfTemplateEngine {
       font: regularFont,
       color: rgb(0.35, 0.35, 0.35)
     });
+
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-18');
 
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
@@ -2365,6 +2403,9 @@ export class PdfTemplateEngine {
         });
       });
     }
+
+    await this._drawInstitutionalLogo(pdfDoc, page1, 'TMPL-19');
+    await this._drawInstitutionalLogo(pdfDoc, page2, 'TMPL-19');
 
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });

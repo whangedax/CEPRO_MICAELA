@@ -650,13 +650,17 @@ export class DocumentsView {
                   ${isDemoRuntime() ? 'DEMOSTRACIÓN — NO OFICIAL' : 'OPERACIÓN LOCAL V2 (8081)'}
                 </span>
               </div>
-              <h3 class="fw-bold mb-1 d-flex align-items-center gap-2" style="font-size: 1.7rem; letter-spacing: -0.025em;">
-                <i class="bi bi-file-earmark-ruled-fill text-primary-light"></i>
-                <span>Centro de Emisión Documental</span>
-              </h3>
-              <p class="mb-0" style="color: #94a3b8; font-size: 0.92rem; font-weight: 400;">
-                Emisión ministerial de nóminas, fichas de matrícula, registros auxiliares y actas de notas.
-              </p>
+              <div class="d-flex align-items-center gap-3">
+                <img src="/app/img/logo-cetpro.jpg" alt="Logo CETPRO Micaela Bastidas" style="width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2.5px solid rgba(255, 255, 255, 0.85); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); background: #ffffff;">
+                <div>
+                  <h3 class="fw-bold mb-0 d-flex align-items-center gap-2" style="font-size: 1.7rem; letter-spacing: -0.025em;">
+                    <span>Centro de Emisión Documental</span>
+                  </h3>
+                  <p class="mb-0" style="color: #cbd5e1; font-size: 0.88rem; font-weight: 500;">
+                    CETPRO San Miguel · Micaela Bastidas Puyucawa — Emisión Ministerial
+                  </p>
+                </div>
+              </div>
             </div>
             <!-- Buscador Rápido de Documentos con Estilo Píldora -->
             <div style="min-width: 300px; max-width: 440px; flex: 1;">
