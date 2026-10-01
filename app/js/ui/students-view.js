@@ -6,7 +6,10 @@
 import { StudentService } from '../services/student-service.js';
 import { EnrollmentService } from '../services/enrollment-service.js';
 import { Notifications } from './notifications.js';
+import { AuthService } from '../services/auth-service.js';
+import { TeacherContextService } from '../services/teacher-context-service.js';
 import { ErrorService } from '../services/error-service.js';
+import { SyncPackageService } from '../services/sync-package-service.js';
 import { escapeHtml as escapeHtmlUtil } from '../utils/dom-utils.js';
 
 /**
@@ -23,7 +26,17 @@ export const StudentsView = {
   currentStudents: [],
 
   async render(container) {
-    this.currentStudents = await StudentService.searchStudents();
+    const role = AuthService.getCurrentRole();
+    const allStudents = await StudentService.searchStudents();
+    const enrollmentService = new EnrollmentService();
+    const allEnrollments = await enrollmentService.listEnrollments();
+
+    if (role.id === 'DOCENTE') {
+      const activeGroup = TeacherContextService.getActiveGroupInfo();
+      this.currentStudents = TeacherContextService.filterStudentsByGroup(allStudents, allEnrollments, activeGroup.grupoCode);
+    } else {
+      this.currentStudents = allStudents;
+    }
 
     container.innerHTML = `
       <section class="view-header">
@@ -31,10 +44,43 @@ export const StudentsView = {
           <h2>Padrón de Estudiantes</h2>
           <p class="subtitle">Registro Manual, Consulta y Expediente del Estudiante</p>
         </div>
-        <div style="display:flex; gap:0.75rem; align-items:center;">
-          <span id="student-count-badge" class="badge badge-primary" style="font-size:0.85rem; padding:0.4rem 0.8rem; background:var(--primary-color); color:#fff;">${this.currentStudents.length} Estudiantes</span>
-          <button id="btn-new-student" class="btn btn-primary">+ Nuevo Estudiante</button>
-        </div>
+        ${(() => {
+          if (role.id === 'DOCENTE') {
+            const activeProg = TeacherContextService.getActiveProgram();
+            const activeGroup = TeacherContextService.getActiveGroupInfo();
+            const groupsForProg = TeacherContextService.getGroupsForProgram(activeProg.id);
+            return `
+              <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+                <span class="badge role-badge-DOCENTE" style="font-weight:700;">👥 AULA: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})</span>
+                <span id="student-count-badge" class="badge badge-primary" style="font-size:0.85rem; padding:0.4rem 0.8rem; background:var(--primary-color); color:#fff;">${this.currentStudents.length} Alumnos en su Aula</span>
+                <div style="display:flex; align-items:center; gap:0.35rem;">
+                  <label for="teacher-classroom-select" style="font-size:0.8rem; font-weight:700; color:#475569; margin:0;">Grupo:</label>
+                  <select id="teacher-classroom-select" class="form-select form-select-sm" style="font-size:0.82rem; padding:0.35rem 0.65rem; border-radius:8px; border:1.5px solid #3b82f6; background:#ffffff; font-weight:700; color:#1e293b;" title="Cambiar Aula / Grupo">
+                    ${groupsForProg.map(g => `
+                      <option value="${g.grupoCode}" ${g.grupoCode === activeGroup.grupoCode ? 'selected' : ''}>👥 ${escapeHtml(g.grupoCode)} · ${escapeHtml(g.turno || g.modalidad || '')} (${g.count} est.)</option>
+                    `).join('')}
+                  </select>
+                </div>
+                <select id="teacher-program-filter-select" class="form-select form-select-sm" style="font-size:0.82rem; padding:0.35rem 0.65rem; border-radius:8px; border:1px solid #cbd5e1; background:#ffffff; font-weight:600; color:#475569;" title="Cambiar Especialidad">
+                  ${TeacherContextService.getPrograms().map(p => `
+                    <option value="${p.id}" ${p.id === activeProg.id ? 'selected' : ''}>📚 ${escapeHtml(p.nombre)}</option>
+                  `).join('')}
+                </select>
+                <button type="button" id="btn-import-students-sync" class="btn btn-outline-primary btn-sm fw-bold" style="font-size:0.8rem; border-radius:8px; padding:0.35rem 0.65rem;" title="Importar nuevos alumnos matriculados desde USB (Preserva sus notas y asistencias intactas)">
+                  📥 Actualizar Alumnos (USB)
+                </button>
+                <input type="file" id="input-sync-file" accept=".cetpro,.json" style="display:none;">
+              </div>`;
+          }
+          return `
+            <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+              <span id="student-count-badge" class="badge badge-primary" style="font-size:0.85rem; padding:0.4rem 0.8rem; background:var(--primary-color); color:#fff;">${this.currentStudents.length} Estudiantes</span>
+              <button type="button" id="btn-export-students-sync" class="btn btn-outline-success btn-sm fw-bold" style="font-size:0.82rem; border-radius:8px; padding:0.4rem 0.75rem;" title="Generar paquete de matrículas en USB para las laptops de los docentes">
+                📦 Exportar para Docentes (USB)
+              </button>
+              <button id="btn-new-student" class="btn btn-primary">+ Nuevo Estudiante</button>
+            </div>`;
+        })()}
       </section>
 
       <!-- Barra de Filtros y Búsqueda -->
@@ -243,15 +289,71 @@ export const StudentsView = {
         estado: filterStatus.value || undefined,
         tipoDocumento: filterDoc.value || undefined
       };
-      this.currentStudents = await StudentService.searchStudents(q, filters);
+      let students = await StudentService.searchStudents(q, filters);
+      const role = AuthService.getCurrentRole();
+      if (role.id === 'DOCENTE') {
+        const activeGroup = TeacherContextService.getActiveGroupInfo();
+        const enrollments = await (new EnrollmentService()).listEnrollments();
+        students = TeacherContextService.filterStudentsByGroup(students, enrollments, activeGroup.grupoCode);
+      }
+      this.currentStudents = students;
       container.querySelector('#student-list-container').innerHTML = this.renderStudentsList(this.currentStudents);
-      container.querySelector('#student-count-badge').textContent = `${this.currentStudents.length} Estudiantes`;
+      const countBadge = container.querySelector('#student-count-badge');
+      if (countBadge) {
+        countBadge.textContent = role.id === 'DOCENTE'
+          ? `${this.currentStudents.length} Alumnos en su Aula`
+          : `${this.currentStudents.length} Estudiantes`;
+      }
       this.bindTableEvents(container, openModal);
     };
 
     if (searchInput) searchInput.oninput = updateFilter;
     if (filterStatus) filterStatus.onchange = updateFilter;
     if (filterDoc) filterDoc.onchange = updateFilter;
+
+    const classroomSelect = container.querySelector('#teacher-classroom-select');
+    if (classroomSelect) {
+      classroomSelect.onchange = async () => {
+        TeacherContextService.setActiveGroupCode(classroomSelect.value);
+        await this.render(container);
+      };
+    }
+
+    const progSelect = container.querySelector('#teacher-program-filter-select');
+    if (progSelect) {
+      progSelect.onchange = async () => {
+        TeacherContextService.setActiveProgramId(progSelect.value);
+        await this.render(container);
+      };
+    }
+
+    const btnExportSync = container.querySelector('#btn-export-students-sync');
+    if (btnExportSync) {
+      btnExportSync.onclick = async () => {
+        const syncService = new SyncPackageService();
+        await syncService.exportSecretariaEnrollmentPackage();
+      };
+    }
+
+    const btnImportSync = container.querySelector('#btn-import-students-sync');
+    const inputSyncFile = container.querySelector('#input-sync-file');
+    if (btnImportSync && inputSyncFile) {
+      btnImportSync.onclick = () => inputSyncFile.click();
+      inputSyncFile.onchange = async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          try {
+            const content = await SyncPackageService.readFileAsText(file);
+            const syncService = new SyncPackageService();
+            await syncService.importSecretariaEnrollmentPackage(content);
+            inputSyncFile.value = '';
+            await this.render(container);
+          } catch (err) {
+            console.error('[StudentsView] Error importando sync file:', err);
+          }
+        }
+      };
+    }
 
     this.bindTableEvents(container, openModal);
 

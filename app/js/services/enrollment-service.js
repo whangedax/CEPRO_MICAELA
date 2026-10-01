@@ -322,6 +322,14 @@ export class EnrollmentService {
   }
 
   /**
+   * Lista todas las matrículas registradas
+   * @returns {Promise<object[]>}
+   */
+  async listEnrollments() {
+    return this.repo.list();
+  }
+
+  /**
    * Búsqueda y filtrado de matrículas
    * @param {string} query
    * @param {object} filters

@@ -2,6 +2,7 @@ import { getDrawableBindings } from './document-binding-service.js';
 import { DocumentFitService, DOCUMENT_STYLE_PROFILES } from './document-fit-service.js';
 import { getV2PdfManifest, physicalFieldsOf } from './v2-document-manifest-registry.js';
 import { DocumentPaginationPolicy, TMPL01_CANONICAL_CAPACITY } from './document-pagination-policy.js';
+import { BRANDING_CONFIG } from '../config/branding-config.js';
 
 /**
  * Motor Documental en base a PDF nativo (pdf-lib)
@@ -136,6 +137,35 @@ export class PdfTemplateEngine {
     }
   }
 
+  /**
+   * Incrusta el logotipo oficial del CETPRO en una página PDF de forma dinámica en memoria.
+   * Regla de no-regresión: Preserva intactas las plantillas canónicas base y sus 21 hashes SHA-256.
+   * @param {object} pdfDoc Instancia de PDFDocument de pdf-lib
+   * @param {object} page Instancia de PDFPage de pdf-lib
+   * @param {string} templateId Identificador (ej. 'TMPL-04', 'TMPL-05', 'TMPL-11', 'TMPL-18', 'TMPL-19')
+   * @param {object} [customBox] Coordenadas opcionales { x, y, width, height }
+   */
+  async _drawInstitutionalLogo(pdfDoc, page, templateId, customBox = null) {
+    try {
+      if (!BRANDING_CONFIG?.enabledInPdfs || !pdfDoc || !page) return;
+      const box = customBox || BRANDING_CONFIG?.templates?.[templateId];
+      if (!box) return;
+
+      const logoBuffer = await this._loadResource(BRANDING_CONFIG.logoUrl, 'arrayBuffer');
+      if (!logoBuffer) return;
+
+      const embeddedLogo = await pdfDoc.embedJpg(logoBuffer);
+      page.drawImage(embeddedLogo, {
+        x: box.x,
+        y: box.y,
+        width: box.width,
+        height: box.height
+      });
+    } catch (err) {
+      console.warn(`[PdfTemplateEngine] Aviso: No se pudo incrustar el logo en ${templateId}:`, err?.message || err);
+    }
+  }
+
   async renderTMPL01(payload) {
     const rowCount = Array.isArray(payload?.studentsList) ? payload.studentsList.length : 0;
     DocumentPaginationPolicy.plan('TMPL-01', rowCount, { mode: 'CANONICAL' });
@@ -256,6 +286,8 @@ export class PdfTemplateEngine {
       });
     }
 
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-01');
+
     // 6. Generar PDF
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
@@ -317,7 +349,8 @@ export class PdfTemplateEngine {
     return new Blob([bytes], { type: 'application/pdf' });
   }
 
-  async renderDocument({ documentType, mode, context, rows = [], demoMode = false } = {}) {
+  async renderDocument(payload = {}) {
+    const { documentType, mode, context, rows = [], demoMode = false } = payload;
     if (documentType === 'TMPL-01' && mode === 'ADMINISTRATIVE_MULTIPAGE') {
       return this.renderAdministrativeTMPL01({
         institution: context?.institution,
@@ -370,6 +403,12 @@ export class PdfTemplateEngine {
     if (documentType === 'TMPL-19') {
       return this.renderModularActDocument({ ...context, rows, documentType, demoMode });
     }
+    if (documentType === 'TMPL-20') {
+      return this.renderTMPL20({ ...context, rows, resolvedFieldSet: payload.resolvedFieldSet, demoMode, ...payload });
+    }
+    if (documentType === 'TMPL-21') {
+      return this.renderTMPL21({ ...context, rows, resolvedFieldSet: payload.resolvedFieldSet, demoMode, ...payload });
+    }
     throw new Error(`DOCUMENT_RENDER_MODE_UNSUPPORTED: ${documentType || 'UNKNOWN'}/${mode || 'UNKNOWN'}`);
   }
 
@@ -416,6 +455,8 @@ export class PdfTemplateEngine {
       });
     }
 
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-02');
+
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
   }
@@ -430,9 +471,10 @@ export class PdfTemplateEngine {
     if (!Array.isArray(rows)) throw new Error('rows debe ser una lista sintética o previamente resuelta.');
     new DocumentFitService().validateCapacity(manifest, { rows: rows.length, detailRows: rows.length, ...counts });
 
-    const pdfUrl = new URL(manifest.canonicalPdf, window.location.origin).href;
+    const origin = (typeof window !== 'undefined' && window.location?.origin) ? window.location.origin : 'http://127.0.0.1:8081';
+    const pdfUrl = new URL(manifest.canonicalPdf, origin).href;
     const pdfBytes = await this._loadResource(pdfUrl, 'arrayBuffer');
-    const { PDFDocument, rgb, StandardFonts } = window.PDFLib;
+    const { PDFDocument, rgb, StandardFonts } = (typeof window !== 'undefined' && window.PDFLib) ? window.PDFLib : await import('pdf-lib');
     const pdfDoc = await PDFDocument.load(pdfBytes);
     const pages = pdfDoc.getPages();
     if (pages.length !== manifest.pages.length) throw new Error(`PAGE_COUNT_MISMATCH: ${templateId}`);
@@ -505,6 +547,9 @@ export class PdfTemplateEngine {
       drawnBounds.push({ canonicalKey: field.canonicalKey, page: field.page, bounds });
       this.lastRenderDiagnostics.fields.push({ canonicalKey: field.canonicalKey, page: field.page, status: 'DRAWN' });
     }
+
+    await this._drawInstitutionalLogo(pdfDoc, pages[0], templateId);
+
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
   }
@@ -617,6 +662,8 @@ export class PdfTemplateEngine {
         color: rgb(0.48, 0.18, 0.18)
       });
     }
+
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-04');
 
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
@@ -908,6 +955,8 @@ export class PdfTemplateEngine {
       });
     }
 
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-03');
+
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
   }
@@ -1080,10 +1129,10 @@ export class PdfTemplateEngine {
     const totPX = presField?.box?.x || (originX + maxSessions * stepX);
     const totFX = absField?.box?.x || (totPX + 37.0);
 
-    // Cabecera institucional
+    // Cabecera institucional (alineada al borde izquierdo del cuadro informativo y sin chocar con 'CENTRO DE EDUCACIÓN TÉCNICO PRODUCTIVA' que inicia en x: 474.4)
     if (institutionName) {
       try {
-        const instFit = this.fitTextOrThrow(institutionName, boldFont, { x: originX, y: 22.0, w: 463.63, h: 12.0 }, pageHeight, {
+        const instFit = this.fitTextOrThrow(institutionName, boldFont, { x: 103.2, y: 22.0, w: 360.0, h: 12.0 }, pageHeight, {
           maxFontSize: 8.5, minFontSize: 4.0, paddingX: 1, align: 'left', fieldKey: 'institution.name'
         });
         page.drawText(instFit.text, { x: instFit.x, y: instFit.y, size: instFit.size, font: boldFont, color });
@@ -1246,6 +1295,8 @@ export class PdfTemplateEngine {
       color: rgb(0.35, 0.35, 0.35)
     });
 
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-05');
+
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
   }
@@ -1337,9 +1388,9 @@ export class PdfTemplateEngine {
     // Cabecera institucional
     if (institutionName) {
       try {
-        const instBox = getFieldBox('institution.name', { x: 520.0, y: 98.0, w: 300.0, h: 14.0 });
+        const instBox = getFieldBox('institution.name', { x: 542.0, y: 98.0, w: 270.0, h: 14.0 });
         const instFit = this.fitTextOrThrow(institutionName, boldFont, instBox, pageHeight, {
-          maxFontSize: 8.5, minFontSize: 4.5, paddingX: 1, align: 'left', fieldKey: 'institution.name'
+          maxFontSize: 8.0, minFontSize: 4.5, paddingX: 1, align: 'left', fieldKey: 'institution.name'
         });
         page.drawText(instFit.text, { x: instFit.x, y: instFit.y, size: instFit.size, font: boldFont, color });
       } catch (e) {}
@@ -1510,6 +1561,8 @@ export class PdfTemplateEngine {
       font: regularFont,
       color: rgb(0.35, 0.35, 0.35)
     });
+
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-11');
 
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
@@ -1749,6 +1802,8 @@ export class PdfTemplateEngine {
       font: regularFont,
       color: rgb(0.35, 0.35, 0.35)
     });
+
+    await this._drawInstitutionalLogo(pdfDoc, page, 'TMPL-18');
 
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
@@ -2358,12 +2413,98 @@ export class PdfTemplateEngine {
       });
     }
 
+    await this._drawInstitutionalLogo(pdfDoc, page1, 'TMPL-19');
+    await this._drawInstitutionalLogo(pdfDoc, page2, 'TMPL-19');
+
     const bytes = await pdfDoc.save();
     return new Blob([bytes], { type: 'application/pdf' });
   }
 
   renderTMPL18(payload={}) { return this.renderEFSRTDocument(payload); }
   renderTMPL19(payload={}) { return this.renderModularActDocument(payload); }
-  renderTMPL20(payload={}) { return this.renderFromManifest('TMPL-20', payload.resolvedFieldSet, payload.rows, payload.counts); }
-  renderTMPL21(payload={}) { return this.renderFromManifest('TMPL-21', payload.resolvedFieldSet, payload.rows, payload.counts); }
+  _buildTmpl20FieldSet(payload = {}) {
+    const student = payload.student || payload.context?.student || {};
+    const module = payload.module || payload.context?.module || {};
+    const program = payload.program || payload.context?.program || {};
+    const group = payload.group || payload.context?.group || {};
+    const inst = payload.institution || payload.context?.institution || {};
+    const reg = payload.registry || payload.context?.registry || {};
+    const rfs = payload.resolvedFieldSet || payload.context?.resolvedFieldSet || {};
+
+    const studentName = rfs['student.fullName'] || student.fullName || student.apellidosNombres || student.nombreCompleto || [student.apellidoPaterno, student.apellidoMaterno, student.nombres].filter(Boolean).join(' ') || 'ESTUDIANTE';
+    const moduleName = rfs['module.name'] || module.nombre || module.name || 'MÓDULO FORMATIVO';
+    const programName = rfs['program.name'] || program.nombre || program.name || 'PROGRAMA DE ESTUDIOS';
+    const instName = rfs['institution.name'] || inst.nombreInstitucion || inst.nombre || "CETPRO 'SAN PABLO'";
+    const hours = rfs['curriculum.module.hours'] || (module.horas ? String(module.horas) : '320');
+    const credits = rfs['curriculum.module.credits'] || (module.creditos ? String(module.creditos) : '12');
+    const emissionDate = rfs['document.emissionDate'] || reg.emissionDate || payload.emissionDate || '20 de Diciembre de 2026';
+    const registerCode = rfs['document.registerCode'] || reg.registerCode || payload.registerCode || 'CM-2026-0001';
+
+    const ciclo = rfs['group.ciclo'] || group.ciclo || program.ciclo || 'AUXILIAR TÉCNICO';
+    const modalidad = rfs['group.modalidad'] || group.modalidad || 'PRESENCIAL';
+    const competence = rfs['curriculum.unit.competence'] || module.competencia || reg.competence || payload.competence || '';
+
+    const registryBook = rfs['document.registryBook'] || reg.registryBook || '01';
+    const registryFolio = rfs['document.registryFolio'] || reg.registryFolio || '15';
+    const registryNumber = rfs['document.registryNumber'] || reg.registryNumber || '0042';
+    const registryDate = rfs['document.registryDate'] || reg.registryDate || '20/12/2026';
+
+    const confirmed = val => ({ status: 'RESOLVED', value: String(val ?? '') });
+
+    return {
+      'student.fullName': confirmed(studentName),
+      'module.name': confirmed(moduleName),
+      'program.name': confirmed(programName),
+      'institution.name': confirmed(instName),
+      'curriculum.module.hours': confirmed(hours),
+      'curriculum.module.credits': confirmed(credits),
+      'document.emissionDate': confirmed(emissionDate),
+      'document.registerCode': confirmed(registerCode),
+      'group.ciclo': confirmed(ciclo),
+      'group.modalidad': confirmed(modalidad),
+      'curriculum.unit.competence': confirmed(competence),
+      'document.registryBook': confirmed(registryBook),
+      'document.registryFolio': confirmed(registryFolio),
+      'document.registryNumber': confirmed(registryNumber),
+      'document.registryDate': confirmed(registryDate)
+    };
+  }
+
+  _buildTmpl21FieldSet(payload = {}) {
+    const student = payload.student || payload.context?.student || {};
+    const program = payload.program || payload.context?.program || {};
+    const reg = payload.registry || payload.context?.registry || {};
+    const rfs = payload.resolvedFieldSet || payload.context?.resolvedFieldSet || {};
+
+    const studentName = rfs['student.fullName'] || student.fullName || student.apellidosNombres || student.nombreCompleto || [student.apellidoPaterno, student.apellidoMaterno, student.nombres].filter(Boolean).join(' ') || 'ESTUDIANTE';
+    const progTitle = program.nombre ? program.nombre.toUpperCase() : 'PELUQUERÍA Y BARBERÍA';
+    const titleText = rfs['document.officialTitleText'] || reg.officialTitleText || payload.officialTitleText || `AUXILIAR TÉCNICO EN ${progTitle}`;
+    const emissionDate = rfs['document.emissionDate'] || reg.emissionDate || payload.emissionDate || 'Dado en Lima, a los 20 días del mes de Diciembre del 2026';
+    const registerCode = rfs['document.registerCode'] || reg.registerCode || payload.registerCode || 'MINEDU-REG-2026-0042';
+    const registryAsiento = rfs['document.registryAsiento'] || reg.registryAsiento || payload.registryAsiento || 'Inscrito en el Libro de Títulos N° 01, Folio 15, Registro N° 2026-042.';
+
+    const confirmed = val => ({ status: 'RESOLVED', value: String(val ?? '') });
+
+    return {
+      'student.fullName': confirmed(studentName),
+      'document.officialTitleText': confirmed(titleText),
+      'document.emissionDate': confirmed(emissionDate),
+      'document.registerCode': confirmed(registerCode),
+      'document.registryAsiento': confirmed(registryAsiento)
+    };
+  }
+
+  renderTMPL20(payload = {}) {
+    const resolvedFieldSet = payload.resolvedFieldSet || this._buildTmpl20FieldSet(payload);
+    const rows = Array.isArray(payload.rows) ? payload.rows : [];
+    const counts = payload.counts || { detailRows: rows.length };
+    return this.renderFromManifest('TMPL-20', resolvedFieldSet, rows, counts);
+  }
+
+  renderTMPL21(payload = {}) {
+    const resolvedFieldSet = payload.resolvedFieldSet || this._buildTmpl21FieldSet(payload);
+    const rows = Array.isArray(payload.rows) ? payload.rows : [];
+    const counts = payload.counts || {};
+    return this.renderFromManifest('TMPL-21', resolvedFieldSet, rows, counts);
+  }
 }

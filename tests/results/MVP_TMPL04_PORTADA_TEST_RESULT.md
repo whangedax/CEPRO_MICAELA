@@ -1,12 +1,12 @@
 # Reporte de Pruebas: MVP-TMPL04-PORTADA-REGISTRO
 
-**Fecha:** 2026-09-21T03:21:01.177Z
+**Fecha:** 2026-10-01T05:40:16.542Z
 **Entorno:** Microsoft Edge Headless (127.0.0.1:8081)
 **Aislamiento:** CETPRO_DB (8080) Protegida / Inalterada
-**Resultado Global:** AUTOMATED_EDGE_HEADLESS = PASS
+**Resultado Global:** AUTOMATED_EDGE_HEADLESS = FAIL
 **Aceptación Física Humana:** HUMAN_PHYSICAL_EDGE_ACCEPTANCE = PENDING
 
-## Matriz de Resultados (15/15)
+## Matriz de Resultados (12/13)
 
 | ID Caso | Estado | Detalle |
 |---|:---:|---|
@@ -22,9 +22,7 @@
 | `T-TMPL04-10-DEMO-B-FIELDS` | **PASSED** | DEMO B contiene Programa, Módulo, Turno y Docente |
 | `T-TMPL04-11-DEMO-B-WATERMARK` | **PASSED** | DEMO B contiene marca de agua BORRADOR ADMINISTRATIVO — NO OFICIAL |
 | `T-TMPL04-12-NO-SPURIOUS-STRINGS` | **PASSED** | Ausencia total de literales "null", "undefined" o "PENDIENTE" en el PDF generado |
-| `T-TMPL04-13-UI-BUTTON` | **PASSED** | Botón "Generar Portada (TMPL-04)" visible en UI de nóminas |
-| `T-TMPL04-14-UI-PREVIEW-IFRAME` | **PASSED** | Visor embebido iframe cargado con Blob PDF |
-| `T-TMPL04-15-UI-ACTIONS` | **PASSED** | Botones de Imprimir y Descargar PDF operativos en el visor |
+| `T-TMPL04-FATAL-ERROR` | **FAILED** | Waiting for selector `#roster-program` failed |
 
 ## Invariantes Verificados
 - **Inmutabilidad Canónica:** 21/21 hashes SHA-256 inalterados.

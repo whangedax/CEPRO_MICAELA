@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Sistema Académico CETPRO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
   <script src="/app/vendor/pdf-lib.min.js"></script>
   <link rel="stylesheet" href="/app/css/app.css"><link rel="stylesheet" href="/app/css/components.css">
   <link rel="stylesheet" href="/app/css/responsive.css"><link rel="stylesheet" href="/app/css/print.css" media="print">
@@ -12,6 +15,7 @@
   <div id="app-layout">
     <header class="app-header"><div class="header-brand">
       <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menú de navegación">☰</button>
+      <img src="/app/img/logo-cetpro.jpg" alt="Logo CETPRO" style="height:32px; width:32px; border-radius:50%; object-fit:cover; border:1.5px solid #cbd5e1; margin-right:8px;" onerror="this.style.display='none'">
       <div class="brand-title">Sistema Académico CETPRO</div>
       <span id="candidate-runtime-banner" class="badge badge-success">PREPARANDO OPERACIÓN LOCAL…</span>
     </div><div class="header-actions"><button id="btn-enter-demo" class="btn btn-warning" type="button">INICIAR MODO DEMOSTRACIÓN</button><div id="db-status-badge" class="status-badge status-offline"><span class="dot"></span> Preparando datos locales…</div></div></header>

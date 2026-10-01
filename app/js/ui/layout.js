@@ -36,6 +36,8 @@ import { StagingService } from '../services/staging-service.js';
 import { AcademicReadinessService, PENDING_PREREQUISITES } from '../services/academic-readiness-service.js';
 import { ProductiveImportService } from '../services/productive-import-service.js';
 import { StagingRecoveryService } from '../services/staging-recovery-service.js';
+import { AuthService, ROLES } from '../services/auth-service.js';
+import { TeacherContextService } from '../services/teacher-context-service.js';
 
 const stagingService = new StagingService();
 const academicReadinessService = new AcademicReadinessService();
@@ -55,17 +57,203 @@ export const Layout = {
   activeRoute: null,
 
   init() {
+    this.renderUserRoleWidget();
     this.sanitizeSidebar();
     this.bindEvents();
     this.updateDbStatusBadge();
+
+    // Reaccionar a cambios de rol dinámicamente
+    AuthService.subscribe((role) => {
+      this.renderUserRoleWidget();
+      this.sanitizeSidebar();
+      this.updateDbStatusBadge();
+      
+      const currentHash = window.location.hash || '#/inicio';
+      if (AuthService.canAccessRoute(currentHash)) {
+        const routeKey = currentHash.split('?')[0];
+        const routeInfo = CONFIG.ROUTES[routeKey] || { id: 'inicio', hash: '#/inicio' };
+        this.renderView({ hash: currentHash, ...routeInfo });
+      } else {
+        window.location.hash = '#/inicio';
+      }
+    });
+
+    // Reaccionar a cambios de especialidad docente dinámicamente
+    TeacherContextService.subscribe((program) => {
+      this.renderUserRoleWidget();
+      if (AuthService.getCurrentRole().id === 'DOCENTE') {
+        const currentHash = window.location.hash || '#/inicio';
+        const routeKey = currentHash.split('?')[0];
+        const routeInfo = CONFIG.ROUTES[routeKey] || { id: 'inicio', hash: '#/inicio' };
+        this.renderView({ hash: currentHash, ...routeInfo });
+      }
+    });
+  },
+
+  renderUserRoleWidget() {
+    const role = AuthService.getCurrentRole();
+    const headerActions = document.querySelector('.header-actions');
+    if (!headerActions) return;
+
+    let widget = document.getElementById('user-role-widget');
+    if (!widget) {
+      widget = document.createElement('div');
+      widget.id = 'user-role-widget';
+      widget.className = 'user-role-widget';
+      widget.setAttribute('role', 'button');
+      widget.setAttribute('tabindex', '0');
+      widget.setAttribute('title', 'Haga clic para cambiar de perfil (Director, Secretaría o Docente)');
+      headerActions.prepend(widget);
+    }
+
+    const activeGroup = TeacherContextService.getActiveGroupInfo();
+    const activeProg = TeacherContextService.getActiveProgram();
+    const teacherBadgeHtml = role.id === 'DOCENTE'
+      ? `<span class="user-role-badge role-badge-${role.id}" title="Aula Activa: Grupo ${escapeHtml(activeGroup.grupoCode)} · ${escapeHtml(activeProg.nombre)}">👥 Aula: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})</span>`
+      : `<span class="user-role-badge role-badge-${role.id}">${escapeHtml(role.title)}</span>`;
+
+    widget.innerHTML = `
+      <div class="user-role-avatar">${role.avatar}</div>
+      <div class="user-role-details">
+        <span class="user-role-name">${escapeHtml(role.userName)}</span>
+        ${teacherBadgeHtml}
+      </div>
+      <button type="button" class="role-switcher-btn" id="btn-switch-role" title="Cambiar de Rol">
+        Cambiar ▾
+      </button>
+    `;
+
+    widget.onclick = (e) => {
+      e.stopPropagation();
+      this.openRoleModal();
+    };
+  },
+
+  openRoleModal() {
+    const currentRole = AuthService.getCurrentRole();
+    const existing = document.getElementById('role-selector-modal-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'role-selector-modal-overlay';
+    overlay.className = 'role-modal-overlay';
+
+    overlay.innerHTML = `
+      <div class="role-modal-card">
+        <div style="background: linear-gradient(135deg, #1e293b, #0f172a); color: #fff; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h4 style="margin: 0; font-size: 1.15rem; font-weight: 700;">Control de Acceso y Perfiles Institucionales (RBAC)</h4>
+            <p style="margin: 0.2rem 0 0; font-size: 0.85rem; color: #94a3b8;">Seleccione el perfil para conmutar permisos, vistas y documentos ministeriales</p>
+          </div>
+          <button type="button" class="btn-close btn-close-white" id="modal-role-close-btn" style="background:none; border:none; color:#fff; font-size:1.4rem; cursor:pointer;" aria-label="Cerrar">✕</button>
+        </div>
+
+        <div style="padding: 1.25rem 1.5rem; max-height: 75vh; overflow-y: auto;">
+          <!-- Opción 1: DIRECTOR -->
+          <div class="role-card-option ${currentRole.id === 'DIRECTOR' ? 'is-active-role' : ''}" data-role-id="DIRECTOR">
+            <div class="role-option-avatar">👨‍💼</div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                <strong style="font-size: 1rem; color: #0f172a;">${ROLES.DIRECTOR.title}</strong>
+                <span class="user-role-badge role-badge-DIRECTOR">DIRECTOR GENERAL</span>
+              </div>
+              <div style="font-weight: 600; font-size: 0.85rem; color: #047857; margin-bottom: 0.35rem;">
+                ${ROLES.DIRECTOR.userName} · ${ROLES.DIRECTOR.cargo}
+              </div>
+              <p style="margin: 0 0 0.5rem; font-size: 0.82rem; color: #475569;">
+                ${ROLES.DIRECTOR.description}
+              </p>
+              <div style="font-size: 0.75rem; color: #64748b; background: #f8fafc; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #e2e8f0;">
+                <strong>Atribuciones:</strong> Refrendo oficial de Títulos (TMPL-21), Actas Modulares (TMPL-19), Certificados (TMPL-20), Mallas Curriculares y Respaldo Total.
+              </div>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <button type="button" class="btn ${currentRole.id === 'DIRECTOR' ? 'btn-success' : 'btn-outline-primary'} btn-sm fw-bold">
+                ${currentRole.id === 'DIRECTOR' ? '✓ Activo' : 'Seleccionar'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Opción 2: SECRETARIA -->
+          <div class="role-card-option ${currentRole.id === 'SECRETARIA' ? 'is-active-role' : ''}" data-role-id="SECRETARIA">
+            <div class="role-option-avatar">👩‍💼</div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                <strong style="font-size: 1rem; color: #0f172a;">${ROLES.SECRETARIA.title}</strong>
+                <span class="user-role-badge role-badge-SECRETARIA">SECRETARÍA ACADÉMICA</span>
+              </div>
+              <div style="font-weight: 600; font-size: 0.85rem; color: #1d4ed8; margin-bottom: 0.35rem;">
+                ${ROLES.SECRETARIA.userName} · ${ROLES.SECRETARIA.cargo}
+              </div>
+              <p style="margin: 0 0 0.5rem; font-size: 0.82rem; color: #475569;">
+                ${ROLES.SECRETARIA.description}
+              </p>
+              <div style="font-size: 0.75rem; color: #64748b; background: #f8fafc; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #e2e8f0;">
+                <strong>Atribuciones:</strong> Matrícula, Nóminas Oficiales (TMPL-01..03), EFSRT (TMPL-18), Actas (TMPL-19), Foliación y Certificados Modulares (TMPL-20).
+              </div>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <button type="button" class="btn ${currentRole.id === 'SECRETARIA' ? 'btn-success' : 'btn-outline-primary'} btn-sm fw-bold">
+                ${currentRole.id === 'SECRETARIA' ? '✓ Activo' : 'Seleccionar'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Opción 3: DOCENTE -->
+          <div class="role-card-option ${currentRole.id === 'DOCENTE' ? 'is-active-role' : ''}" data-role-id="DOCENTE">
+            <div class="role-option-avatar">👨‍🏫</div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                <strong style="font-size: 1rem; color: #0f172a;">${ROLES.DOCENTE.title}</strong>
+                <span class="user-role-badge role-badge-DOCENTE">DOCENTE DE ESPECIALIDAD</span>
+              </div>
+              <div style="font-weight: 600; font-size: 0.85rem; color: #7c3aed; margin-bottom: 0.35rem;">
+                ${ROLES.DOCENTE.userName} · ${ROLES.DOCENTE.cargo}
+              </div>
+              <p style="margin: 0 0 0.5rem; font-size: 0.82rem; color: #475569;">
+                ${ROLES.DOCENTE.description}
+              </p>
+              <div style="font-size: 0.75rem; color: #64748b; background: #f8fafc; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #e2e8f0;">
+                <strong>Atribuciones:</strong> Control de Asistencia diaria (TMPL-05..10), Registro Auxiliar de Calificaciones (TMPL-11..17) y Portada Docente (TMPL-04).<br>
+                <strong style="color: #7c3aed;">Especialidad Activa:</strong> ${escapeHtml(TeacherContextService.getActiveProgram().nombre)} (Delimitación contextual de BD: solo grupos y alumnos asignados).
+              </div>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <button type="button" class="btn ${currentRole.id === 'DOCENTE' ? 'btn-success' : 'btn-outline-primary'} btn-sm fw-bold">
+                ${currentRole.id === 'DOCENTE' ? '✓ Activo' : 'Seleccionar'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; padding: 0.85rem 1.5rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary btn-sm" id="modal-role-cancel-btn">Cerrar</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const closeModal = () => overlay.remove();
+    overlay.querySelector('#modal-role-close-btn').onclick = closeModal;
+    overlay.querySelector('#modal-role-cancel-btn').onclick = closeModal;
+
+    overlay.querySelectorAll('.role-card-option').forEach(card => {
+      card.onclick = () => {
+        const roleId = card.getAttribute('data-role-id');
+        AuthService.setRole(roleId);
+        const newRole = ROLES[roleId];
+        Notifications.success(`Perfil cambiado a: ${newRole.userName} (${newRole.title})`);
+        closeModal();
+      };
+    });
   },
 
   /**
-   * Sanea la barra lateral conservando en OPERACIÓN DIARIA exclusivamente:
-   * INICIO (#/inicio), ESTUDIANTES (#/estudiantes), GRUPOS (#/grupos) y DOCUMENTOS (#/documentos).
-   * Retira los enlaces redundantes de la barra visible sin afectar las rutas del router.
+   * Sanea la barra lateral y adapta enlaces según el rol activo (RBAC)
    */
   sanitizeSidebar() {
+    const role = AuthService.getCurrentRole();
     const redundantSelectors = [
       '#sidebar a[href="#/matriculas"]',
       '#sidebar a[href="#/nominas"]',
@@ -74,6 +262,28 @@ export const Layout = {
     ];
     redundantSelectors.forEach(sel => {
       document.querySelectorAll(sel).forEach(el => el.remove());
+    });
+
+    // Control de visibilidad de enlaces por rol en la barra lateral
+    const navLinks = document.querySelectorAll('#sidebar .nav-link');
+    navLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href) {
+        const baseHref = href.split('?')[0];
+        if (role.allowedRoutes.includes(baseHref)) {
+          link.style.display = '';
+        } else {
+          link.style.display = 'none';
+        }
+      }
+    });
+
+    // Secciones de cabecera en el sidebar
+    const sectionTitles = document.querySelectorAll('#sidebar .nav-section-title');
+    sectionTitles.forEach(sec => {
+      if (sec.textContent.includes('CONFIGURACIÓN ADMINISTRATIVA')) {
+        sec.style.display = role.id === 'DOCENTE' ? 'none' : '';
+      }
     });
   },
 
@@ -86,6 +296,11 @@ export const Layout = {
         sidebar.classList.toggle('open');
       };
     }
+    document.addEventListener('click', (e) => {
+      if (e.target && (e.target.id === 'doc-header-switch-role-btn' || e.target.closest('#doc-header-switch-role-btn') || e.target.id === 'btn-denied-switch-role')) {
+        this.openRoleModal();
+      }
+    });
   },
 
   /**
@@ -136,11 +351,56 @@ export const Layout = {
    * Renderiza el contenido principal de la sección según la ruta seleccionada
    * @param {object} routeInfo
    */
+  /**
+   * Renderiza la pantalla de Acceso Restringido cuando el rol no posee facultades
+   */
+  renderAccessDeniedView(container, routeInfo) {
+    const role = AuthService.getCurrentRole();
+    container.innerHTML = `
+      <div class="access-denied-card">
+        <div class="access-denied-icon">🛡️</div>
+        <h2 style="color: #dc2626; margin-bottom: 0.5rem; font-size: 1.45rem; font-weight: 700;">Acceso Restringido por Nivel de Autorización</h2>
+        <p class="text-muted" style="margin-bottom: 1.5rem; font-size: 0.95rem;">
+          La sección solicitada (<strong>${escapeHtml(routeInfo.title || routeInfo.id || 'solicitada')}</strong>) requiere facultades administrativas o de dirección institucional.
+        </p>
+        <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 1.1rem; margin-bottom: 1.5rem; text-align: left; font-size: 0.88rem;">
+          <div style="font-weight: 700; color: #92400e; margin-bottom: 0.35rem; display: flex; align-items: center; justify-content: space-between;">
+            <span>Usuario actual: ${escapeHtml(role.userName)}</span>
+            <span class="user-role-badge role-badge-${role.id}">${escapeHtml(role.title)}</span>
+          </div>
+          <div style="color: #78350f; font-size: 0.82rem; margin-bottom: 0.5rem;">
+            ${escapeHtml(role.cargo)}
+          </div>
+          <div style="color: #451a03; font-size: 0.8rem; background: rgba(255,255,255,0.7); padding: 0.5rem; border-radius: 4px;">
+            ${escapeHtml(role.description)}
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <a href="#/inicio" class="btn btn-secondary">← Volver al Inicio</a>
+          <button type="button" class="btn btn-primary" id="btn-denied-switch-role">
+            <i class="bi bi-person-badge me-1"></i>Cambiar Perfil Institucional
+          </button>
+        </div>
+      </div>
+    `;
+
+    const switchBtn = container.querySelector('#btn-denied-switch-role');
+    if (switchBtn) {
+      switchBtn.onclick = () => this.openRoleModal();
+    }
+  },
+
   async renderView(routeInfo) {
     const container = document.getElementById('main-content');
     if (!container) return;
 
     this.updateNavigation(routeInfo.hash);
+
+    // Guardia de Enrutamiento (RBAC)
+    if (!AuthService.canAccessRoute(routeInfo.hash)) {
+      this.renderAccessDeniedView(container, routeInfo);
+      return;
+    }
 
     switch (routeInfo.id) {
       case 'demo': {
@@ -307,9 +567,55 @@ export const Layout = {
   async renderMvpInicioView(container) {
     const institution = await InstitutionService.getInstitutionProfile();
     const counts = await new MvpAdminService().getDashboardStats();
+    const role = AuthService.getCurrentRole();
+
+    let roleTitle = 'Panel Institucional — Dirección General';
+    let roleSub = `${escapeHtml(institution.nombre)} · Director: ${escapeHtml(role.userName)}`;
+    let shortcutsHtml = '';
+
+    if (role.id === 'DIRECTOR') {
+      roleTitle = 'Panel Institucional — Dirección General CETPRO';
+      roleSub = `${escapeHtml(institution.nombre)} · Director: ${escapeHtml(role.userName)}`;
+      shortcutsHtml = `
+        <a class="mvp-shortcut" href="#/documentos"><span>📑</span>Emisión de Títulos y Actas</a>
+        <a class="mvp-shortcut" href="#/grupos"><span>🗂️</span>Gestión de Grupos</a>
+        <a class="mvp-shortcut" href="#/configuracion-academica"><span>⚙️</span>Configuración Académica</a>
+        <a class="mvp-shortcut" href="#/estudiantes"><span>👥</span>Padrón de Estudiantes</a>
+        <a class="mvp-shortcut" href="#/respaldo"><span>💾</span>Respaldo del Sistema</a>
+      `;
+    } else if (role.id === 'SECRETARIA') {
+      roleTitle = 'Panel de Matrícula y Registros — Secretaría Académica';
+      roleSub = `${escapeHtml(institution.nombre)} · Secretaría: ${escapeHtml(role.userName)}`;
+      shortcutsHtml = `
+        <a class="mvp-shortcut" href="#/estudiantes"><span>👥</span>Padrón y Matrícula</a>
+        <a class="mvp-shortcut" href="#/grupos"><span>🗂️</span>Asignación de Grupos</a>
+        <a class="mvp-shortcut" href="#/documentos"><span>📑</span>Nóminas y Certificados Modulares</a>
+        <a class="mvp-shortcut" href="#/programas"><span>📚</span>Programas y Módulos</a>
+        <a class="mvp-shortcut" href="#/respaldo"><span>💾</span>Copia de Respaldo</a>
+      `;
+    } else if (role.id === 'DOCENTE') {
+      roleTitle = 'Aula Virtual y Registros — Docente de Especialidad';
+      roleSub = `${escapeHtml(institution.nombre)} · Docente: ${escapeHtml(role.userName)}`;
+      shortcutsHtml = `
+        <a class="mvp-shortcut" href="#/documentos"><span>📝</span>Control de Asistencia (Sesiones 1-40)</a>
+        <a class="mvp-shortcut" href="#/documentos"><span>📊</span>Registro Auxiliar de Calificaciones</a>
+        <a class="mvp-shortcut" href="#/documentos"><span>📁</span>Portada de Carpeta Docente</a>
+        <a class="mvp-shortcut" href="#/grupos"><span>🗂️</span>Mis Grupos Asignados</a>
+        <a class="mvp-shortcut" href="#/estudiantes"><span>👥</span>Mis Alumnos Matriculados</a>
+      `;
+    }
+
     container.innerHTML = `
-      <section class="view-header"><div><h2>Inicio — Secretaría CETPRO</h2>
-        <p class="subtitle">${escapeHtml(institution.nombre)}</p></div><span class="badge badge-success">OPERACIÓN LOCAL</span></section>
+      <section class="view-header">
+        <div>
+          <h2>${escapeHtml(roleTitle)}</h2>
+          <p class="subtitle">${roleSub}</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <span class="user-role-badge role-badge-${role.id}">${escapeHtml(role.title)}</span>
+          <span class="badge badge-success">OPERACIÓN LOCAL</span>
+        </div>
+      </section>
       <div class="grid mvp-metric-grid">
         <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-info"><span class="stat-value">${counts.students}</span><span class="stat-label">Estudiantes</span></div></div>
         <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-info"><span class="stat-value">${counts.enrollments}</span><span class="stat-label">Matrículas</span></div></div>
@@ -317,16 +623,25 @@ export const Layout = {
         <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-info"><span class="stat-value">${counts.programs}</span><span class="stat-label">Programas</span></div></div>
         <div class="stat-card"><div class="stat-icon">📖</div><div class="stat-info"><span class="stat-value">${counts.modules}</span><span class="stat-label">Módulos</span></div></div>
       </div>
-      <div class="card margin-top"><h3>Accesos rápidos</h3><div class="mvp-shortcuts">
-        <a class="mvp-shortcut" href="#/matriculas"><span>＋</span>Nueva matrícula</a>
-        <a class="mvp-shortcut" href="#/nominas"><span>📄</span>Ver nóminas</a>
-        <a class="mvp-shortcut" href="#/registros/matricula"><span>📋</span>Registros</a>
-        <a class="mvp-shortcut" href="#/configuracion-academica"><span>⚙️</span>Configuración académica</a>
-        <a class="mvp-shortcut" href="#/respaldo"><span>💾</span>Respaldo</a>
-      </div></div>
-      <div class="card margin-top"><h3>Estado administrativo</h3>
-        <p>Las consultas, matrículas, grupos, nóminas administrativas, registros internos, fichas y respaldos están disponibles sin Internet.</p>
-        <p class="mvp-context-note">Los documentos académicos oficiales permanecen pendientes hasta que Jefatura confirme periodo, módulo y plan de estudios.</p></div>`;
+      <div class="card margin-top">
+        <h3>Accesos rápidos (${escapeHtml(role.title)})</h3>
+        <div class="mvp-shortcuts">
+          ${shortcutsHtml}
+        </div>
+      </div>
+      <div class="card margin-top">
+        <h3>Estado y Atribuciones del Rol</h3>
+        <p>${escapeHtml(role.description)}</p>
+        <p class="mvp-context-note">
+          <strong>Atribuciones activas:</strong> ${
+            role.id === 'DIRECTOR'
+              ? 'Control total, refrendo de Título Técnico Oficial (TMPL-21), Actas Modulares, Certificados, Mallas y Respaldo.'
+              : role.id === 'SECRETARIA'
+                ? 'Padrón de estudiantes, matrículas, nóminas oficiales (TMPL-01..03), consolidado EFSRT y Certificados Modulares (TMPL-20).'
+                : 'Control de asistencia modular diaria (TMPL-05..10), registro auxiliar de notas (TMPL-11..17) y portadas pedagógicas.'
+          }
+        </p>
+      </div>`;
   },
 
   async renderProgramasView(container) {
@@ -1165,18 +1480,29 @@ export const Layout = {
         <p><strong>Advertencia:</strong> esta acción reemplazará los datos actuales después de crear un respaldo de seguridad previo.</p>
         <button id="btn-restore-backup" class="btn btn-danger" type="button" disabled>Restaurar</button>
       </div>`;
+    const role = AuthService.getCurrentRole();
+    const canRestore = role.canRestoreBackup;
+
     return `
       <section class="view-header">
-        <h2>Respaldo y Restauración</h2>
-        <span class="badge ${demoMode ? 'badge-warning' : 'badge-success'}">${demoMode ? 'DEMO · NO OFICIAL' : 'SISTEMA M02'}</span>
+        <div>
+          <h2>${canRestore ? 'Respaldo y Restauración Institucional' : 'Copia de Respaldo Operativo'}</h2>
+          <p class="subtitle">${canRestore ? 'Gestión técnica y restauración de base de datos — Dirección General' : 'Exportación de respaldo de seguridad — Secretaría Académica'}</p>
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <span class="user-role-badge role-badge-${role.id}">${escapeHtml(role.title)}</span>
+          <span class="badge ${demoMode ? 'badge-warning' : 'badge-success'}">${demoMode ? 'DEMO · NO OFICIAL' : 'SISTEMA M02'}</span>
+        </div>
       </section>
 
       <div class="card">
-        <h3>Crear respaldo</h3>
-        <p>Exporta todos los datos locales a un archivo JSON con bitácora, conteos y checksum SHA-256.${demoMode ? ' El envelope queda marcado environment=DEMO y official=false.' : ''}</p>
-        <button id="btn-export-backup" class="btn btn-primary margin-top-sm">Exportar Respaldo ${demoMode ? 'DEMO ' : 'Local '}(JSON)</button>
+        <h3>Crear respaldo de seguridad (Exportación JSON)</h3>
+        <p>Exporta todos los datos locales a un archivo JSON firmado con bitácora, conteos y checksum SHA-256.${demoMode ? ' El envelope queda marcado environment=DEMO y official=false.' : ''}</p>
+        <button id="btn-export-backup" class="btn btn-primary margin-top-sm">
+          <i class="bi bi-download me-1"></i>Exportar Respaldo ${demoMode ? 'DEMO ' : 'Local '}(JSON)
+        </button>
       </div>
-      ${restorePanel}
+      ${canRestore ? restorePanel : ''}
     `;
   }
 };
