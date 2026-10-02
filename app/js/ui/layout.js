@@ -858,12 +858,89 @@ export const Layout = {
       roleTitle = `Aula Pedagógica — ${activeProg.nombre}`;
       roleSub = `${escapeHtml(institution.nombre)} · Docente: ${escapeHtml(role.userName)} · Aula: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})`;
       shortcutsHtml = `
-        <a class="mvp-shortcut" href="#/documentos"><span>📝</span>Control de Asistencia (Sesiones 1-40)</a>
-        <a class="mvp-shortcut" href="#/documentos"><span>📊</span>Registro Auxiliar de Calificaciones</a>
-        <a class="mvp-shortcut" href="#/documentos"><span>📁</span>Portada de Carpeta Docente</a>
-        <a class="mvp-shortcut" href="#/estudiantes"><span>👥</span>Mis Alumnos Matriculados (${studentCount} en aula)</a>
-        <a class="mvp-shortcut" href="#/grupos"><span>🗂️</span>Mis Grupos Asignados (${progGroups.length} grupos)</a>
-        <a class="mvp-shortcut" href="#/programas"><span>📚</span>Malla Curricular (${moduleCount} módulos)</a>
+        <a class="shortcut-btn-card shortcut-btn--blue" href="#/documentos" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">📝</div>
+            <span class="shortcut-btn-badge">TMPL-05..10</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Control de Asistencia Modular</strong>
+            <p class="shortcut-btn-desc">Registro diario de asistencias (sesiones 1 a 40), faltas y tardanzas de los estudiantes del aula asignada.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Registrar Asistencia <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--green" href="#/documentos" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">📊</div>
+            <span class="shortcut-btn-badge">TMPL-11..17</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Registro Auxiliar de Notas</strong>
+            <p class="shortcut-btn-desc">Evaluación continua por capacidades terminales, indicadores de logro y promedios oficiales del período modular.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Evaluar Alumnos <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--amber" href="#/documentos" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">📁</div>
+            <span class="shortcut-btn-badge">TMPL-04</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Portada de Carpeta Docente</strong>
+            <p class="shortcut-btn-desc">Generación formal de la carátula técnica y pedagógica oficial con membrete y datos de especialidad.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Generar Portada <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--purple" href="#/estudiantes" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">👥</div>
+            <span class="shortcut-btn-badge">${studentCount} Alumnos</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Mis Alumnos Matriculados</strong>
+            <p class="shortcut-btn-desc">Padrón de estudiantes del aula ${escapeHtml(activeGroup.grupoCode)}, fichas individuales y seguimiento pedagógico.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Ver Mis Alumnos <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--emerald" href="#/grupos" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">🗂️</div>
+            <span class="shortcut-btn-badge">${progGroups.length} Grupos</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Mis Grupos y Aulas</strong>
+            <p class="shortcut-btn-desc">Visualice y conmute entre los grupos y turnos correspondientes a ${escapeHtml(activeProg.nombre)}.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Gestionar Aulas <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--indigo" href="#/programas" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">📚</div>
+            <span class="shortcut-btn-badge">${moduleCount} Módulos</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Malla Curricular Asignada</strong>
+            <p class="shortcut-btn-desc">Estructura curricular oficial, unidades de competencia y horas lectivas de su especialidad técnica.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Ver Malla Oficial <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
       `;
 
       metricsGridHtml = `
@@ -942,8 +1019,11 @@ export const Layout = {
         ${metricsGridHtml}
       </div>
       <div class="card margin-top">
-        <h3>Accesos rápidos (${escapeHtml(role.title)})</h3>
-        <div class="mvp-shortcuts">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom: 0.5rem;">
+          <h3 style="margin:0;">Accesos rápidos (${escapeHtml(role.title)})</h3>
+          <span style="font-size:0.82rem; color:#64748b;">Módulos de trabajo pedagógico y gestión directa</span>
+        </div>
+        <div class="${role.id === 'DOCENTE' ? 'mvp-shortcuts-grid' : 'mvp-shortcuts'}">
           ${shortcutsHtml}
         </div>
       </div>
