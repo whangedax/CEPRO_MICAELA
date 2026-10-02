@@ -9,6 +9,7 @@ import { PdfTemplateEngine } from '../services/pdf-template-engine.js';
 import { escapeHtml } from '../utils/dom-utils.js';
 import { Notifications } from './notifications.js';
 import { CONFIG } from '../config.js';
+import { AuthService } from '../services/auth-service.js';
 
 export class EfsrtView {
   constructor(options = {}) {
@@ -141,7 +142,7 @@ export class EfsrtView {
           fechaInicio: '2026-03-01',
           fechaTermino: '2026-06-30'
         },
-        document: { teacherName: 'PROF. CARLOS MENDOZA HUAMÁN' },
+        document: { teacherName: AuthService.getCurrentRole().userName || 'Docente de Especialidad' },
         rows,
         demoMode: false
       });

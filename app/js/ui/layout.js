@@ -38,6 +38,7 @@ import { ProductiveImportService } from '../services/productive-import-service.j
 import { StagingRecoveryService } from '../services/staging-recovery-service.js';
 import { AuthService, ROLES } from '../services/auth-service.js';
 import { TeacherContextService } from '../services/teacher-context-service.js';
+import { LoginView } from './login-view.js';
 
 const stagingService = new StagingService();
 const academicReadinessService = new AcademicReadinessService();
@@ -62,13 +63,32 @@ export const Layout = {
     this.bindEvents();
     this.updateDbStatusBadge();
 
+    // Redirigir a login si no hay sesión activa
+    if (!AuthService.isAuthenticated() && !window.location.hash.startsWith('#/login')) {
+      window.location.hash = '#/login';
+    }
+
+    // Escuchar evento personalizado para conmutar aula desde vistas internas
+    document.addEventListener('cetpro:open-classroom-modal', () => {
+      this.openClassroomSwitcherModal();
+    });
+
     // Reaccionar a cambios de rol dinámicamente
     AuthService.subscribe((role) => {
       this.renderUserRoleWidget();
       this.sanitizeSidebar();
       this.updateDbStatusBadge();
       
+      if (!role) {
+        window.location.hash = '#/login';
+        return;
+      }
+
       const currentHash = window.location.hash || '#/inicio';
+      if (currentHash === '#/login') {
+        window.location.hash = '#/inicio';
+        return;
+      }
       if (AuthService.canAccessRoute(currentHash)) {
         const routeKey = currentHash.split('?')[0];
         const routeInfo = CONFIG.ROUTES[routeKey] || { id: 'inicio', hash: '#/inicio' };
@@ -91,7 +111,6 @@ export const Layout = {
   },
 
   renderUserRoleWidget() {
-    const role = AuthService.getCurrentRole();
     const headerActions = document.querySelector('.header-actions');
     if (!headerActions) return;
 
@@ -100,32 +119,213 @@ export const Layout = {
       widget = document.createElement('div');
       widget.id = 'user-role-widget';
       widget.className = 'user-role-widget';
-      widget.setAttribute('role', 'button');
-      widget.setAttribute('tabindex', '0');
-      widget.setAttribute('title', 'Haga clic para cambiar de perfil (Director, Secretaría o Docente)');
       headerActions.prepend(widget);
     }
 
+    if (!AuthService.isAuthenticated()) {
+      widget.innerHTML = `
+        <a href="#/login" class="btn btn-outline-primary btn-sm fw-bold" style="border-radius: 8px;">
+          🔑 Iniciar Sesión
+        </a>
+      `;
+      widget.onclick = null;
+      return;
+    }
+
+    const role = AuthService.getCurrentRole();
     const activeGroup = TeacherContextService.getActiveGroupInfo();
     const activeProg = TeacherContextService.getActiveProgram();
-    const teacherBadgeHtml = role.id === 'DOCENTE'
-      ? `<span class="user-role-badge role-badge-${role.id}" title="Aula Activa: Grupo ${escapeHtml(activeGroup.grupoCode)} · ${escapeHtml(activeProg.nombre)}">👥 Aula: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})</span>`
-      : `<span class="user-role-badge role-badge-${role.id}">${escapeHtml(role.title)}</span>`;
 
-    widget.innerHTML = `
-      <div class="user-role-avatar">${role.avatar}</div>
-      <div class="user-role-details">
-        <span class="user-role-name">${escapeHtml(role.userName)}</span>
-        ${teacherBadgeHtml}
+    if (role.id === 'DOCENTE') {
+      widget.innerHTML = `
+        <div class="user-role-avatar">${role.avatar}</div>
+        <div class="user-role-details">
+          <span class="user-role-name">${escapeHtml(role.userName)}</span>
+          <span class="user-role-badge role-badge-${role.id}" title="Aula Activa: Grupo ${escapeHtml(activeGroup.grupoCode)} · ${escapeHtml(activeProg.nombre)}">
+            👥 Aula: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})
+          </span>
+        </div>
+        <div style="display: flex; gap: 0.35rem; align-items: center;">
+          <button type="button" class="role-switcher-btn" id="btn-switch-classroom" title="Cambiar de Carrera o Aula" style="background: #f5f3ff; color: #6b21a8; border-color: #d8b4fe; font-weight: 700;">
+            🏫 Aula ▾
+          </button>
+          <button type="button" class="role-switcher-btn" id="btn-switch-role" title="Cambiar Perfil Institucional">
+            Perfil ▾
+          </button>
+          <button type="button" class="role-switcher-btn" id="btn-auth-logout" title="Cerrar Sesión" style="color: #dc2626; border-color: #fecaca; background: #fef2f2; font-weight: 700;">
+            ⎋ Salir
+          </button>
+        </div>
+      `;
+
+      widget.querySelector('#btn-switch-classroom')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openClassroomSwitcherModal();
+      });
+      widget.querySelector('#btn-switch-role')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openRoleModal();
+      });
+      widget.querySelector('#btn-auth-logout')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        AuthService.logout();
+        Notifications.info('Sesión finalizada correctamente');
+        window.location.hash = '#/login';
+      });
+    } else {
+      widget.innerHTML = `
+        <div class="user-role-avatar">${role.avatar}</div>
+        <div class="user-role-details">
+          <span class="user-role-name">${escapeHtml(role.userName)}</span>
+          <span class="user-role-badge role-badge-${role.id}">${escapeHtml(role.title)}</span>
+        </div>
+        <div style="display: flex; gap: 0.35rem; align-items: center;">
+          <button type="button" class="role-switcher-btn" id="btn-switch-role" title="Cambiar Perfil">
+            Perfil ▾
+          </button>
+          <button type="button" class="role-switcher-btn" id="btn-auth-logout" title="Cerrar Sesión" style="color: #dc2626; border-color: #fecaca; background: #fef2f2; font-weight: 700;">
+            ⎋ Salir
+          </button>
+        </div>
+      `;
+
+      widget.querySelector('#btn-switch-role')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openRoleModal();
+      });
+      widget.querySelector('#btn-auth-logout')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        AuthService.logout();
+        Notifications.info('Sesión finalizada correctamente');
+        window.location.hash = '#/login';
+      });
+    }
+
+    widget.onclick = null;
+  },
+
+  openClassroomSwitcherModal() {
+    const existing = document.getElementById('classroom-switcher-modal-overlay');
+    if (existing) existing.remove();
+
+    const programs = TeacherContextService.getPrograms();
+    let currentProgId = TeacherContextService.getActiveProgramId();
+    let currentGroupCode = TeacherContextService.getActiveGroupCode();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'classroom-switcher-modal-overlay';
+    overlay.className = 'classroom-modal-overlay';
+
+    overlay.innerHTML = `
+      <div class="classroom-modal-card">
+        <div style="background: linear-gradient(135deg, #6b21a8, #4c1d95); color: #fff; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h4 style="margin: 0; font-size: 1.15rem; font-weight: 700;">🏫 Conmutador de Carrera y Aula Pedagógica</h4>
+            <p style="margin: 0.2rem 0 0; font-size: 0.85rem; color: #e9d5ff;">Seleccione la especialidad técnica y el grupo para delimitar el sistema</p>
+          </div>
+          <button type="button" class="btn-close btn-close-white" id="modal-classroom-close-btn" style="background:none; border:none; color:#fff; font-size:1.4rem; cursor:pointer;" aria-label="Cerrar">✕</button>
+        </div>
+
+        <div style="padding: 1.5rem; max-height: 75vh; overflow-y: auto;">
+          <!-- Paso 1: Carrera -->
+          <div class="classroom-step-box">
+            <div class="classroom-step-header">
+              <span class="classroom-step-num">1</span>
+              <strong style="color: #1e293b; font-size: 0.95rem;">Paso 1: Seleccione Carrera / Especialidad Técnica:</strong>
+            </div>
+            <select id="modal-classroom-prog-select" class="form-select login-select" style="font-weight: 600;">
+              ${programs.map(p => `
+                <option value="${p.id}" ${p.id === currentProgId ? 'selected' : ''}>
+                  📚 ${escapeHtml(p.nombre)} (${escapeHtml(p.codigo)})
+                </option>
+              `).join('')}
+            </select>
+          </div>
+
+          <!-- Paso 2: Grupo -->
+          <div class="classroom-step-box">
+            <div class="classroom-step-header" style="justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 0.65rem;">
+                <span class="classroom-step-num">2</span>
+                <strong style="color: #1e293b; font-size: 0.95rem;">Paso 2: Seleccione el Grupo / Aula Asignada:</strong>
+              </div>
+              <span id="modal-classroom-group-badge" class="badge badge-info" style="font-size: 0.78rem;"></span>
+            </div>
+            <select id="modal-classroom-group-select" class="form-select login-select" style="border-color: #7c3aed; font-weight: 700;">
+            </select>
+            <div style="margin-top: 0.5rem; font-size: 0.78rem; color: #64748b;">
+              ℹ️ Al conmutar el grupo, las nóminas, asistencias y evaluaciones se adaptarán de inmediato a los alumnos de esta aula.
+            </div>
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary btn-sm" id="modal-classroom-cancel-btn">Cancelar</button>
+          <button type="button" class="btn btn-primary btn-sm fw-bold" id="modal-classroom-apply-btn" style="background: #7c3aed; border-color: #6d28d9; padding: 0.45rem 1.25rem;">
+            ✓ Conmutar a esta Aula
+          </button>
+        </div>
       </div>
-      <button type="button" class="role-switcher-btn" id="btn-switch-role" title="Cambiar de Rol">
-        Cambiar ▾
-      </button>
     `;
 
-    widget.onclick = (e) => {
-      e.stopPropagation();
-      this.openRoleModal();
+    document.body.appendChild(overlay);
+
+    const progSelect = overlay.querySelector('#modal-classroom-prog-select');
+    const groupSelect = overlay.querySelector('#modal-classroom-group-select');
+    const groupBadge = overlay.querySelector('#modal-classroom-group-badge');
+    const closeBtn = overlay.querySelector('#modal-classroom-close-btn');
+    const cancelBtn = overlay.querySelector('#modal-classroom-cancel-btn');
+    const applyBtn = overlay.querySelector('#modal-classroom-apply-btn');
+
+    const closeModal = () => overlay.remove();
+    closeBtn.onclick = closeModal;
+    cancelBtn.onclick = closeModal;
+
+    const updateGroups = (progId) => {
+      const groups = TeacherContextService.getGroupsForProgram(progId);
+      if (groups.length === 0) {
+        groupSelect.innerHTML = '<option value="">No hay grupos en este programa</option>';
+        if (groupBadge) groupBadge.textContent = '0 grupos';
+        return;
+      }
+      groupSelect.innerHTML = groups.map(g => {
+        const isSelected = g.grupoCode === currentGroupCode;
+        const turnoText = g.turno && g.turno !== 'PENDIENTE' ? `Turno ${g.turno}` : (g.modalidad && g.modalidad !== 'PENDIENTE' ? g.modalidad : 'Regular');
+        return `<option value="${escapeHtml(g.grupoCode)}" ${isSelected ? 'selected' : ''}>👥 ${escapeHtml(g.grupoCode)} · ${escapeHtml(turnoText)} (${g.count} estudiantes)</option>`;
+      }).join('');
+      if (groupBadge) {
+        const total = groups.reduce((acc, g) => acc + (g.count || 0), 0);
+        groupBadge.textContent = `${groups.length} grupo${groups.length > 1 ? 's' : ''} (${total} al.)`;
+      }
+    };
+
+    updateGroups(currentProgId);
+
+    progSelect.onchange = () => {
+      currentProgId = progSelect.value;
+      const groups = TeacherContextService.getGroupsForProgram(currentProgId);
+      if (groups.length > 0) currentGroupCode = groups[0].grupoCode;
+      updateGroups(currentProgId);
+    };
+
+    applyBtn.onclick = () => {
+      const selectedGroup = groupSelect.value;
+      if (!selectedGroup) {
+        Notifications.error('Debe seleccionar un grupo válido');
+        return;
+      }
+      TeacherContextService.setActiveProgramId(currentProgId);
+      TeacherContextService.setActiveGroupCode(selectedGroup);
+      const activeGroup = TeacherContextService.getActiveGroupInfo();
+      const activeProg = TeacherContextService.getActiveProgram();
+      Notifications.success(`Aula conmutada: ${activeProg.nombre} — Grupo ${activeGroup.grupoCode}`);
+      closeModal();
+      
+      // Refrescar la vista activa
+      const currentHash = window.location.hash || '#/inicio';
+      const routeKey = currentHash.split('?')[0];
+      const routeInfo = CONFIG.ROUTES[routeKey] || { id: 'inicio', hash: '#/inicio' };
+      this.renderView({ hash: currentHash, ...routeInfo });
     };
   },
 
@@ -394,6 +594,30 @@ export const Layout = {
     const container = document.getElementById('main-content');
     if (!container) return;
 
+    const appLayout = document.getElementById('app-layout');
+    const sidebar = document.getElementById('sidebar');
+
+    // Manejo de Pantalla Completa para Inicio de Sesión
+    if (routeInfo.id === 'login') {
+      if (appLayout) appLayout.classList.add('app-layout--login');
+      if (sidebar) sidebar.style.display = 'none';
+      this.renderUserRoleWidget();
+      await new LoginView().render(container);
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    // Guardia de Autenticación Institucional
+    if (!AuthService.isAuthenticated()) {
+      window.location.hash = '#/login';
+      return;
+    }
+
+    if (appLayout) appLayout.classList.remove('app-layout--login');
+    if (sidebar) sidebar.style.display = '';
+
+    this.renderUserRoleWidget();
+    this.sanitizeSidebar();
     this.updateNavigation(routeInfo.hash);
 
     // Guardia de Enrutamiento (RBAC)
@@ -594,14 +818,16 @@ export const Layout = {
         <a class="mvp-shortcut" href="#/respaldo"><span>💾</span>Copia de Respaldo</a>
       `;
     } else if (role.id === 'DOCENTE') {
-      roleTitle = 'Aula Virtual y Registros — Docente de Especialidad';
-      roleSub = `${escapeHtml(institution.nombre)} · Docente: ${escapeHtml(role.userName)}`;
+      const activeGroup = TeacherContextService.getActiveGroupInfo();
+      const activeProg = TeacherContextService.getActiveProgram();
+      roleTitle = `Aula Virtual y Registros — ${activeProg.nombre}`;
+      roleSub = `${escapeHtml(institution.nombre)} · Docente: ${escapeHtml(role.userName)} · Grupo Asignado: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})`;
       shortcutsHtml = `
         <a class="mvp-shortcut" href="#/documentos"><span>📝</span>Control de Asistencia (Sesiones 1-40)</a>
         <a class="mvp-shortcut" href="#/documentos"><span>📊</span>Registro Auxiliar de Calificaciones</a>
         <a class="mvp-shortcut" href="#/documentos"><span>📁</span>Portada de Carpeta Docente</a>
+        <a class="mvp-shortcut" href="#/estudiantes"><span>👥</span>Mis Alumnos Matriculados (${activeGroup.count || 'Aula'})</a>
         <a class="mvp-shortcut" href="#/grupos"><span>🗂️</span>Mis Grupos Asignados</a>
-        <a class="mvp-shortcut" href="#/estudiantes"><span>👥</span>Mis Alumnos Matriculados</a>
       `;
     }
 

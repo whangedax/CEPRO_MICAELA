@@ -700,17 +700,11 @@ export class DocumentsView {
           </div>
           <div class="d-flex align-items-center gap-2">
             ${currentRole.id === 'DOCENTE' ? `
-              <select id="doc-teacher-classroom-select" class="form-select form-select-sm" style="font-size: 0.82rem; padding: 0.35rem 0.65rem; border-radius: 8px; border: 1.5px solid #3b82f6; font-weight: 700; color: #1e293b;" title="Cambiar Aula / Grupo">
-                ${TeacherContextService.getGroupsForProgram().map(g => `
-                  <option value="${g.grupoCode}" ${g.grupoCode === TeacherContextService.getActiveGroupCode() ? 'selected' : ''}>👥 ${escapeHtml(g.grupoCode)} · ${escapeHtml(g.turno || g.modalidad || '')} (${g.count} est.)</option>
-                `).join('')}
-              </select>
-              <select id="doc-teacher-program-select" class="form-select form-select-sm" style="font-size: 0.82rem; padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 600; color: #334155;" title="Cambiar Especialidad Asignada">
-                ${TeacherContextService.getPrograms().map(p => `
-                  <option value="${p.id}" ${p.id === TeacherContextService.getActiveProgramId() ? 'selected' : ''}>📚 ${escapeHtml(p.nombre)}</option>
-                `).join('')}
-              </select>
-              <button type="button" id="doc-export-notas-sync-btn" class="btn btn-outline-primary btn-sm fw-bold px-2.5 py-1" style="font-size: 0.8rem; border-radius: 8px;" title="Exportar mis notas y asistencias a memoria USB para entregar a Secretaría">
+              <button type="button" id="doc-teacher-switch-classroom-btn" class="btn btn-outline-primary btn-sm fw-bold" style="font-size: 0.82rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.75rem;" title="Conmutar Carrera o Aula Pedagógica">
+                <span>👥 Aula: <strong>${escapeHtml(TeacherContextService.getActiveGroupCode())}</strong></span>
+                <span class="badge" style="background:#ede9fe; color:#6b21a8; font-size:0.75rem;">Cambiar ▾</span>
+              </button>
+              <button type="button" id="doc-export-notas-sync-btn" class="btn btn-primary btn-sm fw-bold px-2.5 py-1" style="font-size: 0.8rem; border-radius: 8px;" title="Exportar mis notas y asistencias a memoria USB para entregar a Secretaría">
                 📦 Exportar Notas (USB)
               </button>
             ` : `
@@ -2370,21 +2364,15 @@ export class DocumentsView {
     if (searchInput) searchInput.oninput = async event => this._searchEnrollments(container, event.target.value);
     if (generateButton) generateButton.onclick = async () => this._generateSelectedDocument(container);
 
-    const teacherClassroomSelect = container.querySelector('#doc-teacher-classroom-select');
-    if (teacherClassroomSelect) {
-      teacherClassroomSelect.onchange = async () => {
-        TeacherContextService.setActiveGroupCode(teacherClassroomSelect.value);
-        this.selectedGroupId = null;
-        await this.render(container);
-      };
-    }
-
-    const teacherProgSelect = container.querySelector('#doc-teacher-program-select');
-    if (teacherProgSelect) {
-      teacherProgSelect.onchange = async () => {
-        TeacherContextService.setActiveProgramId(teacherProgSelect.value);
-        this.selectedGroupId = null;
-        await this.render(container);
+    const teacherSwitchBtn = container.querySelector('#doc-teacher-switch-classroom-btn');
+    if (teacherSwitchBtn) {
+      teacherSwitchBtn.onclick = () => {
+        const navBtn = document.getElementById('btn-switch-classroom');
+        if (navBtn) {
+          navBtn.click();
+        } else {
+          document.dispatchEvent(new CustomEvent('cetpro:open-classroom-modal'));
+        }
       };
     }
 
