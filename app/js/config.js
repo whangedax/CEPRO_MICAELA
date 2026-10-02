@@ -44,6 +44,7 @@ export const CONFIG = {
     '#/documentos': { title: 'Documentos', id: 'documentos', icon: 'file-text' },
     '#/incidencias': { title: 'Incidencias', id: 'incidencias', icon: 'alert-triangle' },
     '#/respaldo': { title: 'Respaldo', id: 'respaldo', icon: 'database' },
+    '#/configuracion-docente': { title: 'Configuración Pedagógica', id: 'configuracion-docente', icon: 'settings' },
     '#/configuracion': { title: 'Configuración', id: 'configuracion', icon: 'settings' }
   }
 };

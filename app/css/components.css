@@ -1159,6 +1159,27 @@
   color: #4f46e5;
 }
 
+.shortcut-btn--teal {
+  border-left-color: #0d9488;
+}
+.shortcut-btn--teal:hover {
+  border-color: #99f6e4;
+  border-left-color: #0d9488;
+  background: #f0fdfa;
+}
+.shortcut-btn--teal .shortcut-btn-icon {
+  background: #ccfbf1;
+  border-color: #99f6e4;
+  color: #0f766e;
+}
+.shortcut-btn--teal .shortcut-btn-badge {
+  background: #ccfbf1;
+  color: #115e59;
+}
+.shortcut-btn--teal .shortcut-btn-action {
+  color: #0d9488;
+}
+
 /* ========================================================
    Modales Interactivos Pedagógicos (Asistencia y Evaluación)
    ======================================================== */

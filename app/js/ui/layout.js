@@ -40,6 +40,7 @@ import { AuthService, ROLES } from '../services/auth-service.js';
 import { TeacherContextService } from '../services/teacher-context-service.js';
 import { LoginView } from './login-view.js';
 import { TeacherWorkspacesView } from './teacher-workspaces-view.js';
+import { TeacherConfigView } from './teacher-config-view.js';
 
 const stagingService = new StagingService();
 const academicReadinessService = new AcademicReadinessService();
@@ -500,6 +501,7 @@ export const Layout = {
           <a href="#/asistencia" class="nav-link"><span class="nav-icon">📝</span><span>CONTROL DE ASISTENCIA</span></a>
           <a href="#/evaluacion" class="nav-link"><span class="nav-icon">📊</span><span>REGISTRO DE NOTAS</span></a>
           <a href="#/portada" class="nav-link"><span class="nav-icon">📁</span><span>PORTADA DOCENTE</span></a>
+          <a href="#/configuracion-docente" class="nav-link"><span class="nav-icon">⚙️</span><span>CONFIGURACIÓN DE CARPETA</span></a>
         `;
         if (docLink && docLink.parentNode) {
           docLink.parentNode.insertBefore(teacherLinksContainer, docLink);
@@ -751,9 +753,18 @@ export const Layout = {
       case 'respaldo':
         container.innerHTML = this.renderRespaldoView();
         break;
-      case 'configuracion':
-        await this.renderConfiguracionView(container);
+      case 'configuracion-docente':
+        await new TeacherConfigView().render(container);
         break;
+      case 'configuracion': {
+        const role = AuthService.getCurrentRole();
+        if (role.id === 'DOCENTE') {
+          await new TeacherConfigView().render(container);
+        } else {
+          await this.renderConfiguracionView(container);
+        }
+        break;
+      }
       default:
         await this.renderInicioView(container);
     }
@@ -979,6 +990,20 @@ export const Layout = {
           </div>
           <div class="shortcut-btn-footer">
             <span class="shortcut-btn-action">Ver Malla Oficial <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--teal" href="#/configuracion-docente" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">⚙️</div>
+            <span class="shortcut-btn-badge">Parámetros</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Configuración de Carpeta</strong>
+            <p class="shortcut-btn-desc">Personalice datos del docente, carátula institucional y capacidades/indicadores por unidad didáctica.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Configurar Plantillas <span class="shortcut-btn-arrow">→</span></span>
           </div>
         </a>
       `;

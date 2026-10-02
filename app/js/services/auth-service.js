@@ -77,7 +77,7 @@ export const ROLES = Object.freeze({
     description: 'Control de asistencia pedagógica, evaluación continua y carpeta docente.',
     allowedRoutes: [
       '#/login', '#/inicio', '#/estudiantes', '#/grupos', '#/programas', '#/documentos',
-      '#/asistencia', '#/evaluacion', '#/portada', '#/configuracion', '#/demo', '#/demo/evaluacion'
+      '#/asistencia', '#/evaluacion', '#/portada', '#/configuracion-docente', '#/configuracion', '#/demo', '#/demo/evaluacion'
     ],
     allowedStages: ['ETAPA_1', 'ETAPA_2'],
     allowedTemplates: [

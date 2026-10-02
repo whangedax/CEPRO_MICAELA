@@ -1068,11 +1068,11 @@ export class PdfTemplateEngine {
     const uni = payload.unit || payload.unidad || {};
     const rfs = payload.resolvedFieldSet || {};
 
-    const programName = sanitize(rfs['program.name']?.value ?? prog.nombre ?? prog.name);
-    const periodName = sanitize(rfs['period.name']?.value ?? per.nombre ?? per.name);
-    const moduleName = sanitize(rfs['module.name']?.value ?? mod.nombre ?? mod.name);
-    const unitName = sanitize(rfs['curriculum.unit.name']?.value ?? uni.nombre ?? uni.name);
-    const institutionName = sanitize(rfs['institution.name']?.value ?? inst.nombre ?? inst.name);
+    const programName = sanitize(rfs['program.name']?.value ?? rfs['program.name'] ?? prog.nombre ?? prog.name);
+    const periodName = sanitize(rfs['period.name']?.value ?? rfs['period.name'] ?? per.nombre ?? per.name);
+    const moduleName = sanitize(rfs['module.name']?.value ?? rfs['module.name'] ?? mod.nombre ?? mod.name);
+    const unitName = sanitize(rfs['curriculum.unit.name']?.value ?? rfs['curriculum.unit.name'] ?? uni.nombre ?? uni.name);
+    const institutionName = sanitize(rfs['institution.name']?.value ?? rfs['institution.name'] ?? inst.nombre ?? inst.name);
     const turno = sanitize(grp.turno ?? payload.turno);
     const ciclo = sanitize(grp.ciclo ?? payload.ciclo);
     const seccion = sanitize(grp.seccion ?? payload.seccion);
@@ -1327,12 +1327,12 @@ export class PdfTemplateEngine {
     const grp = payload.group || payload.grupo || {};
     const rfs = payload.resolvedFieldSet || {};
 
-    const programName = sanitize(rfs['program.name']?.value ?? prog.nombre ?? prog.name);
-    const periodName = sanitize(rfs['period.name']?.value ?? per.nombre ?? per.name);
-    const moduleName = sanitize(rfs['module.name']?.value ?? mod.nombre ?? mod.name);
-    const unitName = sanitize(rfs['curriculum.unit.name']?.value ?? uni.nombre ?? uni.name);
-    const institutionName = sanitize(rfs['institution.name']?.value ?? inst.nombre ?? inst.name);
-    const capacityText = sanitize(rfs['curriculum.unit.capacity']?.value ?? uni.capacidad ?? payload.capacidad);
+    const programName = sanitize(rfs['program.name']?.value ?? rfs['program.name'] ?? prog.nombre ?? prog.name);
+    const periodName = sanitize(rfs['period.name']?.value ?? rfs['period.name'] ?? per.nombre ?? per.name);
+    const moduleName = sanitize(rfs['module.name']?.value ?? rfs['module.name'] ?? mod.nombre ?? mod.name);
+    const unitName = sanitize(rfs['curriculum.unit.name']?.value ?? rfs['curriculum.unit.name'] ?? uni.nombre ?? uni.name);
+    const institutionName = sanitize(rfs['institution.name']?.value ?? rfs['institution.name'] ?? inst.nombre ?? inst.name);
+    const capacityText = sanitize(rfs['curriculum.unit.capacity']?.value ?? rfs['curriculum.unit.capacity'] ?? uni.capacidad ?? payload.capacidad);
     const turno = sanitize(grp.turno ?? payload.turno);
     const ciclo = sanitize(grp.ciclo ?? payload.ciclo);
     const seccion = sanitize(grp.seccion ?? payload.seccion);

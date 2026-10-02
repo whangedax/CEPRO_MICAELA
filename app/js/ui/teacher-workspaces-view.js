@@ -12,11 +12,13 @@ import { AuthService } from '../services/auth-service.js';
 import { TeacherContextService } from '../services/teacher-context-service.js';
 import { DocumentsView } from './documents-view.js';
 import { SyncPackageService } from '../services/sync-package-service.js';
+import { TeacherConfigService } from '../services/teacher-config-service.js';
 import { Layout } from './layout.js';
 
 export class TeacherWorkspacesView {
   constructor() {
     this.docView = new DocumentsView();
+    this.configService = new TeacherConfigService();
     this.currentMode = 'asistencia'; // 'asistencia' | 'evaluacion' | 'portada'
     this.selectedAsistenciaUD = 1;
     this.selectedEvaluacionUD = 1;
@@ -114,6 +116,9 @@ export class TeacherWorkspacesView {
               </p>
             </div>
             <div class="d-flex align-items-center gap-2">
+              <a href="#/configuracion-docente" class="btn btn-outline-light btn-sm fw-bold px-3 py-2" style="border-radius: 8px;">
+                ⚙️ Configurar Plantilla
+              </a>
               <button type="button" class="btn btn-light btn-sm fw-bold px-3 py-2" id="tw-btn-switch-classroom" style="border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); color: #1e3a8a;">
                 🏫 Cambiar Carrera o Aula
               </button>
@@ -289,6 +294,9 @@ export class TeacherWorkspacesView {
               </p>
             </div>
             <div class="d-flex align-items-center gap-2">
+              <a href="#/configuracion-docente" class="btn btn-outline-light btn-sm fw-bold px-3 py-2" style="border-radius: 8px;">
+                ⚙️ Configurar Plantilla
+              </a>
               <button type="button" class="btn btn-light btn-sm fw-bold px-3 py-2" id="tw-btn-switch-classroom" style="border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); color: #065f46;">
                 🏫 Cambiar Carrera o Aula
               </button>
@@ -442,6 +450,8 @@ export class TeacherWorkspacesView {
     const activeProg = TeacherContextService.getActiveProgram();
     const activeGroup = TeacherContextService.getActiveGroupInfo();
     const studentCount = activeGroup.count || 0;
+    const teacherProfile = this.configService.getProfile();
+    const groupConfig = this.configService.getGroupConfig(activeGroup.grupoCode, activeProg.id);
 
     this.docView.selectedTemplateId = 'TMPL-04';
 
@@ -467,6 +477,9 @@ export class TeacherWorkspacesView {
               </p>
             </div>
             <div class="d-flex align-items-center gap-2">
+              <a href="#/configuracion-docente" class="btn btn-outline-light btn-sm fw-bold px-3 py-2" style="border-radius: 8px;">
+                ⚙️ Configurar Plantilla
+              </a>
               <button type="button" class="btn btn-light btn-sm fw-bold px-3 py-2" id="tw-btn-switch-classroom" style="border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); color: #92400e;">
                 🏫 Cambiar Carrera o Aula
               </button>
@@ -481,11 +494,13 @@ export class TeacherWorkspacesView {
           </h4>
           <div class="row g-2" style="font-size: 0.88rem; color: #334155;">
             <div class="col-md-6"><strong>Institución Educativa:</strong> CETPRO Público "Micaela Bastidas Puyucawa"</div>
-            <div class="col-md-6"><strong>Docente Responsable:</strong> ${escapeHtml(role.userName)}</div>
+            <div class="col-md-6"><strong>Docente Responsable:</strong> ${escapeHtml(teacherProfile.nombreDocente)}</div>
             <div class="col-md-6"><strong>Especialidad / Carrera:</strong> ${escapeHtml(activeProg.nombre)}</div>
-            <div class="col-md-6"><strong>Aula / Grupo:</strong> ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || 'Regular')})</div>
-            <div class="col-md-6"><strong>Módulo Oficial:</strong> Módulo Oficial de Formación Profesional</div>
+            <div class="col-md-6"><strong>Aula / Grupo:</strong> ${escapeHtml(activeGroup.grupoCode)} (Turno: ${escapeHtml(groupConfig.turno || activeGroup.turno || 'Regular')} · Sección: ${escapeHtml(groupConfig.seccion || 'Única')})</div>
+            <div class="col-md-6"><strong>Módulo Oficial:</strong> ${escapeHtml(groupConfig.nombreModulo)}</div>
             <div class="col-md-6"><strong>Alumnos Matriculados:</strong> ${studentCount} estudiantes</div>
+            <div class="col-md-6"><strong>DRE / UGEL:</strong> ${escapeHtml(groupConfig.dre)} · ${escapeHtml(groupConfig.ugel)}</div>
+            <div class="col-md-6"><strong>Duración y Créditos:</strong> ${escapeHtml(groupConfig.horasModulo)} · ${escapeHtml(groupConfig.creditosModulo)}</div>
           </div>
         </div>
 
