@@ -39,6 +39,7 @@ import { StagingRecoveryService } from '../services/staging-recovery-service.js'
 import { AuthService, ROLES } from '../services/auth-service.js';
 import { TeacherContextService } from '../services/teacher-context-service.js';
 import { LoginView } from './login-view.js';
+import { TeacherWorkspacesView } from './teacher-workspaces-view.js';
 
 const stagingService = new StagingService();
 const academicReadinessService = new AcademicReadinessService();
@@ -486,6 +487,31 @@ export const Layout = {
       }
     });
 
+    // Gestión de enlaces pedagógicos especializados para el rol DOCENTE
+    const docLink = document.querySelector('#sidebar a[href="#/documentos"]');
+    let teacherLinksContainer = document.getElementById('sidebar-teacher-custom-nav');
+
+    if (role.id === 'DOCENTE') {
+      if (docLink) docLink.style.display = 'none';
+      if (!teacherLinksContainer) {
+        teacherLinksContainer = document.createElement('div');
+        teacherLinksContainer.id = 'sidebar-teacher-custom-nav';
+        teacherLinksContainer.innerHTML = `
+          <a href="#/asistencia" class="nav-link"><span class="nav-icon">📝</span><span>CONTROL DE ASISTENCIA</span></a>
+          <a href="#/evaluacion" class="nav-link"><span class="nav-icon">📊</span><span>REGISTRO DE NOTAS</span></a>
+          <a href="#/portada" class="nav-link"><span class="nav-icon">📁</span><span>PORTADA DOCENTE</span></a>
+        `;
+        if (docLink && docLink.parentNode) {
+          docLink.parentNode.insertBefore(teacherLinksContainer, docLink);
+        }
+      } else {
+        teacherLinksContainer.style.display = '';
+      }
+    } else {
+      if (docLink) docLink.style.display = '';
+      if (teacherLinksContainer) teacherLinksContainer.style.display = 'none';
+    }
+
     // Etiquetas pedagógicas contextuales para el rol DOCENTE
     const gruposLink = document.querySelector('#sidebar a[href="#/grupos"] span:last-child');
     if (gruposLink) {
@@ -685,11 +711,22 @@ export const Layout = {
       case 'registro':
         await this.renderRegistroView(container);
         break;
+      case 'asistencia':
+        await this.renderAsistenciaDocenteView(container);
+        break;
       case 'evaluacion': {
-        const view = new EvaluationView();
-        await view.render(container);
+        const role = AuthService.getCurrentRole();
+        if (role.id === 'DOCENTE') {
+          await this.renderEvaluacionDocenteView(container);
+        } else {
+          const view = new EvaluationView();
+          await view.render(container);
+        }
         break;
       }
+      case 'portada':
+        await this.renderPortadaDocenteView(container);
+        break;
       case 'efsrt':
         {
           const view = new EfsrtView();
@@ -858,7 +895,7 @@ export const Layout = {
       roleTitle = `Aula Pedagógica — ${activeProg.nombre}`;
       roleSub = `${escapeHtml(institution.nombre)} · Docente: ${escapeHtml(role.userName)} · Aula: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})`;
       shortcutsHtml = `
-        <a class="shortcut-btn-card shortcut-btn--blue" href="#/documentos" role="button">
+        <a class="shortcut-btn-card shortcut-btn--blue" href="#/asistencia" role="button">
           <div class="shortcut-btn-header">
             <div class="shortcut-btn-icon">📝</div>
             <span class="shortcut-btn-badge">TMPL-05..10</span>
@@ -872,7 +909,7 @@ export const Layout = {
           </div>
         </a>
 
-        <a class="shortcut-btn-card shortcut-btn--green" href="#/documentos" role="button">
+        <a class="shortcut-btn-card shortcut-btn--green" href="#/evaluacion" role="button">
           <div class="shortcut-btn-header">
             <div class="shortcut-btn-icon">📊</div>
             <span class="shortcut-btn-badge">TMPL-11..17</span>
@@ -886,7 +923,7 @@ export const Layout = {
           </div>
         </a>
 
-        <a class="shortcut-btn-card shortcut-btn--amber" href="#/documentos" role="button">
+        <a class="shortcut-btn-card shortcut-btn--amber" href="#/portada" role="button">
           <div class="shortcut-btn-header">
             <div class="shortcut-btn-icon">📁</div>
             <span class="shortcut-btn-badge">TMPL-04</span>
@@ -1738,8 +1775,28 @@ export const Layout = {
   },
 
   async renderDocumentosView(container) {
+    const role = AuthService.getCurrentRole();
+    if (role.id === 'DOCENTE') {
+      await this.renderAsistenciaDocenteView(container);
+      return;
+    }
     const view = new DocumentsView();
     await view.render(container);
+  },
+
+  async renderAsistenciaDocenteView(container) {
+    const view = new TeacherWorkspacesView();
+    await view.renderAttendance(container);
+  },
+
+  async renderEvaluacionDocenteView(container) {
+    const view = new TeacherWorkspacesView();
+    await view.renderEvaluation(container);
+  },
+
+  async renderPortadaDocenteView(container) {
+    const view = new TeacherWorkspacesView();
+    await view.renderPortada(container);
   },
 
   async renderIncidenciasView(container) {
