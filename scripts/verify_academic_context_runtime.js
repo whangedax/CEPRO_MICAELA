@@ -31,7 +31,7 @@ async function run() {
     server = fork(require.resolve('./dev-server.js'), [], { silent: true });
     await waitForServer();
   }
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   const page = await browser.newPage();
   const pageErrors = [];
   const externalRequests = [];
@@ -312,3 +312,4 @@ if (require.main === module) run().then(result => {
   if (result.failed) process.exitCode = 1;
 }).catch(error => { console.error(error); process.exitCode = 1; });
 module.exports = { run };
+

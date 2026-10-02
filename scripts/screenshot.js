@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const path = require('path');
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: 'new', args: ['--no-sandbox'] });
   const page = await browser.newPage();
   
   const artifactDir = 'C:\\\\Users\\\\whangedax\\\\.gemini\\\\antigravity\\\\brain\\\\3d692a52-da89-4158-a53b-05a0109624c6';
@@ -47,3 +47,4 @@ const path = require('path');
   await browser.close();
   console.log('Screenshots generated');
 })();
+

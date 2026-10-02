@@ -90,7 +90,7 @@ async function run() {
 
   const edgeProfile = path.join(ROOT, 'tmp', 'edge-profiles', `mvp-efsrt18-${Date.now()}`);
   fs.mkdirSync(edgeProfile, { recursive: true });
-  const browser = await puppeteer.launch({ headless: true, executablePath: EDGE, userDataDir: edgeProfile });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true, executablePath: EDGE, userDataDir: edgeProfile });
 
   const errors = [];
   const networkRequests = [];
@@ -107,7 +107,8 @@ async function run() {
     });
 
     // 5. Invariantes de la base candidata
-    await page.goto(BASE, { waitUntil: 'networkidle0' });
+    await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => document.querySelector('#db-status-badge')?.textContent.includes('Datos locales disponibles'));
     const invariants = await page.evaluate(async () => {
       const openDb = name => new Promise((resolve, reject) => {
         const req = indexedDB.open(name);
@@ -131,7 +132,7 @@ async function run() {
     check('T-EFSRT-18-05-CANDIDATE-INVARIANTS', invOk, `Invariantes candidata: ${invariants.students} est, ${invariants.enrollments} mat, ${invariants.groups} grp, ${invariants.periods} per`);
 
     // 6. Navegación a EFSRT (#/efsrt) y presencia de botón
-    await page.goto(`${BASE}#/efsrt`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE}#/efsrt`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#btn-generate-tmpl18-candidate', { timeout: 10000 });
     const hasTmpl18Btn = await page.evaluate(() => Boolean(document.querySelector('#btn-generate-tmpl18-candidate')));
     check('T-EFSRT-18-06-UI-BUTTON', hasTmpl18Btn, 'Botón #btn-generate-tmpl18-candidate presente en vista #/efsrt');
@@ -341,7 +342,7 @@ async function run() {
   if (failCount > 0) process.exit(1);
 }
 
-run().catch(err => {
-  console.error('Error durante la ejecución de la suite:', err);
-  process.exit(1);
-});
+module.exports = { name: 'MVP_EFSRT_GRID_18', run };
+
+
+

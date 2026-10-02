@@ -30,8 +30,7 @@ async function saveScreenshot(page, filename, options = {}) {
 async function run() {
   console.log('Iniciando captura de evidencias UX para Informe 2...');
 
-  const browser = await puppeteer.launch({
-    headless: true,
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true,
     executablePath: 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
@@ -150,3 +149,5 @@ run().catch(err => {
   console.error('ERROR EN CAPTURAS:', err);
   process.exit(1);
 });
+
+

@@ -89,7 +89,7 @@ async function run() {
 
   const edgeProfile = path.join(ROOT, 'tmp', 'edge-profiles', `mvp-tmpl04-${Date.now()}`);
   fs.mkdirSync(edgeProfile, { recursive: true });
-  const browser = await puppeteer.launch({ headless: true, executablePath: EDGE, userDataDir: edgeProfile });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true, executablePath: EDGE, userDataDir: edgeProfile });
 
   const errors = [];
   const networkRequests = [];
@@ -105,7 +105,7 @@ async function run() {
       networkRequests.push(req.url());
     });
 
-    await page.goto(BASE, { waitUntil: 'networkidle0' });
+    await page.goto(BASE, { waitUntil: 'domcontentloaded' });
 
     // 5. Verificar aislamiento de CETPRO_DB en puerto 8080
     const touched8080 = networkRequests.some(url => url.includes(':8080'));
@@ -216,7 +216,7 @@ async function run() {
     check('T-TMPL04-12-NO-SPURIOUS-STRINGS', !spuriousA && !spuriousB, 'Ausencia total de literales "null", "undefined" o "PENDIENTE" en el PDF generado');
 
     // 9. Integración en UI: Navegación a Nóminas y generación de Portada
-    await page.goto(`${BASE}#/nominas`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE}#/nominas`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#roster-program', { timeout: 10000 });
 
     // Seleccionar programa
@@ -294,7 +294,10 @@ async function run() {
   if (!allPassed) process.exit(1);
 }
 
-run().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+
+
+module.exports = { name: 'MVP_TMPL04_PORTADA', run };
+
+
+
+

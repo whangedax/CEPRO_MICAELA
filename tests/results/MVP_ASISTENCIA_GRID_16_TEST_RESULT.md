@@ -1,6 +1,6 @@
 # Reporte de Resultados de Pruebas — Gate MVP-ASISTENCIA-GRID-CALIBRATION-16 (Piloto TMPL-05)
 
-Fecha: 2026-09-21
+Fecha: 2026-09-28
 Entorno: Microsoft Edge Headless (`Edg/153.0.4234.32`)
 Host: `http://127.0.0.1:8081/`
 DB Evaluada: `CETPRO_V2_CANDIDATE` y `CETPRO_V2_DEMO` (aislamiento estricto de `CETPRO_DB` en puerto 8080)
@@ -32,7 +32,7 @@ DB Evaluada: `CETPRO_V2_CANDIDATE` y `CETPRO_V2_DEMO` (aislamiento estricto de `
 | `T-ATT-16-10-TOTALS-COLUMNS` | Totales operativos presentes: 80 celdas de asistencia estampadas | **PASS** | Totales operativos presentes: 80 celdas de asistencia estampadas |
 | `T-ATT-16-11-GUARD-B003-PERCENT-BLANK` | Guard B-003 cumplido: 0 celdas de porcentaje en filas (estrictamente vacías) | **PASS** | Guard B-003 cumplido: 0 celdas de porcentaje en filas (estrictamente vacías) |
 | `T-ATT-16-12-GUARD-B001-ORDER7-REJECTION` | Guard B-001 verificado: orden 7 rechazado con TEMPLATE_NOT_AVAILABLE | **PASS** | Guard B-001 verificado: orden 7 rechazado con TEMPLATE_NOT_AVAILABLE |
-| `T-ATT-16-13-MAX-CAPACITY-44-SESSIONS` | Capacidad máxima de 44 sesiones renderizada correctamente (29965 bytes) | **PASS** | Capacidad máxima de 44 sesiones renderizada correctamente (29965 bytes) |
+| `T-ATT-16-13-MAX-CAPACITY-44-SESSIONS` | Capacidad máxima de 44 sesiones renderizada correctamente (29966 bytes) | **PASS** | Capacidad máxima de 44 sesiones renderizada correctamente (29966 bytes) |
 | `T-ATT-16-14-SESSION-CAPACITY-EXCEEDED` | Rechazo fail-closed: 45 sesiones produce SESSION_CAPACITY_EXCEEDED | **PASS** | Rechazo fail-closed: 45 sesiones produce SESSION_CAPACITY_EXCEEDED |
 | `T-ATT-16-15-ROW-CAPACITY-EXCEEDED` | Rechazo fail-closed: 41 filas produce CAPACITY_EXCEEDED | **PASS** | Rechazo fail-closed: 41 filas produce CAPACITY_EXCEEDED |
 | `T-ATT-16-16-WATERMARKS-AND-CLEAN-CELLS` | Marcas de agua aplicadas; cero literales espurios (null/undefined/PENDIENTE) | **PASS** | Marcas de agua aplicadas; cero literales espurios (null/undefined/PENDIENTE) |

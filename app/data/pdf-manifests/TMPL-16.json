@@ -202,7 +202,7 @@
     },
     {
       "canonicalKey": "evaluation.indicatorScore",
-      "geometryStatus": "VERIFIED",
+      "geometryStatus": "REVIEW_REQUIRED",
       "styleProfile": "TABLE_NUMBER",
       "overflowPolicy": "AUTOFIT_OR_FAIL"
     },

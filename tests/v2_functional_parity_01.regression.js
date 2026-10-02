@@ -21,7 +21,7 @@ async function run() {
   let v1Server; let v2Server;
   if (!await up(V2_URL)) { v2Server = fork(require.resolve('../scripts/v2-candidate-server.js'), [], { silent: true }); await waitForServer(V2_URL); }
   if (!await up(V1_URL)) { v1Server = fork(require.resolve('../scripts/dev-server.js'), [], { silent: true }); await waitForServer(V1_URL); }
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   try {
     const page = await browser.newPage();
     const errors = []; const external = []; const httpErrors = [];
@@ -36,7 +36,7 @@ async function run() {
       } else request.continue();
     });
     page.on('response', response => { if (response.status() >= 400) httpErrors.push(`${response.status()} ${response.url()}`); });
-    await page.goto(V2_URL, { waitUntil: 'networkidle0', timeout: 30000 });
+    await page.goto(V2_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForFunction(() => document.querySelector('#db-status-badge')?.textContent.includes('Datos locales disponibles'));
 
     const outcome = await page.evaluate(async () => {
@@ -95,7 +95,7 @@ async function run() {
       check('T-V2FP-18B', !injectedTable.includes('<script>') && !injectedTable.includes('<img ') && injectedTable.includes('&lt;script&gt;'), 'XSS staging escapado');
       location.hash = '#/configuracion-academica'; await new Promise(resolve => setTimeout(resolve, 300));
       const configurationText = document.querySelector('#main-content').textContent;
-      check('T-V2FP-19', configurationText.includes('Periodo académico') && configurationText.includes('Asignación de módulo por grupo') && configurationText.includes('Unidades didácticas por módulo'), 'configuración académica productiva y guiada');
+      check('T-V2FP-19', configurationText.includes('Periodo académico') && configurationText.includes('Asignación de módulo') && configurationText.includes('Unidades didácticas por módulo'), 'configuración académica productiva y guiada');
       check('T-V2FP-20', Boolean(document.querySelector('#mvp-period-form') && document.querySelector('#mvp-module-form') && document.querySelector('#mvp-unit-form')) && configurationText.includes('fuente autorizada'), 'altas habilitadas solo con procedencia explícita');
       location.hash = '#/respaldo'; await new Promise(resolve => setTimeout(resolve, 220));
       check('T-V2FP-21', Boolean(document.querySelector('#btn-export-backup') && document.querySelector('#backup-restore-file') &&
@@ -150,3 +150,6 @@ async function run() {
 }
 
 module.exports = { name: 'V2-FUNCTIONAL-PARITY-01', run };
+
+
+

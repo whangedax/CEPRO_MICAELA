@@ -18,10 +18,10 @@ async function run() {
     for (let i = 0; i < 40 && !await serverUp(); i++) await new Promise(resolve => setTimeout(resolve, 250));
     if (!await serverUp()) throw new Error('Servidor local no disponible.');
   }
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   try {
     const page = await browser.newPage();
-    await page.goto(URL, { waitUntil: 'networkidle0' });
+    await page.goto(URL, { waitUntil: 'domcontentloaded' });
     const outcome = await page.evaluate(async () => {
       const { initDB } = await import('/app/js/db/database.js');
       const { StorageService, EXPECTED_STORE_NAMES, canonicalize, MAX_BACKUP_BYTES } = await import('/app/js/services/storage-service.js');
@@ -182,3 +182,6 @@ async function run() {
 }
 
 module.exports = { name: 'BACKUP-HARDENING-01', run };
+
+
+

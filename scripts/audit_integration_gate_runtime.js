@@ -40,7 +40,7 @@ async function countStores(page) {
 
 async function run() {
   const productive = await buildProductiveData();
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   const page = await browser.newPage();
   const consoleErrors = [];
   const pageErrors = [];
@@ -232,3 +232,4 @@ async function run() {
 }
 
 run().catch(error => { console.error(error); process.exitCode = 1; });
+

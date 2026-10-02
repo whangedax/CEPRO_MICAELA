@@ -88,7 +88,7 @@ async function run() {
 
   const edgeProfile = path.join(ROOT, 'tmp', 'edge-profiles', `mvp-nomina-headers-13-${Date.now()}`);
   fs.mkdirSync(edgeProfile, { recursive: true });
-  const browser = await puppeteer.launch({ headless: true, executablePath: EDGE, userDataDir: edgeProfile });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true, executablePath: EDGE, userDataDir: edgeProfile });
 
   const errors = [];
   const external = [];
@@ -115,7 +115,7 @@ async function run() {
       } catch { /* blob/data */ }
     });
 
-    await page.goto(`${BASE}#/demo`, { waitUntil: 'networkidle0', timeout: 60000 });
+    await page.goto(`${BASE}#/demo`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     check('T-MNHB13-04-EDGE-HEADLESS', /Edg/i.test(await browser.version()), await browser.version());
 
     // Inicializar y chequear baseline en DEMO
@@ -373,7 +373,7 @@ async function run() {
       `Valores guardados con procedencia y auditoría (Turno=${casoD.groupTurno}, Ciclo=${casoD.groupCiclo}, Seccion=${casoD.groupSeccion}, ConfirmedBy=${casoD.groupSources?.turno?.confirmedBy}, Audit=${casoD.auditFound})`);
 
     // UI test en #/configuracion-academica
-    await page.goto(`${BASE}#/configuracion-academica`, { waitUntil: 'networkidle0', timeout: 30000 });
+    await page.goto(`${BASE}#/configuracion-academica`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     const formBElements = await page.evaluate(() => {
       const turnoSelect = document.querySelector('#mvp-module-turno');
       const cicloSelect = document.querySelector('#mvp-module-ciclo');
@@ -443,3 +443,6 @@ if (require.main === module) {
     process.exit(1);
   });
 }
+
+
+

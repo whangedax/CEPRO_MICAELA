@@ -83,7 +83,7 @@ async function run() {
   }
   const edgeProfile = path.join(ROOT, 'tmp', 'edge-profiles', `mvp-nomina-continuation-12-${Date.now()}`);
   fs.mkdirSync(edgeProfile, { recursive: true });
-  const browser = await puppeteer.launch({ headless: true, executablePath: EDGE, userDataDir: edgeProfile });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true, executablePath: EDGE, userDataDir: edgeProfile });
   const downloadDir = path.join(ROOT, 'tmp', 'downloads', `mvp-nomina-continuation-12-${Date.now()}`);
   fs.mkdirSync(downloadDir, { recursive: true });
   try {
@@ -109,7 +109,7 @@ async function run() {
         if (['http:', 'https:'].includes(url.protocol) && url.hostname !== '127.0.0.1') external.push(request.url());
       } catch { /* blob/data */ }
     });
-    await page.goto(`${BASE}#/demo`, { waitUntil: 'networkidle0', timeout: 60000 });
+    await page.goto(`${BASE}#/demo`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(() => document.querySelector('#candidate-runtime-banner')?.textContent.includes('MODO DEMOSTRACIÓN'));
     check('T-MNCP12-E-AUTOMATED-EDGE-HEADLESS', /Edg/i.test(await browser.version()), await browser.version());
 
@@ -341,3 +341,6 @@ if (require.main === module) run().then(result => {
   console.log(`MVP_NOMINA_CONTINUATION_PHYSICAL_12 ${result.passed}/${result.total}, failed=${result.failed}`);
   process.exit(result.failed ? 1 : 0);
 }).catch(error => { console.error(error); process.exit(1); });
+
+
+

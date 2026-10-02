@@ -27,7 +27,7 @@ async function chooseEnrollment(page, enrollmentId) {
 }
 async function run() {
   const sample = await buildCase();
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   const page = await browser.newPage();
   const jsErrors = [];
   page.on('pageerror', error => jsErrors.push(error.message));
@@ -147,3 +147,4 @@ async function run() {
   }
 }
 run().catch(error => { console.error(error); process.exitCode = 1; });
+

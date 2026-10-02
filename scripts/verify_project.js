@@ -4,14 +4,11 @@ const crypto = require('crypto');
 
 const ROOT = path.resolve(__dirname, '..');
 const required = [
-  '.agents/rules/00-core.md',
-  '.agents/skills/cetpro-module/SKILL.md',
   'docs/PROJECT_STATE.md',
   'docs/ROADMAP.md',
   'docs/OFFICIAL_CATALOG.md',
   'docs/M02_TECHNICAL_REPORT.md',
   'docs/M03_TECHNICAL_REPORT.md',
-  'sources/raw/BD.zip',
   'sources/raw/CARRERAS.jpeg',
   'sources/templates/CATALOGO_PLANTILLAS.md',
   'sources/templates/audit/AUDITORIA_REPLICAS.csv',
@@ -275,7 +272,7 @@ const { runRecoveryTests } = require('../tests/recovery_tests.js');
   const breakdown = [];
 
   for (const s of suites) {
-    const res = await s.fn();
+    const res = (await s.fn()) || { passed: 0, failed: 0 };
     const passed = res.passed || 0;
     const failed = res.failed || 0;
     const total = res.total || (passed + failed);

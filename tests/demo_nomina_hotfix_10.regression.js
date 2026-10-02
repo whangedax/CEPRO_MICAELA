@@ -34,6 +34,7 @@ async function inspectPdf(base64) {
 }
 
 async function run() {
+  await new Promise(r => setTimeout(r, 1000));
   const results = [];
   const check = (id, passed, detail = '') => {
     const row = { id, passed: Boolean(passed), detail };
@@ -50,21 +51,27 @@ async function run() {
 
   let server;
   if (!await up()) { server = fork(require.resolve('../scripts/v2-candidate-server.js'), [], { silent: true }); await waitServer(); }
-  const browser = await puppeteer.launch({ headless: true, executablePath: EDGE });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true, executablePath: EDGE });
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 1440, height: 900 });
     const errors = [];
     const external = [];
     page.on('pageerror', error => errors.push(error.message));
-    page.on('console', message => { if (message.type() === 'error') errors.push(`console: ${message.text()}`); });
+    page.on('console', message => { 
+      const text = message.text();
+      if (message.type() === 'error') {
+        console.error("CONSOLE ERROR DETECTED:", text);
+        errors.push(`console: ${text}`); 
+      }
+    });
     page.on('response', response => {
       try {
         const url = new URL(response.url());
         if (['http:', 'https:'].includes(url.protocol) && url.hostname !== '127.0.0.1') external.push(response.url());
       } catch { /* local */ }
     });
-    await page.goto(`${BASE}#/demo`, { waitUntil: 'networkidle0', timeout: 30000 });
+    await page.goto(`${BASE}#/demo`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     const browserIdentity = await browser.version();
     check('T-HOTFIX10-03-EDGE', /Edg/i.test(browserIdentity), browserIdentity);
     await page.waitForFunction(() => document.querySelector('#candidate-runtime-banner')?.textContent.includes('MODO DEMOSTRACIÓN'),
@@ -79,6 +86,7 @@ async function run() {
         const request = db.transaction(store, 'readonly').objectStore(store).count();
         request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
       });
+      await new Promise(r => setTimeout(r, 1000)); // wait for router enter() to finish
       await DemoRuntimeService.exit();
       const db = getDB();
       const hash = await V2CandidateStorageService.semanticHash(db);
@@ -220,3 +228,6 @@ if (require.main === module) run().then(result => {
   console.log(`DEMO_NOMINA_HOTFIX_10 ${result.passed}/${result.total}, failed=${result.failed}`);
   process.exit(result.failed ? 1 : 0);
 }).catch(error => { console.error(error); process.exit(1); });
+
+
+

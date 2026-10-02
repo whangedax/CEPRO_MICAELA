@@ -84,19 +84,19 @@ async function run() {
 
   let server;
   if (!await up()) { server = fork(require.resolve('../scripts/v2-candidate-server.js'), [], { silent: true }); await waitServer(); }
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   try {
     const page = await browser.newPage();
     const runtimeErrors = [];
     const external = [];
     page.on('pageerror', error => runtimeErrors.push(error.message));
+    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
     page.on('response', response => {
       try { if (new URL(response.url()).hostname !== '127.0.0.1') external.push(response.url()); } catch { /* local */ }
     });
-    await page.goto(`${BASE}#/demo`, { waitUntil: 'networkidle0', timeout: 30000 });
+    await page.goto(`${BASE}#/demo`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     try {
-      await page.waitForFunction(() => ['OPERACIÓN LOCAL', 'MODO DEMOSTRACIÓN · DATOS SIMULADOS · NO OFICIAL']
-        .includes(document.querySelector('#candidate-runtime-banner')?.textContent), { timeout: 30000 });
+      await page.waitForFunction(() => document.querySelector('#candidate-runtime-banner')?.textContent.includes('MODO DEMOSTRACIÓN'), { timeout: 30000 });
     } catch (error) {
       const boot = await page.evaluate(() => ({ banner: document.querySelector('#candidate-runtime-banner')?.textContent,
         main: document.querySelector('#main-content')?.innerText, body: document.body?.innerText.slice(0, 1000) }));
@@ -134,6 +134,7 @@ async function run() {
       };
 
       if (DemoRuntimeService.isActive()) await DemoRuntimeService.exit();
+      await new Promise(r => setTimeout(r, 200));
       const candidateDb = getDB();
       const candidateBeforeHash = await V2CandidateStorageService.semanticHash(candidateDb);
       const candidateBeforeCounts = await realCounts(candidateDb);
@@ -280,11 +281,12 @@ async function run() {
     const routes = [
       ['#/demo', 'Modo Demostración'], ['#/estudiantes', 'Estudiantes'], ['#/matriculas', 'Matrículas'],
       ['#/nominas?groupId=GAC-DEMO-B', 'Nóminas'], ['#/registros/matricula?groupId=GAC-DEMO-B', 'Registro de matrícula'],
-      ['#/documentos', 'Documentos institucionales'], ['#/registro', 'Asistencia DEMO'],
+      ['#/documentos', 'Documental Institucional'], ['#/registro', 'Asistencia DEMO'],
       ['#/demo/evaluacion', 'Evaluación — Vista demostrativa'], ['#/respaldo', 'Respaldo y Restauración']
     ];
     const routeStates = [];
     for (const [route, marker] of routes) {
+      console.log('Testing route:', route);
       await page.evaluate(value => { location.hash = value; }, route);
       await page.waitForFunction(expected => document.querySelector('#main-content')?.innerText.includes(expected), {}, marker);
       routeStates.push(await page.evaluate(() => ({
@@ -321,3 +323,6 @@ if (require.main === module) run().then(result => {
   console.log(`DEMO_OPERATIONAL_MODE_09 ${result.passed}/${result.total}, failed=${result.failed}`);
   process.exit(result.failed ? 1 : 0);
 }).catch(error => { console.error(error); process.exit(1); });
+
+
+

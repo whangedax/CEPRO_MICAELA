@@ -96,7 +96,7 @@ async function run() {
 
   const edgeProfile = path.join(ROOT, 'tmp', 'edge-profiles', `mvp-tmpl03-${Date.now()}`);
   fs.mkdirSync(edgeProfile, { recursive: true });
-  const browser = await puppeteer.launch({ headless: true, executablePath: EDGE, userDataDir: edgeProfile });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true, executablePath: EDGE, userDataDir: edgeProfile });
 
   const errors = [];
   const networkRequests = [];
@@ -114,7 +114,7 @@ async function run() {
       networkRequests.push(req.url());
     });
 
-    await page.goto(BASE, { waitUntil: 'networkidle0' });
+    await page.goto(BASE, { waitUntil: 'domcontentloaded' });
 
     // 5. Verificar aislamiento de CETPRO_DB en puerto 8080
     const touched8080 = networkRequests.some(url => url.includes(':8080'));
@@ -355,7 +355,7 @@ async function run() {
       'Cero cadenas espurias: Ausencia total de "null", "undefined" o "PENDIENTE"');
 
     // 12. Integración en UI: Navegación a Registro de Matrícula y generación TMPL-03
-    await page.goto(`${BASE}#/registros/matricula`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE}#/registros/matricula`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#register-program', { timeout: 10000 });
 
     // Seleccionar programa
@@ -434,7 +434,10 @@ async function run() {
   if (!allPassed) process.exit(1);
 }
 
-run().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+
+
+module.exports = { name: 'MVP_TMPL03_REGISTRO', run };
+
+
+
+

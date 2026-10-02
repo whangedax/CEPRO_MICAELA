@@ -383,5 +383,5 @@
   ],
   "rendererStatus": "RENDERER_IMPLEMENTED",
   "fitStatus": "FAIL_CLOSED",
-  "officialIssueStatus": "AVAILABLE"
+  "officialIssueStatus": "BLOCKED"
 }

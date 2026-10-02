@@ -14,13 +14,13 @@ async function run() {
     for (let i = 0; i < 40 && !await up(); i += 1) await new Promise(resolve => setTimeout(resolve, 250));
   }
   if (!await up()) throw new Error('Servidor candidato 8081 no disponible.');
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   try {
     const page = await browser.newPage();
     const startupErrors = [];
     page.on('pageerror', error => startupErrors.push(error.message));
     page.on('console', message => { if (message.type() === 'error') startupErrors.push(message.text().slice(0, 280)); });
-    await page.goto(URL, { waitUntil: 'networkidle0', timeout: 60000 });
+    await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(() => document.querySelector('#db-status-badge')?.textContent.includes('Datos locales disponibles') || document.querySelector('#candidate-runtime-banner')?.textContent.includes('BLOQUEADA'));
     if (await page.$eval('#candidate-runtime-banner', node => node.textContent.includes('BLOQUEADA'))) {
       const bad = await page.evaluate(async () => {
@@ -132,3 +132,6 @@ async function run() {
   } finally { await browser.close(); if (server) server.kill(); }
 }
 module.exports = { name: 'GATE-V2-CONTEXT-AUTHORITY-01', run };
+
+
+

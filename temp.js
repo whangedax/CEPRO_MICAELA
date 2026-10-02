@@ -38,9 +38,6 @@ export function physicalFieldsOf(manifest) {
   const output = [];
   for (const field of [...(manifest.fields || []), ...(manifest.physicalFields || [])]) {
     if (field.geometryStatus && field.geometryStatus !== 'VERIFIED') continue;
-    // Ignorar campos lógicos que no declaran coordenadas físicas ni referencias a cajas
-    if (field.x === undefined && !field.box && !field.boxes && !field.physicalBoxPattern && !field.physicalBoxId) continue;
-    
     const repeat = field.repeat || 1;
     for (let index = 0; index < repeat; index += 1) {
       const physicalBoxId = field.physicalBoxPattern
@@ -65,7 +62,6 @@ export function physicalFieldsOf(manifest) {
       const page = manifest.pages?.find(item => item.number === pageNum);
       if (!page || !(box.width > 0 && box.height > 0) || box.x < 0 || box.y < 0 ||
           box.x + box.width > page.width + 0.5 || box.y + box.height > page.height + 0.5) {
-        console.log("CRASH ON:", field);
         throw new Error(`Geometría fuera de página: ${manifest.templateId}/${physicalBoxId || field.canonicalKey}`);
       }
       output.push({ ...field, ...box, page: pageNum, physicalBoxId: physicalBoxId || null,
