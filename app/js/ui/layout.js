@@ -39,6 +39,8 @@ import { StagingRecoveryService } from '../services/staging-recovery-service.js'
 import { AuthService, ROLES } from '../services/auth-service.js';
 import { TeacherContextService } from '../services/teacher-context-service.js';
 import { LoginView } from './login-view.js';
+import { TeacherWorkspacesView } from './teacher-workspaces-view.js';
+import { TeacherConfigView } from './teacher-config-view.js';
 
 const stagingService = new StagingService();
 const academicReadinessService = new AcademicReadinessService();
@@ -486,6 +488,32 @@ export const Layout = {
       }
     });
 
+    // Gestión de enlaces pedagógicos especializados para el rol DOCENTE
+    const docLink = document.querySelector('#sidebar a[href="#/documentos"]');
+    let teacherLinksContainer = document.getElementById('sidebar-teacher-custom-nav');
+
+    if (role.id === 'DOCENTE') {
+      if (docLink) docLink.style.display = 'none';
+      if (!teacherLinksContainer) {
+        teacherLinksContainer = document.createElement('div');
+        teacherLinksContainer.id = 'sidebar-teacher-custom-nav';
+        teacherLinksContainer.innerHTML = `
+          <a href="#/asistencia" class="nav-link"><span class="nav-icon">📝</span><span>CONTROL DE ASISTENCIA</span></a>
+          <a href="#/evaluacion" class="nav-link"><span class="nav-icon">📊</span><span>REGISTRO DE NOTAS</span></a>
+          <a href="#/portada" class="nav-link"><span class="nav-icon">📁</span><span>PORTADA DOCENTE</span></a>
+          <a href="#/configuracion-docente" class="nav-link"><span class="nav-icon">⚙️</span><span>CONFIGURACIÓN DE CARPETA</span></a>
+        `;
+        if (docLink && docLink.parentNode) {
+          docLink.parentNode.insertBefore(teacherLinksContainer, docLink);
+        }
+      } else {
+        teacherLinksContainer.style.display = '';
+      }
+    } else {
+      if (docLink) docLink.style.display = '';
+      if (teacherLinksContainer) teacherLinksContainer.style.display = 'none';
+    }
+
     // Etiquetas pedagógicas contextuales para el rol DOCENTE
     const gruposLink = document.querySelector('#sidebar a[href="#/grupos"] span:last-child');
     if (gruposLink) {
@@ -634,6 +662,9 @@ export const Layout = {
     this.sanitizeSidebar();
     this.updateNavigation(routeInfo.hash);
 
+    // Limpieza de modales flotantes que puedan quedar adjuntos a document.body
+    document.querySelectorAll('.etapa2-modal-overlay, .etapa4-modal-overlay, #etapa2-attendance-modal, #etapa2-evaluation-modal, #etapa4-modal-overlay').forEach(el => el.remove());
+
     // Guardia de Enrutamiento (RBAC)
     if (!AuthService.canAccessRoute(routeInfo.hash)) {
       this.renderAccessDeniedView(container, routeInfo);
@@ -685,11 +716,22 @@ export const Layout = {
       case 'registro':
         await this.renderRegistroView(container);
         break;
+      case 'asistencia':
+        await this.renderAsistenciaDocenteView(container);
+        break;
       case 'evaluacion': {
-        const view = new EvaluationView();
-        await view.render(container);
+        const role = AuthService.getCurrentRole();
+        if (role.id === 'DOCENTE') {
+          await this.renderEvaluacionDocenteView(container);
+        } else {
+          const view = new EvaluationView();
+          await view.render(container);
+        }
         break;
       }
+      case 'portada':
+        await this.renderPortadaDocenteView(container);
+        break;
       case 'efsrt':
         {
           const view = new EfsrtView();
@@ -711,9 +753,18 @@ export const Layout = {
       case 'respaldo':
         container.innerHTML = this.renderRespaldoView();
         break;
-      case 'configuracion':
-        await this.renderConfiguracionView(container);
+      case 'configuracion-docente':
+        await new TeacherConfigView().render(container);
         break;
+      case 'configuracion': {
+        const role = AuthService.getCurrentRole();
+        if (role.id === 'DOCENTE') {
+          await new TeacherConfigView().render(container);
+        } else {
+          await this.renderConfiguracionView(container);
+        }
+        break;
+      }
       default:
         await this.renderInicioView(container);
     }
@@ -858,12 +909,103 @@ export const Layout = {
       roleTitle = `Aula Pedagógica — ${activeProg.nombre}`;
       roleSub = `${escapeHtml(institution.nombre)} · Docente: ${escapeHtml(role.userName)} · Aula: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})`;
       shortcutsHtml = `
-        <a class="mvp-shortcut" href="#/documentos"><span>📝</span>Control de Asistencia (Sesiones 1-40)</a>
-        <a class="mvp-shortcut" href="#/documentos"><span>📊</span>Registro Auxiliar de Calificaciones</a>
-        <a class="mvp-shortcut" href="#/documentos"><span>📁</span>Portada de Carpeta Docente</a>
-        <a class="mvp-shortcut" href="#/estudiantes"><span>👥</span>Mis Alumnos Matriculados (${studentCount} en aula)</a>
-        <a class="mvp-shortcut" href="#/grupos"><span>🗂️</span>Mis Grupos Asignados (${progGroups.length} grupos)</a>
-        <a class="mvp-shortcut" href="#/programas"><span>📚</span>Malla Curricular (${moduleCount} módulos)</a>
+        <a class="shortcut-btn-card shortcut-btn--blue" href="#/asistencia" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">📝</div>
+            <span class="shortcut-btn-badge">TMPL-05..10</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Control de Asistencia Modular</strong>
+            <p class="shortcut-btn-desc">Registro diario de asistencias (sesiones 1 a 40), faltas y tardanzas de los estudiantes del aula asignada.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Registrar Asistencia <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--green" href="#/evaluacion" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">📊</div>
+            <span class="shortcut-btn-badge">TMPL-11..17</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Registro Auxiliar de Notas</strong>
+            <p class="shortcut-btn-desc">Evaluación continua por capacidades terminales, indicadores de logro y promedios oficiales del período modular.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Evaluar Alumnos <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--amber" href="#/portada" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">📁</div>
+            <span class="shortcut-btn-badge">TMPL-04</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Portada de Carpeta Docente</strong>
+            <p class="shortcut-btn-desc">Generación formal de la carátula técnica y pedagógica oficial con membrete y datos de especialidad.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Generar Portada <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--purple" href="#/estudiantes" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">👥</div>
+            <span class="shortcut-btn-badge">${studentCount} Alumnos</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Mis Alumnos Matriculados</strong>
+            <p class="shortcut-btn-desc">Padrón de estudiantes del aula ${escapeHtml(activeGroup.grupoCode)}, fichas individuales y seguimiento pedagógico.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Ver Mis Alumnos <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--emerald" href="#/grupos" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">🗂️</div>
+            <span class="shortcut-btn-badge">${progGroups.length} Grupos</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Mis Grupos y Aulas</strong>
+            <p class="shortcut-btn-desc">Visualice y conmute entre los grupos y turnos correspondientes a ${escapeHtml(activeProg.nombre)}.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Gestionar Aulas <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--indigo" href="#/programas" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">📚</div>
+            <span class="shortcut-btn-badge">${moduleCount} Módulos</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Malla Curricular Asignada</strong>
+            <p class="shortcut-btn-desc">Estructura curricular oficial, unidades de competencia y horas lectivas de su especialidad técnica.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Ver Malla Oficial <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--teal" href="#/configuracion-docente" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">⚙️</div>
+            <span class="shortcut-btn-badge">Parámetros</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Configuración de Carpeta</strong>
+            <p class="shortcut-btn-desc">Personalice datos del docente, carátula institucional y capacidades/indicadores por unidad didáctica.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Configurar Plantillas <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
       `;
 
       metricsGridHtml = `
@@ -942,8 +1084,11 @@ export const Layout = {
         ${metricsGridHtml}
       </div>
       <div class="card margin-top">
-        <h3>Accesos rápidos (${escapeHtml(role.title)})</h3>
-        <div class="mvp-shortcuts">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom: 0.5rem;">
+          <h3 style="margin:0;">Accesos rápidos (${escapeHtml(role.title)})</h3>
+          <span style="font-size:0.82rem; color:#64748b;">Módulos de trabajo pedagógico y gestión directa</span>
+        </div>
+        <div class="${role.id === 'DOCENTE' ? 'mvp-shortcuts-grid' : 'mvp-shortcuts'}">
           ${shortcutsHtml}
         </div>
       </div>
@@ -1658,8 +1803,28 @@ export const Layout = {
   },
 
   async renderDocumentosView(container) {
+    const role = AuthService.getCurrentRole();
+    if (role.id === 'DOCENTE') {
+      await this.renderAsistenciaDocenteView(container);
+      return;
+    }
     const view = new DocumentsView();
     await view.render(container);
+  },
+
+  async renderAsistenciaDocenteView(container) {
+    const view = new TeacherWorkspacesView();
+    await view.renderAttendance(container);
+  },
+
+  async renderEvaluacionDocenteView(container) {
+    const view = new TeacherWorkspacesView();
+    await view.renderEvaluation(container);
+  },
+
+  async renderPortadaDocenteView(container) {
+    const view = new TeacherWorkspacesView();
+    await view.renderPortada(container);
   },
 
   async renderIncidenciasView(container) {

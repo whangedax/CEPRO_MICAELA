@@ -36,12 +36,15 @@ export const CONFIG = {
     '#/registros/matricula': { title: 'Registro de matrícula', id: 'registro-matricula', icon: 'clipboard' },
     '#/configuracion-academica': { title: 'Configuración académica', id: 'configuracion-academica', icon: 'settings' },
     '#/registro': { title: 'Registro Académico', id: 'registro', icon: 'edit' },
-    '#/evaluacion': { title: 'Evaluación', id: 'evaluacion', icon: 'chart' },
+    '#/asistencia': { title: 'Control de Asistencia Modular', id: 'asistencia', icon: 'clipboard' },
+    '#/evaluacion': { title: 'Registro Auxiliar de Notas', id: 'evaluacion', icon: 'chart' },
+    '#/portada': { title: 'Portada de Carpeta Pedagógica', id: 'portada', icon: 'folder' },
     '#/efsrt': { title: 'EFSRT', id: 'efsrt', icon: 'briefcase' },
     '#/cierre': { title: 'Cierre Académico', id: 'cierre', icon: 'check-square' },
     '#/documentos': { title: 'Documentos', id: 'documentos', icon: 'file-text' },
     '#/incidencias': { title: 'Incidencias', id: 'incidencias', icon: 'alert-triangle' },
     '#/respaldo': { title: 'Respaldo', id: 'respaldo', icon: 'database' },
+    '#/configuracion-docente': { title: 'Configuración Pedagógica', id: 'configuracion-docente', icon: 'settings' },
     '#/configuracion': { title: 'Configuración', id: 'configuracion', icon: 'settings' }
   }
 };

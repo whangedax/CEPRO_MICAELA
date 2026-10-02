@@ -18,6 +18,7 @@ import { Notifications } from './notifications.js';
 import { AuthService } from '../services/auth-service.js';
 import { TeacherContextService } from '../services/teacher-context-service.js';
 import { SyncPackageService } from '../services/sync-package-service.js';
+import { TeacherConfigService } from '../services/teacher-config-service.js';
 
 export const DOCUMENT_STATES = Object.freeze({
   IDLE: 'IDLE',
@@ -98,6 +99,7 @@ export class DocumentsView {
     this.mvpPdf = new MvpPdfService();
     this.etapa2DataService = new Etapa2DataService();
     this.etapa4DataService = new Etapa4DataService();
+    this.teacherConfigService = new TeacherConfigService();
     this._allGroups = [];
     this.groups = [];
     this.selectedGroupId = null;
@@ -2688,6 +2690,34 @@ export class DocumentsView {
     try {
       const context = await this.adminService.buildGroupRoster(groupId);
       const { group } = context;
+
+      // Inyección de parámetros pedagógicos configurados por el docente
+      const teacherProfile = this.teacherConfigService.getProfile();
+      const progId = context.program?.id || 'PROG-005';
+      const groupConfig = this.teacherConfigService.getGroupConfig(group.visibleCode || groupId, progId);
+
+      context.resolvedFieldSet = {
+        ...(context.resolvedFieldSet || {}),
+        'institution.dre': groupConfig.dre,
+        'institution.ugel': groupConfig.ugel,
+        'institution.tipoGestion': groupConfig.tipoGestion,
+        'module.name': groupConfig.nombreModulo,
+        'group.ciclo': groupConfig.ciclo,
+        'curriculum.hours': groupConfig.horasModulo,
+        'curriculum.credits': groupConfig.creditosModulo,
+        'period.fechaInicio': groupConfig.fechaInicio,
+        'period.fechaTermino': groupConfig.fechaTermino,
+        'group.turno': groupConfig.turno,
+        'group.seccion': groupConfig.seccion,
+        'teacher.name': teacherProfile.nombreDocente,
+        'period.year': groupConfig.anioLectivo
+      };
+      if (!context.module) context.module = {};
+      context.module.nombre = groupConfig.nombreModulo;
+      context.module.horas = groupConfig.horasModulo;
+      context.module.creditos = groupConfig.creditosModulo;
+      context.teacher = teacherProfile.nombreDocente;
+
       const blob = await this.pdfEngine.renderDocument({
         documentType: 'TMPL-04',
         context,
@@ -2758,9 +2788,22 @@ export class DocumentsView {
     try {
       const rosterContext = await this.adminService.buildGroupRoster(groupId);
       let { rows, group } = rosterContext;
+
+      // Inyección de parámetros configurados por el docente
+      const teacherProfile = this.teacherConfigService.getProfile();
+      const progId = rosterContext.program?.id || 'PROG-005';
+      const groupConfig = this.teacherConfigService.getGroupConfig(group.visibleCode || groupId, progId);
+      const unitConfig = this.teacherConfigService.getUnitConfig(group.visibleCode || groupId, udNum, progId);
+
       const context = {
         ...rosterContext,
-        unit: { orden: udNum, nombre: `Unidad Didáctica ${udNum}` }
+        unit: { orden: udNum, nombre: unitConfig.nombreUD || `Unidad Didáctica ${udNum}` },
+        resolvedFieldSet: {
+          ...(rosterContext.resolvedFieldSet || {}),
+          'curriculum.unit.name': { value: unitConfig.nombreUD || `Unidad Didáctica ${udNum}` },
+          'module.name': { value: groupConfig.nombreModulo },
+          'teacher.name': { value: teacherProfile.nombreDocente }
+        }
       };
 
       // Inyección de asistencia guardada para este grupo y UD
@@ -2858,15 +2901,34 @@ export class DocumentsView {
     try {
       const rosterContext = await this.adminService.buildGroupRoster(groupId);
       let { rows, group } = rosterContext;
+
+      // Inyección de parámetros pedagógicos configurados por el docente
+      const teacherProfile = this.teacherConfigService.getProfile();
+      const progId = rosterContext.program?.id || 'PROG-005';
+      const groupConfig = this.teacherConfigService.getGroupConfig(group.visibleCode || groupId, progId);
+      const unitConfig = this.teacherConfigService.getUnitConfig(group.visibleCode || groupId, udNum, progId);
+
       const context = {
         ...rosterContext,
-        unit: { orden: udNum, nombre: `Unidad Didáctica ${udNum}` }
+        unit: { 
+          orden: udNum, 
+          nombre: unitConfig.nombreUD || `Unidad Didáctica ${udNum}`,
+          capacidad: unitConfig.capacidadUD
+        },
+        indicators: unitConfig.indicadores,
+        resolvedFieldSet: {
+          ...(rosterContext.resolvedFieldSet || {}),
+          'curriculum.unit.name': { value: unitConfig.nombreUD || `Unidad Didáctica ${udNum}` },
+          'curriculum.unit.capacity': { value: unitConfig.capacidadUD },
+          'module.name': { value: groupConfig.nombreModulo },
+          'teacher.name': { value: teacherProfile.nombreDocente }
+        }
       };
 
       // Inyección de calificaciones guardadas para este grupo y UD
       const storedEval = this.etapa2DataService?.getEvaluation(groupId, udNum);
       if (storedEval) {
-        if (Array.isArray(storedEval.indicators)) {
+        if (Array.isArray(storedEval.indicators) && storedEval.indicators.length > 0) {
           context.indicators = storedEval.indicators;
         }
         rows = rows.map(r => {
@@ -3059,7 +3121,7 @@ export class DocumentsView {
             </h5>
             <span class="badge bg-light text-secondary border ms-2">${rows.length} Estudiantes · 40 Sesiones</span>
           </div>
-          <button type="button" class="btn-close" id="btn-close-att-modal" aria-label="Cerrar"></button>
+          <button type="button" class="btn-modal-close" id="btn-close-att-modal" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:1.25rem; font-weight:700; color:#475569; cursor:pointer; transition:all 0.15s ease;" aria-label="Cerrar modal" title="Cerrar (Esc)">✕</button>
         </div>
 
         <div class="d-flex flex-wrap align-items-center justify-content-between p-2.5 px-3 bg-light border-bottom gap-2">
@@ -3188,8 +3250,18 @@ export class DocumentsView {
       modalBody.innerHTML = renderTableContent();
     };
 
+    const onEsc = (e) => {
+      if (e.key === 'Escape') closeModal();
+    };
+    document.addEventListener('keydown', onEsc);
+
     const closeModal = () => {
+      document.removeEventListener('keydown', onEsc);
       if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+
+    overlay.onclick = (e) => {
+      if (e.target === overlay) closeModal();
     };
 
     overlay.querySelector('#btn-close-att-modal').onclick = closeModal;
@@ -3328,7 +3400,7 @@ export class DocumentsView {
             </h5>
             <span class="badge bg-light text-secondary border ms-2">${rows.length} Estudiantes · Escala Vigesimal (00-20)</span>
           </div>
-          <button type="button" class="btn-close" id="btn-close-eval-modal" aria-label="Cerrar"></button>
+          <button type="button" class="btn-modal-close" id="btn-close-eval-modal" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:1.25rem; font-weight:700; color:#475569; cursor:pointer; transition:all 0.15s ease;" aria-label="Cerrar modal" title="Cerrar (Esc)">✕</button>
         </div>
 
         <div class="d-flex flex-wrap align-items-center justify-content-between p-2.5 px-3 bg-light border-bottom gap-2">
@@ -3443,8 +3515,18 @@ export class DocumentsView {
       modalBody.innerHTML = renderTableContent();
     };
 
+    const onEsc = (e) => {
+      if (e.key === 'Escape') closeModal();
+    };
+    document.addEventListener('keydown', onEsc);
+
     const closeModal = () => {
+      document.removeEventListener('keydown', onEsc);
       if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+
+    overlay.onclick = (e) => {
+      if (e.target === overlay) closeModal();
     };
 
     overlay.querySelector('#btn-close-eval-modal').onclick = closeModal;

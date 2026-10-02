@@ -921,3 +921,413 @@
   place-items: center;
 }
 
+/* ========================================================
+   Tarjetas de Acceso Rápido / Botones Enriquecidos (Shortcuts)
+   ======================================================== */
+.mvp-shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 1.15rem;
+  margin-top: 1rem;
+}
+
+.shortcut-btn-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.25rem 1.35rem;
+  text-decoration: none;
+  color: #1e293b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.shortcut-btn-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1);
+  border-color: #cbd5e1;
+}
+
+.shortcut-btn-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+}
+
+.shortcut-btn-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  border: 1px solid transparent;
+  transition: transform 0.2s ease;
+}
+
+.shortcut-btn-card:hover .shortcut-btn-icon {
+  transform: scale(1.08);
+}
+
+.shortcut-btn-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+
+.shortcut-btn-content {
+  flex-grow: 1;
+  margin-bottom: 0.85rem;
+}
+
+.shortcut-btn-title {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+  line-height: 1.3;
+}
+
+.shortcut-btn-desc {
+  font-size: 0.84rem;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.shortcut-btn-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #e2e8f0;
+  margin-top: auto;
+}
+
+.shortcut-btn-action {
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.shortcut-btn-arrow {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.shortcut-btn-card:hover .shortcut-btn-arrow {
+  transform: translateX(5px);
+}
+
+/* Modificadores de color y borde por categoría */
+.shortcut-btn--blue {
+  border-left: 5px solid #2563eb;
+}
+.shortcut-btn--blue:hover {
+  border-color: #93c5fd;
+  border-left-color: #2563eb;
+  background: #fbfdff;
+}
+.shortcut-btn--blue .shortcut-btn-icon {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+.shortcut-btn--blue .shortcut-btn-badge {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.shortcut-btn--blue .shortcut-btn-action {
+  color: #2563eb;
+}
+
+.shortcut-btn--green {
+  border-left: 5px solid #10b981;
+}
+.shortcut-btn--green:hover {
+  border-color: #a7f3d0;
+  border-left-color: #10b981;
+  background: #fbfdfc;
+}
+.shortcut-btn--green .shortcut-btn-icon {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+.shortcut-btn--green .shortcut-btn-badge {
+  background: #d1fae5;
+  color: #065f46;
+}
+.shortcut-btn--green .shortcut-btn-action {
+  color: #059669;
+}
+
+.shortcut-btn--amber {
+  border-left: 5px solid #f59e0b;
+}
+.shortcut-btn--amber:hover {
+  border-color: #fde68a;
+  border-left-color: #f59e0b;
+  background: #fffdf9;
+}
+.shortcut-btn--amber .shortcut-btn-icon {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+.shortcut-btn--amber .shortcut-btn-badge {
+  background: #fef3c7;
+  color: #92400e;
+}
+.shortcut-btn--amber .shortcut-btn-action {
+  color: #d97706;
+}
+
+.shortcut-btn--purple {
+  border-left: 5px solid #8b5cf6;
+}
+.shortcut-btn--purple:hover {
+  border-color: #ddd6fe;
+  border-left-color: #8b5cf6;
+  background: #fdfcff;
+}
+.shortcut-btn--purple .shortcut-btn-icon {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+  color: #6d28d9;
+}
+.shortcut-btn--purple .shortcut-btn-badge {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+.shortcut-btn--purple .shortcut-btn-action {
+  color: #7c3aed;
+}
+
+.shortcut-btn--emerald {
+  border-left: 5px solid #059669;
+}
+.shortcut-btn--emerald:hover {
+  border-color: #a7f3d0;
+  border-left-color: #059669;
+  background: #fbfdfc;
+}
+.shortcut-btn--emerald .shortcut-btn-icon {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #047857;
+}
+.shortcut-btn--emerald .shortcut-btn-badge {
+  background: #dcfce7;
+  color: #166534;
+}
+.shortcut-btn--emerald .shortcut-btn-action {
+  color: #059669;
+}
+
+.shortcut-btn--indigo {
+  border-left: 5px solid #6366f1;
+}
+.shortcut-btn--indigo:hover {
+  border-color: #c7d2fe;
+  border-left-color: #6366f1;
+  background: #fafbff;
+}
+.shortcut-btn--indigo .shortcut-btn-icon {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #4338ca;
+}
+.shortcut-btn--indigo .shortcut-btn-badge {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+.shortcut-btn--indigo .shortcut-btn-action {
+  color: #4f46e5;
+}
+
+.shortcut-btn--teal {
+  border-left-color: #0d9488;
+}
+.shortcut-btn--teal:hover {
+  border-color: #99f6e4;
+  border-left-color: #0d9488;
+  background: #f0fdfa;
+}
+.shortcut-btn--teal .shortcut-btn-icon {
+  background: #ccfbf1;
+  border-color: #99f6e4;
+  color: #0f766e;
+}
+.shortcut-btn--teal .shortcut-btn-badge {
+  background: #ccfbf1;
+  color: #115e59;
+}
+.shortcut-btn--teal .shortcut-btn-action {
+  color: #0d9488;
+}
+
+/* ========================================================
+   Modales Interactivos Pedagógicos (Asistencia y Evaluación)
+   ======================================================== */
+.etapa2-modal-overlay {
+  position: fixed;
+  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.etapa2-modal-dialog {
+  width: 96vw;
+  max-width: 1440px;
+  height: 90vh;
+  max-height: 920px;
+  background: #ffffff;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  border: 1.5px solid #cbd5e1;
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.97) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.etapa2-modal-header {
+  padding: 1.15rem 1.6rem;
+  background: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 1rem;
+}
+
+.etapa2-modal-body {
+  padding: 1.15rem 1.4rem;
+  overflow: auto;
+  flex: 1;
+  background: #ffffff;
+}
+
+.etapa2-modal-footer {
+  padding: 1rem 1.6rem;
+  background: #f8fafc;
+  border-top: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  flex-shrink: 0;
+}
+
+.etapa2-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.86rem;
+}
+
+.etapa2-table th, .etapa2-table td {
+  border-right: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.4rem 0.55rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.etapa2-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f1f5f9;
+  z-index: 10;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.etapa2-table .col-sticky-student {
+  position: sticky;
+  left: 0;
+  background: #ffffff;
+  z-index: 5;
+  min-width: 240px;
+  max-width: 300px;
+  border-right: 2px solid #cbd5e1 !important;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.03);
+}
+
+.etapa2-table thead .col-sticky-student {
+  z-index: 15;
+  background: #f1f5f9;
+}
+
+.att-cell-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-weight: 800;
+  font-size: 0.86rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.att-cell-btn:hover {
+  transform: scale(1.12);
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.att-P { background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; }
+.att-F { background: #fee2e2; color: #b91c1c; border: 1.5px solid #fca5a5; }
+.att-J { background: #fef3c7; color: #b45309; border: 1.5px solid #fcd34d; }
+.att-dash { background: #f1f5f9; color: #94a3b8; border: 1px solid #cbd5e1; }
+
+.eval-grade-input {
+  width: 52px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  padding: 0.3rem 0.2rem;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.eval-pass { background: #dcfce7 !important; color: #166534 !important; border: 2px solid #86efac !important; }
+.eval-fail { background: #fee2e2 !important; color: #991b1b !important; border: 2px solid #fca5a5 !important; }
+.eval-empty { background: #ffffff; color: #334155; border: 1.5px solid #cbd5e1; }
+
+
