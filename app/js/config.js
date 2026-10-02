@@ -24,6 +24,7 @@ export const CONFIG = {
   DEFAULT_ROUTE: '#/inicio',
   
   ROUTES: {
+    '#/login': { title: 'Iniciar Sesión', id: 'login', icon: 'lock' },
     '#/inicio': { title: 'Inicio', id: 'inicio', icon: 'home' },
     '#/demo': { title: 'Modo Demostración', id: 'demo', icon: 'play' },
     '#/demo/evaluacion': { title: 'Evaluación Demo', id: 'demo-evaluacion', icon: 'chart' },

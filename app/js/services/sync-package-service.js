@@ -10,6 +10,7 @@ import { TeacherContextService } from './teacher-context-service.js';
 import { getDB, executeTransaction } from '../db/database.js';
 import { Notifications } from '../ui/notifications.js';
 import { OperationalError } from './error-service.js';
+import { AuthService } from './auth-service.js';
 
 export const SYNC_PACKAGE_TYPES = Object.freeze({
   ENROLLMENTS: 'MATRICULAS_Y_PADRON',
@@ -185,7 +186,7 @@ export class SyncPackageService {
         programaId: progInfo.id,
         programaNombre: progInfo.nombre,
         turno: groupInfo.turno || groupInfo.modalidad || 'Regular',
-        docente: 'Prof. Walter Quispe Mamani',
+        docente: AuthService.getCurrentRole().userName || 'Docente de Especialidad',
         resumen: {
           udsAsistenciaConDatos: Object.keys(asistencias).length,
           udsEvaluacionConDatos: Object.keys(evaluaciones).length

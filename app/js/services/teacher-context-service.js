@@ -184,7 +184,7 @@ export const TeacherContextService = {
   filterGroups(groups, programId = null) {
     if (!Array.isArray(groups)) return [];
     const targetProgId = programId || this.getActiveProgramId();
-    return groups.filter(g => g.programaId === targetProgId);
+    return groups.filter(g => g.programaId === targetProgId || g.programId === targetProgId || (g.program && g.program.id === targetProgId));
   },
 
   /**
