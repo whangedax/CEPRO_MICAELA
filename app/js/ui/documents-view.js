@@ -2187,7 +2187,13 @@ export class DocumentsView {
       groupSelect.onchange = async event => {
         this.selectedGroupId = event.target.value;
         const g = this.groups.find(item => item.id === this.selectedGroupId);
-        if (g) this.selectedGroupCode = g.visibleCode;
+        if (g) {
+          this.selectedGroupCode = g.visibleCode;
+          const activeRole = AuthService.getCurrentRole();
+          if (activeRole.id === 'DOCENTE') {
+            TeacherContextService.setActiveGroupCode(g.visibleCode, false);
+          }
+        }
 
         // Actualizar tarjeta resumen en tiempo real
         const cardBox = container.querySelector('#doc-selected-group-card');

@@ -76,7 +76,7 @@ export const ROLES = Object.freeze({
     badgeColor: '#5b21b6',
     description: 'Control de asistencia pedagógica, evaluación continua y carpeta docente.',
     allowedRoutes: [
-      '#/login', '#/inicio', '#/estudiantes', '#/grupos', '#/documentos',
+      '#/login', '#/inicio', '#/estudiantes', '#/grupos', '#/programas', '#/documentos',
       '#/evaluacion', '#/configuracion', '#/demo', '#/demo/evaluacion'
     ],
     allowedStages: ['ETAPA_1', 'ETAPA_2'],

@@ -31,8 +31,11 @@ export const StudentsView = {
     const enrollmentService = new EnrollmentService();
     const allEnrollments = await enrollmentService.listEnrollments();
 
-    if (role.id === 'DOCENTE') {
-      const activeGroup = TeacherContextService.getActiveGroupInfo();
+    const isDocente = role.id === 'DOCENTE';
+    const activeGroup = isDocente ? TeacherContextService.getActiveGroupInfo() : null;
+    const activeProg = isDocente ? TeacherContextService.getActiveProgram() : null;
+
+    if (isDocente) {
       this.currentStudents = TeacherContextService.filterStudentsByGroup(allStudents, allEnrollments, activeGroup.grupoCode);
     } else {
       this.currentStudents = allStudents;
@@ -41,8 +44,8 @@ export const StudentsView = {
     container.innerHTML = `
       <section class="view-header">
         <div>
-          <h2>Padrón de Estudiantes</h2>
-          <p class="subtitle">Registro Manual, Consulta y Expediente del Estudiante</p>
+          <h2>${isDocente ? `Mis Estudiantes Matriculados — Aula ${escapeHtml(activeGroup.grupoCode)}` : 'Padrón de Estudiantes'}</h2>
+          <p class="subtitle">${isDocente ? `Alumnos matriculados en ${escapeHtml(activeProg.nombre)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})` : 'Registro Manual, Consulta y Expediente del Estudiante'}</p>
         </div>
         ${(() => {
           if (role.id === 'DOCENTE') {
@@ -423,9 +426,22 @@ export const StudentsView = {
   },
 
   async refreshList(container) {
-    this.currentStudents = await StudentService.searchStudents();
+    const role = AuthService.getCurrentRole();
+    const allStudents = await StudentService.searchStudents();
+    if (role.id === 'DOCENTE') {
+      const activeGroup = TeacherContextService.getActiveGroupInfo();
+      const allEnrollments = await (new EnrollmentService()).listEnrollments();
+      this.currentStudents = TeacherContextService.filterStudentsByGroup(allStudents, allEnrollments, activeGroup.grupoCode);
+    } else {
+      this.currentStudents = allStudents;
+    }
     container.querySelector('#student-list-container').innerHTML = this.renderStudentsList(this.currentStudents);
-    container.querySelector('#student-count-badge').textContent = `${this.currentStudents.length} Estudiantes`;
+    const badge = container.querySelector('#student-count-badge');
+    if (badge) {
+      badge.textContent = role.id === 'DOCENTE'
+        ? `${this.currentStudents.length} Alumnos en su Aula`
+        : `${this.currentStudents.length} Estudiantes`;
+    }
     this.bindTableEvents(container, (s) => {
       const modal = container.querySelector('#student-modal');
       container.querySelector('#form-student-id').value = s.id;
@@ -434,6 +450,9 @@ export const StudentsView = {
   },
 
   renderStudentsList(students) {
+    const role = AuthService.getCurrentRole();
+    const isDocente = role.id === 'DOCENTE';
+
     if (students.length === 0) {
       return `
         <div class="card">
@@ -475,8 +494,10 @@ export const StudentsView = {
                 <td><span class="badge ${s.estado === 'ACTIVO' ? 'badge-success' : 'badge-secondary'}">${escapeHtml(s.estado)}</span></td>
                 <td style="text-align:right;">
                   <button class="btn btn-view-student" data-id="${escapeHtml(s.id)}" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#e0f2fe; color:#0369a1; border:none; border-radius:4px; cursor:pointer;">Ver</button>
-                  <button class="btn btn-edit-student" data-id="${escapeHtml(s.id)}" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#e0e7ff; color:#4338ca; border:none; border-radius:4px; cursor:pointer;">Editar</button>
-                  <button class="btn btn-deactivate-student" data-id="${escapeHtml(s.id)}" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#fef2f2; color:#991b1b; border:none; border-radius:4px; cursor:pointer;">Desactivar</button>
+                  ${!isDocente ? `
+                    <button class="btn btn-edit-student" data-id="${escapeHtml(s.id)}" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#e0e7ff; color:#4338ca; border:none; border-radius:4px; cursor:pointer;">Editar</button>
+                    <button class="btn btn-deactivate-student" data-id="${escapeHtml(s.id)}" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#fef2f2; color:#991b1b; border:none; border-radius:4px; cursor:pointer;">Desactivar</button>
+                  ` : ''}
                 </td>
               </tr>
             `).join('')}
@@ -499,8 +520,10 @@ export const StudentsView = {
 
             <div style="display:flex; gap:0.5rem; margin-top:1rem; justify-content:flex-end;">
               <button class="btn btn-view-student" data-id="${escapeHtml(s.id)}" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#e0f2fe; color:#0369a1; border:none; border-radius:4px;">Ver</button>
-              <button class="btn btn-edit-student" data-id="${escapeHtml(s.id)}" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#e0e7ff; color:#4338ca; border:none; border-radius:4px;">Editar</button>
-              <button class="btn btn-deactivate-student" data-id="${escapeHtml(s.id)}" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#fef2f2; color:#991b1b; border:none; border-radius:4px;">Desactivar</button>
+              ${!isDocente ? `
+                <button class="btn btn-edit-student" data-id="${escapeHtml(s.id)}" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#e0e7ff; color:#4338ca; border:none; border-radius:4px;">Editar</button>
+                <button class="btn btn-deactivate-student" data-id="${escapeHtml(s.id)}" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#fef2f2; color:#991b1b; border:none; border-radius:4px;">Desactivar</button>
+              ` : ''}
             </div>
           </div>
         `).join('')}

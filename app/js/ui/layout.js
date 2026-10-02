@@ -485,6 +485,20 @@ export const Layout = {
         sec.style.display = role.id === 'DOCENTE' ? 'none' : '';
       }
     });
+
+    // Etiquetas pedagógicas contextuales para el rol DOCENTE
+    const gruposLink = document.querySelector('#sidebar a[href="#/grupos"] span:last-child');
+    if (gruposLink) {
+      gruposLink.textContent = role.id === 'DOCENTE' ? 'MIS GRUPOS ASIGNADOS' : 'ASIGNACIÓN DE GRUPOS';
+    }
+    const estudiantesLink = document.querySelector('#sidebar a[href="#/estudiantes"] span:last-child');
+    if (estudiantesLink) {
+      estudiantesLink.textContent = role.id === 'DOCENTE' ? 'MIS ALUMNOS' : 'ESTUDIANTES';
+    }
+    const programasLink = document.querySelector('#sidebar a[href="#/programas"] span:last-child');
+    if (programasLink) {
+      programasLink.textContent = role.id === 'DOCENTE' ? 'MI MALLA CURRICULAR' : 'PROGRAMAS Y MÓDULOS';
+    }
   },
 
   bindEvents() {
@@ -796,6 +810,8 @@ export const Layout = {
     let roleTitle = 'Panel Institucional — Dirección General';
     let roleSub = `${escapeHtml(institution.nombre)} · Director: ${escapeHtml(role.userName)}`;
     let shortcutsHtml = '';
+    let metricsGridHtml = '';
+    let contextBannerHtml = '';
 
     if (role.id === 'DIRECTOR') {
       roleTitle = 'Panel Institucional — Dirección General CETPRO';
@@ -807,6 +823,13 @@ export const Layout = {
         <a class="mvp-shortcut" href="#/estudiantes"><span>👥</span>Padrón de Estudiantes</a>
         <a class="mvp-shortcut" href="#/respaldo"><span>💾</span>Respaldo del Sistema</a>
       `;
+      metricsGridHtml = `
+        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-info"><span class="stat-value">${counts.students}</span><span class="stat-label">Estudiantes</span></div></div>
+        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-info"><span class="stat-value">${counts.enrollments}</span><span class="stat-label">Matrículas</span></div></div>
+        <div class="stat-card"><div class="stat-icon">🗂️</div><div class="stat-info"><span class="stat-value">${counts.groups}</span><span class="stat-label">Grupos</span></div></div>
+        <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-info"><span class="stat-value">${counts.programs}</span><span class="stat-label">Programas</span></div></div>
+        <div class="stat-card"><div class="stat-icon">📖</div><div class="stat-info"><span class="stat-value">${counts.modules}</span><span class="stat-label">Módulos</span></div></div>
+      `;
     } else if (role.id === 'SECRETARIA') {
       roleTitle = 'Panel de Matrícula y Registros — Secretaría Académica';
       roleSub = `${escapeHtml(institution.nombre)} · Secretaría: ${escapeHtml(role.userName)}`;
@@ -817,17 +840,89 @@ export const Layout = {
         <a class="mvp-shortcut" href="#/programas"><span>📚</span>Programas y Módulos</a>
         <a class="mvp-shortcut" href="#/respaldo"><span>💾</span>Copia de Respaldo</a>
       `;
+      metricsGridHtml = `
+        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-info"><span class="stat-value">${counts.students}</span><span class="stat-label">Estudiantes</span></div></div>
+        <div class="stat-card"><div class="stat-info"><span class="stat-value">${counts.enrollments}</span><span class="stat-label">Matrículas</span></div></div>
+        <div class="stat-card"><div class="stat-icon">🗂️</div><div class="stat-info"><span class="stat-value">${counts.groups}</span><span class="stat-label">Grupos</span></div></div>
+        <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-info"><span class="stat-value">${counts.programs}</span><span class="stat-label">Programas</span></div></div>
+        <div class="stat-card"><div class="stat-icon">📖</div><div class="stat-info"><span class="stat-value">${counts.modules}</span><span class="stat-label">Módulos</span></div></div>
+      `;
     } else if (role.id === 'DOCENTE') {
       const activeGroup = TeacherContextService.getActiveGroupInfo();
       const activeProg = TeacherContextService.getActiveProgram();
-      roleTitle = `Aula Virtual y Registros — ${activeProg.nombre}`;
-      roleSub = `${escapeHtml(institution.nombre)} · Docente: ${escapeHtml(role.userName)} · Grupo Asignado: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})`;
+      const progGroups = TeacherContextService.getGroupsForProgram(activeProg.id);
+      const totalCarreraAlumnos = progGroups.reduce((acc, g) => acc + (g.count || 0), 0);
+      const moduleCount = (activeProg.modulos && activeProg.modulos.length) || 2;
+      const studentCount = activeGroup.count || 0;
+
+      roleTitle = `Aula Pedagógica — ${activeProg.nombre}`;
+      roleSub = `${escapeHtml(institution.nombre)} · Docente: ${escapeHtml(role.userName)} · Aula: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})`;
       shortcutsHtml = `
         <a class="mvp-shortcut" href="#/documentos"><span>📝</span>Control de Asistencia (Sesiones 1-40)</a>
         <a class="mvp-shortcut" href="#/documentos"><span>📊</span>Registro Auxiliar de Calificaciones</a>
         <a class="mvp-shortcut" href="#/documentos"><span>📁</span>Portada de Carpeta Docente</a>
-        <a class="mvp-shortcut" href="#/estudiantes"><span>👥</span>Mis Alumnos Matriculados (${activeGroup.count || 'Aula'})</a>
-        <a class="mvp-shortcut" href="#/grupos"><span>🗂️</span>Mis Grupos Asignados</a>
+        <a class="mvp-shortcut" href="#/estudiantes"><span>👥</span>Mis Alumnos Matriculados (${studentCount} en aula)</a>
+        <a class="mvp-shortcut" href="#/grupos"><span>🗂️</span>Mis Grupos Asignados (${progGroups.length} grupos)</a>
+        <a class="mvp-shortcut" href="#/programas"><span>📚</span>Malla Curricular (${moduleCount} módulos)</a>
+      `;
+
+      metricsGridHtml = `
+        <div class="stat-card" style="border-left: 4px solid #7c3aed;">
+          <div class="stat-icon" style="background: #ede9fe; color: #7c3aed;">👥</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #6d28d9;">${studentCount}</span>
+            <span class="stat-label">Alumnos en su Aula (${escapeHtml(activeGroup.grupoCode)})</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #2563eb;">
+          <div class="stat-icon" style="background: #dbeafe; color: #1d4ed8;">📋</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #1d4ed8;">${studentCount}</span>
+            <span class="stat-label">Matrículas en su Grupo</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #059669;">
+          <div class="stat-icon" style="background: #d1fae5; color: #047857;">🗂️</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #047857;">${progGroups.length}</span>
+            <span class="stat-label">Grupos en Carrera (${totalCarreraAlumnos} al.)</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #d97706;">
+          <div class="stat-icon" style="background: #fef3c7; color: #b45309;">📚</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #b45309;">1</span>
+            <span class="stat-label">Especialidad Asignada</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #4f46e5;">
+          <div class="stat-icon" style="background: #e0e7ff; color: #4338ca;">📖</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #4338ca;">${moduleCount}</span>
+            <span class="stat-label">Módulos Oficiales</span>
+          </div>
+        </div>
+      `;
+
+      contextBannerHtml = `
+        <div class="card margin-bottom-sm" style="background: linear-gradient(135deg, #f5f3ff, #faf5ff); border: 1.5px solid #d8b4fe; border-radius: 10px; padding: 1rem 1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+            <div>
+              <div style="font-size:0.78rem; text-transform:uppercase; font-weight:800; color:#7c3aed; letter-spacing:0.05em; margin-bottom:0.25rem;">
+                🎯 Ámbito Académico Delimitado para Labor Docente
+              </div>
+              <div style="font-size:1.05rem; font-weight:700; color:#1e1b4b;">
+                Especialidad: ${escapeHtml(activeProg.nombre)} · Aula: ${escapeHtml(activeGroup.grupoCode)}
+              </div>
+              <div style="font-size:0.83rem; color:#6b21a8; margin-top:0.2rem;">
+                ${escapeHtml(activeGroup.turno && activeGroup.turno !== 'PENDIENTE' ? 'Turno ' + activeGroup.turno : (activeGroup.modalidad && activeGroup.modalidad !== 'PENDIENTE' ? activeGroup.modalidad : 'Regular'))} · ${activeGroup.count || 0} estudiantes asignados a esta nómina
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm fw-bold" id="btn-inicio-switch-classroom" style="background:#7c3aed; color:#fff; border:none; padding:0.45rem 1rem; border-radius:8px; cursor:pointer;">
+              🏫 Cambiar de Carrera o Aula
+            </button>
+          </div>
+        </div>
       `;
     }
 
@@ -842,12 +937,9 @@ export const Layout = {
           <span class="badge badge-success">OPERACIÓN LOCAL</span>
         </div>
       </section>
+      ${contextBannerHtml}
       <div class="grid mvp-metric-grid">
-        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-info"><span class="stat-value">${counts.students}</span><span class="stat-label">Estudiantes</span></div></div>
-        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-info"><span class="stat-value">${counts.enrollments}</span><span class="stat-label">Matrículas</span></div></div>
-        <div class="stat-card"><div class="stat-icon">🗂️</div><div class="stat-info"><span class="stat-value">${counts.groups}</span><span class="stat-label">Grupos</span></div></div>
-        <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-info"><span class="stat-value">${counts.programs}</span><span class="stat-label">Programas</span></div></div>
-        <div class="stat-card"><div class="stat-icon">📖</div><div class="stat-info"><span class="stat-value">${counts.modules}</span><span class="stat-label">Módulos</span></div></div>
+        ${metricsGridHtml}
       </div>
       <div class="card margin-top">
         <h3>Accesos rápidos (${escapeHtml(role.title)})</h3>
@@ -868,10 +960,16 @@ export const Layout = {
           }
         </p>
       </div>`;
+
+    const switchClassBtn = container.querySelector('#btn-inicio-switch-classroom');
+    if (switchClassBtn) {
+      switchClassBtn.onclick = () => this.openClassroomSwitcherModal();
+    }
   },
 
   async renderProgramasView(container) {
-    const programs = await CatalogService.listPrograms();
+    const role = AuthService.getCurrentRole();
+    let programs = await CatalogService.listPrograms();
     const modules = await CatalogService.listModules();
 
     const modulesByProgram = {};
@@ -882,22 +980,31 @@ export const Layout = {
       modulesByProgram[m.programaId].push(m);
     });
 
+    if (role.id === 'DOCENTE') {
+      const activeProgId = TeacherContextService.getActiveProgramId();
+      programs = programs.filter(p => p.id === activeProgId);
+    }
+
+    const isDocente = role.id === 'DOCENTE';
+    const currentProg = programs[0];
+
     container.innerHTML = `
       <section class="view-header">
         <div>
-          <h2>Programas y Módulos Curriculares</h2>
-          <p class="subtitle">Estructura Oficial Confirmada por CARRERAS.jpeg</p>
+          <h2>${isDocente ? `Malla Curricular Asignada — ${escapeHtml(currentProg?.nombre || 'Especialidad')}` : 'Programas y Módulos Curriculares'}</h2>
+          <p class="subtitle">${isDocente ? 'Programa formativo oficial y módulos curriculares de su especialidad técnica' : 'Estructura Oficial Confirmada por CARRERAS.jpeg'}</p>
         </div>
-        <div style="display:flex; gap:0.5rem;">
-          <span class="badge badge-success">${programs.length} Programas</span>
-          <span class="badge badge-info">${modules.length} Módulos</span>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          ${isDocente ? '<span class="user-role-badge role-badge-DOCENTE">DOCENTE DE ESPECIALIDAD</span>' : ''}
+          <span class="badge badge-success">${programs.length} ${programs.length === 1 ? 'Especialidad Asignada' : 'Programas'}</span>
+          <span class="badge badge-info">${isDocente ? (modulesByProgram[currentProg?.id]?.length || 2) : modules.length} Módulos</span>
         </div>
       </section>
 
       <div class="card margin-bottom-sm">
         <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
           <input type="text" id="search-program" class="form-input" placeholder="🔍 Buscar por programa o módulo..." style="flex:1; min-width:260px; padding:0.6rem 1rem; border:1px solid var(--border-color); border-radius:var(--radius-sm);">
-          <a href="#/grupos" class="btn btn-secondary">Asignación de grupos →</a>
+          <a href="#/grupos" class="btn btn-secondary">${isDocente ? 'Mis grupos asignados →' : 'Asignación de grupos →'}</a>
         </div>
       </div>
 
