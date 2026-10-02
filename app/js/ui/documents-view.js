@@ -3055,7 +3055,7 @@ export class DocumentsView {
             </h5>
             <span class="badge bg-light text-secondary border ms-2">${rows.length} Estudiantes · 40 Sesiones</span>
           </div>
-          <button type="button" class="btn-close" id="btn-close-att-modal" aria-label="Cerrar"></button>
+          <button type="button" class="btn-modal-close" id="btn-close-att-modal" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:1.25rem; font-weight:700; color:#475569; cursor:pointer; transition:all 0.15s ease;" aria-label="Cerrar modal" title="Cerrar (Esc)">✕</button>
         </div>
 
         <div class="d-flex flex-wrap align-items-center justify-content-between p-2.5 px-3 bg-light border-bottom gap-2">
@@ -3184,8 +3184,18 @@ export class DocumentsView {
       modalBody.innerHTML = renderTableContent();
     };
 
+    const onEsc = (e) => {
+      if (e.key === 'Escape') closeModal();
+    };
+    document.addEventListener('keydown', onEsc);
+
     const closeModal = () => {
+      document.removeEventListener('keydown', onEsc);
       if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+
+    overlay.onclick = (e) => {
+      if (e.target === overlay) closeModal();
     };
 
     overlay.querySelector('#btn-close-att-modal').onclick = closeModal;
@@ -3324,7 +3334,7 @@ export class DocumentsView {
             </h5>
             <span class="badge bg-light text-secondary border ms-2">${rows.length} Estudiantes · Escala Vigesimal (00-20)</span>
           </div>
-          <button type="button" class="btn-close" id="btn-close-eval-modal" aria-label="Cerrar"></button>
+          <button type="button" class="btn-modal-close" id="btn-close-eval-modal" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:1.25rem; font-weight:700; color:#475569; cursor:pointer; transition:all 0.15s ease;" aria-label="Cerrar modal" title="Cerrar (Esc)">✕</button>
         </div>
 
         <div class="d-flex flex-wrap align-items-center justify-content-between p-2.5 px-3 bg-light border-bottom gap-2">
@@ -3439,8 +3449,18 @@ export class DocumentsView {
       modalBody.innerHTML = renderTableContent();
     };
 
+    const onEsc = (e) => {
+      if (e.key === 'Escape') closeModal();
+    };
+    document.addEventListener('keydown', onEsc);
+
     const closeModal = () => {
+      document.removeEventListener('keydown', onEsc);
       if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+
+    overlay.onclick = (e) => {
+      if (e.target === overlay) closeModal();
     };
 
     overlay.querySelector('#btn-close-eval-modal').onclick = closeModal;

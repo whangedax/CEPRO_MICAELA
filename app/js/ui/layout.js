@@ -660,6 +660,9 @@ export const Layout = {
     this.sanitizeSidebar();
     this.updateNavigation(routeInfo.hash);
 
+    // Limpieza de modales flotantes que puedan quedar adjuntos a document.body
+    document.querySelectorAll('.etapa2-modal-overlay, .etapa4-modal-overlay, #etapa2-attendance-modal, #etapa2-evaluation-modal, #etapa4-modal-overlay').forEach(el => el.remove());
+
     // Guardia de Enrutamiento (RBAC)
     if (!AuthService.canAccessRoute(routeInfo.hash)) {
       this.renderAccessDeniedView(container, routeInfo);
