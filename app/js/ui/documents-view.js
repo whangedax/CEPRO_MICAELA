@@ -19,6 +19,7 @@ import { AuthService } from '../services/auth-service.js';
 import { TeacherContextService } from '../services/teacher-context-service.js';
 import { SyncPackageService } from '../services/sync-package-service.js';
 import { TeacherConfigService } from '../services/teacher-config-service.js';
+import { documentInfoModal } from './document-info-modal.js';
 
 export const DOCUMENT_STATES = Object.freeze({
   IDLE: 'IDLE',
@@ -966,7 +967,12 @@ export class DocumentsView {
                 <span class="doc-badge-pill doc-badge-info">
                   <i class="bi bi-journal-text me-1"></i>📂 Carpeta Pedagógica Docente
                 </span>
-                <span class="badge bg-info text-dark fs-6 px-2 py-1">TMPL-04</span>
+                <div class="d-flex align-items-center gap-1">
+                  <button type="button" class="doc-info-icon-btn" data-doc-info="TMPL-04" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                    ℹ️ ¿Para qué sirve?
+                  </button>
+                  <span class="badge bg-info text-dark fs-6 px-2 py-1">TMPL-04</span>
+                </div>
               </div>
               <h5 class="card-doc-title">
                 <i class="bi bi-journal-bookmark-fill me-1 text-info"></i>Portada Oficial de Carpeta Pedagógica
@@ -993,7 +999,12 @@ export class DocumentsView {
               <span class="doc-badge-pill doc-badge-primary">
                 <i class="bi bi-building me-1"></i>🏛️ Trámite Oficial UGEL
               </span>
-              <span class="badge bg-primary fs-6 px-2 py-1">TMPL-01</span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="doc-info-icon-btn" data-doc-info="TMPL-01" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                  ℹ️ ¿Para qué sirve?
+                </button>
+                <span class="badge bg-primary fs-6 px-2 py-1">TMPL-01</span>
+              </div>
             </div>
             <h5 class="card-doc-title">
               <i class="bi bi-people-fill me-1 text-primary"></i>Nómina Oficial de Matrícula
@@ -1017,7 +1028,12 @@ export class DocumentsView {
               <span class="doc-badge-pill doc-badge-success">
                 <i class="bi bi-person-badge me-1"></i>👤 Expediente del Alumno
               </span>
-              <span class="badge bg-success fs-6 px-2 py-1">TMPL-02</span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="doc-info-icon-btn" data-doc-info="TMPL-02" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                  ℹ️ ¿Para qué sirve?
+                </button>
+                <span class="badge bg-success fs-6 px-2 py-1">TMPL-02</span>
+              </div>
             </div>
             <h5 class="card-doc-title">
               <i class="bi bi-person-lines-fill me-1 text-success"></i>Ficha Individual de Matrícula
@@ -1041,7 +1057,12 @@ export class DocumentsView {
               <span class="doc-badge-pill doc-badge-info">
                 <i class="bi bi-journal-text me-1"></i>📂 Carpeta Docente
               </span>
-              <span class="badge bg-info text-dark fs-6 px-2 py-1">TMPL-04</span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="doc-info-icon-btn" data-doc-info="TMPL-04" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                  ℹ️ ¿Para qué sirve?
+                </button>
+                <span class="badge bg-info text-dark fs-6 px-2 py-1">TMPL-04</span>
+              </div>
             </div>
             <h5 class="card-doc-title">
               <i class="bi bi-journal-bookmark-fill me-1 text-info"></i>Portada de Carpeta Pedagógica
@@ -1065,7 +1086,12 @@ export class DocumentsView {
               <span class="doc-badge-pill doc-badge-warning">
                 <i class="bi bi-hourglass-split me-1"></i>⚠️ En Revisión Técnica
               </span>
-              <span class="badge bg-warning text-dark fs-6 px-2 py-1">TMPL-03</span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="doc-info-icon-btn" data-doc-info="TMPL-03" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                  ℹ️ ¿Para qué sirve?
+                </button>
+                <span class="badge bg-warning text-dark fs-6 px-2 py-1">TMPL-03</span>
+              </div>
             </div>
             <h5 class="card-doc-title">
               <i class="bi bi-card-checklist me-1 text-warning"></i>Registro de Matrícula Modular
@@ -1124,7 +1150,12 @@ export class DocumentsView {
               <span class="doc-badge-pill doc-badge-primary">
                 <i class="bi bi-calendar-check me-1"></i>📅 Seguimiento Diario
               </span>
-              <span class="badge ${isAsistencia ? 'bg-primary' : 'bg-light text-dark border'} fs-6 px-2 py-1">${isAsistencia ? this.selectedTemplateId : 'TMPL-05..10'}</span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="doc-info-icon-btn" data-doc-info="${currentAsistenciaTmpl}" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                  ℹ️ ¿Para qué sirve?
+                </button>
+                <span class="badge ${isAsistencia ? 'bg-primary' : 'bg-light text-dark border'} fs-6 px-2 py-1">${isAsistencia ? this.selectedTemplateId : 'TMPL-05..10'}</span>
+              </div>
             </div>
             <h5 class="card-doc-title">
               <i class="bi bi-calendar2-week-fill me-1 text-primary"></i>Control de Asistencia Modular
@@ -1156,7 +1187,12 @@ export class DocumentsView {
               <span class="doc-badge-pill doc-badge-success">
                 <i class="bi bi-check2-square me-1"></i>📊 Calificaciones Vigesimales
               </span>
-              <span class="badge ${isEvaluacion ? 'bg-success' : 'bg-light text-dark border'} fs-6 px-2 py-1">${isEvaluacion ? this.selectedTemplateId : 'TMPL-11..17'}</span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="doc-info-icon-btn" data-doc-info="${currentEvaluacionTmpl}" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                  ℹ️ ¿Para qué sirve?
+                </button>
+                <span class="badge ${isEvaluacion ? 'bg-success' : 'bg-light text-dark border'} fs-6 px-2 py-1">${isEvaluacion ? this.selectedTemplateId : 'TMPL-11..17'}</span>
+              </div>
             </div>
             <h5 class="card-doc-title">
               <i class="bi bi-clipboard-check-fill me-1 text-success"></i>Registro de Evaluación Auxiliar
@@ -1197,7 +1233,12 @@ export class DocumentsView {
               <span class="doc-badge-pill doc-badge-success">
                 <i class="bi bi-briefcase me-1"></i>🏢 Prácticas Pre-Profesionales
               </span>
-              <span class="badge bg-success fs-6 px-2 py-1">TMPL-18</span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="doc-info-icon-btn" data-doc-info="TMPL-18" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                  ℹ️ ¿Para qué sirve?
+                </button>
+                <span class="badge bg-success fs-6 px-2 py-1">TMPL-18</span>
+              </div>
             </div>
             <h5 class="card-doc-title">
               <i class="bi bi-briefcase-fill me-1 text-success"></i>Consolidado de EFSRT
@@ -1224,7 +1265,12 @@ export class DocumentsView {
               <span class="doc-badge-pill doc-badge-primary">
                 <i class="bi bi-award me-1"></i>📜 Formato Oficial A3
               </span>
-              <span class="badge bg-primary fs-6 px-2 py-1">TMPL-19</span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="doc-info-icon-btn" data-doc-info="TMPL-19" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                  ℹ️ ¿Para qué sirve?
+                </button>
+                <span class="badge bg-primary fs-6 px-2 py-1">TMPL-19</span>
+              </div>
             </div>
             <h5 class="card-doc-title">
               <i class="bi bi-file-earmark-spreadsheet-fill me-1 text-primary"></i>Acta Oficial de Evaluación Modular
@@ -1250,6 +1296,7 @@ export class DocumentsView {
   _renderEtapa4Cards() {
     const isTmpl20 = this.selectedTemplateId === 'TMPL-20';
     const isTmpl21 = this.selectedTemplateId === 'TMPL-21';
+    const currentRole = AuthService.getCurrentRole();
 
     return `
       <div class="doc-cards-grid">
@@ -1260,7 +1307,12 @@ export class DocumentsView {
               <span class="doc-badge-pill doc-badge-primary">
                 <i class="bi bi-mortarboard-fill me-1"></i>📜 Acreditación Modular Oficial
               </span>
-              <span class="badge bg-primary fs-6 px-2 py-1">TMPL-20</span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="doc-info-icon-btn" data-doc-info="TMPL-20" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                  ℹ️ ¿Para qué sirve?
+                </button>
+                <span class="badge bg-primary fs-6 px-2 py-1">TMPL-20</span>
+              </div>
             </div>
             <h5 class="card-doc-title">
               <i class="bi bi-mortarboard-fill me-1 text-primary"></i>Certificado Modular Oficial
@@ -1277,7 +1329,7 @@ export class DocumentsView {
           </div>
         </div>
 
-                ${AuthService.getCurrentRole().id === 'DIRECTOR' ? `
+        ${currentRole.id === 'DIRECTOR' ? `
         <!-- Título Técnico (TMPL-21) - Exclusivo de Dirección General -->
         <div class="doc-item-card card-accent-ugel ${isTmpl21 ? 'active-template' : ''}" data-select-tmpl="TMPL-21" role="button" tabindex="0" title="Seleccionar Título Técnico (TMPL-21)">
           <div>
@@ -1285,7 +1337,12 @@ export class DocumentsView {
               <span class="doc-badge-pill doc-badge-success">
                 <i class="bi bi-award-fill me-1"></i>🎓 Egreso y Titulación Oficial
               </span>
-              <span class="badge bg-success fs-6 px-2 py-1">TMPL-21</span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="doc-info-icon-btn" data-doc-info="TMPL-21" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                  ℹ️ ¿Para qué sirve?
+                </button>
+                <span class="badge bg-success fs-6 px-2 py-1">TMPL-21</span>
+              </div>
             </div>
             <h5 class="card-doc-title">
               <i class="bi bi-award-fill me-1 text-success"></i>Título Técnico / Auxiliar Técnico
@@ -1301,7 +1358,34 @@ export class DocumentsView {
             <span class="fw-bold text-secondary small">MINEDU · Titulación</span>
           </div>
         </div>
-        ` : ''}
+        ` : `
+        <!-- Título Técnico (TMPL-21) - Informativo para Secretaría y Docente -->
+        <div class="doc-item-card card-accent-review" style="opacity: 0.95;" title="Título Técnico (TMPL-21) — Suscripción de Dirección">
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="doc-badge-pill doc-badge-secondary">
+                <i class="bi bi-shield-lock me-1"></i>🔒 Emisión de Dirección General
+              </span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="doc-info-icon-btn" data-doc-info="TMPL-21" title="Conocer qué es, qué contiene y para qué sirve este documento">
+                  ℹ️ ¿Para qué sirve?
+                </button>
+                <span class="badge bg-secondary fs-6 px-2 py-1">TMPL-21</span>
+              </div>
+            </div>
+            <h5 class="card-doc-title">
+              <i class="bi bi-award-fill me-1 text-secondary"></i>Título Técnico / Auxiliar Técnico
+            </h5>
+            <p class="card-doc-desc">
+              Acreditación de graduación y titulación ministerial del MINEDU. Expedida y refrendada formalmente por la Dirección General con registro nacional en REGISTRA.
+            </p>
+          </div>
+          <div class="card-footer-action">
+            <span class="badge bg-light text-secondary border px-3 py-2 fw-bold" style="font-size: 0.85rem;"><i class="bi bi-person-badge me-1"></i>Firma de Director General</span>
+            <span class="fw-bold text-secondary small">Titulación MINEDU</span>
+          </div>
+        </div>
+        `}
       </div>
     `;
   }
@@ -2164,7 +2248,7 @@ export class DocumentsView {
       // Clics directos en tarjetas o botones data-select-tmpl
       container.querySelectorAll('[data-select-tmpl]').forEach(el => {
         el.onclick = async event => {
-          if (event.target.closest('a')) return;
+          if (event.target.closest('a') || event.target.closest('[data-doc-info]')) return;
           event.stopPropagation();
           const tmplId = el.getAttribute('data-select-tmpl');
           if (tmplId) {
@@ -2176,9 +2260,21 @@ export class DocumentsView {
         };
         el.onkeydown = event => {
           if (event.key === 'Enter' || event.key === ' ') {
-            if (event.target.closest('a')) return;
+            if (event.target.closest('a') || event.target.closest('[data-doc-info]')) return;
             event.preventDefault();
             el.click();
+          }
+        };
+      });
+
+      // Clics en botones informativos [data-doc-info] (Abre el carrusel explicativo)
+      container.querySelectorAll('[data-doc-info]').forEach(btn => {
+        btn.onclick = event => {
+          event.stopPropagation();
+          event.preventDefault();
+          const tmplId = btn.getAttribute('data-doc-info');
+          if (tmplId) {
+            documentInfoModal.open(tmplId);
           }
         };
       });

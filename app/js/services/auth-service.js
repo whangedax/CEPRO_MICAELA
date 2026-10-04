@@ -84,7 +84,7 @@ export const ROLES = Object.freeze({
     ],
     allowedStages: ['ETAPA_1', 'ETAPA_2'],
     allowedTemplates: [
-      'TMPL-04',
+      'TMPL-03', 'TMPL-04',
       'TMPL-05', 'TMPL-06', 'TMPL-07', 'TMPL-08', 'TMPL-09', 'TMPL-10',
       'TMPL-11', 'TMPL-12', 'TMPL-13', 'TMPL-14', 'TMPL-15', 'TMPL-16', 'TMPL-17'
     ],
