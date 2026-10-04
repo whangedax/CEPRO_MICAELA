@@ -1,31 +1,34 @@
 # CARPETA DE EVIDENCIAS — PROCESO COMPLETO DE DESARROLLO
 
-> **Sistema Académico CETPRO (v2 Candidate)**  
+> **Sistema Académico CETPRO (Versión Unificada de Producción)**  
 > **Estudiante:** Gonzalo (whangedax)  
 > **Informe de Formación Práctica en Empresa**  
-> **Entorno de Ejecución:** Servidor local oficial `http://127.0.0.1:8081/`  
-> **Rol Operativo:** Secretaría Académica (`SECRETARIA`) — Lic. Carmen Rosa Mendívil  
-> **Formato de Archivos:** PNG nativo a 1920 × 1080 (100% de escala)  
-> **Fecha de Generación:** 02 de Octubre de 2026
+> **Entorno de Ejecución:** Servidor local oficial unificado `http://127.0.0.1:8080/`  
+> **Lanzador Oficial:** `INICIAR_SISTEMA_CETPRO.bat`  
+> **Roles Institucionales Verificados:** Secretaría Académica, Docente de Especialidad y Dirección General  
+> **Formato de Archivos:** PNG nativo de alta resolución  
+> **Fecha de Actualización:** 04 de Octubre de 2026  
 
 ---
 
 ## 1. Descripción de la Tarea Significativa
 
-> **“Mejora de la interfaz del sistema mediante tarjetas de acceso, organización de grupos académicos por programa y turno, e implementación del flujo de asistencia y evaluación para Secretaría.”**
+> **“Mejora de la interfaz del sistema mediante tarjetas de acceso, organización de grupos académicos por programa y turno, e implementación del flujo de asistencia y evaluación para Secretaría, con especialización de roles institucionales y guías documentales interactivas.”**
 
-Este directorio contiene el archivo completo de evidencias fotográficas reales capturadas directamente sobre la interfaz de usuario en producción local, demostrando sin maquetas ni reconstrucciones artificiales cada una de las 15 fases del proceso de desarrollo documentado.
+Este directorio contiene el archivo completo de evidencias fotográficas reales capturadas directamente sobre la interfaz de usuario en el sistema funcionando localmente, demostrando sin maquetas ni reconstrucciones artificiales cada una de las fases del proceso de desarrollo e innovación institucional documentado.
 
 ---
 
 ## 2. Índice General de Archivos en esta Carpeta
 
 ### A. Documentos de Soporte y Guías
-1. `MATRIZ_EVIDENCIAS.md`: Tabla de homologación formal con los 15 pasos del informe, estado PASS y descripción de verificación técnica.
-2. `UBICACION_EN_INFORME.md`: Especificación exacta del número de figura, pie de imagen y párrafo donde debe insertarse cada captura.
+1. `MATRIZ_EVIDENCIAS.md`: Tabla de homologación formal con los 20 pasos del proceso, estado PASS y qué demuestra cada evidencia en el sistema real.
+2. `UBICACION_EN_INFORME.md`: Especificación exacta del número de figura, pie de imagen propuesto y comentario para la redacción de cada captura dentro del cuerpo del informe.
 3. `README_EVIDENCIAS.md`: Este documento resumen.
 
-### B. Capturas de Pantalla Reales (PNG)
+### B. Capturas de Pantalla Reales (28 Archivos PNG)
+
+#### Bloque I: Centro Documental, Tarjetas y Selector Académico
 1. `EVIDENCIA_01_FLUJO_GENERAL.png`: Centro de emisión documental estructurado en 4 etapas y 3 pasos guiados.
 2. `EVIDENCIA_02_TARJETAS_REDISENADAS.png`: Vista panorámica de las tarjetas rediseñadas con bordes de alto contraste.
 3. `EVIDENCIA_03A_TARJETA_NORMAL.png`: Tarjeta individual en estado normal.
@@ -39,6 +42,8 @@ Este directorio contiene el archivo completo de evidencias fotográficas reales 
 11. `EVIDENCIA_08_RESUMEN_GRUPO.png`: Tarjeta de resumen de contexto del grupo seleccionado.
 12. `EVIDENCIA_09A_GRUPO_A.png`: Contexto dinámico con Grupo A (*Peluquería* - 36 alumnos).
 13. `EVIDENCIA_09B_GRUPO_B.png`: Contexto dinámico con Grupo B (*Computación* - 26 alumnos).
+
+#### Bloque II: Flujo de Asistencia, Evaluación y Visor PDF
 14. `EVIDENCIA_10_ETAPA2.png`: Etapa 2 con separación funcional entre Asistencia y Evaluación.
 15. `EVIDENCIA_11_ASISTENCIA_UD.png`: Módulo de Asistencia Modular por Unidad Didáctica (UD 1 a UD 6).
 16. `EVIDENCIA_12_LLENADO_ASISTENCIA.png`: Modal interactivo de sábana de asistencia con 40 sesiones y botones P/F/J.
@@ -49,30 +54,42 @@ Este directorio contiene el archivo completo de evidencias fotográficas reales 
 21. `EVIDENCIA_17_PERSISTENCIA_EVALUACION.png`: Comprobación de persistencia local de las calificaciones registradas.
 22. `EVIDENCIA_18_PDF_ASISTENCIA.png`: Generación del formato físico oficial A3 landscape de asistencia en el visor.
 23. `EVIDENCIA_19_PDF_EVALUACION.png`: Generación del formato físico oficial A3 landscape de evaluación en el visor.
-24. `EVIDENCIA_20_FLUJO_COMPLETO.png`: Infografía integral del ciclo completo de 6 pasos en alta resolución.
+24. `EVIDENCIA_20_FLUJO_COMPLETO.png`: Infografía integral del ciclo completo de trabajo en alta resolución.
+
+#### Bloque III: Innovación Institucional, Roles RBAC y Fichas con Carrusel
+25. `EVIDENCIA_21_LOGIN_INSTITUCIONAL_ROLES.png`: Pantalla de inicio de sesión con roles diferenciados (Docente, Secretaría, Director) y modo 100% offline.
+26. `EVIDENCIA_22_CARRUSEL_SLIDE1_QUE_ES.png`: Modal interactivo — Diapositiva 1: Concepto normativo formal y marco legal MINEDU.
+27. `EVIDENCIA_23_CARRUSEL_SLIDE2_CONTENIDO.png`: Modal interactivo — Diapositiva 2: Estructura de campos y datos técnicos registrados.
+28. `EVIDENCIA_24_CARRUSEL_SLIDE3_UTILIDAD.png`: Modal interactivo — Diapositiva 3: Finalidad institucional y valor ante la UGEL.
+29. `EVIDENCIA_25_CARRUSEL_SLIDE4_ROLES.png`: Modal interactivo — Diapositiva 4: Delimitación de responsabilidades de emisión por rol.
+30. `EVIDENCIA_26_CENTRO_DOCUMENTAL_SECRETARIA.png`: Centro Documental adaptado para Secretaría con botones de guía institucional integrados.
+31. `EVIDENCIA_27_DIRECTOR_TITULACION_TMPL21.png`: Habilitación exclusiva y directa del Título Técnico Oficial (TMPL-21) para Dirección General.
+32. `EVIDENCIA_28_CARRUSEL_TITULO_TECNICO.png`: Ficha interactiva de titulación ministerial explicando los requisitos de egreso.
 
 ---
 
-## 3. Selección Recomendada para el Informe (8 a 10 Imágenes)
+## 3. Selección Recomendada para el Informe (12 Imágenes Esenciales)
 
-Si tu informe requiere una cantidad acotada de figuras, se recomienda priorizar las siguientes **10 imágenes esenciales**:
+Si el informe requiere una cantidad compacta y equilibrada de figuras, se recomienda seleccionar las siguientes **12 imágenes clave**:
 
 | Prioridad | Archivo | Motivo de Selección |
 |:---:|:---|:---|
-| **1** | `EVIDENCIA_01_FLUJO_GENERAL.png` | Presenta la arquitectura global del centro documental y las 4 etapas. |
-| **2** | `EVIDENCIA_02_TARJETAS_REDISENADAS.png` | Demuestra el salto de calidad estética y ergonomía visual en los accesos. |
-| **3** | `EVIDENCIA_06_SELECTOR_POR_PROGRAMA.png` | Es el núcleo de la tarea: la organización por carreras con `<optgroup>`. |
-| **4** | `EVIDENCIA_07_TURNO_MATRICULADOS.png` | Detalla la solución al problema de homonimia de grupos mediante turno y aforo. |
-| **5** | `EVIDENCIA_08_RESUMEN_GRUPO.png` | Demuestra la confirmación inmediata de datos para el usuario de secretaría. |
-| **6** | `EVIDENCIA_10_ETAPA2.png` | Muestra el desacoplamiento claro entre asistencia y evaluación. |
-| **7** | `EVIDENCIA_12_LLENADO_ASISTENCIA.png` | Demuestra la interactividad del llenado diario con botones codificados P/F/J. |
-| **8** | `EVIDENCIA_14_LLENADO_NOTAS.png` | Demuestra la evaluación continua por los 5 Indicadores de Logro y escala vigesimal. |
-| **9** | `EVIDENCIA_15_VALIDACION_SIN_GRUPO.png` | Demuestra la robustez del sistema y la prevención de errores operativos. |
-| **10** | `EVIDENCIA_20_FLUJO_COMPLETO.png` | Resume de forma concluyente todo el ciclo de trabajo de la práctica. |
+| **1** | `EVIDENCIA_21_LOGIN_INSTITUCIONAL_ROLES.png` | Demuestra la seguridad, inicio de sesión por roles y autonomía sin internet. |
+| **2** | `EVIDENCIA_01_FLUJO_GENERAL.png` | Presenta la arquitectura global del centro documental y las 4 etapas. |
+| **3** | `EVIDENCIA_02_TARJETAS_REDISENADAS.png` | Demuestra el rediseño de las tarjetas de acceso con alto contraste. |
+| **4** | `EVIDENCIA_06_SELECTOR_POR_PROGRAMA.png` | Es el núcleo de la tarea: organización por carreras con `<optgroup>`. |
+| **5** | `EVIDENCIA_07_TURNO_MATRICULADOS.png` | Solución al problema de homonimia de grupos mediante turno y aforo visible. |
+| **6** | `EVIDENCIA_08_RESUMEN_GRUPO.png` | Demuestra la confirmación previa de datos para evitar errores de emisión. |
+| **7** | `EVIDENCIA_12_LLENADO_ASISTENCIA.png` | Demuestra el módulo interactivo de asistencia diaria (40 sesiones). |
+| **8** | `EVIDENCIA_14_LLENADO_NOTAS.png` | Demuestra la evaluación continua por 5 indicadores en escala vigesimal. |
+| **9** | `EVIDENCIA_22_CARRUSEL_SLIDE1_QUE_ES.png` | Innovación pedagógica: modal interactivo explicando el marco normativo MINEDU. |
+| **10** | `EVIDENCIA_25_CARRUSEL_SLIDE4_ROLES.png` | Delimitación clara de responsabilidades de firma y custodia entre roles. |
+| **11** | `EVIDENCIA_27_DIRECTOR_TITULACION_TMPL21.png` | Muestra la facultad de emisión de Título Oficial para Dirección General. |
+| **12** | `EVIDENCIA_20_FLUJO_COMPLETO.png` | Infografía integral que resume de forma concluyente todo el desarrollo. |
 
 ---
 
-## 4. Garantía de Seguridad e Integridad
-- **Sin alteraciones de código productivo:** Los directorios `app/` y `app-v2/` no sufrieron modificaciones.
-- **Sin alteraciones de Git:** No se generaron commits ni pushes.
-- **Sin alteraciones de datos reales:** Las pruebas se realizaron utilizando el dataset estándar precargado en la base de datos de demostración y candidata local.
+## 4. Garantía de Seguridad e Integridad Técnica
+* **100% Offline:** Ningún componente depende de internet, fuentes externas ni CDNs.
+* **Integridad de Base de Datos:** Los registros de estudiantes (269) y matrículas (295) permanecen intactos.
+* **Persistencia Atómica:** Las notas y asistencias se guardan localmente con compatibilidad para sincronización USB Smart Merge.

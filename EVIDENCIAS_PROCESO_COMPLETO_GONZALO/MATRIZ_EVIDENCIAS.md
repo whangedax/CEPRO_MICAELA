@@ -1,10 +1,10 @@
 # MATRIZ DE EVIDENCIAS REALES — SISTEMA ACADÉMICO CETPRO
 
-> **Proyecto:** Sistema Académico CETPRO (v2 Candidate)  
+> **Proyecto:** Sistema Académico CETPRO (Versión Unificada de Producción)  
 > **Estudiante:** Gonzalo (whangedax)  
-> **Tarea Significativa:** Mejora de la interfaz del sistema mediante tarjetas de acceso, organización de grupos académicos por programa y turno, e implementación del flujo de asistencia y evaluación para Secretaría.  
-> **Entorno de Verificación:** Servidor Local Oficial `http://127.0.0.1:8081/`  
-> **Fecha de Validación:** 02 de Octubre de 2026
+> **Tarea Significativa:** Mejora de la interfaz del sistema mediante tarjetas de acceso, organización de grupos académicos por programa y turno, e implementación del flujo de asistencia y evaluación para Secretaría, con especialización de roles institucionales y guías documentales interactivas.  
+> **Entorno de Verificación:** Servidor Local Oficial Unificado `http://127.0.0.1:8080/`  
+> **Fecha de Actualización:** 04 de Octubre de 2026  
 
 ---
 
@@ -25,3 +25,8 @@
 | **13** | **Persistencia de la información** | `EVIDENCIA_16_PERSISTENCIA_ASISTENCIA.png`<br>`EVIDENCIA_17_PERSISTENCIA_EVALUACION.png` | **PASS** | Comprobación de retención de datos en `Etapa2DataService`: al navegar a otras etapas y regresar, la asistencia (40 sesiones) y las notas (5 IL) continúan registradas con los badges de estado activo (*Con marcas* / *Con notas*). |
 | **14** | **Integración con formatos oficiales (PDF)** | `EVIDENCIA_18_PDF_ASISTENCIA.png`<br>`EVIDENCIA_19_PDF_EVALUACION.png` | **PASS** | Emisión fidedigna en formato A3 landscape en el visor PDF integrado: membrete ministerial, logo oficial del CETPRO, capacidad terminal, indicadores, estudiantes y notas/asistencias estampadas según normativa MINEDU. |
 | **15** | **Pruebas integrales del flujo completo** | `EVIDENCIA_20_FLUJO_COMPLETO.png`<br>*(Conjunto de 22 capturas)* | **PASS** | Verificación integral de las 10 pruebas funcionales del informe demostradas en una infografía cronológica compuesta exclusivamente con las capturas reales obtenidas del sistema. |
+| **16** | **Autenticación Institucional y Roles RBAC** | `EVIDENCIA_21_LOGIN_INSTITUCIONAL_ROLES.png` | **PASS** | Pantalla de inicio de sesión institucional con diferenciación formal de 3 perfiles (Docente, Secretaría y Director), delimitación de aulas por carrera y operación 100% autónoma sin internet. |
+| **17** | **Fichas Pedagógicas: ¿Qué es este documento?** | `EVIDENCIA_22_CARRUSEL_SLIDE1_QUE_ES.png` | **PASS** | Modal con carrusel interactivo que explica el concepto normativo formal de cada documento oficial (ej. TMPL-01 Nómina), marco legal del MINEDU (RVM 188-2020) y características del formato físico. |
+| **18** | **Fichas Pedagógicas: ¿Qué contiene y Para qué sirve?** | `EVIDENCIA_23_CARRUSEL_SLIDE2_CONTENIDO.png`<br>`EVIDENCIA_24_CARRUSEL_SLIDE3_UTILIDAD.png` | **PASS** | Desglose en diapositivas interactivas de los campos oficiales (DNI, nombres, foliación de 30 por página, notas vigesimales) y su utilidad administrativa ante UGEL, auditorías y archivo pasivo. |
+| **19** | **Responsabilidades por Rol y Atribuciones** | `EVIDENCIA_25_CARRUSEL_SLIDE4_ROLES.png`<br>`EVIDENCIA_26_CENTRO_DOCUMENTAL_SECRETARIA.png` | **PASS** | Diapositiva que especifica quién elabora, quién firma y quién custodia el formato. Secretaría visualiza los botones `ℹ️ ¿Para qué sirve?` en todas las etapas para orientación continua. |
+| **20** | **Emisión de Titulación Oficial para Dirección** | `EVIDENCIA_27_DIRECTOR_TITULACION_TMPL21.png`<br>`EVIDENCIA_28_CARRUSEL_TITULO_TECNICO.png` | **PASS** | Habilitación directa y exclusiva del Título Técnico Oficial a Nombre de la Nación (TMPL-21) para la Dirección General, con ficha pedagógica de egreso y emisión sin bloqueos burocráticos. |

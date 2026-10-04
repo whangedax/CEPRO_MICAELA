@@ -1,6 +1,6 @@
 # GUÍA DE UBICACIÓN DE EVIDENCIAS EN EL INFORME DE PRÁCTICAS
 
-Este documento detalla la posición recomendada para insertar cada una de las capturas de pantalla reales dentro del cuerpo de tu **Informe de Formación Práctica en Empresa**, siguiendo la estructura de los 15 pasos de la tarea significativa.
+Este documento detalla la posición exacta recomendada para insertar cada una de las capturas de pantalla reales dentro del cuerpo de tu **Informe de Formación Práctica en Empresa**, siguiendo la estructura de los 20 pasos de la tarea significativa y el desarrollo institucional del sistema.
 
 ---
 
@@ -159,4 +159,48 @@ Este documento detalla la posición recomendada para insertar cada una de las ca
 - **Colocar al cierre del apartado:** `15. Pruebas del funcionamiento`
 - **Pie de figura:**  
   **Figura 20. Secuencia completa del flujo implementado desde la selección de la etapa hasta la generación del documento institucional.**
-- **Comentario para la redacción:** *Infografía integral compuesta exclusivamente con las capturas reales que resume cronológicamente todo el ciclo de trabajo de la tarea significativa.*
+
+---
+
+### Apartado 16: Autenticación Institucional y Control de Acceso por Roles (RBAC)
+- **Archivo:** `EVIDENCIA_21_LOGIN_INSTITUCIONAL_ROLES.png`
+- **Colocar en el apartado de Seguridad y Perfiles de Usuario:**
+- **Pie de figura:**  
+  **Figura 21. Pantalla de inicio de sesión institucional con control de acceso por roles (Docente, Secretaría y Director) y operación 100% local.**
+- **Comentario para la redacción:** *Muestra la autenticación adaptativa donde el Docente delimita su especialidad y aula, y el personal administrativo accede a las herramientas de control institucional.*
+
+---
+
+### Apartado 17: Fichas Técnicas Pedagógicas con Carrusel Interactivo
+- **Archivo A:** `EVIDENCIA_22_CARRUSEL_SLIDE1_QUE_ES.png`
+- **Colocar en el apartado de Usabilidad e Innovación Pedagógica:**
+- **Pie de figura:**  
+  **Figura 22A. Modal interactivo — Diapositiva 1: Concepto normativo formal, marco legal y características del formato oficial.**
+- **Archivo B:** `EVIDENCIA_23_CARRUSEL_SLIDE2_CONTENIDO.png`
+- **Colocar a continuación de la Figura 22A:**
+- **Pie de figura:**  
+  **Figura 22B. Modal interactivo — Diapositiva 2: Estructura de campos y datos técnicos registrados en el documento.**
+- **Archivo C:** `EVIDENCIA_24_CARRUSEL_SLIDE3_UTILIDAD.png`
+- **Colocar a continuación de la Figura 22B:**
+- **Pie de figura:**  
+  **Figura 22C. Modal interactivo — Diapositiva 3: Finalidad institucional, trámite obligatorio ante UGEL y archivo pasivo.**
+- **Archivo D:** `EVIDENCIA_25_CARRUSEL_SLIDE4_ROLES.png`
+- **Colocar a continuación de la Figura 22C:**
+- **Pie de figura:**  
+  **Figura 22D. Modal interactivo — Diapositiva 4: Delimitación de responsabilidades de elaboración, firma y custodia por rol.**
+
+---
+
+### Apartado 18: Especialización del Centro Documental para Secretaría y Dirección
+- **Archivo A:** `EVIDENCIA_26_CENTRO_DOCUMENTAL_SECRETARIA.png`
+- **Colocar en el apartado de Gestión de Secretaría Académica:**
+- **Pie de figura:**  
+  **Figura 23. Centro de Emisión Documental configurado para Secretaría Académica con botones de guía institucional integrados.**
+- **Archivo B:** `EVIDENCIA_27_DIRECTOR_TITULACION_TMPL21.png`
+- **Colocar en el apartado de Gestión de Dirección General:**
+- **Pie de figura:**  
+  **Figura 24. Habilitación exclusiva del Título Técnico Oficial a Nombre de la Nación (TMPL-21) para el perfil de Dirección General.**
+- **Archivo C:** `EVIDENCIA_28_CARRUSEL_TITULO_TECNICO.png`
+- **Colocar a continuación de la Figura 24:**
+- **Pie de figura:**  
+  **Figura 25. Ficha técnica interactiva del Título Técnico Oficial detallando las condiciones de graduación ministerial.**
