@@ -15,9 +15,10 @@ export const ROLES = Object.freeze({
     badgeColor: '#065f46',
     description: 'Máxima autoridad institucional. Refrendo de títulos, actas y configuración académica.',
     allowedRoutes: [
-      '#/login', '#/inicio', '#/estudiantes', '#/grupos', '#/documentos',
-      '#/configuracion-academica', '#/programas', '#/respaldo',
-      '#/configuracion', '#/evaluacion', '#/efsrt', '#/cierre', '#/demo', '#/demo/evaluacion'
+      '#/login', '#/inicio', '#/estudiantes', '#/matriculas', '#/programas', '#/grupos',
+      '#/nominas', '#/registros/matricula', '#/configuracion-academica', '#/registro',
+      '#/asistencia', '#/evaluacion', '#/portada', '#/efsrt', '#/cierre', '#/documentos',
+      '#/incidencias', '#/respaldo', '#/configuracion', '#/demo', '#/demo/evaluacion'
     ],
     allowedStages: ['ETAPA_1', 'ETAPA_2', 'ETAPA_3', 'ETAPA_4'],
     allowedTemplates: [
@@ -46,8 +47,10 @@ export const ROLES = Object.freeze({
     badgeColor: '#1e40af',
     description: 'Gestión de matrícula, nóminas oficiales, actas modulares y certificados.',
     allowedRoutes: [
-      '#/login', '#/inicio', '#/estudiantes', '#/grupos', '#/documentos',
-      '#/programas', '#/configuracion', '#/respaldo', '#/evaluacion', '#/efsrt', '#/cierre', '#/demo', '#/demo/evaluacion'
+      '#/login', '#/inicio', '#/estudiantes', '#/matriculas', '#/programas', '#/grupos',
+      '#/nominas', '#/registros/matricula', '#/registro', '#/documentos',
+      '#/efsrt', '#/cierre', '#/incidencias', '#/respaldo', '#/configuracion',
+      '#/evaluacion', '#/demo', '#/demo/evaluacion'
     ],
     allowedStages: ['ETAPA_1', 'ETAPA_2', 'ETAPA_3', 'ETAPA_4'],
     allowedTemplates: [

@@ -65,7 +65,7 @@ const ARTIFACTS_DIR = 'C:\\Users\\whangedax\\.gemini\\antigravity\\brain\\1c4ace
 
   const gruposInfo = await page.evaluate(() => {
     const rows = document.querySelectorAll('.mvp-table tbody tr');
-    const hasConfigBtn = Boolean(document.querySelector('a[href="#/configuracion-academica"]'));
+    const hasConfigBtn = Array.from(document.querySelectorAll('a[href="#/configuracion-academica"]')).some(el => el.offsetParent !== null && getComputedStyle(el).display !== 'none');
     const groupCodes = Array.from(rows).map(r => r.querySelector('td strong')?.textContent?.trim());
     return {
       rowCount: rows.length,

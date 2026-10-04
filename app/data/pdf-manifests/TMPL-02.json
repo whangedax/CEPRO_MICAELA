@@ -1,20 +1,105 @@
 {
-  "templateId": "TMPL-02", "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/02_FICHA_DE_MATRICULA.pdf",
-  "sha256": "63a712ba063118d7e6147952420f003b0a890a8fa7565c906b2cad37cd12e914",
-  "pages": [{ "number": 1, "width": 841.89, "height": 595.28 }], "contextType": "ENROLLMENT", "capacity": { "curriculumUnits": 8, "subsanacionUnits": 1, "pages": 1 },
-  "physicalBindingSource": "/app/data/TMPL02_PDF_FIELDS.json", "previewStatus": "IMPLEMENTED_PREVIEW",
-  "blockers": ["B-002", "B-004", "B-007", "I-046"],
+  "templateId": "TMPL-02",
+  "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/02_FICHA_DE_MATRICULA.pdf",
+  "sha256": "7add3fef6ee0d1302ef736f8935efc9effd431d816f34c88eda85ad04c7be8a6",
+  "pages": [
+    {
+      "number": 1,
+      "width": 841.89,
+      "height": 595.28
+    }
+  ],
+  "contextType": "ENROLLMENT",
+  "capacity": {
+    "curriculumUnits": 8,
+    "subsanacionUnits": 1,
+    "pages": 1
+  },
+  "physicalBindingSource": "/app/data/TMPL02_PDF_FIELDS.json",
+  "previewStatus": "IMPLEMENTED_PREVIEW",
+  "blockers": [
+    "B-002",
+    "B-004",
+    "B-007",
+    "I-046"
+  ],
   "fields": [
-    { "canonicalKey": "institution.name", "physicalBoxId": "institution.name", "page": 1, "styleProfile": "INSTITUTION_NAME", "overflowPolicy": "FIELD_OVERFLOW" },
-    { "canonicalKey": "institution.dre", "physicalBoxId": "institution.dre", "page": 1, "styleProfile": "HEADER_VALUE", "overflowPolicy": "FIELD_OVERFLOW" },
-    { "canonicalKey": "institution.modularCode", "physicalBoxId": "institution.codigoModular", "page": 1, "styleProfile": "DOCUMENT_NUMBER", "overflowPolicy": "FIELD_OVERFLOW" },
-    { "canonicalKey": "institution.managementType", "physicalBoxId": "institution.managementType", "page": 1, "styleProfile": "HEADER_VALUE", "overflowPolicy": "FIELD_OVERFLOW" },
-    { "canonicalKey": "institution.department", "physicalBoxId": "institution.departamento", "page": 1, "styleProfile": "HEADER_VALUE", "overflowPolicy": "FIELD_OVERFLOW" },
-    { "canonicalKey": "institution.province", "physicalBoxId": "institution.provincia", "page": 1, "styleProfile": "HEADER_VALUE", "overflowPolicy": "FIELD_OVERFLOW" },
-    { "canonicalKey": "institution.district", "physicalBoxId": "institution.distrito", "page": 1, "styleProfile": "HEADER_VALUE", "overflowPolicy": "FIELD_OVERFLOW" },
-    { "canonicalKey": "institution.resolutions", "physicalBoxId": "institution.directorResolution", "page": 1, "styleProfile": "HEADER_VALUE", "overflowPolicy": "FIELD_OVERFLOW" },
-    { "canonicalKey": "program.name", "physicalBoxId": "program.name", "page": 1, "styleProfile": "PROGRAM_NAME", "overflowPolicy": "FIELD_OVERFLOW" },
-    { "canonicalKey": "student.documentNumber", "physicalBoxId": "student.documentNumber", "page": 1, "styleProfile": "DOCUMENT_NUMBER", "overflowPolicy": "FIELD_OVERFLOW" },
-    { "canonicalKey": "student.fullName", "physicalBoxId": "student.fullName", "page": 1, "styleProfile": "PRIMARY_PERSON_NAME", "overflowPolicy": "FIELD_OVERFLOW" }
+    {
+      "canonicalKey": "institution.name",
+      "physicalBoxId": "institution.name",
+      "page": 1,
+      "styleProfile": "INSTITUTION_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "institution.dre",
+      "physicalBoxId": "institution.dre",
+      "page": 1,
+      "styleProfile": "HEADER_VALUE",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "institution.modularCode",
+      "physicalBoxId": "institution.codigoModular",
+      "page": 1,
+      "styleProfile": "DOCUMENT_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "institution.managementType",
+      "physicalBoxId": "institution.managementType",
+      "page": 1,
+      "styleProfile": "HEADER_VALUE",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "institution.department",
+      "physicalBoxId": "institution.departamento",
+      "page": 1,
+      "styleProfile": "HEADER_VALUE",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "institution.province",
+      "physicalBoxId": "institution.provincia",
+      "page": 1,
+      "styleProfile": "HEADER_VALUE",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "institution.district",
+      "physicalBoxId": "institution.distrito",
+      "page": 1,
+      "styleProfile": "HEADER_VALUE",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "institution.resolutions",
+      "physicalBoxId": "institution.directorResolution",
+      "page": 1,
+      "styleProfile": "HEADER_VALUE",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "program.name",
+      "physicalBoxId": "program.name",
+      "page": 1,
+      "styleProfile": "PROGRAM_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "student.documentNumber",
+      "physicalBoxId": "student.documentNumber",
+      "page": 1,
+      "styleProfile": "DOCUMENT_NUMBER",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    },
+    {
+      "canonicalKey": "student.fullName",
+      "physicalBoxId": "student.fullName",
+      "page": 1,
+      "styleProfile": "PRIMARY_PERSON_NAME",
+      "overflowPolicy": "FIELD_OVERFLOW"
+    }
   ]
 }

@@ -128,7 +128,7 @@ export const GroupAssignmentView = {
     container.innerHTML = `
       <section class="view-header"><div><h2>Grupos académicos</h2>
         <p class="subtitle">Consulta de grupos, matrículas y accesos a nóminas y registros.</p></div>
-        <a class="btn btn-primary" href="#/configuracion-academica">Configuración académica</a></section>
+        ${role.canConfigureAcademic ? '<a class="btn btn-primary" href="#/configuracion-academica">Configuración académica</a>' : ''}</section>
       <div class="grid grid-3 margin-bottom-sm">
         <div class="stat-card"><div class="stat-info"><span class="stat-value">${groups.length}</span><span class="stat-label">Grupos</span></div></div>
         <div class="stat-card"><div class="stat-info"><span class="stat-value">${groups.reduce((sum, group) => sum + group.enrollmentCount, 0)}</span><span class="stat-label">Matrículas vinculadas</span></div></div>

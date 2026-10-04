@@ -1,7 +1,7 @@
 {
   "templateId": "TMPL-07",
   "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/07_ASISTENCIA_UD3.pdf",
-  "sha256": "2e6559d9321834f6cd0d7863eb4fed9e8450edda3f1f73ee90bbfba19b1ec5a9",
+  "sha256": "a82252c6b1c2703a7d1534cd2c8534f1b56bec5a5446d9a93d183e37872efabd",
   "pages": [
     {
       "number": 1,
@@ -161,5 +161,6 @@
         "h": 11.99
       }
     }
-  ]
+  ],
+  "rendererStatus": "RENDERER_IMPLEMENTED"
 }

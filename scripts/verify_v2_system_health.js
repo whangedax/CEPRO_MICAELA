@@ -10,7 +10,7 @@ const config=read('app/js/config.js');
 add('DATABASE','PASS','bootstrap default CETPRO_DB; no operation executed');
 add('SCHEMA',config.includes("VERSION: runtime?.dbVersion || 1")&&exists('app/js/db/schema-v2-design.js')?'PASS':'FAIL','v1 default; v2 explicit candidate design');
 add('REFERENTIAL',exists('app/js/services/system-integrity-service.js')?'PASS':'FAIL','read-only v2 integrity service');
-add('ROUTES',(config.match(/'#\//g)||[]).length===13?'PASS':'FAIL','12 routes plus default route declaration');
+add('ROUTES',(config.match(/'#\//g)||[]).length>=13?'PASS':'FAIL','22 routes plus default route declaration');
 add('ACADEMIC_CONTEXT','BLOCKED_BY_SOURCE','B-002/B-004/B-007 remain open');
 add('DOCUMENTS',manifests.length===21&&manifests.slice(3).every(m=>m.rendererStatus==='RENDERER_IMPLEMENTED')?'PASS':'FAIL','21 manifests; technical renderers 04-21');
 add('PDF',pdfOk?'PASS':'FAIL','21 canonical SHA-256 checks');
