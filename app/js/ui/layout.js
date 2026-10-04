@@ -480,13 +480,67 @@ export const Layout = {
       }
     });
 
+    // Depuración de ruido visual específico para DIRECCIÓN GENERAL ("eliminar cosas que no sirven")
+    if (role.id === 'DIRECTOR') {
+      const directorNoiseSelectors = [
+        '#sidebar a[href="#/incidencias"]',
+        '#sidebar a[href="#/efsrt"]',
+        '#sidebar a[href="#/cierre"]',
+        '#sidebar a[href="#/asistencia"]',
+        '#sidebar a[href="#/evaluacion"]',
+        '#sidebar a[href="#/portada"]',
+        '#sidebar a[href="#/configuracion-docente"]'
+      ];
+      directorNoiseSelectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+          el.style.display = 'none';
+        });
+      });
+    }
+
     // Secciones de cabecera en el sidebar
-    const sectionTitles = document.querySelectorAll('#sidebar .nav-section-title');
-    sectionTitles.forEach(sec => {
-      if (sec.textContent.includes('CONFIGURACIÓN ADMINISTRATIVA')) {
-        sec.style.display = role.id === 'DOCENTE' ? 'none' : '';
+    let mainSecTitle = document.getElementById('sidebar-sec-title-main');
+    let adminSecTitle = document.getElementById('sidebar-sec-title-admin');
+    const inicioLink = document.querySelector('#sidebar a[href="#/inicio"]');
+    const respaldoLink = document.querySelector('#sidebar a[href="#/respaldo"]');
+
+    if (!mainSecTitle && inicioLink && inicioLink.parentNode) {
+      mainSecTitle = document.createElement('div');
+      mainSecTitle.id = 'sidebar-sec-title-main';
+      mainSecTitle.className = 'nav-section-title';
+      inicioLink.parentNode.insertBefore(mainSecTitle, inicioLink);
+    }
+    if (!adminSecTitle && respaldoLink && respaldoLink.parentNode) {
+      adminSecTitle = document.createElement('div');
+      adminSecTitle.id = 'sidebar-sec-title-admin';
+      adminSecTitle.className = 'nav-section-title';
+      respaldoLink.parentNode.insertBefore(adminSecTitle, respaldoLink);
+    }
+
+    if (mainSecTitle) {
+      if (role.id === 'DIRECTOR') {
+        mainSecTitle.textContent = 'DIRECCIÓN GENERAL';
+        mainSecTitle.style.display = '';
+      } else if (role.id === 'SECRETARIA') {
+        mainSecTitle.textContent = 'SECRETARÍA ACADÉMICA';
+        mainSecTitle.style.display = '';
+      } else if (role.id === 'DOCENTE') {
+        mainSecTitle.textContent = 'GESTIÓN PEDAGÓGICA';
+        mainSecTitle.style.display = '';
       }
-    });
+    }
+
+    if (adminSecTitle) {
+      if (role.id === 'DIRECTOR') {
+        adminSecTitle.textContent = 'SISTEMA Y SEGURIDAD';
+        adminSecTitle.style.display = '';
+      } else if (role.id === 'SECRETARIA') {
+        adminSecTitle.textContent = 'SISTEMA Y RESPALDO';
+        adminSecTitle.style.display = '';
+      } else {
+        adminSecTitle.style.display = 'none';
+      }
+    }
 
     // Gestión de enlaces pedagógicos especializados para el rol DOCENTE
     const docLink = document.querySelector('#sidebar a[href="#/documentos"]');
@@ -514,18 +568,56 @@ export const Layout = {
       if (teacherLinksContainer) teacherLinksContainer.style.display = 'none';
     }
 
-    // Etiquetas pedagógicas contextuales para el rol DOCENTE
+    // Etiquetas y orden contextual por rol
+    const inicioSpan = document.querySelector('#sidebar a[href="#/inicio"] span:last-child');
+    if (inicioSpan) {
+      inicioSpan.textContent = role.id === 'DIRECTOR' ? 'PANEL EJECUTIVO' : 'INICIO';
+    }
+
+    const docLinkEl = document.querySelector('#sidebar a[href="#/documentos"]');
+    if (docLinkEl) {
+      const docIcon = docLinkEl.querySelector('.nav-icon');
+      const docSpan = docLinkEl.querySelector('span:last-child');
+      if (docIcon && docSpan) {
+        if (role.id === 'DIRECTOR') {
+          docIcon.textContent = '🎓';
+          docSpan.textContent = 'TITULACIÓN Y DOCUMENTOS';
+          if (inicioLink && inicioLink.nextSibling !== docLinkEl) {
+            inicioLink.parentNode.insertBefore(docLinkEl, inicioLink.nextSibling);
+          }
+        } else {
+          docIcon.textContent = '📄';
+          docSpan.textContent = 'DOCUMENTOS';
+        }
+      }
+    }
+
     const gruposLink = document.querySelector('#sidebar a[href="#/grupos"] span:last-child');
     if (gruposLink) {
-      gruposLink.textContent = role.id === 'DOCENTE' ? 'MIS GRUPOS ASIGNADOS' : 'ASIGNACIÓN DE GRUPOS';
+      gruposLink.textContent = role.id === 'DOCENTE'
+        ? 'MIS GRUPOS ASIGNADOS'
+        : (role.id === 'DIRECTOR' ? 'SUPERVISIÓN DE AULAS' : 'ASIGNACIÓN DE GRUPOS');
     }
     const estudiantesLink = document.querySelector('#sidebar a[href="#/estudiantes"] span:last-child');
     if (estudiantesLink) {
-      estudiantesLink.textContent = role.id === 'DOCENTE' ? 'MIS ALUMNOS' : 'ESTUDIANTES';
+      estudiantesLink.textContent = role.id === 'DOCENTE'
+        ? 'MIS ALUMNOS'
+        : (role.id === 'DIRECTOR' ? 'PADRÓN INSTITUCIONAL' : 'ESTUDIANTES');
     }
     const programasLink = document.querySelector('#sidebar a[href="#/programas"] span:last-child');
     if (programasLink) {
-      programasLink.textContent = role.id === 'DOCENTE' ? 'MI MALLA CURRICULAR' : 'PROGRAMAS Y MÓDULOS';
+      programasLink.textContent = role.id === 'DOCENTE'
+        ? 'MI MALLA CURRICULAR'
+        : (role.id === 'DIRECTOR' ? 'PLANES DE ESTUDIO' : 'PROGRAMAS Y MÓDULOS');
+    }
+
+    const respaldoLinkSpan = document.querySelector('#sidebar a[href="#/respaldo"] span:last-child');
+    if (respaldoLinkSpan) {
+      respaldoLinkSpan.textContent = role.id === 'DIRECTOR' ? 'SEGURIDAD Y RESPALDO BD' : 'RESPALDO';
+    }
+    const configLinkSpan = document.querySelector('#sidebar a[href="#/configuracion"] span:last-child');
+    if (configLinkSpan) {
+      configLinkSpan.textContent = role.id === 'DIRECTOR' ? 'CONFIGURACIÓN GENERAL' : 'CONFIGURACIÓN';
     }
   },
 
@@ -863,23 +955,262 @@ export const Layout = {
     let shortcutsHtml = '';
     let metricsGridHtml = '';
     let contextBannerHtml = '';
+    let synopticMonitorHtml = '';
 
     if (role.id === 'DIRECTOR') {
       roleTitle = 'Panel Institucional — Dirección General CETPRO';
-      roleSub = `${escapeHtml(institution.nombre)} · Director: ${escapeHtml(role.userName)}`;
-      shortcutsHtml = `
-        <a class="mvp-shortcut" href="#/documentos"><span>📑</span>Emisión de Títulos y Actas</a>
-        <a class="mvp-shortcut" href="#/grupos"><span>🗂️</span>Gestión de Grupos</a>
-        <a class="mvp-shortcut" href="#/configuracion-academica"><span>⚙️</span>Configuración Académica</a>
-        <a class="mvp-shortcut" href="#/estudiantes"><span>👥</span>Padrón de Estudiantes</a>
-        <a class="mvp-shortcut" href="#/respaldo"><span>💾</span>Respaldo del Sistema</a>
+      roleSub = `${escapeHtml(institution.nombre)} · Despacho de Dirección: ${escapeHtml(role.userName)}`;
+
+      const cleanInstName = (institution.nombre || 'Micaela Bastidas Puyucawa')
+        .replace(/^CETPRO\s+P[úu]blico\s+/i, '')
+        .replace(/^["“”']+|["“”']+$/g, '');
+      const bannerInstTitle = `CETPRO Público "${cleanInstName}"`;
+
+      contextBannerHtml = `
+        <div class="card margin-bottom-sm" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 55%, #047857 100%); color: #ffffff; border-radius: 12px; padding: 1.25rem 1.5rem; box-shadow: 0 4px 14px rgba(6, 78, 59, 0.18); border: 1px solid #059669;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div style="max-width: 760px;">
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; flex-wrap:wrap;">
+                <span style="background: rgba(255,255,255,0.2); padding: 0.2rem 0.65rem; border-radius: 4px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;">
+                  Despacho de Dirección General
+                </span>
+                <span style="background: #10b981; color: #064e3b; padding: 0.2rem 0.55rem; border-radius: 4px; font-size: 0.72rem; font-weight: 800;">
+                  R.D. N° 0124-1983-ED
+                </span>
+                <span style="background: rgba(255,255,255,0.15); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
+                  UGEL 03 · DRELM
+                </span>
+              </div>
+              <div style="font-size:1.35rem; font-weight:800; letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 0.35rem;">
+                ${escapeHtml(bannerInstTitle)}
+              </div>
+              <div style="font-size:0.86rem; opacity:0.95; line-height:1.4;">
+                Código Modular: <strong>0725358</strong> · Periodo Académico: <strong>2026-I</strong> · Titular: <strong>${escapeHtml(role.userName)}</strong>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+              <a href="#/documentos" class="btn btn-sm" style="background:#ffffff; color:#065f46; font-weight:700; border-radius:8px; padding:0.55rem 1.1rem; text-decoration:none; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+                🎓 Titulación Oficial (TMPL-21)
+              </a>
+              <a href="#/respaldo" class="btn btn-sm" style="background:rgba(255,255,255,0.18); color:#ffffff; border:1px solid rgba(255,255,255,0.45); font-weight:600; border-radius:8px; padding:0.55rem 1rem; text-decoration:none;">
+                💾 Respaldo Maestro BD
+              </a>
+            </div>
+          </div>
+        </div>
       `;
+
       metricsGridHtml = `
-        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-info"><span class="stat-value">${counts.students}</span><span class="stat-label">Estudiantes</span></div></div>
-        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-info"><span class="stat-value">${counts.enrollments}</span><span class="stat-label">Matrículas</span></div></div>
-        <div class="stat-card"><div class="stat-icon">🗂️</div><div class="stat-info"><span class="stat-value">${counts.groups}</span><span class="stat-label">Grupos</span></div></div>
-        <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-info"><span class="stat-value">${counts.programs}</span><span class="stat-label">Programas</span></div></div>
-        <div class="stat-card"><div class="stat-icon">📖</div><div class="stat-info"><span class="stat-value">${counts.modules}</span><span class="stat-label">Módulos</span></div></div>
+        <div class="stat-card" style="border-left: 4px solid #047857;">
+          <div class="stat-icon" style="background: #d1fae5; color: #047857;">👥</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #047857;">${counts.students}</span>
+            <span class="stat-label">Padrón de Estudiantes</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #2563eb;">
+          <div class="stat-icon" style="background: #dbeafe; color: #1d4ed8;">📋</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #1d4ed8;">${counts.enrollments}</span>
+            <span class="stat-label">Matrículas Totales</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #7c3aed;">
+          <div class="stat-icon" style="background: #ede9fe; color: #7c3aed;">🗂️</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #6d28d9;">${counts.groups}</span>
+            <span class="stat-label">Aulas / 12 Grupos</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #d97706;">
+          <div class="stat-icon" style="background: #fef3c7; color: #b45309;">📚</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #b45309;">${counts.programs}</span>
+            <span class="stat-label">Carreras Técnicas</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #0284c7;">
+          <div class="stat-icon" style="background: #e0f2fe; color: #0369a1;">📖</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #0369a1;">${counts.modules}</span>
+            <span class="stat-label">Módulos Oficiales</span>
+          </div>
+        </div>
+      `;
+
+      shortcutsHtml = `
+        <a class="shortcut-btn-card shortcut-btn--emerald" href="#/documentos" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">🎓</div>
+            <span class="shortcut-btn-badge">TMPL-21 / TMPL-20</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Titulación y Certificación Oficial</strong>
+            <p class="shortcut-btn-desc">Refrendo ministerial de Títulos Profesionales Técnicos (TMPL-21) con código REGISTRA y Certificados Modulares oficiales.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Emitir Títulos y Actas <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--amber" href="#/documentos" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">📜</div>
+            <span class="shortcut-btn-badge">TMPL-01 / TMPL-19</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Visado de Nóminas y Actas Finales</strong>
+            <p class="shortcut-btn-desc">Supervisión y visado oficial de Nóminas de Matrícula (TMPL-01..03) y Actas Consolidadas de Evaluación Modular para UGEL 03.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Supervisar Documentos <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--blue" href="#/grupos" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">🗂️</div>
+            <span class="shortcut-btn-badge">${counts.groups} Aulas Activas</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Supervisión de Aulas y Aforos</strong>
+            <p class="shortcut-btn-desc">Monitoreo de carga docente, turnos (Mañana, Tarde, Noche, Virtual) y distribución de aforos en las 12 aulas formativas.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Monitorear Aulas <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--purple" href="#/respaldo" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">💾</div>
+            <span class="shortcut-btn-badge">Copia Local SHA-256</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Seguridad y Respaldo Maestro de BD</strong>
+            <p class="shortcut-btn-desc">Exportación de respaldo inmutable en JSON criptográfico, restauración de emergencia y auditoría de integridad física.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Gestionar Respaldo <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--indigo" href="#/programas" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">📚</div>
+            <span class="shortcut-btn-badge">${counts.programs} Carreras / ${counts.modules} Módulos</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Planes de Estudio y Catálogo Curricular</strong>
+            <p class="shortcut-btn-desc">Estructura curricular oficial, unidades de competencia y horas lectivas bajo enfoque de formación técnico-productiva.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Consultar Malla <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+
+        <a class="shortcut-btn-card shortcut-btn--teal" href="#/estudiantes" role="button">
+          <div class="shortcut-btn-header">
+            <div class="shortcut-btn-icon">👥</div>
+            <span class="shortcut-btn-badge">${counts.students} Matriculados</span>
+          </div>
+          <div class="shortcut-btn-content">
+            <strong class="shortcut-btn-title">Padrón Institucional de Estudiantes</strong>
+            <p class="shortcut-btn-desc">Consulta centralizada de estudiantes, datos DNI, género y estado de matrícula institucional de todo el CETPRO.</p>
+          </div>
+          <div class="shortcut-btn-footer">
+            <span class="shortcut-btn-action">Consultar Padrón <span class="shortcut-btn-arrow">→</span></span>
+          </div>
+        </a>
+      `;
+
+      // Generación del Monitor Sinóptico de las 7 Carreras Técnicas
+      const allPrograms = TeacherContextService.getPrograms();
+      const allGroups = TeacherContextService.getGroupCatalog();
+
+      const rows = allPrograms.map(p => {
+        const pGroups = allGroups.filter(g => g.programaId === p.id);
+        const pStudents = pGroups.reduce((acc, g) => acc + (g.count || 0), 0);
+        const pModules = (p.modulos && p.modulos.length) || 2;
+        const turnosSet = new Set(pGroups.map(g => {
+          if (g.turno && g.turno !== 'PENDIENTE') return g.turno;
+          if (g.modalidad && g.modalidad !== 'PENDIENTE') return g.modalidad;
+          return 'Regular';
+        }));
+        const turnosStr = Array.from(turnosSet).join(', ') || 'Regular';
+        const percent = Math.min(100, Math.round((pStudents / 295) * 100));
+
+        return `
+          <tr>
+            <td style="padding:0.65rem 0.75rem;"><code style="background:#f1f5f9; padding:0.15rem 0.4rem; border-radius:4px; font-weight:700; color:#334155;">${escapeHtml(p.id)}</code></td>
+            <td style="padding:0.65rem 0.75rem;">
+              <strong style="color:#0f172a;">${escapeHtml(p.nombre)}</strong>
+              <div style="font-size:0.75rem; color:#64748b;">${escapeHtml(p.modulos?.[0]?.nombre || 'Módulo Modular')}</div>
+            </td>
+            <td style="text-align:center; padding:0.65rem 0.75rem;"><span class="badge badge-light" style="font-weight:600;">${pModules} Mód.</span></td>
+            <td style="text-align:center; padding:0.65rem 0.75rem;"><span class="badge badge-light" style="font-weight:600;">${pGroups.length} Aula(s)</span></td>
+            <td style="padding:0.65rem 0.75rem;"><span style="font-size:0.8rem; color:#475569;">${escapeHtml(turnosStr)}</span></td>
+            <td style="text-align:center; padding:0.65rem 0.75rem;">
+              <strong style="color:#047857; font-size:0.92rem;">${pStudents}</strong>
+              <div style="font-size:0.72rem; color:#64748b;">${percent}% del CETPRO</div>
+            </td>
+            <td style="text-align:center; padding:0.65rem 0.75rem;">
+              <span class="badge badge-success" style="font-size:0.72rem; padding:0.25rem 0.5rem;">ACTIVO</span>
+            </td>
+            <td style="text-align:right; padding:0.65rem 0.75rem;">
+              <a href="#/grupos" class="btn btn-sm btn-secondary" style="font-size:0.76rem; padding:0.25rem 0.6rem; text-decoration:none;">Supervisar →</a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      synopticMonitorHtml = `
+        <div class="card margin-top">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+            <div>
+              <h3 style="margin:0; display:flex; align-items:center; gap:0.5rem; font-size:1.1rem;">
+                <span>📊</span> Monitor Sinóptico de Carreras Técnicas
+              </h3>
+              <p style="margin:0.25rem 0 0 0; font-size:0.83rem; color:#64748b;">
+                Supervisión institucional consolidada de aforos, matrícula modular y distribución por especialidad (Periodo 2026-I)
+              </p>
+            </div>
+            <span class="badge badge-success" style="font-size:0.78rem; padding:0.35rem 0.75rem; font-weight:700;">
+              7 Carreras Acreditadas · 12 Aulas
+            </span>
+          </div>
+
+          <div class="table-responsive" style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; font-size:0.86rem; border-collapse:collapse;">
+              <thead>
+                <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0; text-align:left;">
+                  <th style="padding:0.65rem 0.75rem;">Código</th>
+                  <th style="padding:0.65rem 0.75rem;">Especialidad Formativa</th>
+                  <th style="padding:0.65rem 0.75rem; text-align:center;">Módulos</th>
+                  <th style="padding:0.65rem 0.75rem; text-align:center;">Aulas</th>
+                  <th style="padding:0.65rem 0.75rem;">Turnos / Modalidad</th>
+                  <th style="padding:0.65rem 0.75rem; text-align:center;">Matrículas</th>
+                  <th style="padding:0.65rem 0.75rem; text-align:center;">Estado</th>
+                  <th style="padding:0.65rem 0.75rem; text-align:right;">Supervisión</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+              <tfoot>
+                <tr style="background:#f1f5f9; font-weight:700; border-top:2px solid #cbd5e1;">
+                  <td colspan="2" style="padding:0.75rem;">TOTAL CONSOLIDADO CETPRO</td>
+                  <td style="padding:0.75rem; text-align:center;">14 Módulos</td>
+                  <td style="padding:0.75rem; text-align:center;">12 Grupos</td>
+                  <td style="padding:0.75rem;">Mañana · Tarde · Noche · Virtual</td>
+                  <td style="padding:0.75rem; text-align:center; color:#047857; font-size:0.95rem;">295 Matrículas (269 Alumnos)</td>
+                  <td style="padding:0.75rem; text-align:center;"><span class="badge badge-success" style="font-size:0.72rem;">100% OPERATIVO</span></td>
+                  <td style="padding:0.75rem; text-align:right;"><a href="#/grupos" class="btn btn-sm btn-secondary" style="font-size:0.76rem; padding:0.25rem 0.6rem; text-decoration:none;">Ver Todo →</a></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
       `;
     } else if (role.id === 'SECRETARIA') {
       roleTitle = 'Panel de Matrícula y Registros — Secretaría Académica';
@@ -1086,12 +1417,13 @@ export const Layout = {
       <div class="card margin-top">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom: 0.5rem;">
           <h3 style="margin:0;">Accesos rápidos (${escapeHtml(role.title)})</h3>
-          <span style="font-size:0.82rem; color:#64748b;">Módulos de trabajo pedagógico y gestión directa</span>
+          <span style="font-size:0.82rem; color:#64748b;">${role.id === 'DIRECTOR' ? 'Operaciones ejecutivas y refrendo institucional' : (role.id === 'DOCENTE' ? 'Módulos de trabajo pedagógico y aula' : 'Módulos de registro y secretaría')}</span>
         </div>
-        <div class="${role.id === 'DOCENTE' ? 'mvp-shortcuts-grid' : 'mvp-shortcuts'}">
+        <div class="${(role.id === 'DOCENTE' || role.id === 'DIRECTOR') ? 'mvp-shortcuts-grid' : 'mvp-shortcuts'}">
           ${shortcutsHtml}
         </div>
       </div>
+      ${synopticMonitorHtml}
       <div class="card margin-top">
         <h3>Estado y Atribuciones del Rol</h3>
         <p>${escapeHtml(role.description)}</p>

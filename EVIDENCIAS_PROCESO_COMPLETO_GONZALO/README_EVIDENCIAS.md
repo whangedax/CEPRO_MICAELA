@@ -85,7 +85,11 @@ Si el informe requiere una cantidad compacta y equilibrada de figuras, se recomi
 | **9** | `EVIDENCIA_22_CARRUSEL_SLIDE1_QUE_ES.png` | Innovación pedagógica: modal interactivo explicando el marco normativo MINEDU. |
 | **10** | `EVIDENCIA_25_CARRUSEL_SLIDE4_ROLES.png` | Delimitación clara de responsabilidades de firma y custodia entre roles. |
 | **11** | `EVIDENCIA_27_DIRECTOR_TITULACION_TMPL21.png` | Muestra la facultad de emisión de Título Oficial para Dirección General. |
-| **12** | `EVIDENCIA_20_FLUJO_COMPLETO.png` | Infografía integral que resume de forma concluyente todo el desarrollo. |
+| **12** | `EVIDENCIA_29_DIRECTOR_DASHBOARD_EJECUTIVO.png` | Dashboard ejecutivo de Dirección con banner formal, métricas y 6 tarjetas gerenciales. |
+| **13** | `EVIDENCIA_30_DIRECTOR_MONITOR_SINOPTICO.png` | Monitor sinóptico con balance de oferta académica en las 7 carreras (295 alumnos). |
+| **14** | `EVIDENCIA_31_DIRECTOR_TITULACION_CENTRO_DOC.png` | Menú lateral depurado para Dirección y acceso directo al Centro Documental. |
+| **15** | `EVIDENCIA_20_FLUJO_COMPLETO.png` | Infografía integral que resume de forma concluyente todo el desarrollo. |
+
 
 ---
 

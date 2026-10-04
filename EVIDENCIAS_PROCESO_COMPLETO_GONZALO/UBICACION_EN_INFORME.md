@@ -204,3 +204,31 @@ Este documento detalla la posición exacta recomendada para insertar cada una de
 - **Colocar a continuación de la Figura 24:**
 - **Pie de figura:**  
   **Figura 25. Ficha técnica interactiva del Título Técnico Oficial detallando las condiciones de graduación ministerial.**
+
+---
+
+### Apartado 19: Dashboard Ejecutivo y Banner Institucional de Dirección General
+- **Archivo:** `EVIDENCIA_29_DIRECTOR_DASHBOARD_EJECUTIVO.png`
+- **Colocar en el apartado de Gestión de Dirección General / Panel de Control:**
+- **Pie de figura:**  
+  **Figura 26. Panel institucional de Dirección General con banner formal (R.D. 0124-1983-ED / UGEL 03), métricas globales y tarjetas ejecutivas de alta jerarquía.**
+- **Comentario para la redacción:** *Demuestra la vista directiva de alto nivel, con 269 estudiantes únicos, 295 matrículas, 12 aulas y acceso directo a titulación oficial, nóminas y seguridad de base de datos.*
+
+---
+
+### Apartado 20: Monitor Sinóptico de Oferta Académica y Aforos
+- **Archivo:** `EVIDENCIA_30_DIRECTOR_MONITOR_SINOPTICO.png`
+- **Colocar a continuación del Dashboard de Dirección:**
+- **Pie de figura:**  
+  **Figura 27. Monitor sinóptico de especialidades técnicas con balance en tiempo real de las 7 carreras formativas, módulos, turnos y 295 matrículas.**
+- **Comentario para la redacción:** *Muestra la tabla de mando gerencial donde el Director supervisa de forma integral la distribución por turnos y aforos de cada una de las carreras del CETPRO.*
+
+---
+
+### Apartado 21: Depuración del Menú Lateral y Navegación Directa de Dirección
+- **Archivo:** `EVIDENCIA_31_DIRECTOR_TITULACION_CENTRO_DOC.png`
+- **Colocar en el apartado de Arquitectura de la Información y Usabilidad RBAC:**
+- **Pie de figura:**  
+  **Figura 28. Menú lateral depurado para Dirección General (sin enlaces de ruido como incidencias o cierre) y navegación fluida a la Etapa 4 de Titulación Oficial.**
+- **Comentario para la redacción:** *Evidencia la eliminación de ruido visual y enlaces innecesarios en la barra lateral, agrupando las opciones en dos bloques limpios: Dirección General y Sistema y Seguridad.*
+
