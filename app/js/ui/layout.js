@@ -517,10 +517,33 @@ export const Layout = {
       });
     }
 
+    // Depuración de ruido visual específico para DOCENTE DE ESPECIALIDAD ("eliminar cosas que no sirven")
+    if (role.id === 'DOCENTE') {
+      const docenteNoiseSelectors = [
+        '#sidebar a[href="#/incidencias"]',
+        '#sidebar a[href="#/cierre"]',
+        '#sidebar a[href="#/efsrt"]',
+        '#sidebar a[href="#/registro"]',
+        '#sidebar a[href="#/respaldo"]',
+        '#sidebar a[href="#/matriculas"]',
+        '#sidebar a[href="#/nominas"]',
+        '#sidebar a[href="#/registros/matricula"]',
+        '#sidebar a[href="#/configuracion"]',
+        '#sidebar a[href="#/documentos"]'
+      ];
+      docenteNoiseSelectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+          el.style.display = 'none';
+        });
+      });
+    }
+
     // Secciones de cabecera en el sidebar
     let mainSecTitle = document.getElementById('sidebar-sec-title-main');
     let adminSecTitle = document.getElementById('sidebar-sec-title-admin');
+    let academicSecTitle = document.getElementById('sidebar-sec-title-academic');
     const inicioLink = document.querySelector('#sidebar a[href="#/inicio"]');
+    const estLink = document.querySelector('#sidebar a[href="#/estudiantes"]');
     const respaldoLink = document.querySelector('#sidebar a[href="#/respaldo"]');
 
     if (!mainSecTitle && inicioLink && inicioLink.parentNode) {
@@ -528,6 +551,12 @@ export const Layout = {
       mainSecTitle.id = 'sidebar-sec-title-main';
       mainSecTitle.className = 'nav-section-title';
       inicioLink.parentNode.insertBefore(mainSecTitle, inicioLink);
+    }
+    if (!academicSecTitle && estLink && estLink.parentNode) {
+      academicSecTitle = document.createElement('div');
+      academicSecTitle.id = 'sidebar-sec-title-academic';
+      academicSecTitle.className = 'nav-section-title';
+      estLink.parentNode.insertBefore(academicSecTitle, estLink);
     }
     if (!adminSecTitle && respaldoLink && respaldoLink.parentNode) {
       adminSecTitle = document.createElement('div');
@@ -546,6 +575,15 @@ export const Layout = {
       } else if (role.id === 'DOCENTE') {
         mainSecTitle.textContent = 'GESTIÓN PEDAGÓGICA';
         mainSecTitle.style.display = '';
+      }
+    }
+
+    if (academicSecTitle) {
+      if (role.id === 'DOCENTE') {
+        academicSecTitle.textContent = 'AULA Y ESPECIALIDAD';
+        academicSecTitle.style.display = '';
+      } else {
+        academicSecTitle.style.display = 'none';
       }
     }
 
@@ -576,11 +614,14 @@ export const Layout = {
           <a href="#/portada" class="nav-link"><span class="nav-icon">📁</span><span>PORTADA DOCENTE</span></a>
           <a href="#/configuracion-docente" class="nav-link"><span class="nav-icon">⚙️</span><span>CONFIGURACIÓN DE CARPETA</span></a>
         `;
-        if (docLink && docLink.parentNode) {
-          docLink.parentNode.insertBefore(teacherLinksContainer, docLink);
+        if (inicioLink && inicioLink.parentNode) {
+          inicioLink.parentNode.insertBefore(teacherLinksContainer, inicioLink.nextSibling);
         }
       } else {
         teacherLinksContainer.style.display = '';
+        if (inicioLink && inicioLink.parentNode && inicioLink.nextSibling !== teacherLinksContainer) {
+          inicioLink.parentNode.insertBefore(teacherLinksContainer, inicioLink.nextSibling);
+        }
       }
     } else {
       if (docLink) docLink.style.display = '';
@@ -592,7 +633,7 @@ export const Layout = {
     if (inicioSpan) {
       inicioSpan.textContent = role.id === 'DIRECTOR'
         ? 'PANEL EJECUTIVO'
-        : (role.id === 'SECRETARIA' ? 'PANEL DE MATRÍCULA' : 'INICIO');
+        : (role.id === 'SECRETARIA' ? 'PANEL DE MATRÍCULA' : 'AULA PEDAGÓGICA');
     }
 
     const docLinkEl = document.querySelector('#sidebar a[href="#/documentos"]');
@@ -1491,12 +1532,93 @@ export const Layout = {
       const studentCount = activeGroup.count || 0;
 
       roleTitle = `Aula Pedagógica — ${activeProg.nombre}`;
-      roleSub = `${escapeHtml(institution.nombre)} · Docente: ${escapeHtml(role.userName)} · Aula: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno || activeGroup.modalidad || 'Regular')})`;
+      roleSub = `${escapeHtml(institution.nombre)} · Docente: ${escapeHtml(role.userName)} · Aula: ${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno && activeGroup.turno !== 'PENDIENTE' ? activeGroup.turno : (activeGroup.modalidad && activeGroup.modalidad !== 'PENDIENTE' ? activeGroup.modalidad : 'Presencial'))})`;
+
+      const cleanInstName = (institution.nombre || 'Micaela Bastidas Puyucawa')
+        .replace(/^CETPRO\s+P[úu]blico\s+/i, '')
+        .replace(/^["“”']+|["“”']+$/g, '');
+      const bannerInstTitle = `CETPRO Público "${cleanInstName}"`;
+
+      contextBannerHtml = `
+        <div class="card margin-bottom-sm" style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 55%, #7c3aed 100%); color: #ffffff; border-radius: 12px; padding: 1.25rem 1.5rem; box-shadow: 0 4px 14px rgba(76, 29, 149, 0.22); border: 1px solid #8b5cf6;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div style="max-width: 760px;">
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; flex-wrap:wrap;">
+                <span style="background: rgba(255,255,255,0.2); padding: 0.2rem 0.65rem; border-radius: 4px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;">
+                  Área Pedagógica y Aula
+                </span>
+                <span style="background: #c084fc; color: #3b0764; padding: 0.2rem 0.55rem; border-radius: 4px; font-size: 0.72rem; font-weight: 800;">
+                  Gestión Modular de Clases
+                </span>
+                <span style="background: rgba(255,255,255,0.15); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
+                  Periodo 2026-I
+                </span>
+              </div>
+              <div style="font-size:1.35rem; font-weight:800; letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 0.35rem;">
+                ${escapeHtml(bannerInstTitle)}
+              </div>
+              <div style="font-size:0.86rem; opacity:0.95; line-height:1.4;">
+                Especialidad: <strong>${escapeHtml(activeProg.nombre)}</strong> · Aula Activa: <strong>${escapeHtml(activeGroup.grupoCode)} (${escapeHtml(activeGroup.turno && activeGroup.turno !== 'PENDIENTE' ? 'Turno ' + activeGroup.turno : (activeGroup.modalidad && activeGroup.modalidad !== 'PENDIENTE' ? activeGroup.modalidad : 'Presencial'))})</strong> · Responsable: <strong>${escapeHtml(role.userName)}</strong>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+              <a href="#/asistencia" class="btn btn-sm" style="background:#ffffff; color:#6d28d9; font-weight:700; border-radius:8px; padding:0.55rem 1.1rem; text-decoration:none; box-shadow:0 2px 6px rgba(0,0,0,0.12);">
+                📝 Tomar Asistencia (TMPL-05..10)
+              </a>
+              <a href="#/evaluacion" class="btn btn-sm" style="background:rgba(255,255,255,0.18); color:#ffffff; border:1px solid rgba(255,255,255,0.45); font-weight:600; border-radius:8px; padding:0.55rem 1rem; text-decoration:none;">
+                📊 Registro de Notas (TMPL-11..17)
+              </a>
+              <button type="button" class="btn btn-sm" id="btn-inicio-switch-classroom" style="background:rgba(255,255,255,0.25); color:#ffffff; border:1px solid rgba(255,255,255,0.6); font-weight:700; border-radius:8px; padding:0.55rem 0.9rem; cursor:pointer;">
+                🏫 Cambiar Aula
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      metricsGridHtml = `
+        <div class="stat-card" style="border-left: 4px solid #7c3aed;">
+          <div class="stat-icon" style="background: #ede9fe; color: #7c3aed;">👥</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #6d28d9;">${studentCount}</span>
+            <span class="stat-label">Alumnos en Aula (${escapeHtml(activeGroup.grupoCode)})</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #2563eb;">
+          <div class="stat-icon" style="background: #dbeafe; color: #1d4ed8;">📋</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #1d4ed8;">${studentCount}</span>
+            <span class="stat-label">Matrículas en su Nómina</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #059669;">
+          <div class="stat-icon" style="background: #d1fae5; color: #047857;">🗂️</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #047857;">${progGroups.length}</span>
+            <span class="stat-label">Aulas en Carrera (${totalCarreraAlumnos} al.)</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #d97706;">
+          <div class="stat-icon" style="background: #fef3c7; color: #b45309;">📚</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #b45309;">${moduleCount}</span>
+            <span class="stat-label">Módulos Oficiales</span>
+          </div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #4f46e5;">
+          <div class="stat-icon" style="background: #e0e7ff; color: #4338ca;">📖</div>
+          <div class="stat-info">
+            <span class="stat-value" style="color: #4338ca;">13</span>
+            <span class="stat-label">Formatos (6 Asist. + 7 Eval.)</span>
+          </div>
+        </div>
+      `;
+
       shortcutsHtml = `
         <a class="shortcut-btn-card shortcut-btn--blue" href="#/asistencia" role="button">
           <div class="shortcut-btn-header">
             <div class="shortcut-btn-icon">📝</div>
-            <span class="shortcut-btn-badge">TMPL-05..10</span>
+            <span class="shortcut-btn-badge">TMPL-05..10 (40 Sesiones)</span>
           </div>
           <div class="shortcut-btn-content">
             <strong class="shortcut-btn-title">Control de Asistencia Modular</strong>
@@ -1510,7 +1632,7 @@ export const Layout = {
         <a class="shortcut-btn-card shortcut-btn--green" href="#/evaluacion" role="button">
           <div class="shortcut-btn-header">
             <div class="shortcut-btn-icon">📊</div>
-            <span class="shortcut-btn-badge">TMPL-11..17</span>
+            <span class="shortcut-btn-badge">TMPL-11..17 (5 Indicadores)</span>
           </div>
           <div class="shortcut-btn-content">
             <strong class="shortcut-btn-title">Registro Auxiliar de Notas</strong>
@@ -1524,7 +1646,7 @@ export const Layout = {
         <a class="shortcut-btn-card shortcut-btn--amber" href="#/portada" role="button">
           <div class="shortcut-btn-header">
             <div class="shortcut-btn-icon">📁</div>
-            <span class="shortcut-btn-badge">TMPL-04</span>
+            <span class="shortcut-btn-badge">TMPL-04 Oficial</span>
           </div>
           <div class="shortcut-btn-content">
             <strong class="shortcut-btn-title">Portada de Carpeta Docente</strong>
@@ -1538,7 +1660,7 @@ export const Layout = {
         <a class="shortcut-btn-card shortcut-btn--purple" href="#/estudiantes" role="button">
           <div class="shortcut-btn-header">
             <div class="shortcut-btn-icon">👥</div>
-            <span class="shortcut-btn-badge">${studentCount} Alumnos</span>
+            <span class="shortcut-btn-badge">${studentCount} Alumnos Asignados</span>
           </div>
           <div class="shortcut-btn-content">
             <strong class="shortcut-btn-title">Mis Alumnos Matriculados</strong>
@@ -1552,10 +1674,10 @@ export const Layout = {
         <a class="shortcut-btn-card shortcut-btn--emerald" href="#/grupos" role="button">
           <div class="shortcut-btn-header">
             <div class="shortcut-btn-icon">🗂️</div>
-            <span class="shortcut-btn-badge">${progGroups.length} Grupos</span>
+            <span class="shortcut-btn-badge">${progGroups.length} Aulas en Especialidad</span>
           </div>
           <div class="shortcut-btn-content">
-            <strong class="shortcut-btn-title">Mis Grupos y Aulas</strong>
+            <strong class="shortcut-btn-title">Mis Aulas Asignadas</strong>
             <p class="shortcut-btn-desc">Visualice y conmute entre los grupos y turnos correspondientes a ${escapeHtml(activeProg.nombre)}.</p>
           </div>
           <div class="shortcut-btn-footer">
@@ -1566,7 +1688,7 @@ export const Layout = {
         <a class="shortcut-btn-card shortcut-btn--indigo" href="#/programas" role="button">
           <div class="shortcut-btn-header">
             <div class="shortcut-btn-icon">📚</div>
-            <span class="shortcut-btn-badge">${moduleCount} Módulos</span>
+            <span class="shortcut-btn-badge">${moduleCount} Módulos Oficiales</span>
           </div>
           <div class="shortcut-btn-content">
             <strong class="shortcut-btn-title">Malla Curricular Asignada</strong>
@@ -1576,77 +1698,93 @@ export const Layout = {
             <span class="shortcut-btn-action">Ver Malla Oficial <span class="shortcut-btn-arrow">→</span></span>
           </div>
         </a>
-
-        <a class="shortcut-btn-card shortcut-btn--teal" href="#/configuracion-docente" role="button">
-          <div class="shortcut-btn-header">
-            <div class="shortcut-btn-icon">⚙️</div>
-            <span class="shortcut-btn-badge">Parámetros</span>
-          </div>
-          <div class="shortcut-btn-content">
-            <strong class="shortcut-btn-title">Configuración de Carpeta</strong>
-            <p class="shortcut-btn-desc">Personalice datos del docente, carátula institucional y capacidades/indicadores por unidad didáctica.</p>
-          </div>
-          <div class="shortcut-btn-footer">
-            <span class="shortcut-btn-action">Configurar Plantillas <span class="shortcut-btn-arrow">→</span></span>
-          </div>
-        </a>
       `;
 
-      metricsGridHtml = `
-        <div class="stat-card" style="border-left: 4px solid #7c3aed;">
-          <div class="stat-icon" style="background: #ede9fe; color: #7c3aed;">👥</div>
-          <div class="stat-info">
-            <span class="stat-value" style="color: #6d28d9;">${studentCount}</span>
-            <span class="stat-label">Alumnos en su Aula (${escapeHtml(activeGroup.grupoCode)})</span>
-          </div>
-        </div>
-        <div class="stat-card" style="border-left: 4px solid #2563eb;">
-          <div class="stat-icon" style="background: #dbeafe; color: #1d4ed8;">📋</div>
-          <div class="stat-info">
-            <span class="stat-value" style="color: #1d4ed8;">${studentCount}</span>
-            <span class="stat-label">Matrículas en su Grupo</span>
-          </div>
-        </div>
-        <div class="stat-card" style="border-left: 4px solid #059669;">
-          <div class="stat-icon" style="background: #d1fae5; color: #047857;">🗂️</div>
-          <div class="stat-info">
-            <span class="stat-value" style="color: #047857;">${progGroups.length}</span>
-            <span class="stat-label">Grupos en Carrera (${totalCarreraAlumnos} al.)</span>
-          </div>
-        </div>
-        <div class="stat-card" style="border-left: 4px solid #d97706;">
-          <div class="stat-icon" style="background: #fef3c7; color: #b45309;">📚</div>
-          <div class="stat-info">
-            <span class="stat-value" style="color: #b45309;">1</span>
-            <span class="stat-label">Especialidad Asignada</span>
-          </div>
-        </div>
-        <div class="stat-card" style="border-left: 4px solid #4f46e5;">
-          <div class="stat-icon" style="background: #e0e7ff; color: #4338ca;">📖</div>
-          <div class="stat-info">
-            <span class="stat-value" style="color: #4338ca;">${moduleCount}</span>
-            <span class="stat-label">Módulos Oficiales</span>
-          </div>
-        </div>
-      `;
+      // Generación del Tablero de Control Pedagógico de Aulas para Docente
+      const teacherRows = progGroups.map(g => {
+        const isCurrentActive = g.grupoCode === activeGroup.grupoCode;
+        const turnoBadge = g.turno && g.turno !== 'PENDIENTE'
+          ? `<span class="badge badge-info" style="font-size:0.72rem;">${escapeHtml(g.turno)}</span>`
+          : (g.modalidad && g.modalidad !== 'PENDIENTE'
+            ? `<span class="badge badge-purple" style="font-size:0.72rem; background:#ede9fe; color:#6d28d9;">${escapeHtml(g.modalidad)}</span>`
+            : `<span class="badge badge-secondary" style="font-size:0.72rem;">Regular</span>`);
 
-      contextBannerHtml = `
-        <div class="card margin-bottom-sm" style="background: linear-gradient(135deg, #f5f3ff, #faf5ff); border: 1.5px solid #d8b4fe; border-radius: 10px; padding: 1rem 1.25rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+        const statusBadge = isCurrentActive
+          ? `<span class="badge badge-success" style="font-size:0.72rem; padding:0.25rem 0.55rem; background:#10b981; color:#fff;">✓ AULA ACTIVA ACTUAL</span>`
+          : `<span class="badge badge-secondary" style="font-size:0.72rem; padding:0.25rem 0.5rem;">DISPONIBLE</span>`;
+
+        const actionButtons = isCurrentActive
+          ? `<div style="display:flex; gap:0.35rem; justify-content:flex-end;">
+               <a href="#/asistencia" class="btn btn-sm btn-primary" style="font-size:0.76rem; padding:0.25rem 0.6rem; text-decoration:none; background:#7c3aed; border-color:#7c3aed;">📝 Asistencia →</a>
+               <a href="#/evaluacion" class="btn btn-sm btn-success" style="font-size:0.76rem; padding:0.25rem 0.6rem; text-decoration:none; background:#059669; border-color:#059669;">📊 Notas →</a>
+             </div>`
+          : `<div style="display:flex; justify-content:flex-end;">
+               <button type="button" class="btn btn-sm btn-outline-primary btn-teacher-switch-group" data-group-code="${escapeHtml(g.grupoCode)}" style="font-size:0.76rem; padding:0.25rem 0.6rem;">🏫 Activar Aula</button>
+             </div>`;
+
+        return `
+          <tr style="${isCurrentActive ? 'background:#faf5ff;' : ''}">
+            <td style="padding:0.65rem 0.75rem;">
+              <code style="background:${isCurrentActive ? '#ede9fe' : '#f1f5f9'}; padding:0.15rem 0.45rem; border-radius:4px; font-weight:700; color:${isCurrentActive ? '#6d28d9' : '#334155'};">
+                ${escapeHtml(g.grupoCode)}
+              </code>
+            </td>
+            <td style="padding:0.65rem 0.75rem;">
+              <strong style="color:#0f172a;">${escapeHtml(g.programaNombre)}</strong>
+              <div style="font-size:0.75rem; color:#64748b;">${escapeHtml(g.profesor || role.userName)}</div>
+            </td>
+            <td style="padding:0.65rem 0.75rem; text-align:center;">${turnoBadge}</td>
+            <td style="padding:0.65rem 0.75rem; text-align:center;">
+              <strong style="color:#6d28d9; font-size:0.92rem;">${g.count || 0}</strong>
+              <span style="font-size:0.75rem; color:#64748b;"> estudiantes</span>
+            </td>
+            <td style="padding:0.65rem 0.75rem; text-align:center;">${statusBadge}</td>
+            <td style="padding:0.65rem 0.75rem; text-align:right;">${actionButtons}</td>
+          </tr>
+        `;
+      }).join('');
+
+      synopticMonitorHtml = `
+        <div class="card margin-top">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
             <div>
-              <div style="font-size:0.78rem; text-transform:uppercase; font-weight:800; color:#7c3aed; letter-spacing:0.05em; margin-bottom:0.25rem;">
-                🎯 Ámbito Académico Delimitado para Labor Docente
-              </div>
-              <div style="font-size:1.05rem; font-weight:700; color:#1e1b4b;">
-                Especialidad: ${escapeHtml(activeProg.nombre)} · Aula: ${escapeHtml(activeGroup.grupoCode)}
-              </div>
-              <div style="font-size:0.83rem; color:#6b21a8; margin-top:0.2rem;">
-                ${escapeHtml(activeGroup.turno && activeGroup.turno !== 'PENDIENTE' ? 'Turno ' + activeGroup.turno : (activeGroup.modalidad && activeGroup.modalidad !== 'PENDIENTE' ? activeGroup.modalidad : 'Regular'))} · ${activeGroup.count || 0} estudiantes asignados a esta nómina
-              </div>
+              <h3 style="margin:0; display:flex; align-items:center; gap:0.5rem; font-size:1.1rem;">
+                <span>🏫</span> Control Pedagógico de Aulas — Especialidad: ${escapeHtml(activeProg.nombre)}
+              </h3>
+              <p style="margin:0.25rem 0 0 0; font-size:0.83rem; color:#64748b;">
+                Monitoreo de grupos activos asignados a su especialidad con accesos directos al Control de Asistencia diaria y Registro Auxiliar
+              </p>
             </div>
-            <button type="button" class="btn btn-sm fw-bold" id="btn-inicio-switch-classroom" style="background:#7c3aed; color:#fff; border:none; padding:0.45rem 1rem; border-radius:8px; cursor:pointer;">
-              🏫 Cambiar de Carrera o Aula
-            </button>
+            <span class="badge badge-purple" style="font-size:0.78rem; padding:0.35rem 0.75rem; font-weight:700; background:#ede9fe; color:#6d28d9; border:1px solid #d8b4fe;">
+              ${progGroups.length} Aulas · ${totalCarreraAlumnos} Estudiantes en Especialidad
+            </span>
+          </div>
+
+          <div class="table-responsive" style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; font-size:0.86rem; border-collapse:collapse;">
+              <thead>
+                <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0; text-align:left;">
+                  <th style="padding:0.65rem 0.75rem;">Código Aula</th>
+                  <th style="padding:0.65rem 0.75rem;">Especialidad / Docente</th>
+                  <th style="padding:0.65rem 0.75rem; text-align:center;">Turno / Modalidad</th>
+                  <th style="padding:0.65rem 0.75rem; text-align:center;">Matrículas</th>
+                  <th style="padding:0.65rem 0.75rem; text-align:center;">Estado Pedagógico</th>
+                  <th style="padding:0.65rem 0.75rem; text-align:right;">Acciones de Aula</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${teacherRows}
+              </tbody>
+              <tfoot>
+                <tr style="background:#f1f5f9; font-weight:700; border-top:2px solid #cbd5e1;">
+                  <td colspan="2" style="padding:0.75rem;">TOTAL ESPECIALIDAD DOCENTE</td>
+                  <td style="padding:0.75rem; text-align:center;">${progGroups.length} Aulas Asignadas</td>
+                  <td style="padding:0.75rem; text-align:center; color:#6d28d9; font-size:0.95rem;">${totalCarreraAlumnos} Alumnos en Carrera</td>
+                  <td style="padding:0.75rem; text-align:center;"><span class="badge badge-success" style="font-size:0.72rem;">100% OPERATIVO</span></td>
+                  <td style="padding:0.75rem; text-align:right;"><a href="#/grupos" class="btn btn-sm btn-secondary" style="font-size:0.76rem; padding:0.25rem 0.6rem; text-decoration:none;">Mis Aulas →</a></td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
         </div>
       `;
@@ -1695,6 +1833,15 @@ export const Layout = {
     if (switchClassBtn) {
       switchClassBtn.onclick = () => this.openClassroomSwitcherModal();
     }
+
+    container.querySelectorAll('.btn-teacher-switch-group').forEach(btn => {
+      btn.onclick = (e) => {
+        const code = btn.getAttribute('data-group-code');
+        TeacherContextService.setActiveGroupCode(code);
+        Notifications.success(`Aula activa cambiada a: ${code}`);
+        this.renderInicioView(container);
+      };
+    });
   },
 
   async renderProgramasView(container) {

@@ -22,11 +22,11 @@ Este directorio contiene el archivo completo de evidencias fotográficas reales 
 ## 2. Índice General de Archivos en esta Carpeta
 
 ### A. Documentos de Soporte y Guías
-1. `MATRIZ_EVIDENCIAS.md`: Tabla de homologación formal con los 26 pasos del proceso, estado PASS y qué demuestra cada evidencia en el sistema real.
+1. `MATRIZ_EVIDENCIAS.md`: Tabla de homologación formal con los 29 pasos del proceso, estado PASS y qué demuestra cada evidencia en el sistema real.
 2. `UBICACION_EN_INFORME.md`: Especificación exacta del número de figura, pie de imagen propuesto y comentario para la redacción de cada captura dentro del cuerpo del informe.
 3. `README_EVIDENCIAS.md`: Este documento resumen.
 
-### B. Capturas de Pantalla Reales (34 Archivos PNG + Infografía)
+### B. Capturas de Pantalla Reales (37 Archivos PNG + Infografía)
 
 #### Bloque I: Centro Documental, Tarjetas y Selector Académico
 1. `EVIDENCIA_01_FLUJO_GENERAL.png`: Centro de emisión documental estructurado en 4 etapas y 3 pasos guiados.
@@ -73,12 +73,15 @@ Este directorio contiene el archivo completo de evidencias fotográficas reales 
 36. `EVIDENCIA_32_SECRETARIA_DASHBOARD_MATRICULA.png`: Dashboard operativo de Secretaría Académica con métricas y 6 tarjetas de trabajo.
 37. `EVIDENCIA_33_SECRETARIA_CONTROL_NOMINAS.png`: Control centralizado de 12 aulas y emisión directa de nóminas oficiales (TMPL-01).
 38. `EVIDENCIA_34_SECRETARIA_SIDEBAR_DEPURADO.png`: Barra lateral depurada para Secretaría y acceso directo a nóminas de matrícula.
+39. `EVIDENCIA_35_DOCENTE_DASHBOARD_PEDAGOGICO.png`: Dashboard pedagógico del Docente con banner formal, 5 métricas de aula y 6 accesos de alta frecuencia.
+40. `EVIDENCIA_36_DOCENTE_CONTROL_AULAS.png`: Control pedagógico de aulas de especialidad con balance, aula activa y accesos a asistencia/notas.
+41. `EVIDENCIA_37_DOCENTE_SIDEBAR_DEPURADO.png`: Barra lateral depurada para Docente y navegación directa al control de asistencia diaria.
 
 ---
 
-## 3. Selección Recomendada para el Informe (15 Imágenes Esenciales)
+## 3. Selección Recomendada para el Informe (16 Imágenes Esenciales)
 
-Si el informe requiere una cantidad compacta y equilibrada de figuras, se recomienda seleccionar las siguientes **15 imágenes clave**:
+Si el informe requiere una cantidad compacta y equilibrada de figuras, se recomienda seleccionar las siguientes **16 imágenes clave**:
 
 | Prioridad | Archivo | Motivo de Selección |
 |:---:|:---|:---|
@@ -96,7 +99,8 @@ Si el informe requiere una cantidad compacta y equilibrada de figuras, se recomi
 | **12** | `EVIDENCIA_30_DIRECTOR_MONITOR_SINOPTICO.png` | Monitor sinóptico con balance de oferta académica en las 7 carreras (295 alumnos). |
 | **13** | `EVIDENCIA_32_SECRETARIA_DASHBOARD_MATRICULA.png` | Dashboard operativo de Secretaría Académica enfocado en padrón y nóminas oficiales. |
 | **14** | `EVIDENCIA_33_SECRETARIA_CONTROL_NOMINAS.png` | Control centralizado de 12 aulas y emisión ágil de nóminas (TMPL-01). |
-| **15** | `EVIDENCIA_20_FLUJO_COMPLETO.png` | Infografía integral que resume de forma concluyente todo el desarrollo. |
+| **15** | `EVIDENCIA_35_DOCENTE_DASHBOARD_PEDAGOGICO.png` | Dashboard de aula del Docente con métricas de clase y accesos pedagógicos rápidos. |
+| **16** | `EVIDENCIA_20_FLUJO_COMPLETO.png` | Infografía integral que resume de forma concluyente todo el desarrollo. |
 
 ---
 

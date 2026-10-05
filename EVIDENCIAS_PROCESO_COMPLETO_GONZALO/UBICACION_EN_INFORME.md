@@ -259,4 +259,32 @@ Este documento detalla la posición exacta recomendada para insertar cada una de
   **Figura 31. Barra lateral depurada para Secretaría Académica (cero ruido pedagógico ni directivo) y navegación al Centro Documental en Etapa 1 para emisión de nóminas.**
 - **Comentario para la redacción:** *Demuestra la eliminación de opciones innecesarias en la barra lateral de secretaría (incidencias, efsrt, cierre), organizando el menú en "Secretaría Académica" y "Administración y Registro", facilitando la emisión de nóminas oficiales (TMPL-01).*
 
+---
+
+### Apartado 25: Dashboard Pedagógico del Docente de Especialidad
+- **Archivo:** `EVIDENCIA_35_DOCENTE_DASHBOARD_PEDAGOGICO.png`
+- **Colocar en el apartado de Gestión Docente / Aula Pedagógica:**
+- **Pie de figura:**  
+  **Figura 32. Panel de aula pedagógica para el Docente con banner formal en gradiente violeta institucional, métricas de aula y 6 accesos directos de alta frecuencia.**
+- **Comentario para la redacción:** *Demuestra la vista de trabajo docente especializada: 26 alumnos asignados a su nómina en el aula GRP-BD-007, accesos directos inmediatos al control de asistencia modular (TMPL-05..10), registro auxiliar de notas (TMPL-11..17), portada (TMPL-04) y conmutador rápido de aula.*
+
+---
+
+### Apartado 26: Control Pedagógico de Aulas de Especialidad
+- **Archivo:** `EVIDENCIA_36_DOCENTE_CONTROL_AULAS.png`
+- **Colocar a continuación del Dashboard de Docente:**
+- **Pie de figura:**  
+  **Figura 33. Tablero de supervisión de aulas asignadas a la especialidad técnica con estado pedagógico en tiempo real, botones de asistencia/evaluación y conmutador interactivo.**
+- **Comentario para la redacción:** *Ilustra la tabla de control donde el docente monitorea las 2 aulas de su especialidad (GRP-BD-007 Presencial con 26 estudiantes y GRP-BD-008 Virtual con 70 estudiantes), con identificación visual del aula activa en curso y accesos directos para calificar y pasar lista.*
+
+---
+
+### Apartado 27: Barra Lateral Pedagógica Depurada y Cero Ruido
+- **Archivo:** `EVIDENCIA_37_DOCENTE_SIDEBAR_DEPURADO.png`
+- **Colocar en el apartado de Usabilidad por Roles y Eliminación de Carga Cognitiva:**
+- **Pie de figura:**  
+  **Figura 34. Menú lateral depurado para Docente de Especialidad (cero ruido administrativo) y navegación al Control de Asistencia Modular por Unidad Didáctica (UD1..UD6).**
+- **Comentario para la redacción:** *Evidencia la supresión completa de rutas ajenas al trabajo pedagógico (ocultando incidencias, cierre, efsrt, respaldo, nóminas y mallas ajenas), estructurando la navegación en "Gestión Pedagógica" y "Aula y Especialidad" para un uso diario ágil y sin distracciones.*
+
+
 
