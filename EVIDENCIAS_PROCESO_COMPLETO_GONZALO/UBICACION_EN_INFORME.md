@@ -232,3 +232,31 @@ Este documento detalla la posición exacta recomendada para insertar cada una de
   **Figura 28. Menú lateral depurado para Dirección General (sin enlaces de ruido como incidencias o cierre) y navegación fluida a la Etapa 4 de Titulación Oficial.**
 - **Comentario para la redacción:** *Evidencia la eliminación de ruido visual y enlaces innecesarios en la barra lateral, agrupando las opciones en dos bloques limpios: Dirección General y Sistema y Seguridad.*
 
+---
+
+### Apartado 22: Dashboard de Secretaría Académica y Gestión de Matrícula
+- **Archivo:** `EVIDENCIA_32_SECRETARIA_DASHBOARD_MATRICULA.png`
+- **Colocar en el apartado de Gestión de Secretaría Académica / Panel Operativo:**
+- **Pie de figura:**  
+  **Figura 29. Panel de inicio optimizado para Secretaría Académica con banner institucional formal, métricas de padrón y 6 tarjetas de trabajo de alta frecuencia.**
+- **Comentario para la redacción:** *Demuestra el rediseño centrado en las tareas prioritarias de secretaría: padrón de 269 alumnos, emisión de nóminas (TMPL-01..03), certificación modular (TMPL-20), administración de 12 aulas y copia de respaldo local JSON.*
+
+---
+
+### Apartado 23: Control Centralizado de Aulas y Nóminas de Matrícula
+- **Archivo:** `EVIDENCIA_33_SECRETARIA_CONTROL_NOMINAS.png`
+- **Colocar a continuación del Dashboard de Secretaría:**
+- **Pie de figura:**  
+  **Figura 30. Tablero de control operativo de las 12 aulas del CETPRO con asignación docente, turno, aforo exacto y botón directo de emisión de nómina oficial (TMPL-01).**
+- **Comentario para la redacción:** *Ilustra la tabla de control directo donde secretaría supervisa las 12 aulas y 295 matrículas registradas, con accesos directos inmediatos para emitir nóminas oficiales sin pasos redundantes.*
+
+---
+
+### Apartado 24: Depuración de Barra Lateral y Emisión de Nóminas en Secretaría
+- **Archivo:** `EVIDENCIA_34_SECRETARIA_SIDEBAR_DEPURADO.png`
+- **Colocar en el apartado de Arquitectura de la Información y Reducción de Carga Cognitiva:**
+- **Pie de figura:**  
+  **Figura 31. Barra lateral depurada para Secretaría Académica (cero ruido pedagógico ni directivo) y navegación al Centro Documental en Etapa 1 para emisión de nóminas.**
+- **Comentario para la redacción:** *Demuestra la eliminación de opciones innecesarias en la barra lateral de secretaría (incidencias, efsrt, cierre), organizando el menú en "Secretaría Académica" y "Administración y Registro", facilitando la emisión de nóminas oficiales (TMPL-01).*
+
+

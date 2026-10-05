@@ -22,11 +22,11 @@ Este directorio contiene el archivo completo de evidencias fotográficas reales 
 ## 2. Índice General de Archivos en esta Carpeta
 
 ### A. Documentos de Soporte y Guías
-1. `MATRIZ_EVIDENCIAS.md`: Tabla de homologación formal con los 20 pasos del proceso, estado PASS y qué demuestra cada evidencia en el sistema real.
+1. `MATRIZ_EVIDENCIAS.md`: Tabla de homologación formal con los 26 pasos del proceso, estado PASS y qué demuestra cada evidencia en el sistema real.
 2. `UBICACION_EN_INFORME.md`: Especificación exacta del número de figura, pie de imagen propuesto y comentario para la redacción de cada captura dentro del cuerpo del informe.
 3. `README_EVIDENCIAS.md`: Este documento resumen.
 
-### B. Capturas de Pantalla Reales (28 Archivos PNG)
+### B. Capturas de Pantalla Reales (34 Archivos PNG + Infografía)
 
 #### Bloque I: Centro Documental, Tarjetas y Selector Académico
 1. `EVIDENCIA_01_FLUJO_GENERAL.png`: Centro de emisión documental estructurado en 4 etapas y 3 pasos guiados.
@@ -66,11 +66,19 @@ Este directorio contiene el archivo completo de evidencias fotográficas reales 
 31. `EVIDENCIA_27_DIRECTOR_TITULACION_TMPL21.png`: Habilitación exclusiva y directa del Título Técnico Oficial (TMPL-21) para Dirección General.
 32. `EVIDENCIA_28_CARRUSEL_TITULO_TECNICO.png`: Ficha interactiva de titulación ministerial explicando los requisitos de egreso.
 
+#### Bloque IV: Dashboards Ejecutivos, Eliminación de Ruido y Supervisión por Rol
+33. `EVIDENCIA_29_DIRECTOR_DASHBOARD_EJECUTIVO.png`: Dashboard gerencial de Dirección General con banner formal y 6 tarjetas ejecutivas.
+34. `EVIDENCIA_30_DIRECTOR_MONITOR_SINOPTICO.png`: Monitor sinóptico de Dirección con consolidado de 7 carreras y 295 matrículas.
+35. `EVIDENCIA_31_DIRECTOR_TITULACION_CENTRO_DOC.png`: Menú lateral depurado para Dirección y refrendo de Título Oficial (TMPL-21).
+36. `EVIDENCIA_32_SECRETARIA_DASHBOARD_MATRICULA.png`: Dashboard operativo de Secretaría Académica con métricas y 6 tarjetas de trabajo.
+37. `EVIDENCIA_33_SECRETARIA_CONTROL_NOMINAS.png`: Control centralizado de 12 aulas y emisión directa de nóminas oficiales (TMPL-01).
+38. `EVIDENCIA_34_SECRETARIA_SIDEBAR_DEPURADO.png`: Barra lateral depurada para Secretaría y acceso directo a nóminas de matrícula.
+
 ---
 
-## 3. Selección Recomendada para el Informe (12 Imágenes Esenciales)
+## 3. Selección Recomendada para el Informe (15 Imágenes Esenciales)
 
-Si el informe requiere una cantidad compacta y equilibrada de figuras, se recomienda seleccionar las siguientes **12 imágenes clave**:
+Si el informe requiere una cantidad compacta y equilibrada de figuras, se recomienda seleccionar las siguientes **15 imágenes clave**:
 
 | Prioridad | Archivo | Motivo de Selección |
 |:---:|:---|:---|
@@ -84,12 +92,11 @@ Si el informe requiere una cantidad compacta y equilibrada de figuras, se recomi
 | **8** | `EVIDENCIA_14_LLENADO_NOTAS.png` | Demuestra la evaluación continua por 5 indicadores en escala vigesimal. |
 | **9** | `EVIDENCIA_22_CARRUSEL_SLIDE1_QUE_ES.png` | Innovación pedagógica: modal interactivo explicando el marco normativo MINEDU. |
 | **10** | `EVIDENCIA_25_CARRUSEL_SLIDE4_ROLES.png` | Delimitación clara de responsabilidades de firma y custodia entre roles. |
-| **11** | `EVIDENCIA_27_DIRECTOR_TITULACION_TMPL21.png` | Muestra la facultad de emisión de Título Oficial para Dirección General. |
-| **12** | `EVIDENCIA_29_DIRECTOR_DASHBOARD_EJECUTIVO.png` | Dashboard ejecutivo de Dirección con banner formal, métricas y 6 tarjetas gerenciales. |
-| **13** | `EVIDENCIA_30_DIRECTOR_MONITOR_SINOPTICO.png` | Monitor sinóptico con balance de oferta académica en las 7 carreras (295 alumnos). |
-| **14** | `EVIDENCIA_31_DIRECTOR_TITULACION_CENTRO_DOC.png` | Menú lateral depurado para Dirección y acceso directo al Centro Documental. |
+| **11** | `EVIDENCIA_29_DIRECTOR_DASHBOARD_EJECUTIVO.png` | Dashboard ejecutivo de Dirección con banner formal, métricas y 6 tarjetas gerenciales. |
+| **12** | `EVIDENCIA_30_DIRECTOR_MONITOR_SINOPTICO.png` | Monitor sinóptico con balance de oferta académica en las 7 carreras (295 alumnos). |
+| **13** | `EVIDENCIA_32_SECRETARIA_DASHBOARD_MATRICULA.png` | Dashboard operativo de Secretaría Académica enfocado en padrón y nóminas oficiales. |
+| **14** | `EVIDENCIA_33_SECRETARIA_CONTROL_NOMINAS.png` | Control centralizado de 12 aulas y emisión ágil de nóminas (TMPL-01). |
 | **15** | `EVIDENCIA_20_FLUJO_COMPLETO.png` | Infografía integral que resume de forma concluyente todo el desarrollo. |
-
 
 ---
 
