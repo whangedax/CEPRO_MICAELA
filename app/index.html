@@ -6,9 +6,7 @@
   <meta name="color-scheme" content="light">
   <title>Sistema Académico CETPRO</title>
   
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+
 
   <script src="./vendor/pdf-lib.min.js"></script>
   <!-- Hojas de estilo CSS nativas -->
@@ -16,6 +14,7 @@
   <link rel="stylesheet" href="./css/components.css">
   <link rel="stylesheet" href="./css/responsive.css">
   <link rel="stylesheet" href="./css/print.css" media="print">
+  <link rel="stylesheet" href="/app-v2/candidate.css">
 </head>
 <body>
   <div id="app-layout">
@@ -25,15 +24,27 @@
         <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menú de navegación">☰</button>
         <img src="./img/logo-cetpro.jpg" alt="Logo CETPRO" style="width: 28px; height: 28px; border-radius: 6px; object-fit: contain; margin-right: 2px;" onerror="this.style.display='none'">
         <div class="brand-title">Sistema Académico CETPRO</div>
-        <span class="badge badge-secondary">v2.0</span>
+        <span id="candidate-runtime-banner" class="badge badge-success">OPERACIÓN LOCAL</span>
       </div>
       
       <div class="header-actions">
+        <button id="btn-enter-demo" class="btn btn-warning" type="button">INICIAR MODO DEMOSTRACIÓN</button>
         <div id="db-status-badge" class="status-badge status-offline">
           <span class="dot"></span> IDB: Conectando…
         </div>
       </div>
     </header>
+
+    <!-- Barra de Estado de Modo Demostración -->
+    <div id="demo-runtime-bar" class="demo-runtime-bar" role="status" aria-live="polite">
+      <strong>MODO DEMOSTRACIÓN · DATOS SIMULADOS · NO OFICIAL</strong>
+      <span>Base aislada CETPRO_V2_DEMO</span>
+      <div>
+        <a href="#/demo" class="btn btn-sm btn-light">Recorrido</a>
+        <button id="btn-reset-demo" class="btn btn-sm btn-light" type="button">REINICIAR DATOS DEMO</button>
+        <button id="btn-exit-demo" class="btn btn-sm btn-dark" type="button">SALIR DEL MODO DEMOSTRACIÓN</button>
+      </div>
+    </div>
 
     <!-- Cuerpo con Navegación Lateral y Área de Vistas -->
     <div class="app-body">
@@ -91,11 +102,11 @@
     <!-- Pie de Página -->
     <footer class="app-footer">
       <div>CETPRO Público "Micaela Bastidas Puyucawa" — San Miguel</div>
-      <div>Sistema Académico Local (Offline) | Versión 1.0.0-M01</div>
+      <div>Sistema Académico Local (Offline) | Versión 2.0 Oficial</div>
     </footer>
   </div>
 
   <!-- Script Principal de la Aplicación -->
-  <script type="module" src="./js/app.js"></script>
+  <script type="module" src="./js/v2-candidate/candidate-entry.js"></script>
 </body>
 </html>

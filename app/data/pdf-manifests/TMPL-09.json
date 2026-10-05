@@ -1,7 +1,7 @@
 {
   "templateId": "TMPL-09",
   "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/09_ASISTENCIA_UD5.pdf",
-  "sha256": "d13c650d159ce035c5a71771257c267daab1d43475301d336e070750f0b9d518",
+  "sha256": "10fe1450b9757116b452c6fbab6485030f53b572cd59deb11583b1643852068f",
   "pages": [
     {
       "number": 1,
@@ -161,5 +161,6 @@
         "h": 11.99
       }
     }
-  ]
+  ],
+  "rendererStatus": "RENDERER_IMPLEMENTED"
 }

@@ -36,6 +36,10 @@ async function run() {
       } else request.continue();
     });
     page.on('response', response => { if (response.status() >= 400) httpErrors.push(`${response.status()} ${response.url()}`); });
+    await page.evaluateOnNewDocument(() => {
+      localStorage.setItem('CETPRO_AUTH_SESSION_ACTIVE', 'true');
+      localStorage.setItem('CETPRO_AUTH_USER_ROLE', 'DIRECTOR');
+    });
     await page.goto(V2_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForFunction(() => document.querySelector('#db-status-badge')?.textContent.includes('Datos locales disponibles'));
 

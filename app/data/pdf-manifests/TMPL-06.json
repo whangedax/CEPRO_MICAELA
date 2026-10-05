@@ -1,7 +1,7 @@
 {
   "templateId": "TMPL-06",
   "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/06_ASISTENCIA_UD2.pdf",
-  "sha256": "88c2055535a18ea66d98645e0dca471d99666e1c1e9190b56ad704aae242a67c",
+  "sha256": "e227bfff357f697a382207b065f92b49cbed8a1fb362d40fce82d6ef97009cb1",
   "pages": [
     {
       "number": 1,
@@ -161,5 +161,6 @@
         "h": 11.99
       }
     }
-  ]
+  ],
+  "rendererStatus": "RENDERER_IMPLEMENTED"
 }

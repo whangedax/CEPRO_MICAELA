@@ -1,7 +1,7 @@
 {
   "templateId": "TMPL-08",
   "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/08_ASISTENCIA_UD4.pdf",
-  "sha256": "1747658aa32febf91936e75304981439b0ea63fd20b910ca3a3a94917ec1098a",
+  "sha256": "68917e375ba77c3a0337df0d38c883da74cb81bd1a61400dc2d86836edf7b6b2",
   "pages": [
     {
       "number": 1,
@@ -161,5 +161,6 @@
         "h": 11.99
       }
     }
-  ]
+  ],
+  "rendererStatus": "RENDERER_IMPLEMENTED"
 }
