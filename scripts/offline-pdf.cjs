@@ -25,7 +25,7 @@ async function renderPDFInternal(root, doc, actor,options) {
     if (!file.startsWith(path.resolve(root) + path.sep) || (!relative.startsWith('/sources/templates/') && !relative.startsWith('/app/data/'))) throw new Error('Fuente documental fuera del catálogo local.');
     const bytes = fs.readFileSync(file); return type === 'json' ? JSON.parse(bytes.toString('utf8')) : bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
   };
-  const n = Number(doc.templateId.slice(5)), unitOrder = n >= 5 && n <= 10 ? n - 4 : n >= 11 && n <= 17 ? n - 10 : 1;
+  const n = Number(doc.templateId.slice(5)), unitOrder = n >= 5 && n <= 10 ? Math.max(1,(doc.units||[]).findIndex(u=>u.code===doc.unitCode)+1) : n >= 11 && n <= 17 ? n - 10 : 1;
   const sessions = [...new Map(doc.attendance.map(r => [`${r.date}|${r.session}`, { sessionId: `${r.date}|${r.session}`, fecha: r.date }])).values()].sort((a, b) => a.sessionId.localeCompare(b.sessionId));
   const rows = doc.students.map(({ student: s, enrollment: e }) => {
     const scores = doc.grades.filter(r => r.enrollmentId === e.id);

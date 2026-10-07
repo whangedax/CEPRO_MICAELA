@@ -40,7 +40,7 @@ function createService({ root, directory, backupFile }) {
         if(route==='/api/data/export'||route==='/api/data/template'){const file=updates.export(user,body.kind,body.format,body.options||{},route.endsWith('/template'));res.writeHead(200,{'Content-Type':file.type,'Content-Disposition':`attachment; filename="CETPRO_${body.kind}.${body.format||'csv'}"`,'Cache-Control':'no-store'});res.end(file.bytes);return;}
         if (route === '/api/document/pdf') {
           const doc = core.document(user, body);if(body.fingerprint&&body.fingerprint!==doc.fingerprint)fail('Los datos cambiaron. Actualice la vista previa.',409);const bytes = await renderPDF(root, doc, user);
-          res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${doc.templateId}_BORRADOR.pdf"`, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(bytes); return;
+          res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${doc.templateId}_COMPLETADO.pdf"`, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(bytes); return;
         }
         if(route==='/api/document/submit'){
           const doc=core.document(user,body);if(body.fingerprint!==doc.fingerprint)fail('Los datos cambiaron después de la vista previa. Actualícela antes de entregar.',409);
@@ -54,6 +54,11 @@ function createService({ root, directory, backupFile }) {
         switch (route) {
           case '/api/logout': result = core.logout(token); break;
           case '/api/password': result = core.changePassword(user, body); break;
+          case '/api/users/archive':result=core.archiveUser(user,body);break;
+          case '/api/students/archive':result=core.archiveStudent(user,body);break;
+          case '/api/exchange/export':result=core.exchangePackage(user,body);break;
+          case '/api/exchange/preview':result=core.importPackage(user,body.package,false,body.passphrase);break;
+          case '/api/exchange/import':result=core.importPackage(user,body.package,true,body.passphrase);break;
           case '/api/users': result = core.saveUser(user, body); break;
           case '/api/users/accept-request':result=core.acceptRegistrationRequest(user,body);break;
           case '/api/students/accept-request':result=core.acceptStudentRequest(user,body);break;
