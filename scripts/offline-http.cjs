@@ -28,6 +28,7 @@ function createService({ root, directory, backupFile }) {
         if (route === '/api/device-request' && req.method === 'GET') return json(res, 200, core.requestDevice());
         if (route === '/api/setup' && req.method === 'POST') return json(res, 200, core.setup(body));
         if (route === '/api/provision/accept' && req.method === 'POST') return json(res, 200, core.acceptProvision(body));
+        if(route==='/api/exchange/recover'&&req.method==='POST')return json(res,200,core.recoverExchange(body));
         if (route === '/api/login' && req.method === 'POST') return json(res, 200, core.login(body, req.socket.remoteAddress));
         const token = (req.headers.authorization || '').replace(/^Bearer /, ''), user = core.authenticate(token);
         if (route === '/api/me' && req.method === 'GET') return json(res, 200, publicUser(user));
@@ -35,6 +36,7 @@ function createService({ root, directory, backupFile }) {
         if(route==='/api/data/catalog'&&req.method==='GET')return json(res,200,updates.catalog(user));
         if(route==='/api/document/configuration'&&req.method==='GET')return json(res,200,DocumentSettings.configuration(core,user));
         if (route === '/api/users' && req.method === 'GET') return json(res,200,core.listUsers(user));
+        if(route==='/api/database/health'&&req.method==='GET')return json(res,200,core.databaseHealth(user));
         if (route === '/api/audit' && req.method === 'GET') { core.requireRole(user, ['DIRECTOR']); return json(res, 200, core.db.prepare('SELECT value FROM audit ORDER BY rowid DESC LIMIT 100').all().map(r => JSON.parse(r.value))); }
         if (req.method !== 'POST') fail('Ruta no encontrada.', 404);
         if(route==='/api/data/export'||route==='/api/data/template'){const file=updates.export(user,body.kind,body.format,body.options||{},route.endsWith('/template'));res.writeHead(200,{'Content-Type':file.type,'Content-Disposition':`attachment; filename="CETPRO_${body.kind}.${body.format||'csv'}"`,'Cache-Control':'no-store'});res.end(file.bytes);return;}
@@ -54,6 +56,7 @@ function createService({ root, directory, backupFile }) {
         switch (route) {
           case '/api/logout': result = core.logout(token); break;
           case '/api/password': result = core.changePassword(user, body); break;
+          case '/api/users/reject-request':result=core.rejectAccountRequest(user,body);break;
           case '/api/users/archive':result=core.archiveUser(user,body);break;
           case '/api/students/archive':result=core.archiveStudent(user,body);break;
           case '/api/exchange/export':result=core.exchangePackage(user,body);break;

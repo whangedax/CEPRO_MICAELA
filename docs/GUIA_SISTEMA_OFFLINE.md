@@ -147,3 +147,23 @@ Un docente propone estudiantes nuevos de sus propias aulas mediante esta pantall
 Sin internet los equipos se actualizan cuando intercambian los archivos cifrados por USB. Las tablas externas y los paquetes de sincronización son flujos distintos. Una tabla no reemplaza el archivo SQLite completo. Si dos equipos cambian una misma celda se conservan las dos versiones para revisión; no existe sincronización instantánea entre computadoras desconectadas.
 
 Consulte AUDITORIA_FORMATOS_Y_ROLES.md para resultados de parámetros, fuentes, posiciones y pruebas. Se mantienen los títulos, logos y estilos del PDF institucional original; se ajusta el texto dinámico a las cajas y se bloquea un texto que no cabe. La ausencia de marca de agua no completa parámetros ni crea una firma o aprobación.
+
+## Intercambio y gestión completos — versión 3.3
+
+Consulte AUDITORIA_PUNTOS_CRITICOS.md. Todos los roles tienen Exportar base para intercambio en Sincronización, con clave de archivo. El archivo institucional es para personal administrativo; para devolver datos a un docente, seleccione su cuenta en Destinatario y el sistema limita las aulas y unidades. Secretaría puede recibir directamente los cambios firmados del docente. Las solicitudes de cuentas se envían marcando Incluir solicitudes y cambios de usuarios; el equipo institucional las confirma. El cambio personal de contraseña se consolida automáticamente al recibir su solicitud válida.
+
+Usuarios y estudiantes tienen Eliminar y Restaurar; la eliminación conserva el historial. En documentos puede incluir retirados para consultar el historial. Desde Asistencia existe Ver y exportar ficha de asistencia; guarde las marcas antes de generar el documento. Grupos permite búsqueda por nombre/carrera/periodo y editar su nombre, sin alterar la estructura que ya tiene notas.
+
+Las claves de usuario e intercambio admiten ocho caracteres como mínimo. Las actualizaciones institucionales renuevan autorización y credenciales; para recuperar una cuenta vinculada desde el login utilice Recibir actualización institucional de acceso. Una vinculación inicial con la misma institución sigue siendo obligatoria.
+
+## Sincronización guiada — 7 de octubre de 2026, versión 3.4
+
+La pantalla separa Enviar mis datos y Recibir un archivo. Cada recorrido tiene su propia clave y sus resultados; cambiar el archivo o la clave obliga a revisarlo nuevamente. Las acciones se bloquean mientras se procesa un archivo para evitar pulsaciones repetidas.
+
+El sistema prepara una clave de archivo y permite Mostrar o Copiar. Al descargar indica el nombre exacto del archivo y dónde buscarlo. El docente ve sus aulas y qué trabajo guardado se incluye. Dirección y secretaría eligen el destinatario docente para limitar sus aulas y unidades.
+
+Al recibir, el resumen se genera a partir de datos firmados y verificados: persona que envió, fecha, aulas, estudiantes, matrículas, notas, asistencia y otros datos. Los contadores de cambios identifican registros únicos; una misma nota editada varias veces no aparece como varias notas nuevas. El resumen muestra datos nuevos y por actualizar, diferencias conservadas y accesos por revisar. Revisar no modifica la base.
+
+Una clave incorrecta no importa datos. Un archivo repetido no duplica registros y no permite volver a aplicarlo. Después de recibir se mantiene visible la confirmación y se explica cómo enviar una respuesta para confirmar la recepción. Las ayudas describen qué es un archivo .cetpro, cómo llevarlo en USB y dónde importar Excel/CSV. Las opciones de vinculación se dejan al final para el responsable.
+
+Prueba específica Edge: director, secretaría y docente; generación y separación de claves; selección de destinatario y aula; archivo real de un docente vinculado recibido en secretaría; clave incorrecta sin cambios; resumen verificado; nota y asistencia recibidas; copia previa; duplicados y pantalla móvil.

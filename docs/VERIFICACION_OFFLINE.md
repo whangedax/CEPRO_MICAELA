@@ -1,3 +1,9 @@
+## Verificación de puntos críticos — versión 3.3
+
+41/41 pruebas aprobadas: 13 recorridos críticos, 15 de seguridad, 7 documentales y 6 de tablas. Edge invisible aprobó registro, edición, eliminación y restauración de docentes, eliminación de alumnos, vista previa de asistencia, exportación/importación real desde el panel docente, permisos, tema y vista móvil.
+
+Auditoría sobre la base operativa: 96 combinaciones aplicables de documentos/grupos generadas sin error; 177 combinaciones requieren estructura o matrícula antes de estar disponibles. EFSRT continúa en dos páginas para el grupo de 70 alumnos. Las fuentes institucionales originales permanecen intactas.
+
 ## Corrección de código extenso en EFSRT — 6 de octubre de 2026
 
 La captura de secretaría correspondía a códigos ficticios MAT-PRUEBA-ALUMNO-02-001. Se permite dividir el identificador completo entre líneas dentro de la casilla, sin cambiar los datos ni reducir la letra bajo cuatro puntos. El grupo exacto de la captura genera ahora su PDF y fue inspeccionado con Poppler. Se muestran los parámetros aun si la generación falla y se deshabilita la descarga de una vista previa anterior mientras se regenera. La regresión de códigos extensos más las suites de documentos y seguridad aprobaron 21/21 escenarios.
@@ -36,3 +42,7 @@ La recuperación se probó guardando una copia, introduciendo un registro poster
 Las pruebas crean datos en `tests/offline-artifacts/`, separado del almacenamiento operativo. Los archivos fuente de las plantillas y las bases del navegador anterior no fueron modificados.
 
 Esta verificación no es un piloto en las computadoras físicas de la institución ni una aprobación institucional de formatos impresos. Transporte entregado: USB cifrado. La conexión automática por LAN queda pendiente. Los documentos son borradores; no se habilita emisión oficial sin validar las condiciones académicas y de fuente.
+
+## Sincronización guiada 3.4 — 7 de octubre de 2026
+
+29/29 escenarios de recorridos críticos y seguridad aprobados. Prueba específica Edge de los tres roles: aprobada; cubre descripción verificada, claves separadas, envío y recepción de otro equipo, errores sin cambios, copias, duplicados y vista móvil. El resumen cuenta registros únicos y omite información externa no verificada. Se comprobó la exportación del usuario fiuler.docente por HTTP en el servicio operativo.

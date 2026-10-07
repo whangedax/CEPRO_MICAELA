@@ -18,38 +18,38 @@ async function renderPDFInternal(root, doc, actor,options) {
   const { getV2PdfManifest } = await import(pathToFileURL(path.join(root, 'app/js/services/v2-document-manifest-registry.js')).href);
   const engine = new PdfTemplateEngine();
   const measurements=[];const nativeFit=engine.fitTextOrThrow.bind(engine);
-  engine.fitTextOrThrow=function(text,font,box,height,fitOptions){let result;try{result=nativeFit(text,font,box,height,fitOptions);}catch(error){if(error.code==='FIELD_OVERFLOW')error.message=`No se puede generar el documento: el campo «${fitOptions?.fieldKey||'dato'}» no cabe en su casilla. Revise su longitud en Datos de documentos. El contenido no se recortó.`;throw error;}const bounds=engine._textBounds(result,height);const fit=bounds.x>=box.x-.5&&bounds.y>=box.y-.5&&bounds.x+bounds.width<=box.x+box.w+.5&&bounds.y+bounds.height<=box.y+box.h+.5;measurements.push({field:fitOptions?.fieldKey||'sin-clave',text:String(text),font:font.name||font.embedder.font.postscriptName,fontSize:result.size,bold:/bold/i.test(font.name||font.embedder.font.postscriptName||''),box,bounds,lines:result.text.split('\n').length,fits:fit});if(!fit)throw Error('Campo fuera de su caja: '+fitOptions?.fieldKey);return result;};
+  engine.fitTextOrThrow=function(text,font,box,height,fitOptions){if(/codigo|(?:^|[._])code|numeroDocumento|documentNumber|registerCode|registryNumber|registryFolio/i.test(fitOptions?.fieldKey||''))fitOptions={...fitOptions,breakLongWords:true};let result;try{result=nativeFit(text,font,box,height,fitOptions);}catch(error){if(error.code==='FIELD_OVERFLOW')error.message=`No se puede generar el documento: el campo «${fitOptions?.fieldKey||'dato'}» no cabe en su casilla. Revise su longitud en Datos de documentos. El contenido no se recortó.`;throw error;}const bounds=engine._textBounds(result,height);const fit=bounds.x>=box.x-.5&&bounds.y>=box.y-.5&&bounds.x+bounds.width<=box.x+box.w+.5&&bounds.y+bounds.height<=box.y+box.h+.5;measurements.push({field:fitOptions?.fieldKey||'sin-clave',text:String(text),font:font.name||font.embedder.font.postscriptName,fontSize:result.size,bold:/bold/i.test(font.name||font.embedder.font.postscriptName||''),box,bounds,lines:result.text.split('\n').length,fits:fit});if(!fit)throw Error('Campo fuera de su caja: '+fitOptions?.fieldKey);return result;};
   engine._loadResource = async (resource, type) => {
     const relative = new URL(resource, 'http://localhost').pathname;
     const file = path.resolve(root, `.${relative}`);
     if (!file.startsWith(path.resolve(root) + path.sep) || (!relative.startsWith('/sources/templates/') && !relative.startsWith('/app/data/'))) throw new Error('Fuente documental fuera del catálogo local.');
     const bytes = fs.readFileSync(file); return type === 'json' ? JSON.parse(bytes.toString('utf8')) : bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
   };
-  const n = Number(doc.templateId.slice(5)), unitOrder = n >= 5 && n <= 10 ? Math.max(1,(doc.units||[]).findIndex(u=>u.code===doc.unitCode)+1) : n >= 11 && n <= 17 ? n - 10 : 1;
+  const n = Number(doc.templateId.slice(5)), unitOrder = n >= 5 && n <= 10 ? doc.units?.find(u=>u.code===doc.unitCode)?.order||1 : n >= 11 && n <= 17 ? n - 10 : 1;
   const sessions = [...new Map(doc.attendance.map(r => [`${r.date}|${r.session}`, { sessionId: `${r.date}|${r.session}`, fecha: r.date }])).values()].sort((a, b) => a.sessionId.localeCompare(b.sessionId));
   const rows = doc.students.map(({ student: s, enrollment: e }) => {
     const scores = doc.grades.filter(r => r.enrollmentId === e.id);
     const evaluations = Array.from({ length: 5 }, (_, i) => Object.fromEntries(['score','ia1','ia2','ia3','recovery'].map(key => [key, scores.find(r => r.indicator === `IL${i + 1}${key === 'score' ? '' : '.' + key.toUpperCase()}`)?.value])));
-    const marks=doc.attendance.filter(r=>r.enrollmentId===e.id&&r.value!=null&&(!e.startDate||r.date>=e.startDate));
+    const marks=doc.attendance.filter(r=>r.enrollmentId===e.id&&r.value!=null&&(!e.startDate||r.date>=e.startDate)&&(!e.endDate||r.date<=e.endDate));
     const presentStates=doc.module?.presenceStates?.split(',')||[],absentStates=doc.module?.absenceStates?.split(',')||[];
     const presentCount=presentStates.length?marks.filter(m=>presentStates.includes(m.value)).length:null;
     const absentCount=absentStates.length?marks.filter(m=>absentStates.includes(m.value)).length:null;
-    const denominator=doc.module?.absenceDenominator==='PROGRAMADAS'?sessions.filter(s=>!e.startDate||s.fecha>=e.startDate).length:doc.module?.absenceDenominator==='REGISTRADAS'?marks.length:0;
+    const denominator=doc.module?.absenceDenominator==='PROGRAMADAS'?sessions.filter(s=>(!e.startDate||s.fecha>=e.startDate)&&(!e.endDate||s.fecha<=e.endDate)).length:doc.module?.absenceDenominator==='REGISTRADAS'?marks.length:0;
     const absencePercent=absentCount!==null&&denominator?Number((absentCount/denominator*100).toFixed(2)):null;
     return { ...s.legacy, enrollmentId: e.id, matriculaId: e.id, studentName: s.name, apellidosNombres: s.name, studentDisplayName: s.name, numeroDocumento: s.document,
-      document: s.document, tipoDocumento:s.documentType||s.legacy?.tipoDocumento||'', apellidoPaterno:s.lastName1||s.legacy?.apellidoPaterno||'',apellidoMaterno:s.lastName2||s.legacy?.apellidoMaterno||'',nombres:s.firstNames||s.legacy?.nombres||'',sexo:s.sex||s.legacy?.sexo||'',fechaNacimiento:s.birthDate||s.legacy?.fechaNacimiento||'',
-      'student.fullName': s.name, 'student.document': s.document, 'student.documentNumber': s.document, evaluations, finalResult: scores.find(r => r.indicator === 'RESULTADO_UD')?.value,
+      document: s.document, tipoDocumento:s.documentType??s.legacy?.tipoDocumento??'', apellidoPaterno:s.lastName1??s.legacy?.apellidoPaterno??'',apellidoMaterno:s.lastName2??s.legacy?.apellidoMaterno??'',nombres:s.firstNames??s.legacy?.nombres??'',sexo:s.sex??s.legacy?.sexo??'',fechaNacimiento:s.birthDate??s.legacy?.fechaNacimiento??'',
+      retirado:!e.active,'student.fullName': s.name, 'student.document': s.document, 'student.documentNumber': s.document, evaluations, finalResult: scores.find(r => r.indicator === 'RESULTADO_UD')?.value,
       'enrollment.code':doc.students.find(row=>row.enrollment.id===e.id)?.parameters.code||'',
       unitGrades:(doc.units||[]).map(u=>scores.find(r=>r.unit===u.code&&r.indicator==='RESULTADO_UD')?.value),
       ...doc.students.find(row=>row.enrollment.id===e.id)?.parameters,
       'efsrt.finalGrade':doc.students.find(row=>row.enrollment.id===e.id)?.parameters.efsrtFinalGrade,
       criteria:Array.from({length:9},(_,i)=>doc.students.find(row=>row.enrollment.id===e.id)?.parameters[`criterion${i+1}`]),
       presentCount,absentCount,absencePercent,estadoMatricula:e.active?'MATRICULADO':'RETIRADO',
-      marksBySession: sessions.map(session => ({ sessionId: session.sessionId, estadoRegistro: doc.attendance.find(r => r.enrollmentId === e.id && `${r.date}|${r.session}` === session.sessionId)?.value || 'SIN_REGISTRO' })) };
+      marksBySession: sessions.map(session => ({ sessionId: session.sessionId, estadoRegistro: ((!e.startDate||session.fecha>=e.startDate)&&(!e.endDate||session.fecha<=e.endDate)?doc.attendance.find(r => r.enrollmentId === e.id && `${r.date}|${r.session}` === session.sessionId)?.value:null) || 'SIN_REGISTRO' })) };
   }).sort((a,b) => a.studentName.localeCompare(b.studentName, 'es'));
   const unit=doc.unitData||{};
   const context = { institution: {...doc.institution,resolucionPrograma:doc.program?.resolucionPrograma}, program: doc.program || {}, module: {...doc.module,horas:doc.module?.hours,creditos:doc.module?.credits,resolucion:doc.module?.resolucionAutorizacion}, group: { ...doc.group, grupoCode: doc.group.id, docente: doc.teacher||'' },
-    period: { nombre: doc.group.periodId || '',fechaInicio:doc.group.fechaInicio||'',fechaFin:doc.group.fechaFin||'',fechaTermino:doc.group.fechaFin||'' }, unit: { nombre: unit.name||'', orden: unitOrder,capacidad:unit.capacity||'' },
+    period: { nombre: doc.group.periodId || '',fechaInicio:doc.group.fechaInicio||'',fechaFin:doc.group.fechaFin||'',fechaTermino:doc.group.fechaFin||'' }, unit: { nombre: unit.name||doc.unitCode||'', orden: unitOrder,capacidad:unit.capacity||'' },
     units:(doc.units||[]).map(u=>({...u,nombre:u.name||'',capacidad:u.capacity||'',competencia:u.competence||'',creditos:u.credits,horas:u.hours})),
     indicators:Array.from({length:5},(_,i)=>unit[`indicator${i+1}`]||''), sessions, teacher: doc.teacher||'',docente:{nombre:doc.teacher||''},document:{teacherName:doc.teacher||''},
     efsrt:{horas:doc.module?.efsrtHours,fechaInicio:doc.group.efsrtInicio,fechaTermino:doc.group.efsrtFin},approvalThreshold:doc.module?.approvalMinimum,
@@ -74,8 +74,8 @@ async function renderPDFInternal(root, doc, actor,options) {
     const blob=await engine.renderTMPL02({ resolvedFieldSet });const filled=await PDFLib.PDFDocument.load(await blob.arrayBuffer());
     await supplementFicha(filled,engine,doc);await append(new Blob([await filled.save()],{type:'application/pdf'}));
   } else if (doc.templateId === 'TMPL-01') {
-    const credits=(doc.units||[]).every(u=>u.credits!==undefined&&u.credits!=='')?(doc.units||[]).reduce((sum,u)=>sum+Number(u.credits),0):null;
-    await append(await engine.renderAdministrativeTMPL01({...context,studentsList:rows.map(r=>({...r,codigoMatricula:r.code||'',condicion:r.condition||'',numeroUnidades:doc.units.length,creditos:credits}))}));
+    const credits=doc.units?.length&&(doc.units||[]).every(u=>u.credits!==undefined&&u.credits!=='')?(doc.units||[]).reduce((sum,u)=>sum+Number(u.credits),0):null;
+    await append(await engine.renderAdministrativeTMPL01({...context,studentsList:rows.map(r=>({...r,codigoMatricula:r.code||'',condicion:r.condition||'',numeroUnidades:doc.units.length||'',creditos:credits}))}));
   } else if (doc.templateId === 'TMPL-03') {
     await append(await engine.renderAdministrativeTMPL03({...context,studentsList:rows,explicitIdentity:true}));
   } else if (doc.templateId === 'TMPL-04') await append(await engine.renderTMPL04(context));
@@ -84,7 +84,7 @@ async function renderPDFInternal(root, doc, actor,options) {
     const batches = sessions.length ? Array.from({ length: Math.ceil(sessions.length / sessionCapacity) }, (_, i) => sessions.slice(i * sessionCapacity, (i + 1) * sessionCapacity)) : [[]];
     for (let i = 0; i < Math.max(rows.length, 1); i += capacity) for (const batch of n <= 10 ? batches : [[]]) await append(await engine.renderDocument({ documentType: doc.templateId, context: { ...context, sessions: batch }, rows: rows.slice(i, i + capacity) }));
   } else if(n===18||n===19){
-    await append(await engine.renderDocument({documentType:doc.templateId,context,rows}));
+    const capacity=manifest.capacity?.rows||40;for(let i=0;i<Math.max(rows.length,1);i+=capacity)await append(await engine.renderDocument({documentType:doc.templateId,context:{...context,statisticsRows:rows},rows:rows.slice(i,i+capacity)}));
   } else {
     const resolvedFieldSet = { 'institution.name': doc.institution.name, 'program.name': doc.program?.nombre, 'module.name': doc.module?.nombre, 'period.name': doc.group.periodId, 'teacher.name': actor.name,
       'group.ciclo':doc.group.ciclo,'group.modalidad':doc.group.modalidad,'curriculum.module.hours':doc.module?.hours,'curriculum.module.credits':doc.module?.credits,
@@ -107,6 +107,7 @@ async function renderPDFInternal(root, doc, actor,options) {
   for (const [index, page] of output.getPages().entries()) {
 
     page.drawText(`BORRADOR - NO OFICIAL | ${doc.templateId} | ${index + 1}/${output.getPageCount()}`, { x: 18, y: 8, size: 6, font, color: PDFLib.rgb(.6,.18,.18) });
+    if([18,19].includes(n)&&rows.length>(manifest.capacity?.rows||40))page.drawText(`Continuación ${Math.floor(index/(n===19?2:1))+1}/${Math.ceil(rows.length/(manifest.capacity?.rows||40))} · ${rows.length} estudiantes en el grupo`,{x:page.getWidth()-260,y:8,size:6,font,color:PDFLib.rgb(.3,.3,.3)});
     if(doc.templateId==='TMPL-03'){page.drawRectangle({x:280,y:page.getHeight()-53,width:300,height:9,color:PDFLib.rgb(1,1,1)});const title='REGISTRO DE MATRÍCULA INSTITUCIONAL DEL PROGRAMA DE ESTUDIOS '+doc.group.periodId;const fit=engine.fitTextOrThrow(title,font,{x:280,y:44,w:300,h:9},page.getHeight(),{maxFontSize:7,minFontSize:4,paddingX:1,align:'center',fieldKey:'period.legend'});page.drawText(fit.text,{x:fit.x,y:fit.y,size:fit.size,font});}
   }
   const bytes=Buffer.from(await output.save());if(options.auditFile)fs.writeFileSync(options.auditFile,JSON.stringify({templateId:doc.templateId,sourcePdf:manifest.canonicalPdf,pages:output.getPageCount(),fonts:'Arial; Calibri para filas del registro de matrícula',fields:measurements},null,2));return bytes;

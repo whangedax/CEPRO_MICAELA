@@ -1,3 +1,7 @@
+# Auditoría operativa 3.3 — 6 de octubre de 2026
+
+41 pruebas y recorrido Edge completo aprobados. Exportación/recepción por archivos firmados y cifrados con destinatario por cuenta; docente → secretaría → docente conserva datos del padrón y registros académicos. Gestión recuperable de usuarios/alumnos, acceso directo a ficha de asistencia, UD7 explícita, unidades filtradas por permiso y grupo, continuación EFSRT/acta para aulas mayores de cuarenta, campos de matrícula extensos, actualizaciones de credenciales/autorización sin reemplazar bases, contraseña personal offline consolidada y recuperación desde login. Auditoría real: 96 documentos/grupos disponibles sin errores; otros casos requieren completar estructura. Arranque scripts/server-offline.cjs. Informe docs/AUDITORIA_PUNTOS_CRITICOS.md.
+
 # Estado del proyecto CETPRO para Antigravity
 
 **Adenda de auditoría 2026-10-06:** política central de roles; secretaría registra docentes y el equipo institucional activa altas remotas; paneles docentes restringidos; tema claro/oscuro; códigos de matrícula por documento sin cambiar IDs; JSON/CSV/XLSX y tablas con revisión, copia previa y aplicación atómica; propuestas de alumnos; PDFs sin marcas de agua, fuentes Arial/Calibri y reparación de recursos originales en las copias. Auditoría de 21 formatos / 24 páginas / 3766 campos medidos, 26 pruebas aprobadas e interfaz de los tres roles verificada. Detalles: docs/AUDITORIA_FORMATOS_Y_ROLES.md.

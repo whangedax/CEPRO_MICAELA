@@ -2116,7 +2116,7 @@ export class PdfTemplateEngine {
       const rowY = 371.84 + i * 20.79;
       const textY = pageHeight1 - (rowY + 13.5);
 
-      const docNum = sanitize(student['student.documentNumber'] || student.numeroDocumento || student.documentNumber || student.dni || student['enrollment.code'] || student.codigoMatricula);
+      const docNum = sanitize(student['enrollment.code'] || student.codigoMatricula || student['student.documentNumber'] || student.numeroDocumento || student.documentNumber || student.dni);
       if (docNum) {
         const tw = regularFont.widthOfTextAtSize(docNum, 7.5);
         page1.drawText(docNum, { x: 43.52 + Math.max(1, (77.68 - tw) / 2), y: textY, size: 7.5, font: regularFont, color });
@@ -2192,7 +2192,7 @@ export class PdfTemplateEngine {
       const rowY = 220.06 + idx * 17.57;
       const textY = pageHeight2 - (rowY + 11.5);
 
-      const docNum = sanitize(student['student.documentNumber'] || student.numeroDocumento || student.documentNumber || student.dni || student['enrollment.code'] || student.codigoMatricula);
+      const docNum = sanitize(student['enrollment.code'] || student.codigoMatricula || student['student.documentNumber'] || student.numeroDocumento || student.documentNumber || student.dni);
       if (docNum) {
         const tw = regularFont.widthOfTextAtSize(docNum, 7.0);
         page2.drawText(docNum, { x: 72.98 + Math.max(1, (73.54 - tw) / 2), y: textY, size: 7.0, font: regularFont, color });
@@ -2279,6 +2279,7 @@ export class PdfTemplateEngine {
 
     // 9. Cuadro estadístico en Página 2 (Aprobados, Desaprobados, Retirados)
     // Se calculan estadísticas reales únicamente a partir de unidades y notas existentes (CERO MOCKS)
+    const statisticsStudents=Array.isArray(payload.statisticsRows)?payload.statisticsRows:sortedStudents;
     const statCols = [
       { x: 518.14, w: 31.06 }, { x: 549.20, w: 31.05 }, { x: 580.25, w: 31.06 },
       { x: 611.31, w: 31.05 }, { x: 642.36, w: 31.05 }, { x: 673.41, w: 31.06 },
@@ -2294,7 +2295,7 @@ export class PdfTemplateEngine {
       let ret = 0;
       let hasNotes = false;
 
-      for (const s of sortedStudents) {
+      for (const s of statisticsStudents) {
         if (s.retirado) { ret++; continue; }
         const val = s.unitGrades?.[u] ?? s.grades?.[u] ?? s[`evaluation.unit${u+1}`] ?? s.evaluations?.[u]?.score ?? s.notas?.[u];
         if (val !== null && val !== undefined && val !== '' && val !== 'null' && val !== 'undefined') {
@@ -2307,7 +2308,7 @@ export class PdfTemplateEngine {
         }
       }
 
-      if (hasNotes) {
+      if (hasNotes && Number.isFinite(payload.approvalThreshold)) {
         const aprStr = String(apr).padStart(2, '0');
         const desStr = String(des).padStart(2, '0');
         const retStr = String(ret).padStart(2, '0');
@@ -2325,7 +2326,7 @@ export class PdfTemplateEngine {
 
     // Estadísticas para EFSRT (columna 10)
     let aprE = 0, desE = 0, retE = 0, hasE = false;
-    for (const s of sortedStudents) {
+    for (const s of statisticsStudents) {
       if (s.retirado) { retE++; continue; }
       const val = s['efsrt.finalGrade'] ?? s.efsrtGrade ?? s.notaEfsrt ?? s.efsrtFinalScore;
       if (val !== null && val !== undefined && val !== '' && val !== 'null' && val !== 'undefined') {
@@ -2352,7 +2353,7 @@ export class PdfTemplateEngine {
 
     // Estadísticas para Logro Modular (columna 11)
     let aprL = 0, desL = 0, retL = 0, hasL = false;
-    for (const s of sortedStudents) {
+    for (const s of statisticsStudents) {
       if (s.retirado) { retL++; continue; }
       const val = s['closure.achievement'] ?? s.logro ?? s.modularGrade ?? s.finalResult;
       if (val !== null && val !== undefined && val !== '' && val !== 'null' && val !== 'undefined') {

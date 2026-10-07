@@ -1,3 +1,4 @@
+const {inspectDatabase}=require('./database-health.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
 const { OfflineCore, hash } = require('./offline-core.cjs');
@@ -9,7 +10,7 @@ function restore(core, source) {
   b.deliveries ||= [];
   for (const [table, columns] of Object.entries(tables)) if (!Array.isArray(b[table]) || b[table].some(row => columns.some(column => row[column] === undefined))) throw new Error(`Tabla inválida: ${table}`);
   const before = core.createBackup(null, 'antes-restaurar');
-  core.transaction(() => { for (const [table, columns] of Object.entries(tables)) { core.db.exec(`DELETE FROM ${table}`); const insert = core.db.prepare(`INSERT INTO ${table} (${columns.join(',')}) VALUES (${columns.map(() => '?').join(',')})`); for (const row of b[table]) insert.run(...columns.map(c => row[c])); } });
+  core.transaction(() => { for (const [table, columns] of Object.entries(tables)) { core.db.exec(`DELETE FROM ${table}`); const insert = core.db.prepare(`INSERT INTO ${table} (${columns.join(',')}) VALUES (${columns.map(() => '?').join(',')})`); for (const row of b[table]) insert.run(...columns.map(c => row[c])); } const health=inspectDatabase(core);if(!health.healthy)throw new Error('El respaldo tiene relaciones inválidas. La base anterior se conserva: '+health.errors.map(e=>e.message).slice(0,3).join(' ')); });
   return { success: true, previousCopy: before.filename };
 }
 if (require.main === module) {

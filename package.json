@@ -4,7 +4,9 @@
     "test:offline": "node --test --test-isolation=none tests/offline-security.test.cjs",
     "test:offline-ui": "node tests/offline-ui.test.cjs",
     "test:documents": "node --test --test-isolation=none tests/document-dynamic.test.cjs",
-    "test:data": "node --test --test-isolation=none tests/data-update.test.cjs"
+    "test:data": "node --test --test-isolation=none tests/data-update.test.cjs",
+    "test:critical": "node --test --test-isolation=none tests/critical-workflows.test.cjs",
+    "test:sync-ui": "node tests/synchronization-ui.test.cjs"
   },
   "engines": {
     "node": ">=24"
