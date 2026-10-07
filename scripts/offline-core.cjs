@@ -24,7 +24,7 @@ const TEMPLATES = {
   DOCENTE: Array.from({ length: 15 }, (_, n) => `TMPL-${String(n + 4).padStart(2, '0')}`)
 };
 function passwordRecord(password) {
-  if (typeof password !== 'string' || password.length < 10 || password.length > 200) fail('La contraseña debe tener entre 10 y 200 caracteres.');
+  if (typeof password !== 'string' || password.length < 8 || password.length > 200) fail('La contraseña debe tener entre 8 y 200 caracteres.');
   const salt = crypto.randomBytes(16).toString('hex');
   return { salt, digest: crypto.scryptSync(password, salt, 64).toString('hex') };
 }
@@ -241,7 +241,7 @@ class OfflineCore {
   }
   saveStudent(actor, input) {
     this.requireRole(actor, ADMIN);
-    const current = input.id ? this.record('students', input.id) : null;
+    const current = input.id ? this.record('students', input.id) : null;if(input.id&&!current)fail('Estudiante no encontrado.',404);
     const value = { ...current,archived:input.archived===undefined?!!current?.archived:!!input.archived, id: current?.id || id(), document: String(input.document || '').trim(), name: String(input.name || '').trim(), active: input.active !== false };
     for(const key of ['lastName1','lastName2','firstNames','sex','birthDate','documentType'])if(input[key]!==undefined)value[key]=String(input[key]).trim();
     if(value.sex&&!['H','M'].includes(value.sex))fail('Seleccione sexo H o M, según la plantilla.');
@@ -349,7 +349,7 @@ class OfflineCore {
     if(!actor.active)fail('Cuenta inactiva.',403);const groups=this.scoped(actor,'groups').filter(g=>!input.groupId||g.id===input.groupId);if(!groups.length)fail('Seleccione un grupo permitido.');
     const groupIds=new Set(groups.map(g=>g.id)),programs=new Set(groups.map(g=>g.programId)),modules=new Set(groups.map(g=>g.moduleId)),enrollments=this.scoped(actor,'enrollments').filter(e=>groupIds.has(e.groupId)),studentIds=new Set(enrollments.map(e=>e.studentId)),enrollmentIds=new Set(enrollments.map(e=>e.id));
     const operations=this.operations().filter(op=>{const b=op.body,v=b.value;if(!this.operationVisible(actor,b))return false;if(b.entity==='groups')return groupIds.has(v.id);if(b.entity==='programs')return programs.has(v.id);if(b.entity==='modules')return modules.has(v.id);if(b.entity==='students')return studentIds.has(v.id);if(['enrollments','grades','attendance'].includes(b.entity))return groupIds.has(v.groupId);if(b.entity==='studentRequests')return groupIds.has(v.groupId)&&(actor.role==='DOCENTE'||input.includeAccounts===true);if(b.entity==='documentSettings'){const scope=v.scope;return scope.kind==='institution'||groupIds.has(scope.target)||enrollmentIds.has(scope.target)||programs.has(scope.target)||modules.has(scope.target);}return ['accountRequests','userDirectory'].includes(b.entity)&&ADMIN.includes(actor.role)&&input.includeAccounts===true;});
-    const device=this.setting('device'),body={app:APP,type:'GROUP_EXCHANGE',version:VERSION,id:id(),institutionId:this.setting('institution').id,from:device.id,at:now(),certificate:this.setting('authorityPrivate')?this.certificate(actor,device):this.setting('certificate'),envelope:tableEnvelope({operations,acknowledgements:[],groups:groups.map(g=>({id:g.id,name:groupName(this,g)}))},input.passphrase)};
+    const device=this.setting('device'),body={app:APP,type:'GROUP_EXCHANGE',version:VERSION,id:id(),institutionId:this.setting('institution').id,from:device.id,at:now(),certificate:this.setting('authorityPrivate')?this.certificate(actor,device):this.setting('certificate'),envelope:tableEnvelope({operations,acknowledgements:[],resolutions:this.setting('authorityPrivate')?this.db.prepare('SELECT value FROM conflicts').all().map(r=>JSON.parse(r.value)).filter(c=>c.resolved&&groupIds.has(c.operation.body.value.groupId)).map(c=>({operationId:c.id,entity:c.operation.body.entity,proposedRev:c.operation.body.value.rev,value:c.retained,decision:c.resolution})):[],groups:groups.map(g=>({id:g.id,name:groupName(this,g)}))},input.passphrase)};
     this.audit('EXCHANGE_EXPORTED',actor,{groups:[...groupIds],operations:operations.length});return {body,signature:sign(body,device.signing.private)};
   }
   packageFor(actor, deviceId) {
@@ -447,6 +447,7 @@ class OfflineCore {
     } else if (!portable&&(b.from !== institution.hub.id || !ADMIN.includes(cert.body.user.role))) fail('Reciba las actualizaciones del equipo institucional.', 403);
     if(portable&&(!cert.body.user.active||cert.body.validUntil<now()))fail('La autorización del emisor venció o está inactiva.',403);
     const data = portable?tableEnvelope(b.envelope,passphrase,true):unseal(b.envelope, device.encryption.private);
+    if(portable&&data.resolutions?.length&&(b.from!==institution.hub.id||!ADMIN.includes(cert.body.user.role)))fail('Solo el equipo institucional confirma decisiones sobre conflictos.',403);
     if (!Array.isArray(data.operations) || data.operations.length > 100000) fail('Contenido de paquete inválido.');
     if (!hub && data.account && (!verify(data.account.certificate.body, data.account.certificate.signature, institution.publicKey) || data.account.user.id !== actor.id || data.account.certificate.body.deviceId !== device.id)) fail('Actualización de cuenta inválida.');
     const effectiveUser = !hub && data.account ? data.account.user : actor;
@@ -504,7 +505,7 @@ class OfflineCore {
       if (!hub) for (const resolution of data.resolutions || []) {
         const current = this.record(resolution.entity, resolution.value?.id);
         if (!resolution.value || !this.operationVisible(effectiveUser, { entity: resolution.entity, value: resolution.value })) fail('Resolución fuera del alcance.', 403);
-        if (current?.rev === resolution.proposedRev) { this.putRecord(resolution.entity, resolution.value); this.audit('RESOLUTION_RECEIVED', actor, { before: current, resolution }); }
+        if (current?.rev === resolution.proposedRev) { this.putRecord(resolution.entity, resolution.value);for(const row of this.db.prepare('SELECT id,value FROM conflicts').all()){const conflict=JSON.parse(row.value);if(!conflict.resolved&&conflict.operation.body.entity===resolution.entity&&conflict.operation.body.recordId===resolution.value.id){conflict.resolved=true;conflict.retained=resolution.value;conflict.resolution=resolution.decision;this.db.prepare('UPDATE conflicts SET value=? WHERE id=?').run(canonical(conflict),row.id);if(decisions.some(d=>d.body.id===row.id&&d.state==='conflict'))report.conflicts=Math.max(0,report.conflicts-1);}}this.audit('RESOLUTION_RECEIVED', actor, { before: current, resolution }); }
       }
       // Los paquetes con dependencias/conflictos pueden volver a importarse tras resolverlos.
       if (!report.pending && !report.conflicts) this.db.prepare('INSERT INTO receipts VALUES (?,?)').run(b.id, now());
