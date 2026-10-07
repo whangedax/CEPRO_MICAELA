@@ -55,138 +55,6 @@
   "geometryProvenance": "Calibración vectorial física sobre 12_EVALUACION_UD2.pdf en A3 Portrait (841.89 x 1190.55 pt) para 40 estudiantes x 26 columnas de evaluación.",
   "fields": [
     {
-      "canonicalKey": "institution.name",
-      "geometryStatus": "VERIFIED",
-      "styleProfile": "HEADER_TITLE",
-      "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": {
-        "x": 520,
-        "y": 165,
-        "w": 300,
-        "h": 14
-      }
-    },
-    {
-      "canonicalKey": "program.name",
-      "geometryStatus": "VERIFIED",
-      "styleProfile": "TABLE_TEXT",
-      "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": {
-        "x": 255,
-        "y": 178,
-        "w": 565,
-        "h": 13
-      }
-    },
-    {
-      "canonicalKey": "period.name",
-      "geometryStatus": "VERIFIED",
-      "styleProfile": "TABLE_TEXT",
-      "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": {
-        "x": 255,
-        "y": 191,
-        "w": 565,
-        "h": 13
-      }
-    },
-    {
-      "canonicalKey": "module.name",
-      "geometryStatus": "VERIFIED",
-      "styleProfile": "TABLE_TEXT",
-      "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": {
-        "x": 255,
-        "y": 204,
-        "w": 565,
-        "h": 13
-      }
-    },
-    {
-      "canonicalKey": "curriculum.unit.name",
-      "geometryStatus": "VERIFIED",
-      "styleProfile": "TABLE_TEXT",
-      "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": {
-        "x": 255,
-        "y": 216,
-        "w": 565,
-        "h": 13
-      }
-    },
-    {
-      "canonicalKey": "curriculum.unit.capacity",
-      "geometryStatus": "VERIFIED",
-      "styleProfile": "TABLE_TEXT",
-      "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": {
-        "x": 255,
-        "y": 235,
-        "w": 565,
-        "h": 13
-      }
-    },
-    {
-      "canonicalKey": "curriculum.indicator.1",
-      "geometryStatus": "VERIFIED",
-      "styleProfile": "TABLE_TEXT",
-      "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": {
-        "x": 255,
-        "y": 264,
-        "w": 565,
-        "h": 14
-      }
-    },
-    {
-      "canonicalKey": "curriculum.indicator.2",
-      "geometryStatus": "VERIFIED",
-      "styleProfile": "TABLE_TEXT",
-      "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": {
-        "x": 255,
-        "y": 292.5,
-        "w": 565,
-        "h": 14
-      }
-    },
-    {
-      "canonicalKey": "curriculum.indicator.3",
-      "geometryStatus": "VERIFIED",
-      "styleProfile": "TABLE_TEXT",
-      "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": {
-        "x": 255,
-        "y": 321,
-        "w": 565,
-        "h": 14
-      }
-    },
-    {
-      "canonicalKey": "curriculum.indicator.4",
-      "geometryStatus": "VERIFIED",
-      "styleProfile": "TABLE_TEXT",
-      "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": {
-        "x": 255,
-        "y": 349.5,
-        "w": 565,
-        "h": 14
-      }
-    },
-    {
-      "canonicalKey": "curriculum.indicator.5",
-      "geometryStatus": "VERIFIED",
-      "styleProfile": "TABLE_TEXT",
-      "overflowPolicy": "AUTOFIT_OR_FAIL",
-      "box": {
-        "x": 255,
-        "y": 378,
-        "w": 565,
-        "h": 14
-      }
-    },
-    {
       "canonicalKey": "student.fullName",
       "geometryStatus": "VERIFIED",
       "styleProfile": "PRIMARY_PERSON_NAME",
@@ -219,6 +87,138 @@
       },
       "repeat": 40,
       "stepY": 14.606
+    },
+    {
+      "canonicalKey": "program.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "box": {
+        "x": 232.5,
+        "y": 178.932,
+        "w": 587.39,
+        "h": 13
+      },
+      "geometryEvidence": "2026-10-06: celda de valor junto a etiqueta vectorial del PDF original."
+    },
+    {
+      "canonicalKey": "period.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "box": {
+        "x": 232.5,
+        "y": 191.328,
+        "w": 587.39,
+        "h": 13
+      },
+      "geometryEvidence": "2026-10-06: celda de valor junto a etiqueta vectorial del PDF original."
+    },
+    {
+      "canonicalKey": "module.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "box": {
+        "x": 232.5,
+        "y": 203.726,
+        "w": 587.39,
+        "h": 13
+      },
+      "geometryEvidence": "2026-10-06: celda de valor junto a etiqueta vectorial del PDF original."
+    },
+    {
+      "canonicalKey": "curriculum.unit.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "box": {
+        "x": 232.5,
+        "y": 215.406,
+        "w": 587.39,
+        "h": 13
+      },
+      "geometryEvidence": "2026-10-06: celda de valor junto a etiqueta vectorial del PDF original."
+    },
+    {
+      "canonicalKey": "curriculum.unit.capacity",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "box": {
+        "x": 232.5,
+        "y": 235.092,
+        "w": 587.39,
+        "h": 13
+      },
+      "geometryEvidence": "2026-10-06: celda de valor junto a etiqueta vectorial del PDF original."
+    },
+    {
+      "canonicalKey": "curriculum.indicator.1",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "box": {
+        "x": 232.5,
+        "y": 263.56,
+        "w": 587.39,
+        "h": 14
+      },
+      "geometryEvidence": "2026-10-06: posicion vectorial de etiqueta INDICADOR."
+    },
+    {
+      "canonicalKey": "curriculum.indicator.2",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "box": {
+        "x": 232.5,
+        "y": 292.027,
+        "w": 587.39,
+        "h": 14
+      },
+      "geometryEvidence": "2026-10-06: posicion vectorial de etiqueta INDICADOR."
+    },
+    {
+      "canonicalKey": "curriculum.indicator.3",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "box": {
+        "x": 232.5,
+        "y": 320.494,
+        "w": 587.39,
+        "h": 14
+      },
+      "geometryEvidence": "2026-10-06: posicion vectorial de etiqueta INDICADOR."
+    },
+    {
+      "canonicalKey": "curriculum.indicator.4",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "box": {
+        "x": 232.5,
+        "y": 348.961,
+        "w": 587.39,
+        "h": 14
+      },
+      "geometryEvidence": "2026-10-06: posicion vectorial de etiqueta INDICADOR."
+    },
+    {
+      "canonicalKey": "curriculum.indicator.5",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "TABLE_TEXT",
+      "box": {
+        "x": 232.5,
+        "y": 377.429,
+        "w": 587.39,
+        "h": 14
+      },
+      "geometryEvidence": "2026-10-06: posicion vectorial de etiqueta INDICADOR."
+    },
+    {
+      "canonicalKey": "institution.name",
+      "geometryStatus": "VERIFIED",
+      "styleProfile": "HEADER_TITLE",
+      "box": {
+        "x": 232.5,
+        "y": 151.172,
+        "w": 587.39,
+        "h": 12
+      },
+      "geometryEvidence": "Espacio blanco sobre encabezado institucional; fuente original conservada."
     }
   ],
   "physicalFields": [

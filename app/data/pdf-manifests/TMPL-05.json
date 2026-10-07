@@ -29,7 +29,9 @@
     "cellWidth": 15.99,
     "cellHeight": 11.99,
     "stepX": 15.9873,
-    "stepY": 11.99
+    "stepY": 11.99,
+    "absencePercentX": 1061.89,
+    "absencePercentWidth": 40.67
   },
   "fields": [
     {

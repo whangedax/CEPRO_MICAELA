@@ -15,9 +15,10 @@ export class PdfTemplateEngine {
   }
 
   // Centrado vertical exacto usando métricas reales
+  _fontMetric(font,kind,size){const f=font.embedder.font;const value=f[kind]??f[kind.toLowerCase()]??f[kind==='Ascender'?'ascent':'descent'];if(!Number.isFinite(value))throw new Error('Métricas de fuente no disponibles: '+font.name);return (value/(f.unitsPerEm||1000))*size;}
   _getVerticallyCenteredBaseline(font, fontSize, box, pageHeight) {
-    const ascent = (font.embedder.font.Ascender / 1000) * fontSize;
-    const descent = (font.embedder.font.Descender / 1000) * fontSize;
+    const ascent=this._fontMetric(font,'Ascender',fontSize);
+    const descent=this._fontMetric(font,'Descender',fontSize);
     const pdfLibBottomY = pageHeight - box.y - box.h;
     
     // Baseline = offset(Y) inferior de la caja + (alto de la caja / 2) - centro tipográfico real
@@ -25,6 +26,7 @@ export class PdfTemplateEngine {
   }
 
   _fitTextToBox(text, font, box, pageHeight, options) {
+    text=String(text);
     let currentSize = options.maxFontSize;
     const minSize = options.minFontSize;
     const padding = options.paddingX || 0;
@@ -34,7 +36,7 @@ export class PdfTemplateEngine {
 
     // Reducir fuente hasta que quepa
     while (currentSize >= minSize) {
-      const textWidth = font.widthOfTextAtSize(text, currentSize);
+      const textWidth = text.includes('\n')?Infinity:font.widthOfTextAtSize(text, currentSize);
       if (textWidth <= availableWidth) {
         break;
       }
@@ -42,8 +44,15 @@ export class PdfTemplateEngine {
     }
 
     // Verificar si falló el fit
-    const finalWidth = font.widthOfTextAtSize(text, currentSize);
+    currentSize=Math.max(minSize,currentSize);
+    const finalWidth = text.includes('\n')?Infinity:font.widthOfTextAtSize(text, currentSize);
     if (finalWidth > availableWidth) {
+      for(let size=options.maxFontSize;size>=minSize;size=Number((size-.1).toFixed(1))){
+        const lines=[];let valid=true;
+        for(const paragraph of text.split(/\r?\n/)){let line='';for(const word of paragraph.split(/\s+/).filter(Boolean)){if(font.widthOfTextAtSize(word,size)>availableWidth){if(!options.breakLongWords){valid=false;break;}if(line){lines.push(line);line='';}for(const character of word){if(font.widthOfTextAtSize(character,size)>availableWidth){valid=false;break;}if(line&&font.widthOfTextAtSize(line+character,size)>availableWidth){lines.push(line);line='';}line+=character;}if(!valid)break;continue;}const candidate=line?line+' '+word:word;if(font.widthOfTextAtSize(candidate,size)<=availableWidth)line=candidate;else{lines.push(line);line=word;}}if(line)lines.push(line);if(!valid)break;}
+        const lineHeight=size*1.12,ascent=this._fontMetric(font,'Ascender',size),descent=this._fontMetric(font,'Descender',size),height=(ascent-descent)+(lines.length-1)*lineHeight;
+        if(valid&&lines.length&&height<=box.h-1){const width=Math.max(...lines.map(line=>font.widthOfTextAtSize(line,size)));const x=options.align==='center'?box.x+(box.w-width)/2:options.align==='right'?box.x+box.w-padding-width:box.x+padding;return {text:lines.join('\n'),x,y:pageHeight-box.y-(box.h-height)/2-ascent,size,font,lineHeight};}
+      }
       const err = new Error(`El contenido no cabe en la caja de ${box.w}pt con minFontSize ${minSize}. Ancho disponible: ${availableWidth}pt, ancho medido: ${finalWidth}pt.`);
       err.name = 'EXPECTED_REJECTION';
       throw err;
@@ -81,13 +90,13 @@ export class PdfTemplateEngine {
   }
 
   _textBounds(drawArgs, pageHeight) {
-    const ascent = (drawArgs.font.embedder.font.Ascender / 1000) * drawArgs.size;
-    const descent = (drawArgs.font.embedder.font.Descender / 1000) * drawArgs.size;
+    const ascent=this._fontMetric(drawArgs.font,'Ascender',drawArgs.size);
+    const descent=this._fontMetric(drawArgs.font,'Descender',drawArgs.size);
     return {
       x: drawArgs.x,
       y: pageHeight - (drawArgs.y + ascent),
-      width: drawArgs.font.widthOfTextAtSize(drawArgs.text, drawArgs.size),
-      height: ascent - descent
+      width: Math.max(...drawArgs.text.split('\n').map(line=>drawArgs.font.widthOfTextAtSize(line,drawArgs.size))),
+      height: ascent-descent+(drawArgs.text.split('\n').length-1)*(drawArgs.lineHeight||drawArgs.size*1.12)
     };
   }
 
@@ -170,6 +179,11 @@ export class PdfTemplateEngine {
     const moduleName = payload.module?.nombreOficial || payload.module?.nombre || '';
     fixtureData['header.modulo'] = moduleName;
     fixtureData['header.rdModulo'] = payload.module?.resolucion || payload.module?.resolucionDirectoral || '';
+    fixtureData['header.region'] = payload.institution?.region || '';
+    fixtureData['header.provincia'] = payload.institution?.provincia || '';
+    fixtureData['header.resolucionAutorizacion'] = payload.institution?.resolucionAutorizacion || '';
+    fixtureData['header.resolucionConversion'] = payload.institution?.resolucionConversion || '';
+    fixtureData['header.lugar'] = payload.institution?.lugar || '';
 
     // Periodo y fechas
     fixtureData['header.fechaInicio'] = payload.period?.fechaInicio || '';
@@ -195,6 +209,13 @@ export class PdfTemplateEngine {
       fixtureData[`row${nn}.sexo`] = student.sexo || '';
       // Sin fecha confirmada el campo permanece vacío; el renderer no inventa datos.
       fixtureData[`row${nn}.fechaNacimiento`] = student.fechaNacimiento || '';
+      fixtureData[`row${nn}.codigoMatricula`] = student.codigoMatricula || '';
+      fixtureData[`row${nn}.condicion`] = student.condicion || '';
+      fixtureData[`row${nn}.numeroUnidades`] = student.numeroUnidades == null ? '' : String(student.numeroUnidades);
+      fixtureData[`row${nn}.creditos`] = student.creditos == null ? '' : String(student.creditos);
+      if(student.condicion==='G')gratuitos++;
+      if(student.condicion==='P')pagantes++;
+      if(student.condicion==='B')becarios++;
       
       // El contrato productivo usa H/M y el encabezado físico también indica H-M.
       if (student.sexo === 'H') hombres++;
@@ -348,7 +369,7 @@ export class PdfTemplateEngine {
           apellidoPaterno: row.apellidoPaterno ?? '',
           apellidoMaterno: row.apellidoMaterno ?? '',
           nombres: row.nombres ?? row.nombre ?? '',
-          tipoDocumento: row.tipoDocumento ?? row.documentType ?? 'DNI',
+          tipoDocumento: row.tipoDocumento ?? row.documentType ?? '',
           numeroDocumento: row.numeroDocumento ?? row.documentNumber ?? row.document ?? row.numDoc ?? row.dni ?? row.codigoEstudiante ?? '',
           sexo: row.sex ?? row.sexo ?? '',
           fechaNacimiento: row.birthDate ?? row.fechaNacimiento ?? ''
@@ -786,14 +807,14 @@ export class PdfTemplateEngine {
           text = sanitize(rfs['module.nombre'] || rfs['module.name'] || mod.nombreOficial || mod.nombre || mod.name || '');
           break;
         case 'student.tipoDocumento':
-          text = sanitize(student.tipoDocumento || student.documentType || 'DNI');
+          text = sanitize(student.tipoDocumento || student.documentType || '');
           break;
         case 'student.numeroDocumento':
           text = sanitize(student.numeroDocumento || student.documentNumber || student.document || student.dni || student.numDoc || student.codigoEstudiante || '');
           break;
         case 'student.apellidoPaterno': {
           let pat = student.apellidoPaterno || '';
-          if (!pat && !student.apellidoMaterno && !student.nombres) {
+          if (!payload.explicitIdentity && !pat && !student.apellidoMaterno && !student.nombres) {
             const split = this._splitStudentName(student.apellidosNombres || student.studentName || '');
             pat = split.paterno;
           }
@@ -802,7 +823,7 @@ export class PdfTemplateEngine {
         }
         case 'student.apellidoMaterno': {
           let mat = student.apellidoMaterno || '';
-          if (!mat && !student.apellidoPaterno && !student.nombres) {
+          if (!payload.explicitIdentity && !mat && !student.apellidoPaterno && !student.nombres) {
             const split = this._splitStudentName(student.apellidosNombres || student.studentName || '');
             mat = split.materno;
           }
@@ -811,7 +832,7 @@ export class PdfTemplateEngine {
         }
         case 'student.nombres': {
           let nom = student.nombres || student.nombre || '';
-          if (!nom && !student.apellidoPaterno && !student.apellidoMaterno) {
+          if (!payload.explicitIdentity && !nom && !student.apellidoPaterno && !student.apellidoMaterno) {
             const split = this._splitStudentName(student.apellidosNombres || student.studentName || '');
             nom = split.nombres;
           }
@@ -959,6 +980,7 @@ export class PdfTemplateEngine {
         group: payload.group,
         resolvedFieldSet: payload.resolvedFieldSet,
         studentsList: chunk,
+        explicitIdentity:payload.explicitIdentity===true,
         pageOffset: startRecord > 0 ? (startRecord - 1) : 0,
         administrativeDraft: false,
         demoMode: false
@@ -1144,7 +1166,7 @@ export class PdfTemplateEngine {
     for (let j = 0; j < rawSessions.length; j++) {
       const session = rawSessions[j];
       const rawDate = sanitize(session.fecha || session.date || '');
-      let dateText = rawDate.includes('-') ? rawDate.slice(8, 10) : (rawDate || String(j + 1).padStart(2, '0'));
+      let dateText = rawDate.includes('-') ? rawDate.slice(8,10)+'/'+rawDate.slice(5,7) : (rawDate || String(j + 1).padStart(2, '0'));
       const dateBox = {
         x: originX + j * stepX,
         y: 136.35,
@@ -1186,6 +1208,7 @@ export class PdfTemplateEngine {
         if (state === 'PRESENTE' || state === 'ASISTIO' || state === 'P') markChar = 'P';
         else if (state === 'AUSENTE' || state === 'FALTA' || state === 'FALTA_INJUSTIFICADA' || state === 'F') markChar = 'F';
         else if (state === 'JUSTIFICADA' || state === 'JUSTIFICADO' || state === 'FALTA_JUSTIFICADA' || state === 'J') markChar = 'J';
+        else if (state === 'TARDANZA' || state === 'TARDE' || state === 'T') markChar = 'T';
         else if (state === 'SIN_REGISTRO' || !state) markChar = '—';
 
         const markBox = {
@@ -1224,7 +1247,12 @@ export class PdfTemplateEngine {
         page.drawText(aFit.text, { x: aFit.x, y: aFit.y, size: aFit.size, font: boldFont, color });
       }
 
-      // % Inasistencias (B-003): Permanece estrictamente en blanco.
+      // Solo se recibe el porcentaje calculado con una política configurada explícitamente.
+      if(student.absencePercent!=null){
+        const box={x:manifest.grid?.absencePercentX||totFX+37,y:rowY,w:manifest.grid?.absencePercentWidth||40.67,h:11.99};
+        const fit=this.fitTextOrThrow(String(student.absencePercent),boldFont,box,pageHeight,{maxFontSize:7,minFontSize:4.5,paddingX:.5,align:'center',fieldKey:`absencePercent.${i}`});
+        page.drawText(fit.text,{x:fit.x,y:fit.y,size:fit.size,font:boldFont,color});
+      }
     }
 
     // Leyendas y marcas de agua
@@ -1442,8 +1470,9 @@ export class PdfTemplateEngine {
       if (score === null || score === undefined || score === '' || score === 'null' || score === 'undefined') return '';
       const num = Number(score);
       if (isNaN(num)) return '';
-      const clamped = Math.min(20, Math.max(0, Math.round(num)));
-      return String(clamped).padStart(2, '0');
+      if(num<0||num>20)throw new Error('Calificación fuera de escala.');
+      const clamped = num;
+      return Number.isInteger(clamped)?String(clamped).padStart(2,'0'):String(clamped);
     };
 
     for (let i = 0; i < sortedStudents.length; i++) {
@@ -1644,15 +1673,17 @@ export class PdfTemplateEngine {
       if (score === null || score === undefined || score === '' || score === 'null' || score === 'undefined') return '';
       const num = Number(score);
       if (isNaN(num)) return '';
-      const clamped = Math.min(20, Math.max(0, Math.round(num)));
-      return String(clamped).padStart(2, '0');
+      if(num<0||num>20)throw new Error('Calificación fuera de escala.');
+      const clamped = num;
+      return Number.isInteger(clamped)?String(clamped).padStart(2,'0'):String(clamped);
     };
 
     const formatCriterion = (score, maxVal = 3) => {
       if (score === null || score === undefined || score === '' || score === 'null' || score === 'undefined') return '';
       const num = Number(score);
       if (isNaN(num)) return '';
-      const clamped = Math.min(maxVal, Math.max(0, Math.round(num)));
+      if(num<0||num>maxVal)throw new Error('Criterio EFSRT fuera de escala.');
+      const clamped = num;
       return String(clamped);
     };
 
@@ -1679,7 +1710,7 @@ export class PdfTemplateEngine {
       const codeVal = sanitize(student['enrollment.code'] || student.code || student.codigoMatricula || student.studentCode);
       if (codeVal) {
         const codeFit = this.fitTextOrThrow(codeVal, regularFont, { x: grid.code.x, y: rowY, w: grid.code.width, h: grid.stepY }, pageHeight, {
-          maxFontSize: 6.5, minFontSize: 4.0, paddingX: 0.5, align: 'center', fieldKey: `student.${i}.code`
+          maxFontSize: 6.5, minFontSize: 4.0, paddingX: 0.5, align: 'center', breakLongWords:true, fieldKey: `student.${i}.code`
         });
         page.drawText(codeFit.text, { x: codeFit.x, y: codeFit.y, size: codeFit.size, font: regularFont, color });
       }
@@ -1832,7 +1863,7 @@ export class PdfTemplateEngine {
       page1.drawText(fit.text, { x: fit.x, y: fit.y, size: fit.size, font: boldFont, color });
     }
 
-    const tipoGestion = sanitize(rfs['institution.tipoGestion']?.value ?? inst.tipoGestion ?? 'PÚBLICA DE GESTIÓN DIRECTA');
+    const tipoGestion = sanitize(rfs['institution.tipoGestion']?.value ?? inst.tipoGestion ?? '');
     if (tipoGestion) {
       const box = getFieldBox('institution.tipoGestion', { x: 170.0, y: 164.9, w: 160.0, h: 23.6 });
       const fit = this.fitTextOrThrow(tipoGestion, regularFont, box, pageHeight1, {
@@ -1868,7 +1899,7 @@ export class PdfTemplateEngine {
       page1.drawText(fit.text, { x: fit.x, y: fit.y, size: fit.size, font: regularFont, color });
     }
 
-    const dre = sanitize(rfs['institution.dre']?.value ?? inst.dre ?? payload.dre ?? 'DRE LIMA METROPOLITANA');
+    const dre = sanitize(rfs['institution.dre']?.value ?? inst.dre ?? payload.dre ?? '');
     if (dre) {
       const box = getFieldBox('institution.dre', { x: 125.0, y: 235.8, w: 95.0, h: 23.6 });
       const fit = this.fitTextOrThrow(dre, regularFont, box, pageHeight1, {
@@ -1877,7 +1908,7 @@ export class PdfTemplateEngine {
       page1.drawText(fit.text, { x: fit.x, y: fit.y, size: fit.size, font: regularFont, color });
     }
 
-    const ugel = sanitize(rfs['institution.ugel']?.value ?? inst.ugel ?? payload.ugel ?? 'UGEL 03');
+    const ugel = sanitize(rfs['institution.ugel']?.value ?? inst.ugel ?? payload.ugel ?? '');
     if (ugel) {
       const box = getFieldBox('institution.ugel', { x: 284.0, y: 235.8, w: 225.0, h: 23.6 });
       const fit = this.fitTextOrThrow(ugel, regularFont, box, pageHeight1, {
@@ -1886,7 +1917,7 @@ export class PdfTemplateEngine {
       page1.drawText(fit.text, { x: fit.x, y: fit.y, size: fit.size, font: regularFont, color });
     }
 
-    const region = sanitize(rfs['institution.region']?.value ?? inst.region ?? payload.region ?? 'LIMA');
+    const region = sanitize(rfs['institution.region']?.value ?? inst.region ?? payload.region ?? '');
     if (region) {
       const box = getFieldBox('institution.region', { x: 125.0, y: 259.4, w: 150.0, h: 23.6 });
       const fit = this.fitTextOrThrow(region, regularFont, box, pageHeight1, {
@@ -1895,7 +1926,7 @@ export class PdfTemplateEngine {
       page1.drawText(fit.text, { x: fit.x, y: fit.y, size: fit.size, font: regularFont, color });
     }
 
-    const provincia = sanitize(rfs['institution.provincia']?.value ?? inst.provincia ?? payload.provincia ?? 'LIMA');
+    const provincia = sanitize(rfs['institution.provincia']?.value ?? inst.provincia ?? payload.provincia ?? '');
     if (provincia) {
       const box = getFieldBox('institution.provincia', { x: 340.0, y: 259.4, w: 170.0, h: 23.6 });
       const fit = this.fitTextOrThrow(provincia, regularFont, box, pageHeight1, {
@@ -1904,7 +1935,7 @@ export class PdfTemplateEngine {
       page1.drawText(fit.text, { x: fit.x, y: fit.y, size: fit.size, font: regularFont, color });
     }
 
-    const distrito = sanitize(rfs['institution.distrito']?.value ?? inst.distrito ?? payload.distrito ?? 'BREÑA');
+    const distrito = sanitize(rfs['institution.distrito']?.value ?? inst.distrito ?? payload.distrito ?? '');
     if (distrito) {
       const box = getFieldBox('institution.distrito', { x: 125.0, y: 283.0, w: 150.0, h: 23.6 });
       const fit = this.fitTextOrThrow(distrito, regularFont, box, pageHeight1, {
@@ -1913,7 +1944,7 @@ export class PdfTemplateEngine {
       page1.drawText(fit.text, { x: fit.x, y: fit.y, size: fit.size, font: regularFont, color });
     }
 
-    const lugar = sanitize(rfs['institution.lugar']?.value ?? inst.lugar ?? payload.lugar ?? 'BREÑA');
+    const lugar = sanitize(rfs['institution.lugar']?.value ?? inst.lugar ?? payload.lugar ?? '');
     if (lugar) {
       const box = getFieldBox('institution.lugar', { x: 340.0, y: 283.0, w: 170.0, h: 23.6 });
       const fit = this.fitTextOrThrow(lugar, regularFont, box, pageHeight1, {
@@ -1940,7 +1971,7 @@ export class PdfTemplateEngine {
       page1.drawText(fit.text, { x: fit.x, y: fit.y, size: fit.size, font: boldFont, color });
     }
 
-    const ciclo = sanitize(rfs['group.ciclo']?.value ?? grp.ciclo ?? prog.ciclo ?? 'TÉCNICO');
+    const ciclo = sanitize(rfs['group.ciclo']?.value ?? grp.ciclo ?? prog.ciclo ?? '');
     if (ciclo) {
       const box = getFieldBox('group.ciclo', { x: 1072.0, y: 188.5, w: 98.0, h: 23.7 });
       const fit = this.fitTextOrThrow(ciclo, regularFont, box, pageHeight1, {
@@ -1967,7 +1998,7 @@ export class PdfTemplateEngine {
       page1.drawText(fit.text, { x: fit.x, y: fit.y, size: fit.size, font: regularFont, color });
     }
 
-    const seccion = sanitize(rfs['group.seccion']?.value ?? grp.seccion ?? payload.seccion ?? 'A');
+    const seccion = sanitize(rfs['group.seccion']?.value ?? grp.seccion ?? payload.seccion ?? '');
     if (seccion) {
       const box = getFieldBox('group.seccion', { x: 1072.0, y: 283.0, w: 98.0, h: 23.6 });
       const fit = this.fitTextOrThrow(seccion, regularFont, box, pageHeight1, {
@@ -2020,16 +2051,17 @@ export class PdfTemplateEngine {
 
       if (uName) {
         // Pág 1 rotado
-        page1.drawText(uName.slice(0, 42), {
+        const sizeP1=Math.min(6,120/regularFont.widthOfTextAtSize(uName,1));const sizeP2=Math.min(6,80/regularFont.widthOfTextAtSize(uName,1));if(Math.min(sizeP1,sizeP2)<4)throw new Error("Nombre de unidad demasiado extenso para la cabecera rotada del acta: "+uName);
+        page1.drawText(uName, {
           x: udColsP1[u].x + udColsP1[u].w / 2 + 2.5,
           y: pageHeight1 - 325,
-          size: 6.0,
+          size: sizeP1,
           font: regularFont,
           color,
           rotate: degrees(90)
         });
         // Pág 2 rotado
-        page2.drawText(uName.slice(0, 32), {
+        page2.drawText(uName, {
           x: udColsP2[u].x + udColsP2[u].w / 2 + 2.5,
           y: pageHeight2 - 175,
           size: 6.0,
@@ -2072,8 +2104,9 @@ export class PdfTemplateEngine {
       if (score === null || score === undefined || score === '' || score === 'null' || score === 'undefined') return '';
       const num = Number(score);
       if (isNaN(num)) return '';
-      const clamped = Math.min(20, Math.max(0, Math.round(num)));
-      return String(clamped).padStart(2, '0');
+      if(num<0||num>20)throw new Error('Calificación fuera de escala.');
+      const clamped = num;
+      return Number.isInteger(clamped)?String(clamped).padStart(2,'0'):String(clamped);
     };
 
     // 7. Partición 20+20 filas
@@ -2237,10 +2270,10 @@ export class PdfTemplateEngine {
       const textY = pageHeight2 - (topY + 9.5);
 
       if (uName) {
-        page2.drawText(uName.slice(0, 50), { x: 56.0, y: textY, size: 6.0, font: boldFont, color });
+        const fit=this.fitTextOrThrow(uName,boldFont,{x:56,y:topY,w:380,h:13.82},pageHeight2,{maxFontSize:6,minFontSize:4,paddingX:1,align:'left',fieldKey:'unit.summary.name.'+k});page2.drawText(fit.text,{x:fit.x,y:fit.y,size:fit.size,font:boldFont,color});
       }
       if (uCap) {
-        page2.drawText(uCap.slice(0, 115), { x: 440.0, y: textY, size: 6.0, font: regularFont, color });
+        const fit=this.fitTextOrThrow(uCap,regularFont,{x:440,y:topY,w:690,h:13.82},pageHeight2,{maxFontSize:6,minFontSize:4,paddingX:1,align:'left',fieldKey:'unit.summary.capacity.'+k});page2.drawText(fit.text,{x:fit.x,y:fit.y,size:fit.size,font:regularFont,color});
       }
     }
 
@@ -2268,7 +2301,7 @@ export class PdfTemplateEngine {
           hasNotes = true;
           const n = Number(val);
           if (!isNaN(n)) {
-            if (n >= 13) apr++;
+            if (Number.isFinite(payload.approvalThreshold) && n >= payload.approvalThreshold) apr++;
             else des++;
           }
         }
@@ -2299,12 +2332,12 @@ export class PdfTemplateEngine {
         hasE = true;
         const n = Number(val);
         if (!isNaN(n)) {
-          if (n >= 13) aprE++;
+          if (Number.isFinite(payload.approvalThreshold) && n >= payload.approvalThreshold) aprE++;
           else desE++;
         }
       }
     }
-    if (hasE) {
+    if (hasE && Number.isFinite(payload.approvalThreshold)) {
       const colE = statCols[10];
       const aprStr = String(aprE).padStart(2, '0');
       const desStr = String(desE).padStart(2, '0');
@@ -2326,12 +2359,12 @@ export class PdfTemplateEngine {
         hasL = true;
         const n = Number(val);
         if (!isNaN(n)) {
-          if (n >= 13) aprL++;
+          if (Number.isFinite(payload.approvalThreshold) && n >= payload.approvalThreshold) aprL++;
           else desL++;
         }
       }
     }
-    if (hasL) {
+    if (hasL && Number.isFinite(payload.approvalThreshold)) {
       const colL = statCols[11];
       const aprStr = String(aprL).padStart(2, '0');
       const desStr = String(desL).padStart(2, '0');

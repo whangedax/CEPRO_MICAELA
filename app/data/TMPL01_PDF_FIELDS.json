@@ -2318,5 +2318,45 @@
     "maxFontSize": 8,
     "minFontSize": 5.5,
     "paddingX": 0
+  },
+  "header.region": {
+    "x": 65.52,
+    "y": 101.31,
+    "w": 114.09,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 4.5,
+    "paddingX": 2
+  },
+  "header.resolucionAutorizacion": {
+    "x": 148.93,
+    "y": 131.19,
+    "w": 101.31,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 4.5,
+    "paddingX": 2
+  },
+  "header.resolucionConversion": {
+    "x": 443.64,
+    "y": 131.19,
+    "w": 109.45,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 4.5,
+    "paddingX": 2
+  },
+  "header.provincia": {
+    "x": 113.61,
+    "y": 146.13,
+    "w": 156.58,
+    "h": 14.95,
+    "align": "left",
+    "maxFontSize": 8,
+    "minFontSize": 4.5,
+    "paddingX": 2
   }
 }

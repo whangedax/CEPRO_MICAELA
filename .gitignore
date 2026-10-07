@@ -34,3 +34,8 @@ CETPRO_BACKUP_*.json
 # Archivos de entorno
 .env
 .env.local
+
+# Credenciales, claves, base local y copias de seguridad del servicio
+private-data/
+demo-data/
+tests/offline-artifacts/

@@ -1,5 +1,11 @@
 # Sistema Académico CETPRO — paquete para Google Antigravity
 
+## Operación local por cuentas individuales — 5 de octubre de 2026
+
+El inicio actual usa un servicio local con SQLite, usuario/contraseña, permisos por rol y asignación, y sincronización cifrada por USB. Ejecutar `INICIAR_SISTEMA_CETPRO.bat`; la primera pantalla crea dirección o vincula este equipo. El paquete de distribución incluye Node.js; el repositorio requiere Node.js 24 o posterior. Los datos anteriores se conservan y pueden incorporarse desde respaldo o navegador.
+
+Consultar [guía de uso y recuperación](docs/GUIA_SISTEMA_OFFLINE.md). Verificar con `npm run test:offline` y `npm run test:offline-ui`. Los PDF de esta entrega son borradores con marca; las condiciones de emisión oficial y el transporte automático por LAN requieren validación/trabajo adicional. Las secciones siguientes documentan el sistema histórico.
+
 Este repositorio prepara la migración del proyecto CETPRO desde la especificación histórica basada en Excel/VBA hacia una aplicación local construida con HTML, CSS y JavaScript puro.
 
 ## Principios no negociables

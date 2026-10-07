@@ -1,0 +1,139 @@
+{
+  "programas": [
+    {
+      "id": "PROG-001",
+      "nombre": "MECÁNICA AUTOMOTRIZ",
+      "codigo": "PROG-001"
+    },
+    {
+      "id": "PROG-002",
+      "nombre": "MECÁNICA DE MOTOS Y VEHÍCULOS AFINES",
+      "codigo": "PROG-002"
+    },
+    {
+      "id": "PROG-003",
+      "nombre": "CARPINTERÍA METÁLICA",
+      "codigo": "PROG-003"
+    },
+    {
+      "id": "PROG-004",
+      "nombre": "PELUQUERÍA Y BARBERÍA",
+      "codigo": "PROG-004"
+    },
+    {
+      "id": "PROG-005",
+      "nombre": "COMPUTACIÓN E INFORMÁTICA",
+      "codigo": "PROG-005"
+    },
+    {
+      "id": "PROG-006",
+      "nombre": "CORTE Y ENSAMBLAJE",
+      "codigo": "PROG-006"
+    },
+    {
+      "id": "PROG-007",
+      "nombre": "MANTENIMIENTO DE SISTEMAS ELÉCTRICOS",
+      "codigo": "PROG-007"
+    }
+  ],
+  "modulos": [
+    {
+      "id": "MOD-001",
+      "programaId": "PROG-001",
+      "nombre": "Mantenimiento y Reparación de Sistema de Suspensión, Dirección, Frenos y Transmisión",
+      "nombreOficial": "Mantenimiento y Reparación de Sistema de Suspensión, Dirección, Frenos y Transmisión",
+      "numeroModulo": 1
+    },
+    {
+      "id": "MOD-002",
+      "programaId": "PROG-001",
+      "nombre": "Diagnóstico y Mantenimiento del Motor de Combustión Interna de los Vehículos Automotrices",
+      "nombreOficial": "Diagnóstico y Mantenimiento del Motor de Combustión Interna de los Vehículos Automotrices",
+      "numeroModulo": 2
+    },
+    {
+      "id": "MOD-003",
+      "programaId": "PROG-002",
+      "nombre": "Mantenimiento y Reparación de Sistema de Suspensión, Dirección, Frenos, Transmisión, Sistema Eléctrico y Sistema Electrónico de Motos y Vehículos Afines",
+      "nombreOficial": "Mantenimiento y Reparación de Sistema de Suspensión, Dirección, Frenos, Transmisión, Sistema Eléctrico y Sistema Electrónico de Motos y Vehículos Afines",
+      "numeroModulo": 1
+    },
+    {
+      "id": "MOD-004",
+      "programaId": "PROG-002",
+      "nombre": "Mantenimiento y Reparación de Motos de Combustión y Conversión del Sistema GNV-GLP",
+      "nombreOficial": "Mantenimiento y Reparación de Motos de Combustión y Conversión del Sistema GNV-GLP",
+      "numeroModulo": 2
+    },
+    {
+      "id": "MOD-005",
+      "programaId": "PROG-003",
+      "nombre": "Construcciones Metálicas de Consumo con Soldadura por Arco Eléctrico en Acero",
+      "nombreOficial": "Construcciones Metálicas de Consumo con Soldadura por Arco Eléctrico en Acero",
+      "numeroModulo": 1
+    },
+    {
+      "id": "MOD-006",
+      "programaId": "PROG-003",
+      "nombre": "Construcciones Metálicas de Consumo en Aluminio con Soldadura Especial TIG-MIG-MAG-LASER",
+      "nombreOficial": "Construcciones Metálicas de Consumo en Aluminio con Soldadura Especial TIG-MIG-MAG-LASER",
+      "numeroModulo": 2
+    },
+    {
+      "id": "MOD-007",
+      "programaId": "PROG-004",
+      "nombre": "Corte de Cabellos, Peinados y Diseño de Barbas",
+      "nombreOficial": "Corte de Cabellos, Peinados y Diseño de Barbas",
+      "numeroModulo": 1
+    },
+    {
+      "id": "MOD-008",
+      "programaId": "PROG-004",
+      "nombre": "Ondulación, Decoloración, y Tinturación",
+      "nombreOficial": "Ondulación, Decoloración, y Tinturación",
+      "numeroModulo": 2
+    },
+    {
+      "id": "MOD-009",
+      "programaId": "PROG-005",
+      "nombre": "Ofimática",
+      "nombreOficial": "Ofimática",
+      "numeroModulo": 1
+    },
+    {
+      "id": "MOD-010",
+      "programaId": "PROG-005",
+      "nombre": "Diseño Gráfico y Plataformas Digitales",
+      "nombreOficial": "Diseño Gráfico y Plataformas Digitales",
+      "numeroModulo": 2
+    },
+    {
+      "id": "MOD-011",
+      "programaId": "PROG-006",
+      "nombre": "Técnicas de Trazado, Tendido y Corte de Prendas de Vestir",
+      "nombreOficial": "Técnicas de Trazado, Tendido y Corte de Prendas de Vestir",
+      "numeroModulo": 1
+    },
+    {
+      "id": "MOD-012",
+      "programaId": "PROG-006",
+      "nombre": "Técnicas de Confección de Prendas de Vestir",
+      "nombreOficial": "Técnicas de Confección de Prendas de Vestir",
+      "numeroModulo": 2
+    },
+    {
+      "id": "MOD-013",
+      "programaId": "PROG-007",
+      "nombre": "Instalación de Sistemas Eléctricos en Edificaciones",
+      "nombreOficial": "Instalación de Sistemas Eléctricos en Edificaciones",
+      "numeroModulo": 1
+    },
+    {
+      "id": "MOD-014",
+      "programaId": "PROG-007",
+      "nombre": "Mantenimiento de Equipos Electrónicos y Sistemas de Seguridad en Domótica",
+      "nombreOficial": "Mantenimiento de Equipos Electrónicos y Sistemas de Seguridad en Domótica",
+      "numeroModulo": 2
+    }
+  ]
+}

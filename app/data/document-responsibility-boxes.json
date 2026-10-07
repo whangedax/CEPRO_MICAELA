@@ -1,0 +1,222 @@
+{
+  "TMPL-01": [
+    {
+      "key": "coordinadorNombre",
+      "page": 1,
+      "x": 190.69,
+      "y": 776.89,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-02": [
+    {
+      "key": "directorNombre",
+      "page": 1,
+      "x": 80.65,
+      "y": 526.15,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-03": [],
+  "TMPL-04": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 84.47,
+      "y": 676.97,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-05": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 113.81,
+      "y": 645.91,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-06": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 185.81,
+      "y": 645.91,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-07": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 161.83,
+      "y": 645.91,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-08": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 113.81,
+      "y": 645.91,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-09": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 113.81,
+      "y": 645.91,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-10": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 145.81,
+      "y": 645.91,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-11": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 59.75,
+      "y": 1063.28,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-12": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 35,
+      "y": 1130.55,
+      "w": 260,
+      "h": 12,
+      "evidence": "Margen inferior disponible; identificación textual del docente responsable."
+    }
+  ],
+  "TMPL-13": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 35,
+      "y": 1130.55,
+      "w": 260,
+      "h": 12,
+      "evidence": "Margen inferior disponible; identificación textual del docente responsable."
+    }
+  ],
+  "TMPL-14": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 35,
+      "y": 1130.55,
+      "w": 260,
+      "h": 12,
+      "evidence": "Margen inferior disponible; identificación textual del docente responsable."
+    }
+  ],
+  "TMPL-15": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 35,
+      "y": 1130.55,
+      "w": 260,
+      "h": 12,
+      "evidence": "Margen inferior disponible; identificación textual del docente responsable."
+    }
+  ],
+  "TMPL-16": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 35,
+      "y": 1130.55,
+      "w": 260,
+      "h": 12,
+      "evidence": "Margen inferior disponible; identificación textual del docente responsable."
+    }
+  ],
+  "TMPL-17": [
+    {
+      "key": "teacher",
+      "page": 1,
+      "x": 35,
+      "y": 1130.55,
+      "w": 260,
+      "h": 12,
+      "evidence": "Margen inferior disponible; identificación textual del docente responsable."
+    }
+  ],
+  "TMPL-18": [],
+  "TMPL-19": [
+    {
+      "key": "directorNombre",
+      "page": 2,
+      "x": 237.22,
+      "y": 784.78,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    },
+    {
+      "key": "teacher",
+      "page": 2,
+      "x": 662.13,
+      "y": 784.78,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-20": [
+    {
+      "key": "directorNombre",
+      "page": 1,
+      "x": 456.39,
+      "y": 495.07,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ],
+  "TMPL-21": [
+    {
+      "key": "directorNombre",
+      "page": 1,
+      "x": 456.39,
+      "y": 500.76,
+      "w": 160,
+      "h": 12,
+      "evidence": "Espacio anterior a la etiqueta vectorial de responsabilidad; sin agregar firmas."
+    }
+  ]
+}
