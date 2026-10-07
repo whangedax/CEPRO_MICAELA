@@ -46,3 +46,9 @@ Esta verificación no es un piloto en las computadoras físicas de la instituci�
 ## Sincronización guiada 3.4 — 7 de octubre de 2026
 
 29/29 escenarios de recorridos críticos y seguridad aprobados. Prueba específica Edge de los tres roles: aprobada; cubre descripción verificada, claves separadas, envío y recepción de otro equipo, errores sin cambios, copias, duplicados y vista móvil. El resumen cuenta registros únicos y omite información externa no verificada. Se comprobó la exportación del usuario fiuler.docente por HTTP en el servicio operativo.
+
+## Gestión de aulas y motor 3.5 — 7 de octubre de 2026
+
+Aulas con secciones independientes, filtros docentes por carrera/periodo/módulo/grupo/sección, guardas JSON e identidad, salud relacional, copia diaria y restauración transaccional. Se probaron periodos sucesivos sin reutilizar la matrícula anterior y falta de espacio sin modificar datos. La base operativa y la demo superaron integridad física; las duplicidades históricas sin periodo se mantienen para revisión sin fusionar personas. Informe AUDITORIA_BASE_Y_SECCIONES.md.
+
+Verificación 3.5: 49 escenarios del servicio (42 de seguridad/documentos/tablas/circuitos + 7 de secciones y motor), más Edge con filtro A/B y sincronización de los tres roles. Copias únicas diarias antes de la primera transacción del día, no sólo al iniciar; matriculación y traslado rechazan aulas cerradas o posteriores al término confirmado.

@@ -81,7 +81,7 @@ class OfflineCore {
     const row = this.db.prepare('SELECT value FROM settings WHERE key=?').get(key);
     return row ? JSON.parse(row.value) : null;
   }
-  transaction(fn) {const nested=(this.transactionDepth||0)>0,savepoint='batch_'+(this.transactionDepth||0);this.db.exec(nested?`SAVEPOINT ${savepoint}`:'BEGIN IMMEDIATE');this.transactionDepth=(this.transactionDepth||0)+1;try{const result=fn();this.db.exec(nested?`RELEASE ${savepoint}`:'COMMIT');return result;}catch(e){this.db.exec(nested?`ROLLBACK TO ${savepoint}`:'ROLLBACK');if(nested)this.db.exec(`RELEASE ${savepoint}`);throw e;}finally{this.transactionDepth--;}}
+  transaction(fn) {const nested=(this.transactionDepth||0)>0;if(!nested)this.ensureDailyBackup();const savepoint='batch_'+(this.transactionDepth||0);this.db.exec(nested?`SAVEPOINT ${savepoint}`:'BEGIN IMMEDIATE');this.transactionDepth=(this.transactionDepth||0)+1;try{const result=fn();this.db.exec(nested?`RELEASE ${savepoint}`:'COMMIT');return result;}catch(e){this.db.exec(nested?`ROLLBACK TO ${savepoint}`:'ROLLBACK');if(nested)this.db.exec(`RELEASE ${savepoint}`);throw e;}finally{this.transactionDepth--;}}
   audit(action, user, detail) { this.db.prepare('INSERT INTO audit VALUES (?,?)').run(id(), canonical({ action, userId: user?.id, at: now(), detail })); }
   users() { return this.db.prepare('SELECT value FROM users').all().map(r => JSON.parse(r.value)); }
   user(userId) { return this.users().find(u => u.id === userId); }
@@ -264,7 +264,7 @@ class OfflineCore {
     if (!module || module.programaId !== current.programId) fail('El módulo debe pertenecer al programa del grupo.');
     const units = [...new Set((input.units || []).map(u => String(u).trim()).filter(Boolean))];
     if (!String(input.periodId || '').trim() || !units.length) fail('Periodo y unidades son obligatorios.');
-    if (this.records('grades').concat(this.records('attendance')).some(r => r.groupId === current.id) && ((current.periodId && current.periodId !== input.periodId) || (current.moduleId && current.moduleId !== input.moduleId) || current.units.some(u => !units.includes(u)))) fail('El grupo ya tiene registros. Conserve su estructura; cree un periodo/grupo nuevo.');
+    if (this.records('enrollments').concat(this.records('grades'),this.records('attendance')).some(r => r.groupId === current.id) && ((current.periodId && current.periodId !== input.periodId) || (current.moduleId && current.moduleId !== input.moduleId) || current.units.some(u => !units.includes(u)))) fail('El grupo ya tiene registros. Conserve su estructura; cree un periodo/grupo nuevo.');
     const section=input.section===undefined?this.groupSection(current):String(input.section).trim().toUpperCase(),turno=input.turno===undefined?(current.turno||''):String(input.turno).trim();if(section.length>20||turno.length>60)fail('Sección o turno demasiado extensos.');if(current.id&&this.groupSection(current)&&section!==this.groupSection(current)&&this.records('enrollments').some(e=>e.groupId===current.id))fail('Esta sección ya tiene matrículas. Cree otra aula para una sección diferente.');if(section&&this.records('groups').some(g=>g.id!==current.id&&g.programId===current.programId&&g.moduleId===input.moduleId&&g.periodId===input.periodId.trim()&&g.name===(input.name||current.name)&&this.groupSection(g)===section&&(g.turno||'')===turno))fail('Esa aula, sección y turno ya están registrados.');
     return this.transaction(() => {
       const group = this.write(actor, 'groups', { ...current,section,turno,...(input.name?{name:String(input.name).trim()}:{}), periodId: input.periodId.trim(), moduleId: input.moduleId, units }, input.rev);
@@ -273,11 +273,12 @@ class OfflineCore {
       return group;
     });
   }
+  validateEnrollmentWindow(group,startDate){if(group.closed)fail('El aula está cerrada. Dirección debe autorizar su reapertura antes de matricular.');const end=this.record('documentSettings','group:'+group.id)?.fields?.fechaFin||group.fechaFin;if(validDate(end)&&startDate>end)fail('La fecha de ingreso supera el término del aula. Utilice el grupo del periodo correspondiente.');}
   enroll(actor, input) {
     this.requireRole(actor, ADMIN);
     const group = this.record('groups', input.groupId), student = this.record('students', input.studentId);
     if (!group?.periodId || !group.moduleId || !student?.active) fail('Seleccione un estudiante activo y un grupo con periodo/módulo configurados.');
-    if (!validDate(input.startDate)) fail('Fecha de ingreso inválida.');
+    if (!validDate(input.startDate)) fail('Fecha de ingreso inválida.');this.validateEnrollmentWindow(group,input.startDate);
     if (this.records('enrollments').some(e => e.studentId === student.id && e.groupId === group.id && e.active)) fail('El estudiante ya está matriculado en este grupo.', 409);
     const value = { id: id(),createdAt:now(), studentId: student.id, groupId: group.id, periodId: group.periodId, moduleId: group.moduleId, startDate: input.startDate, active: true };
     value.code=enrollmentCode(this,student.id,value.id);
@@ -295,7 +296,7 @@ class OfflineCore {
   enrollWithinTransaction(actor, studentId, groupId, startDate) {
     const group = this.record('groups', groupId);
     if (!group?.periodId || !group.moduleId || this.records('enrollments').some(e => e.studentId === studentId && e.groupId === groupId && e.active)) fail('Grupo destino inválido o matrícula duplicada.');
-    const recordId=id();return this.write(actor,'enrollments',{id:recordId,createdAt:now(),studentId,groupId,periodId:group.periodId,moduleId:group.moduleId,startDate,active:true,code:enrollmentCode(this,studentId,recordId)});
+    this.validateEnrollmentWindow(group,startDate);const recordId=id();return this.write(actor,'enrollments',{id:recordId,createdAt:now(),studentId,groupId,periodId:group.periodId,moduleId:group.moduleId,startDate,active:true,code:enrollmentCode(this,studentId,recordId)});
   }
   requestStudentRegistration(actor,input){this.requireRole(actor,['DOCENTE']);this.requireGroup(actor,input.groupId);if(!String(input.document||'').trim()||!String(input.name||'').trim())fail('Documento y nombre son obligatorios.');const existing=this.records('studentRequests').find(r=>r.status==='REQUESTED'&&r.document===input.document&&r.groupId===input.groupId&&r.requestedBy===actor.id);if(existing)return existing;return this.transaction(()=>this.write(actor,'studentRequests',{id:id(),requestedBy:actor.id,requestedByName:actor.name,status:'REQUESTED',groupId:input.groupId,document:String(input.document).trim(),name:String(input.name).trim(),documentType:input.documentType||'DNI',lastName1:input.lastName1||'',lastName2:input.lastName2||'',firstNames:input.firstNames||'',sex:input.sex||'',birthDate:input.birthDate||'',startDate:input.startDate||'',createdAt:now()}));}
   acceptStudentRequest(actor,input){this.requireRole(actor,ADMIN);const r=this.record('studentRequests',input.id);if(!r||r.status!=='REQUESTED')fail('Solicitud no disponible.');if(input.accept===false)return this.transaction(()=>this.write(actor,'studentRequests',{...r,status:'REJECTED',reason:String(input.reason||'')},r.rev));return this.transaction(()=>{let student=this.records('students').find(s=>s.document===r.document);if(!student)student=this.saveStudent(actor,{document:r.document,name:r.name,documentType:r.documentType,lastName1:r.lastName1,lastName2:r.lastName2,firstNames:r.firstNames,sex:r.sex,birthDate:r.birthDate});let enrollment=this.records('enrollments').find(e=>e.studentId===student.id&&e.groupId===r.groupId&&e.active);if(!enrollment)enrollment=this.enroll(actor,{studentId:student.id,groupId:r.groupId,startDate:r.startDate});const request=this.write(actor,'studentRequests',{...r,status:'ACCEPTED',studentId:student.id,enrollmentId:enrollment.id,processedBy:actor.id,processedAt:now()},r.rev);return {student,enrollment,request};});}
@@ -561,7 +562,7 @@ class OfflineCore {
     const directory = path.join(this.directory, 'backups'); fs.mkdirSync(directory, { recursive: true });
     const filename = `${now().replace(/[:.]/g, '-')}-${label}-${id().slice(0,8)}.json`;
     // Incluye credenciales y claves; permanece en la carpeta privada del servicio.
-    fs.writeFileSync(path.join(directory, filename), canonical({ backup, checksum: hash(backup) }), { mode: 0o600, flag: 'wx' });
+    try{fs.writeFileSync(path.join(directory, filename), canonical({ backup, checksum: hash(backup) }), { mode: 0o600, flag: 'wx' });}catch(error){if(error.code==='ENOSPC')fail('No hay espacio para crear la copia de seguridad. Libere espacio antes de continuar; no se aplicó la actualización.',507);if(['EACCES','EPERM'].includes(error.code))fail('No se puede guardar la copia privada. Revise los permisos de la carpeta antes de continuar.',503);throw error;}
     return { filename, counts: { records: backup.records.length, operations: backup.operations.length } };
   }
   importLegacy(actor, pkg, insideTransaction = false) {

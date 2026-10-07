@@ -167,3 +167,7 @@ Al recibir, el resumen se genera a partir de datos firmados y verificados: perso
 Una clave incorrecta no importa datos. Un archivo repetido no duplica registros y no permite volver a aplicarlo. Después de recibir se mantiene visible la confirmación y se explica cómo enviar una respuesta para confirmar la recepción. Las ayudas describen qué es un archivo .cetpro, cómo llevarlo en USB y dónde importar Excel/CSV. Las opciones de vinculación se dejan al final para el responsable.
 
 Prueba específica Edge: director, secretaría y docente; generación y separación de claves; selección de destinatario y aula; archivo real de un docente vinculado recibido en secretaría; clave incorrecta sin cambios; resumen verificado; nota y asistencia recibidas; copia previa; duplicados y pantalla móvil.
+
+## Aulas y secciones — versión 3.5
+
+En Grupos registre periodo, módulo, unidades, sección y turno. Cada sección tiene su aula propia. En Usuarios elija rol Docente; aparecerá Aulas y secciones de este docente. Filtre y marque las unidades permitidas; revise el resumen antes de guardar. Un nuevo periodo no reemplaza la matrícula anterior. Dirección puede comprobar Estado de la base en Respaldo y migración. Consulte AUDITORIA_BASE_Y_SECCIONES.md.

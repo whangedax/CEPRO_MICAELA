@@ -6,7 +6,8 @@
     "test:documents": "node --test --test-isolation=none tests/document-dynamic.test.cjs",
     "test:data": "node --test --test-isolation=none tests/data-update.test.cjs",
     "test:critical": "node --test --test-isolation=none tests/critical-workflows.test.cjs",
-    "test:sync-ui": "node tests/synchronization-ui.test.cjs"
+    "test:sync-ui": "node tests/synchronization-ui.test.cjs",
+    "test:database": "node --test --test-isolation=none tests/sections-database.test.cjs"
   },
   "engines": {
     "node": ">=24"

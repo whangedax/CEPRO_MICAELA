@@ -26,7 +26,7 @@ function authorize(core,actor,scope){
  if(!SETTINGS_FIELDS[scope.kind].some(f=>f.roles.includes(actor.role)))err('Estos datos comunes los configura dirección o secretaría.',403);
 }
 function validateSettings(core,actor,input,checkExisting=true){
- authorize(core,actor,input.scope);if(input.scope.kind==='group'&&Object.hasOwn(input.fields||{},'seccion')){const g=core.record('groups',input.scope.target);if(g?.section&&String(input.fields.seccion).trim().toUpperCase()!==g.section)err('La sección se administra en Grupos. No cambie el aula desde los parámetros del documento.');}if(!input.fields||typeof input.fields!=='object'||Array.isArray(input.fields))err('Campos inválidos.');
+ authorize(core,actor,input.scope);if(input.scope.kind==='group'&&Object.hasOwn(input.fields||{},'seccion')){const g=core.record('groups',input.scope.target);if(g&&core.groupSection(g)&&String(input.fields.seccion).trim().toUpperCase()!==core.groupSection(g))err('La sección se administra en Grupos. No cambie el aula desde los parámetros del documento.');}if(!input.fields||typeof input.fields!=='object'||Array.isArray(input.fields))err('Campos inválidos.');
  const old=checkExisting?core.record('documentSettings',idFor(input.scope)):null;
  const fields={...(old?.fields||{})};
  for(const [key,value]of Object.entries(input.fields)){
