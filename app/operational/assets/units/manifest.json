@@ -1,0 +1,249 @@
+{
+  "author": "OpenMoji",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "project": "https://openmoji.org/",
+  "modified": false,
+  "assets": [
+    {
+      "file": "barber.svg",
+      "code": "1F9D4",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F9D4.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "eeeb199d36cf3ec8b101a258ea25ac40516762b5f0e59031ac4ac6785e1d32fa"
+    },
+    {
+      "file": "battery.svg",
+      "code": "1F50B",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F50B.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "cb8b67eb9c3126c0749353cf41a1355d728a15505dc7fab4de2dd62ce852d317"
+    },
+    {
+      "file": "building.svg",
+      "code": "1F3E0",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F3E0.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "edfb5e77a7d324526f76295c0b3eb913006fd0424a0ee3dd0f12b0824225568f"
+    },
+    {
+      "file": "business.svg",
+      "code": "1F4BC",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F4BC.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "d08bb5f101aea87b0b131d9763a312ec8e2abb0add46bffc458084831459845e"
+    },
+    {
+      "file": "car.svg",
+      "code": "1F697",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F697.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "f2bc314639afba633ef21e802c022fa64b6a3fe0e3d3739e5826a816f1895286"
+    },
+    {
+      "file": "care.svg",
+      "code": "1F9F4",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F9F4.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "e0770ab7792d89d29870a51cef4da6ac8e2871d7807a13dfb31f952201199aa5"
+    },
+    {
+      "file": "clothes.svg",
+      "code": "1F457",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F457.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "4a351f521bc9c966ad5bec8e14b4ecf65d5d3a0e564b0e549a3aa26dace8d09b"
+    },
+    {
+      "file": "communication.svg",
+      "code": "1F4AC",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F4AC.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "4c27a874ea4eb7d11ae09b2c082d2708c8c027e1f7e666b570eb17436fa9ac19"
+    },
+    {
+      "file": "computer.svg",
+      "code": "1F5A5",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F5A5.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "14855ea42b283517da6932c7868e51f7868a5d9500607aa47956d634668276e0"
+    },
+    {
+      "file": "design.svg",
+      "code": "1F3A8",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F3A8.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "1e440790c0d02486a2dbd061ec465f78e28111d0c778dec08de62df123959cb6"
+    },
+    {
+      "file": "document.svg",
+      "code": "1F4C4",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F4C4.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "cdd5b3658ac9288b381734516f7cdd28c933be9a323a370df0a18859ada290ea"
+    },
+    {
+      "file": "electric.svg",
+      "code": "1F50C",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F50C.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "de0b648f32d2f3ff343723fb071b4fbab505ac00bd0c98853fe8a331f75c58fe"
+    },
+    {
+      "file": "electronics.svg",
+      "code": "1F4F9",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F4F9.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "d30ccd2cddd2850302c954118d5355c71105b0672223fbef0fc3b4eaf40d025a"
+    },
+    {
+      "file": "ethics.svg",
+      "code": "1F91D",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F91D.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "31129922ab2e818422c51788036731ab8fb311aacf40fe04edb9e7f69bf9ee7a"
+    },
+    {
+      "file": "hair.svg",
+      "code": "1F487",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F487.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "082571d110ebdd4c76c04a759e5d765c12fc5977894cd04fd289bf677698b147"
+    },
+    {
+      "file": "ideas.svg",
+      "code": "1F4A1",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F4A1.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "fb98f3985e05ab294e1ca1beee18d5c557d1572b316756a9abd00d8901807b43"
+    },
+    {
+      "file": "measurement.svg",
+      "code": "1F4CF",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F4CF.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "181870ff83197dddd0310ffb15be7da63e15046b8e97a7820ecffc77b2abb3d5"
+    },
+    {
+      "file": "mechanics.svg",
+      "code": "1F527",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F527.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "acdf25ea57dfe0497576e59191ef6b2493b6fae6d10f3136d70bfdb76e397ff9"
+    },
+    {
+      "file": "metal.svg",
+      "code": "1F6E0",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F6E0.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "f9515a7d6a3a91f4ebc36bf845ab1991f7f4174f25e050c167c4f3b808fc62fc"
+    },
+    {
+      "file": "motorcycle.svg",
+      "code": "1F3CD",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F3CD.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "f08e734afdce497341bac0d5affddd532517a30055bec698f74ad244068268b0"
+    },
+    {
+      "file": "presentation.svg",
+      "code": "1F4FD",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F4FD.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "b1cba30be576b9729b52d41e6a77cc9e7220cb715f4636259b50467d8367eaa5"
+    },
+    {
+      "file": "safety.svg",
+      "code": "1F6E1",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F6E1.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "d55fb5586b3c9d4fe01972242b58a13b209f0c93abd23fe9d4301b0ec5ead49a"
+    },
+    {
+      "file": "scissors.svg",
+      "code": "2702",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/2702.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "8a5cc545a4ff3ba2fae4ab24877bb5486a9d1666829845fb4b640ae21d2ce39f"
+    },
+    {
+      "file": "security.svg",
+      "code": "1F512",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F512.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "32cef5a4ec414512b909302b4d93520575bbeda2e249ec2f2a0855c295bfefb2"
+    },
+    {
+      "file": "sewing.svg",
+      "code": "1FAA1",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1FAA1.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "206e0c41b626c85803d91e99ea076bfc4d23e01810e50e97d09439116e294e1f"
+    },
+    {
+      "file": "shirt.svg",
+      "code": "1F455",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F455.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "1fed4cdb2fc5dbe7641a42107a47c53dc4dd6191c3bc6ed23674300a1e54cf95"
+    },
+    {
+      "file": "spreadsheet.svg",
+      "code": "1F4CA",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F4CA.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "ffa35865faf9748297c15cd048b1d5b25de8dde30a541094c5dc99d71043c389"
+    },
+    {
+      "file": "thread.svg",
+      "code": "1F9F5",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F9F5.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "c2e24b3f1c01eb34bcac9a3521f080927ba9d3f6788eb848d25ecd06db2f5bbf"
+    },
+    {
+      "file": "web.svg",
+      "code": "1F310",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F310.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "ef9bca4834c554e3cbba9347e93a318cef692d7a10f2436403d6bcec0a16cf0f"
+    },
+    {
+      "file": "workshop.svg",
+      "code": "1F9F0",
+      "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F9F0.svg",
+      "author": "OpenMoji",
+      "license": "CC BY-SA 4.0",
+      "sha256": "88dca5f601bd135391d7765b4665a9e184305ac131f6932a05b33186ce58e2ba"
+    }
+  ]
+}

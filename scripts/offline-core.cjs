@@ -17,7 +17,7 @@ const pem = (key, type) => key.export({ type, format: 'pem' });
 const pair = algorithm => { const k = crypto.generateKeyPairSync(algorithm); return { public: pem(k.publicKey, 'spki'), private: pem(k.privateKey, 'pkcs8') }; };
 const sign = (value, key) => crypto.sign(null, Buffer.from(canonical(value)), key).toString('base64');
 const verify = (value, signature, key) => crypto.verify(null, Buffer.from(canonical(value)), key, Buffer.from(signature, 'base64'));
-const publicUser = u => ({ id: u.id, username: u.username, name: u.name,description:u.description||'', role: u.role, assignments: u.assignments || [], active: u.active,archived:!!u.archived, version: u.version });
+const publicUser = u => ({ id: u.id, username: u.username, name: u.name,description:u.description||'', assignmentPending:!!u.assignmentPending, role: u.role, assignments: u.assignments || [], active: u.active,archived:!!u.archived, version: u.version });
 const ADMIN = ['DIRECTOR', 'SECRETARIA'];
 const TEMPLATES = {
   DIRECTOR: Array.from({ length: 21 }, (_, n) => `TMPL-${String(n + 1).padStart(2, '0')}`),
@@ -166,7 +166,7 @@ class OfflineCore {
     if (!['DIRECTOR', 'SECRETARIA', 'DOCENTE'].includes(input.role)) fail('Rol inválido.');
     if (current?.role === 'DIRECTOR' && (input.role !== 'DIRECTOR' || (input.active === false||input.archived===true)) && this.users().filter(u => u.active && u.role === 'DIRECTOR').length <= 1) fail('Debe conservar un director activo.');
     const assignments = input.role === 'DOCENTE' ? this.normalizeAssignments(input.assignments||[]) : [];
-    if (input.role === 'DOCENTE' && !assignments.length) fail('Asigne al menos un grupo y sus unidades.');
+    if (input.role === 'DOCENTE' && !assignments.length && input.assignmentPending!==true) fail('Asigne al menos un grupo y sus unidades.');
     for (const a of assignments) {
       const group = this.record('groups', a.groupId);
       if (!group || !Array.isArray(a.units) || !a.units.length || a.units.some(u => !(group.units || []).includes(u))) fail('Asignación inválida: configure primero las unidades del grupo.');
@@ -175,7 +175,7 @@ class OfflineCore {
     const username = this.username(input.username);
     if (this.users().some(u => u.username === username && u.id !== current?.id)) fail('El usuario ya existe.', 409);
     const user = { ...current, id: current?.id || id(), username, name: String(input.name || '').trim(),description:String(input.description||'').trim().slice(0,600), role: input.role, active: input.active !== false,
-      assignments,archived:input.archived===undefined?!!current?.archived:!!input.archived, version: (current?.version || 0) + 1, ...(credential|| (input.password ? passwordRecord(input.password) : {})) };
+      assignments,assignmentPending:input.role==='DOCENTE'&&!assignments.length&&input.assignmentPending===true,archived:input.archived===undefined?!!current?.archived:!!input.archived, version: (current?.version || 0) + 1, ...(credential|| (input.password ? passwordRecord(input.password) : {})) };
     if(user.archived)user.active=false;
     if (!user.name || !user.digest) fail('Nombre y contraseña inicial obligatorios.');
     this.transaction(() => { this.putUser(user);this.write(actor,'userDirectory',publicUser(user),this.record('userDirectory',user.id)?.rev||null);this.audit('USER_UPDATE', actor, publicUser(user)); });
@@ -183,13 +183,13 @@ class OfflineCore {
   }
   requestUserRegistration(actor,input){
     this.requireRole(actor,['SECRETARIA']);if(input.role!=='DOCENTE')fail('En este equipo solo administra docentes.',403);
-    const username=this.username(input.username),name=String(input.name||'').trim();if(!name||!input.assignments?.length)fail('Nombre, carrera y grupo son obligatorios.');
+    const username=this.username(input.username),name=String(input.name||'').trim();if(!name||(!input.assignments?.length&&input.assignmentPending!==true))fail('Nombre, carrera y grupo son obligatorios.');
     for(const a of input.assignments){const g=this.record('groups',a.groupId);if(!g||!a.units?.length||a.units.some(u=>!g.units.includes(u)))fail('Asignación docente inválida.');}
     const current=input.id?this.record('userDirectory',input.id):null;if(this.records('userDirectory').some(u=>u.username===username&&u.id!==input.id)||this.records('accountRequests').some(r=>r.username===username&&r.status==='REQUESTED'))fail('Ese usuario ya existe o tiene una solicitud pendiente.',409);if(input.id&&(!current||current.role!=='DOCENTE'))fail('Docente no encontrado.');if(current&&input.version!==undefined&&Number(input.version)!==current.version)fail('La cuenta cambió. Actualice el directorio.',409);
-    input={...input,assignments:this.normalizeAssignments(input.assignments)};const credentials=input.password?passwordRecord(input.password):null;if(!current&&!credentials)fail('Ingrese una contraseña inicial.');const value={id:id(),status:'REQUESTED',action:current?'UPDATE':'CREATE',userId:current?.id,expectedVersion:current?.version,active:input.active!==false,archived:!!input.archived,username,name,description:String(input.description||'').slice(0,600),role:'DOCENTE',assignments:input.assignments,requestedBy:actor.id,createdAt:now(),encryptedCredential:credentials?seal(credentials,this.setting('institution').hub.encryptionKey):null};
+    input={...input,assignments:this.normalizeAssignments(input.assignments)};const credentials=input.password?passwordRecord(input.password):null;if(!current&&!credentials)fail('Ingrese una contraseña inicial.');const value={id:id(),status:'REQUESTED',action:current?'UPDATE':'CREATE',userId:current?.id,expectedVersion:current?.version,active:input.active!==false,archived:!!input.archived,username,name,description:String(input.description||'').slice(0,600),role:'DOCENTE',assignmentPending:input.assignmentPending===true,assignments:input.assignments,requestedBy:actor.id,createdAt:now(),encryptedCredential:credentials?seal(credentials,this.setting('institution').hub.encryptionKey):null};
     return this.transaction(()=>this.write(actor,'accountRequests',value));
   }
-  acceptRegistrationRequest(actor,input){this.requireRole(actor,ADMIN);if(!this.setting('authorityPrivate'))fail('Consolide las altas en el equipo institucional.');const r=this.record('accountRequests',input.id);if(!r||r.status!=='REQUESTED')fail('La solicitud ya fue procesada o no existe.');const current=r.userId?this.user(r.userId):null;if(r.action==='PASSWORD'){if(!current)fail('Cuenta no encontrada.');if(actor.role==='SECRETARIA'&&current.role!=='DOCENTE')fail('Este cambio de acceso lo confirma dirección.',403);}if(r.userId&&current?.version!==r.expectedVersion)fail('La cuenta cambió desde la solicitud; revise su actualización.',409);const credential=r.encryptedCredential?unseal(r.encryptedCredential,this.setting('device').encryption.private):null;if(credential&&(!/^[a-f0-9]{32}$/.test(credential.salt)||!/^[a-f0-9]{128}$/.test(credential.digest)))fail('Credencial de solicitud inválida.');return this.transaction(()=>{const u=this.saveUser(actor,r.action==='PASSWORD'?{...publicUser(current),version:r.expectedVersion}:{id:r.userId,version:r.expectedVersion,username:r.username,name:r.name,description:r.description,role:'DOCENTE',active:r.active!==false,archived:!!r.archived,assignments:r.assignments},credential);const done=this.write(actor,'accountRequests',{...r,status:'ACCEPTED',createdUserId:u.id,processedAt:now()},r.rev);return {user:u,request:done};});}
+  acceptRegistrationRequest(actor,input){this.requireRole(actor,ADMIN);if(!this.setting('authorityPrivate'))fail('Consolide las altas en el equipo institucional.');const r=this.record('accountRequests',input.id);if(!r||r.status!=='REQUESTED')fail('La solicitud ya fue procesada o no existe.');const current=r.userId?this.user(r.userId):null;if(r.action==='PASSWORD'){if(!current)fail('Cuenta no encontrada.');if(actor.role==='SECRETARIA'&&current.role!=='DOCENTE')fail('Este cambio de acceso lo confirma dirección.',403);}if(r.userId&&current?.version!==r.expectedVersion)fail('La cuenta cambió desde la solicitud; revise su actualización.',409);const credential=r.encryptedCredential?unseal(r.encryptedCredential,this.setting('device').encryption.private):null;if(credential&&(!/^[a-f0-9]{32}$/.test(credential.salt)||!/^[a-f0-9]{128}$/.test(credential.digest)))fail('Credencial de solicitud inválida.');return this.transaction(()=>{const u=this.saveUser(actor,r.action==='PASSWORD'?{...publicUser(current),version:r.expectedVersion}:{id:r.userId,version:r.expectedVersion,username:r.username,name:r.name,description:r.description,role:'DOCENTE',active:r.active!==false,archived:!!r.archived,assignmentPending:r.assignmentPending===true,assignments:r.assignments},credential);const done=this.write(actor,'accountRequests',{...r,status:'ACCEPTED',createdUserId:u.id,processedAt:now()},r.rev);return {user:u,request:done};});}
   rejectAccountRequest(actor,input){this.requireRole(actor,ADMIN);if(!this.setting('authorityPrivate'))fail('La revisión de solicitudes corresponde al equipo institucional.');const r=this.record('accountRequests',input.id);if(!r||r.status!=='REQUESTED'||!String(input.reason||'').trim())fail('Solicitud pendiente y motivo obligatorios.');if(actor.role==='SECRETARIA'&&r.role!=='DOCENTE')fail('Esta solicitud la revisa dirección.',403);return this.transaction(()=>this.write(actor,'accountRequests',{...r,status:'REJECTED',reason:input.reason,processedAt:now()},r.rev));}
   archiveUser(actor,input){this.requireRole(actor,ADMIN);const u=this.user(input.id)||this.record('userDirectory',input.id);if(!u)fail('Usuario no encontrado.');if(u.id===actor.id)fail('No puede eliminar la cuenta con la que está trabajando.');if(actor.role==='SECRETARIA'&&u.role!=='DOCENTE')fail('Secretaría solo administra docentes.',403);if(!String(input.reason||'').trim())fail('Indique el motivo de eliminación.');const result=this.saveUser(actor,{...publicUser(u),version:input.version,active:false,archived:true});this.audit('USER_ARCHIVED',actor,{id:u.id,reason:input.reason});return result;}
   archiveStudent(actor,input){this.requireRole(actor,ADMIN);const s=this.record('students',input.id);if(!s||s.rev!==input.rev)fail('El estudiante cambió. Recargue antes de eliminar.',409);if(!String(input.reason||'').trim())fail('Indique el motivo de eliminación.');this.createBackup(actor,'antes-eliminar-estudiante');return this.transaction(()=>{for(const e of this.records('enrollments').filter(e=>e.studentId===s.id&&e.active))this.retireEnrollment(actor,{id:e.id,rev:e.rev,date:input.date,reason:input.reason});const result=this.saveStudent(actor,{...s,rev:s.rev,active:false,archived:true});this.audit('STUDENT_ARCHIVED',actor,{id:s.id,reason:input.reason});return result;});}
@@ -197,7 +197,7 @@ class OfflineCore {
   changePassword(user,input){if(!passwordMatches(input.currentPassword,user))fail('Contraseña actual incorrecta.',403);const credentials=passwordRecord(input.password),hub=!!this.setting('authorityPrivate');this.transaction(()=>{if(hub){const updated={...user,...credentials,version:user.version+1};this.putUser(updated);this.write(user,'userDirectory',publicUser(updated),this.record('userDirectory',user.id)?.rev||null);}else{this.passwordRequest(user,credentials);this.putUser({...user,...credentials,authorityDigest:user.authorityDigest||user.digest});}this.audit('PASSWORD_CHANGE',user,{pending:!hub});});for(const [token,session]of this.sessions)if(session.userId===user.id)this.sessions.delete(token);return {success:true,pending:!hub};}
 
   scoped(user, entity) {
-    const all = this.records(entity);
+    const all = this.records(entity).filter(r=>!['programs','modules'].includes(entity)||!r.archived||this.records('groups').some(g=>g[entity==='programs'?'programId':'moduleId']===r.id));
     if(entity==='userDirectory')return this.listUsers(user);
     if(entity==='accountRequests')return user.role==='DOCENTE'?all.filter(r=>r.action==='PASSWORD'&&r.userId===user.id):ADMIN.includes(user.role)?all.filter(r=>user.role==='DIRECTOR'||r.requestedBy===user.id):[];
     if(entity==='studentRequests')return user.role==='DOCENTE'?all.filter(r=>r.requestedBy===user.id&&this.assignment(user,r.groupId)):all;
@@ -262,9 +262,11 @@ class OfflineCore {
     if (!current || !this.record('programs', current.programId) || (!input.id && !current.name)) fail('Seleccione programa y nombre del nuevo grupo.');
     const module = this.record('modules', input.moduleId);
     if (!module || module.programaId !== current.programId) fail('El módulo debe pertenecer al programa del grupo.');
+    const curriculum=this.record('documentSettings','curriculum:'+input.moduleId)?.fields;if(curriculum&&curriculum.periodId!==String(input.periodId||'').trim())fail('El módulo seleccionado pertenece al periodo '+curriculum.periodId+'.');
     const units = [...new Set((input.units || []).map(u => String(u).trim()).filter(Boolean))];
     if (!String(input.periodId || '').trim() || !units.length) fail('Periodo y unidades son obligatorios.');
     if (this.records('enrollments').concat(this.records('grades'),this.records('attendance')).some(r => r.groupId === current.id) && ((current.periodId && current.periodId !== input.periodId) || (current.moduleId && current.moduleId !== input.moduleId) || current.units.some(u => !units.includes(u)))) fail('El grupo ya tiene registros. Conserve su estructura; cree un periodo/grupo nuevo.');
+    if(curriculum&&units.some(u=>!JSON.parse(curriculum.unitsJson).some(v=>v.code===u)))fail('Hay unidades que no pertenecen al plan seleccionado.');
     const section=input.section===undefined?this.groupSection(current):String(input.section).trim().toUpperCase(),turno=input.turno===undefined?(current.turno||''):String(input.turno).trim();if(section.length>20||turno.length>60)fail('Sección o turno demasiado extensos.');if(current.id&&this.groupSection(current)&&section!==this.groupSection(current)&&this.records('enrollments').some(e=>e.groupId===current.id))fail('Esta sección ya tiene matrículas. Cree otra aula para una sección diferente.');if(section&&this.records('groups').some(g=>g.id!==current.id&&g.programId===current.programId&&g.moduleId===input.moduleId&&g.periodId===input.periodId.trim()&&g.name===(input.name||current.name)&&this.groupSection(g)===section&&(g.turno||'')===turno))fail('Esa aula, sección y turno ya están registrados.');
     return this.transaction(() => {
       const group = this.write(actor, 'groups', { ...current,section,turno,...(input.name?{name:String(input.name).trim()}:{}), periodId: input.periodId.trim(), moduleId: input.moduleId, units }, input.rev);
@@ -273,7 +275,7 @@ class OfflineCore {
       return group;
     });
   }
-  validateEnrollmentWindow(group,startDate){if(group.closed)fail('El aula está cerrada. Dirección debe autorizar su reapertura antes de matricular.');const end=this.record('documentSettings','group:'+group.id)?.fields?.fechaFin||group.fechaFin;if(validDate(end)&&startDate>end)fail('La fecha de ingreso supera el término del aula. Utilice el grupo del periodo correspondiente.');}
+  validateEnrollmentWindow(group,startDate){if(group.closed)fail('El aula está cerrada. Dirección debe autorizar su reapertura antes de matricular.');const end=this.record('documentSettings','group:'+group.id)?.fields?.fechaFin||group.fechaFin||this.record('documentSettings','academicPeriod:'+group.periodId)?.fields?.fechaFin;if(validDate(end)&&startDate>end)fail('La fecha de ingreso supera el término del aula. Utilice el grupo del periodo correspondiente.');}
   enroll(actor, input) {
     this.requireRole(actor, ADMIN);
     const group = this.record('groups', input.groupId), student = this.record('students', input.studentId);
@@ -322,6 +324,103 @@ class OfflineCore {
       return this.write(actor, entity, value, row.rev);
     }));
   }
+  simulateUnitAttendance(actor, input) {
+    this.requireRole(actor, ['DOCENTE', 'DIRECTOR', 'SECRETARIA']);
+    this.requireGroup(actor, input.groupId, input.unit);
+    const group = this.record('groups', input.groupId);
+    if (!group || !group.periodId || !group.moduleId || !(group.units || []).includes(input.unit)) {
+      fail('Configure periodo, módulo y unidad antes de simular.');
+    }
+    if (group.closed) fail('Registro cerrado. Solicite reapertura a dirección.', 409);
+    const enrollments = this.records('enrollments').filter(e => e.groupId === group.id && e.active);
+    if (!enrollments.length) fail('No hay estudiantes matriculados en este grupo.');
+    const curricularUnits = (group.units || []).filter(u => u !== 'EFSRT');
+    const uIdx = curricularUnits.indexOf(input.unit);
+    const templateId = uIdx >= 0 && uIdx < 6 ? `TMPL-${String(uIdx + 5).padStart(2, '0')}` : 'TMPL-05';
+    const doc = this.document(actor, { groupId: group.id, templateId, unit: input.unit, demoFill: true });
+    const dates = doc.academicDates || [];
+    if (!dates.length) fail('No se encontraron fechas lectivas programadas para esta unidad.');
+    const mode = input.mode || 'realistic';
+    return this.transaction(() => {
+      const records = [];
+      for (let sIdx = 0; sIdx < enrollments.length; sIdx++) {
+        const en = enrollments[sIdx];
+        for (let dIdx = 0; dIdx < dates.length; dIdx++) {
+          const d = dates[dIdx];
+          let val = 'P';
+          let obs = '';
+          if (mode === 'all-present') {
+            val = 'P';
+          } else {
+            const seed = (sIdx * 7 + dIdx * 13) % 100;
+            if (seed >= 96) { val = 'J'; obs = 'Permiso justificado'; }
+            else if (seed >= 90) { val = 'F'; obs = ''; }
+            else if (seed >= 84) { val = 'T'; obs = 'Llegó con tardanza'; }
+            else { val = 'P'; obs = ''; }
+          }
+          const recordId = hash(['attendance', en.id, input.unit, [d.fecha, '1']]);
+          const current = this.record('attendance', recordId);
+          const value = {
+            id: recordId,
+            enrollmentId: en.id,
+            groupId: group.id,
+            periodId: group.periodId,
+            moduleId: group.moduleId,
+            unit: input.unit,
+            date: d.fecha,
+            session: '1',
+            value: val,
+            pending: false,
+            observation: obs
+          };
+          const written = this.write(actor, 'attendance', value, current?.rev || null);
+          records.push(written);
+        }
+      }
+      this.audit('UNIT_ATTENDANCE_SIMULATION', actor, {
+        groupId: group.id,
+        unit: input.unit,
+        datesCount: dates.length,
+        recordsCount: records.length,
+        mode
+      });
+      return {
+        success: true,
+        groupId: group.id,
+        unit: input.unit,
+        datesCount: dates.length,
+        studentsCount: enrollments.length,
+        recordsCount: records.length,
+        records
+      };
+    });
+  }
+  clearUnitAttendance(actor, input) {
+    this.requireRole(actor, ['DOCENTE', 'DIRECTOR', 'SECRETARIA']);
+    this.requireGroup(actor, input.groupId, input.unit);
+    const group = this.record('groups', input.groupId);
+    if (group.closed) fail('Registro cerrado. Solicite reapertura a dirección.', 409);
+    const existing = this.records('attendance').filter(r => r.groupId === group.id && r.unit === input.unit && r.value !== null);
+    return this.transaction(() => {
+      const records = [];
+      for (const r of existing) {
+        const cleared = this.write(actor, 'attendance', { ...r, value: null, pending: true, observation: '' }, r.rev);
+        records.push(cleared);
+      }
+      this.audit('UNIT_ATTENDANCE_CLEAR', actor, {
+        groupId: group.id,
+        unit: input.unit,
+        clearedCount: records.length
+      });
+      return {
+        success: true,
+        groupId: group.id,
+        unit: input.unit,
+        clearedCount: records.length,
+        records
+      };
+    });
+  }
   closure(actor, input) {
     this.requireRole(actor, ['DIRECTOR']); const group = this.record('groups', input.groupId);
     if (!group || !String(input.reason || '').trim()) fail('Grupo y motivo obligatorios.');
@@ -356,9 +455,9 @@ class OfflineCore {
   }
   exchangePackage(actor,input={}){
     const recipient=input.recipientUserId?(this.user(input.recipientUserId)||this.record('userDirectory',input.recipientUserId)):null;if(input.recipientUserId){this.requireRole(actor,ADMIN);if(!recipient)fail('Seleccione una cuenta destinataria registrada.');}
-    if(!actor.active)fail('Cuenta inactiva.',403);const groups=this.scoped(actor,'groups').filter(g=>(!input.groupId||g.id===input.groupId)&&(!recipient||this.assignment(recipient,g.id)));if(!groups.length&&(!recipient||recipient.active))fail('Seleccione un grupo permitido para esa cuenta.');
+    if(!actor.active)fail('Cuenta inactiva.',403);const groups=this.scoped(actor,'groups').filter(g=>(!input.groupId||g.id===input.groupId)&&(!input.moduleId||g.moduleId===input.moduleId)&&(!recipient||this.assignment(recipient,g.id)));if(!groups.length&&(!recipient||recipient.active))fail('Seleccione un grupo permitido para esa cuenta.');
     const groupIds=new Set(groups.map(g=>g.id)),programs=new Set(groups.map(g=>g.programId)),modules=new Set(groups.map(g=>g.moduleId)),enrollments=this.scoped(actor,'enrollments').filter(e=>groupIds.has(e.groupId)),studentIds=new Set(enrollments.map(e=>e.studentId)),enrollmentIds=new Set(enrollments.map(e=>e.id));
-    const operations=this.operations().filter(op=>{const b=op.body,v=b.value;if(!this.operationVisible(actor,b)||(recipient&&!this.operationVisible(recipient,b)))return false;if(b.entity==='groups')return groupIds.has(v.id);if(b.entity==='programs')return programs.has(v.id);if(b.entity==='modules')return modules.has(v.id);if(b.entity==='students')return studentIds.has(v.id);if(['enrollments','grades','attendance'].includes(b.entity))return groupIds.has(v.groupId);if(b.entity==='studentRequests')return groupIds.has(v.groupId)&&(actor.role==='DOCENTE'||input.includeAccounts===true);if(b.entity==='documentSettings'){const scope=v.scope;return scope.kind==='institution'||groupIds.has(scope.target)||enrollmentIds.has(scope.target)||programs.has(scope.target)||modules.has(scope.target);}if(b.entity==='accountRequests'&&v.action==='PASSWORD'&&v.userId===actor.id)return true;return ['accountRequests','userDirectory'].includes(b.entity)&&ADMIN.includes(actor.role)&&input.includeAccounts===true;});
+    const operations=this.operations().filter(op=>{const b=op.body,v=b.value;if(!this.operationVisible(actor,b)||(recipient&&!this.operationVisible(recipient,b)))return false;if(b.entity==='groups')return groupIds.has(v.id);if(b.entity==='programs')return programs.has(v.id);if(b.entity==='modules')return modules.has(v.id);if(b.entity==='students')return studentIds.has(v.id);if(['enrollments','grades','attendance'].includes(b.entity))return groupIds.has(v.groupId)&&(!input.unit||b.entity==='enrollments'||v.unit===input.unit);if(b.entity==='documentSubmissions')return groupIds.has(v.groupId)&&(!input.unit||v.unit===input.unit);if(b.entity==='studentRequests')return groupIds.has(v.groupId)&&(actor.role==='DOCENTE'||input.includeAccounts===true);if(b.entity==='documentSettings'){const scope=v.scope;if(input.unit&&['unit','unitCurriculum'].includes(scope.kind)&&scope.unit!==input.unit)return false;if(input.unit&&scope.kind==='practice'&&input.unit!=='EFSRT')return false;return scope.kind==='institution'||(['academicYear','academicPeriod'].includes(scope.kind)&&groups.some(g=>scope.target===(scope.kind==='academicYear'?String(g.periodId||'').slice(0,4):g.periodId)))||(scope.kind==='personnel'&&ADMIN.includes(actor.role)&&input.includeAccounts===true&&(!recipient||ADMIN.includes(recipient.role)))||groupIds.has(scope.target)||enrollmentIds.has(scope.target)||programs.has(scope.target)||modules.has(scope.target);}if(b.entity==='accountRequests'&&v.action==='PASSWORD'&&v.userId===actor.id)return true;return ['accountRequests','userDirectory'].includes(b.entity)&&ADMIN.includes(actor.role)&&input.includeAccounts===true;});
     const device=this.setting('device'),encryptedAccounts=this.setting('authorityPrivate')&&ADMIN.includes(actor.role)?(this.setting('devices')||[]).filter(d=>d.id!==device.id&&this.user(d.userId)).map(d=>({to:d.id,envelope:seal({user:this.user(d.userId),certificate:this.certificate(this.user(d.userId),d),directoryOperations:ADMIN.includes(this.user(d.userId).role)?this.operations().filter(op=>op.body.entity==='userDirectory'&&this.operationVisible(this.user(d.userId),op.body)):[]},d.encryptionKey)})):[],body={app:APP,type:'GROUP_EXCHANGE',audience:recipient?.role==='DOCENTE'?'SCOPED':ADMIN.includes(actor.role)?'ADMIN':'SCOPED',recipientUserId:recipient?.id||null,version:VERSION,id:id(),institutionId:this.setting('institution').id,from:device.id,at:now(),certificate:this.setting('authorityPrivate')?this.certificate(actor,device):this.setting('certificate'),envelope:tableEnvelope({operations,encryptedAccounts,acknowledgements:ADMIN.includes(actor.role)?this.operations().map(op=>op.body.id):[],resolutions:this.setting('authorityPrivate')?this.db.prepare('SELECT value FROM conflicts').all().map(r=>JSON.parse(r.value)).filter(c=>c.resolved&&groupIds.has(c.operation.body.value.groupId)).map(c=>({operationId:c.id,entity:c.operation.body.entity,proposedRev:c.operation.body.value.rev,value:c.retained,decision:c.resolution})):[],groups:groups.map(g=>({id:g.id,name:groupName(this,g)}))},input.passphrase)};
     const summary=this.exchangeDescription(actor,operations,groups,recipient);this.audit('EXCHANGE_EXPORTED',actor,{groups:[...groupIds],operations:operations.length});return {body,signature:sign(body,device.signing.private),summary};
   }
@@ -645,7 +744,7 @@ class OfflineCore {
     if (input.enrollmentId && !roster.some(e => e.id === input.enrollmentId)) fail('La matrícula no pertenece a su alcance.', 403);
     if ([2,20,21].includes(n) && !input.enrollmentId) fail('Seleccione una matrícula para este documento individual.');
     if (n >= 5 && n <= 17 && !unit) fail('La unidad de esta plantilla no está configurada en el grupo.');
-    const base={ institution: { ...legacyInstitutions[0], name: this.setting('institution').name, nombre: this.setting('institution').name }, group, unit,includeRetired:input.includeRetired===true, templateId: input.templateId, official: false,
+    const base={ institution: { ...legacyInstitutions[0], name: this.setting('institution').name, nombre: this.setting('institution').name }, group, unit,includeRetired:input.includeRetired===true, demoFill: input.demoFill === true, templateId: input.templateId, official: false,
       program: this.record('programs', group.programId), module: this.record('modules', group.moduleId), students: input.enrollmentId ? students.filter(s => s.enrollment.id === input.enrollmentId) : students,
       grades: this.scoped(actor, 'grades').filter(r => r.groupId === group.id && (!unit || r.unit === unit) && (!input.enrollmentId || r.enrollmentId === input.enrollmentId)),
       attendance: this.scoped(actor, 'attendance').filter(r => r.groupId === group.id && (!unit || r.unit === unit) && (!input.enrollmentId || r.enrollmentId === input.enrollmentId)) };

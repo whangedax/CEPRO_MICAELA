@@ -47,12 +47,15 @@ export class PdfTemplateEngine {
     currentSize=Math.max(minSize,currentSize);
     const finalWidth = text.includes('\n')?Infinity:font.widthOfTextAtSize(text, currentSize);
     if (finalWidth > availableWidth) {
-      for(let size=options.maxFontSize;size>=minSize;size=Number((size-.1).toFixed(1))){
+      const fitAtSize=size=>{
         const lines=[];let valid=true;
         for(const paragraph of text.split(/\r?\n/)){let line='';for(const word of paragraph.split(/\s+/).filter(Boolean)){if(font.widthOfTextAtSize(word,size)>availableWidth){if(!options.breakLongWords){valid=false;break;}if(line){lines.push(line);line='';}for(const character of word){if(font.widthOfTextAtSize(character,size)>availableWidth){valid=false;break;}if(line&&font.widthOfTextAtSize(line+character,size)>availableWidth){lines.push(line);line='';}line+=character;}if(!valid)break;continue;}const candidate=line?line+' '+word:word;if(font.widthOfTextAtSize(candidate,size)<=availableWidth)line=candidate;else{lines.push(line);line=word;}}if(line)lines.push(line);if(!valid)break;}
         const lineHeight=size*1.12,ascent=this._fontMetric(font,'Ascender',size),descent=this._fontMetric(font,'Descender',size),height=(ascent-descent)+(lines.length-1)*lineHeight;
         if(valid&&lines.length&&height<=box.h-1){const width=Math.max(...lines.map(line=>font.widthOfTextAtSize(line,size)));const x=options.align==='center'?box.x+(box.w-width)/2:options.align==='right'?box.x+box.w-padding-width:box.x+padding;return {text:lines.join('\n'),x,y:pageHeight-box.y-(box.h-height)/2-ascent,size,font,lineHeight};}
-      }
+      return null;};
+      // Si no cabe al mínimo, ningún tamaño mayor puede resolverlo.
+      const minimumFit=fitAtSize(minSize);
+      if(minimumFit){for(let size=options.maxFontSize;size>=minSize;size=Number((size-.1).toFixed(1))){const fit=fitAtSize(size);if(fit)return fit;}return minimumFit;}
       const err = new Error(`El contenido no cabe en la caja de ${box.w}pt con minFontSize ${minSize}. Ancho disponible: ${availableWidth}pt, ancho medido: ${finalWidth}pt.`);
       err.name = 'EXPECTED_REJECTION';
       throw err;
@@ -75,6 +78,17 @@ export class PdfTemplateEngine {
       size: currentSize,
       font: font
     };
+  }
+
+  formatInstitutionHeader(name) {
+    if (!name) return 'CENTRO DE EDUCACIÓN TÉCNICO PRODUCTIVA';
+    let clean = String(name).trim();
+    clean = clean.replace(/^(CENTRO\s+DE\s+EDUCACI[OÓ]N\s+T[EÉ]CNICO\s*PRODUCTIV[AO]|CETPRO)(\s+P[UÚ]BLICO)?\s*/i, '');
+    clean = clean.replace(/^["“”']+|["“”']+$/g, '').trim();
+    if (!clean || clean.toUpperCase() === 'INSTITUCIÓN' || clean.toUpperCase() === 'INSTITUCION') {
+      return 'CENTRO DE EDUCACIÓN TÉCNICO PRODUCTIVA';
+    }
+    return `CENTRO DE EDUCACIÓN TÉCNICO PRODUCTIVA "${clean.toUpperCase()}"`;
   }
 
   /** Preflight tipográfico puro. Un campo largo nunca se omite silenciosamente. */
@@ -1062,7 +1076,7 @@ export class PdfTemplateEngine {
       throw error;
     }
 
-    const PDFLib = (typeof window !== 'undefined' && window.PDFLib) ? window.PDFLib : require('pdf-lib');
+    const PDFLib = (typeof window !== 'undefined' && window.PDFLib) ? window.PDFLib : (typeof require !== 'undefined' ? require('pdf-lib') : await import('pdf-lib'));
     const { PDFDocument, rgb, StandardFonts } = PDFLib;
     const origin = (typeof window !== 'undefined' && window.location?.origin) ? window.location.origin : 'http://127.0.0.1:8081';
     const pdfUrl = new URL(manifest.canonicalPdf, origin).href;
@@ -1110,15 +1124,23 @@ export class PdfTemplateEngine {
     const totPX = presField?.box?.x || (originX + maxSessions * stepX);
     const totFX = absField?.box?.x || (totPX + 37.0);
 
-    // Cabecera institucional
-    if (institutionName) {
-      try {
-        const instFit = this.fitTextOrThrow(institutionName, boldFont, { x: originX, y: 22.0, w: 463.63, h: 12.0 }, pageHeight, {
-          maxFontSize: 8.5, minFontSize: 4.0, paddingX: 1, align: 'left', fieldKey: 'institution.name'
-        });
-        page.drawText(instFit.text, { x: instFit.x, y: instFit.y, size: instFit.size, font: boldFont, color });
-      } catch (e) { /* ignore */ }
-    }
+    // Cabecera institucional unificada (neutraliza texto preimpreso y centra la denominación oficial)
+    // El logo oficial MINEDU/PERÚ finaliza en x ≈ 237.5 pt; el parche inicia en x = 245.0 pt para no alterar ni recortar el logo.
+    const headerTitle = this.formatInstitutionHeader(institutionName);
+    try {
+      page.drawRectangle({
+        x: 245.0,
+        y: pageHeight - 33.5,
+        width: 700.0,
+        height: 20.0,
+        color: rgb(1, 1, 1)
+      });
+      const instBox = { x: 245.0, y: 19.5, w: 700.0, h: 14.0 };
+      const instFit = this.fitTextOrThrow(headerTitle, boldFont, instBox, pageHeight, {
+        maxFontSize: 9.5, minFontSize: 5.5, paddingX: 2, align: 'center', fieldKey: 'institution.name'
+      });
+      page.drawText(instFit.text, { x: instFit.x, y: instFit.y, size: instFit.size, font: boldFont, color });
+    } catch (e) { throw e; }
 
     // Programa de Estudios
     if (programName) {
@@ -1162,11 +1184,225 @@ export class PdfTemplateEngine {
       return nameA.localeCompare(nameB, 'es') || String(a.matriculaId || a.id || '').localeCompare(String(b.matriculaId || b.id || ''));
     });
 
-    // Fechas de sesión
+    // Meses dinámicos de la cuadrícula (fila inmediatamente superior a las fechas de sesión: y = 123.63, h = 12.72)
+    const SPANISH_MONTHS = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const parseMonthIndex = (val) => {
+      if (val == null) return null;
+      if (typeof val === 'number' && Number.isInteger(val)) {
+        if (val >= 0 && val <= 11) return val;
+        if (val >= 1 && val <= 12) return val - 1;
+      }
+      const s = String(val).trim();
+      if (!s) return null;
+      const mIso = s.match(/^\d{4}-(\d{1,2})/);
+      if (mIso) {
+        const m = parseInt(mIso[1], 10) - 1;
+        if (m >= 0 && m <= 11) return m;
+      }
+      const mSlash = s.match(/^\d{1,2}\/(\d{1,2})/);
+      if (mSlash) {
+        const m = parseInt(mSlash[1], 10) - 1;
+        if (m >= 0 && m <= 11) return m;
+      }
+      const lower = s.toLowerCase();
+      const found = SPANISH_MONTHS.findIndex(name => lower.startsWith(name.toLowerCase().slice(0, 3)));
+      if (found !== -1) return found;
+      if (lower.startsWith('sep')) return 8;
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) return d.getMonth();
+      return null;
+    };
+
+    // Días lectivos (lunes a viernes). Sábado y domingo se excluyen por no ser días de registro.
+    const SCHOOL_DAYS_ABBR = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi'];
+    const parseSessionDayAbbr = (session, yr = 2026) => {
+      const rawDate = sanitize(session?.fecha || session?.date || session?.dayName || session?.dia || '');
+      if (rawDate) {
+        const lower = rawDate.toLowerCase().trim();
+        if (lower.startsWith('lu')) return 'Lu';
+        if (lower.startsWith('ma')) return 'Ma';
+        if (lower.startsWith('mi')) return 'Mi';
+        if (lower.startsWith('ju')) return 'Ju';
+        if (lower.startsWith('vi')) return 'Vi';
+        if (lower.startsWith('sa') || lower.startsWith('sá') || lower.startsWith('do')) return 'WEEKEND';
+
+        let d = null;
+        const isoMatch = rawDate.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (isoMatch) {
+          d = new Date(parseInt(isoMatch[1], 10), parseInt(isoMatch[2], 10) - 1, parseInt(isoMatch[3], 10));
+        } else {
+          const slashMatch = rawDate.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+          if (slashMatch) {
+            const finalYr = slashMatch[3] ? parseInt(slashMatch[3], 10) : yr;
+            d = new Date(finalYr, parseInt(slashMatch[2], 10) - 1, parseInt(slashMatch[1], 10));
+          } else {
+            const parsed = new Date(rawDate);
+            if (!isNaN(parsed.getTime())) d = parsed;
+          }
+        }
+        if (d && !isNaN(d.getTime())) {
+          const dow = d.getDay(); // 0 = Domingo, 6 = Sábado
+          if (dow === 0 || dow === 6) return 'WEEKEND';
+          const map = { 1: 'Lu', 2: 'Ma', 3: 'Mi', 4: 'Ju', 5: 'Vi' };
+          if (map[dow]) return map[dow];
+        }
+      }
+      return null;
+    };
+
+    const yrMatch = String(per.fechaInicio || grp.fechaInicio || payload.fechaInicio || '').match(/(\d{4})/);
+    const sessionYear = yrMatch ? parseInt(yrMatch[1], 10) : 2026;
+
+    const activeSessions = [];
     for (let j = 0; j < rawSessions.length; j++) {
-      const session = rawSessions[j];
-      const rawDate = sanitize(session.fecha || session.date || '');
-      let dateText = rawDate.includes('-') ? rawDate.slice(8,10)+'/'+rawDate.slice(5,7) : (rawDate || String(j + 1).padStart(2, '0'));
+      const sess = rawSessions[j];
+      const hasDate = Boolean(sess.fecha || sess.date || sess.dia || sess.dayName);
+      const abbr = sess.dayAbbr || parseSessionDayAbbr(sess, sessionYear);
+      if (hasDate && abbr === 'WEEKEND') {
+        continue;
+      }
+      let dayNum = sess.dayNum || '';
+      if (!dayNum && (sess.fecha || sess.date)) {
+        const rawDate = sess.fecha || sess.date;
+        const matchIso = String(rawDate).match(/^\d{4}-\d{2}-(\d{2})/);
+        if (matchIso) dayNum = matchIso[1];
+        else {
+          const matchSlash = String(rawDate).match(/^(\d{1,2})\/\d{1,2}/);
+          if (matchSlash) dayNum = String(matchSlash[1]).padStart(2, '0');
+        }
+      }
+      activeSessions.push({
+        ...sess,
+        dayAbbr: (abbr && abbr !== 'WEEKEND') ? abbr : (sess.dayAbbr || SCHOOL_DAYS_ABBR[activeSessions.length % 5]),
+        dayNum: dayNum || ''
+      });
+    }
+
+    const colCount = activeSessions.length > 0 ? Math.min(activeSessions.length, maxSessions) : 0;
+    const explicitMonths = Array.isArray(payload.months) && payload.months.length ? payload.months : (Array.isArray(payload.meses) && payload.meses.length ? payload.meses : null);
+    let monthSpans = [];
+
+    if (explicitMonths) {
+      const count = explicitMonths.length;
+      const effectiveCols = colCount > 0 ? colCount : maxSessions;
+      const colsPerMonth = Math.floor(effectiveCols / count);
+      for (let i = 0; i < count; i++) {
+        const startCol = i * colsPerMonth;
+        const endCol = (i === count - 1) ? effectiveCols - 1 : (startCol + colsPerMonth - 1);
+        const mIdx = parseMonthIndex(explicitMonths[i]);
+        const name = (mIdx != null) ? SPANISH_MONTHS[mIdx] : String(explicitMonths[i]);
+        monthSpans.push({ startCol, endCol, monthName: name });
+      }
+    } else if (payload.monthSpans || payload.context?.monthSpans) {
+      monthSpans = (payload.monthSpans || payload.context?.monthSpans)
+        .filter(s => s.startCol < (colCount > 0 ? colCount : maxSessions))
+        .map(s => ({
+          ...s,
+          endCol: Math.min(s.endCol, (colCount > 0 ? colCount : maxSessions) - 1)
+        }));
+    } else if (colCount > 0) {
+      let cur = { startCol: 0, endCol: 0, monthIndex: parseMonthIndex(activeSessions[0].fecha || activeSessions[0].date) ?? 0 };
+      for (let j = 1; j < colCount; j++) {
+        const m = parseMonthIndex(activeSessions[j].fecha || activeSessions[j].date) ?? cur.monthIndex;
+        if (m === cur.monthIndex) {
+          cur.endCol = j;
+        } else {
+          monthSpans.push({ ...cur, monthName: SPANISH_MONTHS[cur.monthIndex] });
+          cur = { startCol: j, endCol: j, monthIndex: m };
+        }
+      }
+      monthSpans.push({ ...cur, monthName: SPANISH_MONTHS[cur.monthIndex] });
+    } else {
+      let startMonth = parseMonthIndex(per.fechaInicio || grp.fechaInicio || payload.fechaInicio) ?? new Date().getMonth();
+      const halfSessions = Math.ceil(maxSessions / 2);
+      monthSpans = [
+        { startCol: 0, endCol: halfSessions - 1, monthName: SPANISH_MONTHS[startMonth] },
+        { startCol: halfSessions, endCol: maxSessions - 1, monthName: SPANISH_MONTHS[(startMonth + 1) % 12] }
+      ];
+    }
+
+    const yTop = pageHeight - 123.63;
+    const yMid = pageHeight - 136.35;
+    const yBottom = pageHeight - 149.07;
+    const borderCol = rgb(0.1, 0.1, 0.1);
+
+    for (let sIdx = 0; sIdx < monthSpans.length; sIdx++) {
+      const span = monthSpans[sIdx];
+      const spanLeftX = originX + span.startCol * stepX;
+      const spanRightX = originX + (span.endCol + 1) * stepX;
+      const spanW = spanRightX - spanLeftX;
+
+      // 1. Limpiar fondo blanco para delimitar la celda del mes
+      page.drawRectangle({
+        x: spanLeftX,
+        y: yMid,
+        width: spanW,
+        height: 12.72,
+        color: rgb(1, 1, 1)
+      });
+
+      // 2. Bordes horizontales superior e inferior
+      page.drawLine({
+        start: { x: spanLeftX, y: yTop },
+        end: { x: spanRightX, y: yTop },
+        thickness: 0.75,
+        color: borderCol
+      });
+      page.drawLine({
+        start: { x: spanLeftX, y: yMid },
+        end: { x: spanRightX, y: yMid },
+        thickness: 0.75,
+        color: borderCol
+      });
+
+      // 3. Separador vertical notorio entre meses (se extiende por las filas de mes y de fechas de sesión)
+      page.drawLine({
+        start: { x: spanLeftX, y: sIdx > 0 ? yBottom : yMid },
+        end: { x: spanLeftX, y: yTop },
+        thickness: sIdx > 0 ? 1.0 : 0.75,
+        color: borderCol
+      });
+
+      // 4. Borde vertical derecho de cierre al finalizar el último mes
+      if (sIdx === monthSpans.length - 1) {
+        page.drawLine({
+          start: { x: spanRightX, y: yBottom },
+          end: { x: spanRightX, y: yTop },
+          thickness: 1.0,
+          color: borderCol
+        });
+      }
+
+      // 5. Nombre institucional del mes centrado en mayúsculas
+      const spanBox = {
+        x: spanLeftX,
+        y: 123.63,
+        w: spanW,
+        h: 12.72
+      };
+      const fullMonthTitle = (span.monthName || '').toUpperCase();
+      const monthTitle = boldFont.widthOfTextAtSize(fullMonthTitle,4.5)>spanBox.w-2?fullMonthTitle.slice(0,3):fullMonthTitle;
+      try {
+        const mFit = this.fitTextOrThrow(monthTitle, boldFont, spanBox, pageHeight, {
+          maxFontSize: 8.0, minFontSize: 4.5, paddingX: 1, align: 'center', fieldKey: `attendance.month.${span.startCol}`
+        });
+        page.drawText(mFit.text, { x: mFit.x, y: mFit.y, size: mFit.size, font: boldFont, color: borderCol });
+      } catch (e) { throw e; }
+    }
+
+    // Fechas de sesión: día de la semana y número de día (Lu\n05, Ma\n06, etc.) en las columnas exactas de clase
+    const colsToDraw = colCount > 0 ? colCount : (payload.demoMode ? maxSessions : 0);
+    for (let j = 0; j < colsToDraw; j++) {
+      let dateText = '';
+      if (j < activeSessions.length) {
+        const sess = activeSessions[j];
+        dateText = sess.dayNum ? `${sess.dayAbbr}\n${sess.dayNum}` : sess.dayAbbr;
+      } else {
+        dateText = SCHOOL_DAYS_ABBR[j % 5];
+      }
       const dateBox = {
         x: originX + j * stepX,
         y: 136.35,
@@ -1174,7 +1410,7 @@ export class PdfTemplateEngine {
         h: 12.72
       };
       const dateFit = this.fitTextOrThrow(dateText, boldFont, dateBox, pageHeight, {
-        maxFontSize: 6.5, minFontSize: 4.0, paddingX: 0.5, align: 'center', fieldKey: `sessionDate.${j}`
+        maxFontSize: 5.5, minFontSize: 4.0, paddingX: 0.2, align: 'center', fieldKey: `sessionDate.${j}`
       });
       page.drawText(dateFit.text, { x: dateFit.x, y: dateFit.y, size: dateFit.size, font: boldFont, color });
     }
@@ -1194,15 +1430,15 @@ export class PdfTemplateEngine {
         page.drawText(nameFit.text, { x: nameFit.x, y: nameFit.y, size: nameFit.size, font: regularFont, color });
       }
 
-      // Marcas por sesión
+      // Marcas por sesión para las columnas reales de clase
       const marksList = Array.isArray(student.marksBySession)
         ? student.marksBySession
         : (Array.isArray(student.marks) ? student.marks : []);
 
-      for (let j = 0; j < rawSessions.length; j++) {
-        const session = rawSessions[j];
-        const markObj = marksList.find(m => m.sessionId === session.sessionId) || marksList[j] || null;
-        const state = String(markObj?.estadoRegistro || markObj?.state || markObj || '').toUpperCase();
+      for (let j = 0; j < colsToDraw; j++) {
+        const session = activeSessions[j];
+        const markObj = session ? (marksList.find(m => m.sessionId === session.sessionId || (m.date === session.fecha && String(m.session || '1') === String(session.session || '1'))) || marksList[j] || null) : (marksList[j] || null);
+        const state = String(markObj?.estadoRegistro || markObj?.state || markObj?.value || markObj || '').toUpperCase();
 
         let markChar = '—';
         if (state === 'PRESENTE' || state === 'ASISTIO' || state === 'P') markChar = 'P';
@@ -1255,6 +1491,39 @@ export class PdfTemplateEngine {
       }
     }
 
+    // Firma docente: se valida la longitud de teacher.name si viene en el grupo, pero se preserva limpio el espacio físico sin estampar texto para la firma presencial manuscrita.
+    const teacherName = sanitize(
+      rfs['teacher.name']?.value ??
+      rfs['teacher.name'] ??
+      rfs['teacher']?.value ??
+      rfs['teacher'] ??
+      payload.teacherName ??
+      payload.teacher ??
+      payload.docenteNombre ??
+      payload.docente?.nombre ??
+      payload.docente ??
+      grp.docenteNombre ??
+      grp.docente ??
+      grp.teacherName ??
+      grp.profesor ??
+      ''
+    );
+    if (teacherName) {
+      const teacherBoxes = {
+        'TMPL-05': { x: 113.81, y: 645.91, w: 160, h: 12 },
+        'TMPL-06': { x: 185.81, y: 645.91, w: 160, h: 12 },
+        'TMPL-07': { x: 161.83, y: 645.91, w: 160, h: 12 },
+        'TMPL-08': { x: 113.81, y: 645.91, w: 160, h: 12 },
+        'TMPL-09': { x: 113.81, y: 645.91, w: 160, h: 12 },
+        'TMPL-10': { x: 145.81, y: 645.91, w: 160, h: 12 }
+      };
+      const tBox = teacherBoxes[docType] || { x: 113.81, y: 645.91, w: 160, h: 12 };
+      this.fitTextOrThrow(teacherName, boldFont, tBox, pageHeight, {
+        maxFontSize: 8.0, minFontSize: 4.5, paddingX: 2, align: 'center', fieldKey: 'teacher.name'
+      });
+      // El nombre del docente NO se imprime: se reserva el renglón libre para la firma presencial manuscrita.
+    }
+
     // Leyendas y marcas de agua
     page.drawText('BORRADOR ADMINISTRATIVO — NO OFICIAL', {
       x: 40,
@@ -1274,7 +1543,7 @@ export class PdfTemplateEngine {
       });
     }
 
-    page.drawText(`ESTUDIANTES: ${sortedStudents.length} · SESIONES REGISTRADAS: ${rawSessions.length} DE ${maxSessions}`, {
+    page.drawText(`ESTUDIANTES: ${sortedStudents.length} · SESIONES REGISTRADAS: ${activeSessions.length} DE ${maxSessions}`, {
       x: 420,
       y: 25,
       size: 7.5,
@@ -1370,16 +1639,37 @@ export class PdfTemplateEngine {
       return f?.box || fallback;
     };
 
-    // Cabecera institucional
-    if (institutionName) {
-      try {
-        const instBox = getFieldBox('institution.name', { x: 520.0, y: 98.0, w: 300.0, h: 14.0 });
-        const instFit = this.fitTextOrThrow(institutionName, boldFont, instBox, pageHeight, {
-          maxFontSize: 8.5, minFontSize: 4.5, paddingX: 1, align: 'left', fieldKey: 'institution.name'
+    // Cabecera institucional unificada (neutraliza texto preimpreso y centra la denominación oficial)
+    const headerTitle = this.formatInstitutionHeader(institutionName);
+    try {
+      if (docType === 'TMPL-11') {
+        page.drawRectangle({
+          x: 200.0,
+          y: pageHeight - 96.0,
+          width: 790.0,
+          height: 20.0,
+          color: rgb(1, 1, 1)
+        });
+        const evalBox = { x: 200.0, y: 81.0, w: 790.0, h: 14.0 };
+        const instFit = this.fitTextOrThrow(headerTitle, boldFont, evalBox, pageHeight, {
+          maxFontSize: 9.5, minFontSize: 5.5, paddingX: 2, align: 'center', fieldKey: 'institution.name'
         });
         page.drawText(instFit.text, { x: instFit.x, y: instFit.y, size: instFit.size, font: boldFont, color });
-      } catch (e) {}
-    }
+      } else {
+        page.drawRectangle({
+          x: 180.0,
+          y: pageHeight - 165.0,
+          width: 620.0,
+          height: 20.0,
+          color: rgb(1, 1, 1)
+        });
+        const evalBox = { x: 180.0, y: 150.0, w: 620.0, h: 14.0 };
+        const instFit = this.fitTextOrThrow(headerTitle, boldFont, evalBox, pageHeight, {
+          maxFontSize: 9.5, minFontSize: 5.5, paddingX: 2, align: 'center', fieldKey: 'institution.name'
+        });
+        page.drawText(instFit.text, { x: instFit.x, y: instFit.y, size: instFit.size, font: boldFont, color });
+      }
+    } catch (e) { throw e; }
 
     // Programa de Estudios
     if (programName) {
@@ -2050,25 +2340,22 @@ export class PdfTemplateEngine {
       const uCredHours = uCredits && uHours ? `${uCredits} / ${uHours}` : (uCredits || uHours || '');
 
       if (uName) {
-        // Pág 1 rotado
-        const sizeP1=Math.min(6,120/regularFont.widthOfTextAtSize(uName,1));const sizeP2=Math.min(6,80/regularFont.widthOfTextAtSize(uName,1));if(Math.min(sizeP1,sizeP2)<4)throw new Error("Nombre de unidad demasiado extenso para la cabecera rotada del acta: "+uName);
-        page1.drawText(uName, {
-          x: udColsP1[u].x + udColsP1[u].w / 2 + 2.5,
-          y: pageHeight1 - 325,
-          size: sizeP1,
-          font: regularFont,
-          color,
-          rotate: degrees(90)
-        });
-        // Pág 2 rotado
-        page2.drawText(uName, {
-          x: udColsP2[u].x + udColsP2[u].w / 2 + 2.5,
-          y: pageHeight2 - 175,
-          size: 6.0,
-          font: regularFont,
-          color,
-          rotate: degrees(90)
-        });
+        // Ajustar el nombre completo en varias líneas antes de rotarlo.
+        const drawRotatedHeader = (page, height, column, baselineTop, length) => {
+          const fit = this.fitTextOrThrow(uName, regularFont, {x:0,y:0,w:length,h:column.w-4}, height, {
+            maxFontSize:6, minFontSize:4, paddingX:0, align:'left', fieldKey:'acta.unit.'+u+'.rotatedHeader'
+          });
+          const lines=fit.text.split('\n'), lineHeight=fit.lineHeight||fit.size*1.12;
+          const ascent=this._fontMetric(regularFont,'Ascender',fit.size),descent=this._fontMetric(regularFont,'Descender',fit.size);
+          const span=ascent-descent+(lines.length-1)*lineHeight;
+          const startX=column.x+(column.w-span)/2+ascent;
+          for(const [index,line] of lines.entries())page.drawText(line, {
+            x:startX+index*lineHeight, y:height-baselineTop, size:fit.size,
+            font:regularFont, color, rotate:degrees(90)
+          });
+        };
+        drawRotatedHeader(page1,pageHeight1,udColsP1[u],325,120);
+        drawRotatedHeader(page2,pageHeight2,udColsP2[u],175,80);
       }
 
       if (uCredHours) {

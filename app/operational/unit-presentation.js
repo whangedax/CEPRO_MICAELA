@@ -1,0 +1,13 @@
+const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+export const pendingName=u=>!u.name||/pendiente|por confirmar/i.test(u.name);
+export const unitTitle=u=>pendingName(u)?'Unidad '+String(u.code).replace(/^UD/,''):u.name;
+export function artwork(unit,career=''){
+ const name=pendingName(unit)?'':normalize(unit.name),area=normalize(career);let key;
+ const rules=[[/efsrt|practicas/,'business'],[/comunicacion/,'communication'],[/etica|ciudadania|comportamiento/,'ethics'],[/emprendimiento|negocios/,'business'],[/word|documentos/,'document'],[/excel|calculo/,'spreadsheet'],[/powerpoint|presentacion/,'presentation'],[/corel|photoshop|grafico/,'design'],[/plataformas|herramientas.*informatic|herramientas.*digital|aplicacion.*informatic/,'web'],[/seguridad industrial|organiza.*taller/,'safety'],[/metrolog|medicion|trazado|dibujo tecnico|patronaje/,'measurement'],[/soldadura|ensamblaje.*metal|material.*metal|estructuras.*metal/,'metal'],[/barba|bigote/,'barber'],[/tratamiento capilar|colorimetr|tintura|decolor|alisado|ondulacion/,'care'],[/cabello|peinado|postizo/,'hair'],[/habilitado|operatividad.*maquina|confeccion/,'sewing'],[/tendido|tizado/,'thread'],[/corte/,'scissors'],[/domotica|sistema.*seguridad/,'security'],[/electronic|audio|video/,'electronics'],[/instalacion.*electric/,'building'],[/electric/,'electric'],[/lubricacion|refrigeracion|frenos|suspension|motor|transmision/,'mechanics'],[/sistema operativo/,'computer']];
+ for(const [pattern,value]of rules)if(pattern.test(name)){key=value;break;}
+ if(!key)key=/motos/.test(area)?'motorcycle':/automotriz/.test(area)?'car':/carpinter/.test(area)?'metal':/peluquer|barber/.test(area)?'hair':/computacion|informatica/.test(area)?'computer':/corte|ensamblaje|textil/.test(area)?'clothes':/electric/.test(area)?'electric':'workshop';
+ return {key,src:'/app/operational/assets/units/'+key+'.svg',alt:pendingName(unit)?'Ilustración de '+career:'Ilustración relacionada con '+unit.name};
+}
+export function dateText(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return 'Por definir';const [y,m,d]=value.split('-');return `${d}/${m}/${y}`;}
+export const numbersText=u=>[u.hours==null?'Horas por definir':`${u.hours} h`,u.credits==null?'Créditos por definir':`${u.credits} créditos`].join(' · ');
+export const imageCredits='<details class="image-credits"><summary>Créditos de las ilustraciones</summary><p>Imágenes originales de <a href="https://openmoji.org/" target="_blank" rel="noopener">OpenMoji</a>, sin modificaciones. Licencia <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>. Guardadas localmente para funcionar sin internet.</p></details>';

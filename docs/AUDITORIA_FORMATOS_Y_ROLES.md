@@ -1,6 +1,8 @@
 # Auditoría de formatos, permisos e intercambio offline
 
-Fecha: 6 de octubre de 2026.
+Fecha de la revisión inicial: 6 de octubre de 2026.
+
+La tipografía y los pies añadidos fueron revisados nuevamente el 9 de octubre; véase AUDITORIA_TIPOGRAFIA_Y_ARTEFACTOS.md para las correcciones y medidas vigentes.
 
 Se generaron los 21 formatos a partir de los PDF institucionales y se revisaron las 24 páginas renderizadas con Poppler. Se resolvieron todos los parámetros requeridos con datos ficticios y se extrajeron los valores para contrastar DNI, unidades, resoluciones, créditos, EFSRT, notas decimales y datos registrales. No se modificaron los archivos fuente.
 

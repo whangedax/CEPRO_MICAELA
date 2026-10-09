@@ -7,7 +7,24 @@
     "test:data": "node --test --test-isolation=none tests/data-update.test.cjs",
     "test:critical": "node --test --test-isolation=none tests/critical-workflows.test.cjs",
     "test:sync-ui": "node tests/synchronization-ui.test.cjs",
-    "test:database": "node --test --test-isolation=none tests/sections-database.test.cjs"
+    "test:database": "node --test --test-isolation=none tests/sections-database.test.cjs",
+    "test:academic": "node --test --test-isolation=none tests/academic-config.test.cjs",
+    "test:academic-ui": "node tests/academic-config-ui.test.cjs",
+    "test:official": "node --test --test-isolation=none tests/official-2026.test.cjs",
+    "test:official-ui": "node tests/official-2026-ui.test.cjs",
+    "test:workspace": "node --test --test-isolation=none tests/workspace.test.cjs",
+    "test:workspace-ui": "node tests/workspace-ui.test.cjs",
+    "test:unit-workspace": "node --test --test-isolation=none tests/unit-workspace.test.cjs",
+    "test:unit-workspace-ui": "node tests/unit-workspace-ui.test.cjs",
+    "test:carousel": "node --test --test-isolation=none tests/unit-carousel-dates.test.cjs",
+    "test:carousel-ui": "node tests/unit-carousel-ui.test.cjs",
+    "test:teacher-guided-ui": "node tests/teacher-guided-ui.test.cjs",
+    "test:unit-names": "node --test --test-isolation=none tests/unit-working-names.test.cjs",
+    "test:attendance-modal-ui": "node tests/attendance-modal-ui.test.cjs",
+    "test:typography": "node --test --test-isolation=none tests/template-typography.test.cjs",
+    "test:secretariat-ui": "node tests/secretariat-ui.test.cjs",
+    "test:secretariat": "node --test --test-isolation=none tests/secretariat-context.test.cjs",
+    "test:director-guide-ui": "node tests/director-guide-ui.test.cjs"
   },
   "engines": {
     "node": ">=24"

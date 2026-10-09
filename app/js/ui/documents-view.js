@@ -3157,10 +3157,24 @@ export class DocumentsView {
           <th style="width: 40px; text-align: center;">#</th>
           <th class="col-sticky-student">Estudiante (${rows.length})</th>`;
       sessions.forEach((s, idx) => {
+        let dAbbr = '';
+        if (s.fecha) {
+          const parts = s.fecha.split('-').map(Number);
+          if (parts.length === 3) {
+            const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+            const dow = dt.getDay();
+            const map = { 1: 'Lu', 2: 'Ma', 3: 'Mi', 4: 'Ju', 5: 'Vi' };
+            dAbbr = map[dow] || '';
+          }
+        }
+        if (!dAbbr) {
+          dAbbr = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi'][idx % 5];
+        }
         theadHtml += `
           <th style="width: 32px; text-align: center; font-size: 0.76rem; padding: 0.25rem 0.1rem;" title="Sesión ${s.sessionId} (${s.fecha || ''})">
-            <div>S${s.sessionId}</div>
-            <div class="text-secondary fw-normal" style="font-size: 0.68rem;">${s.day || (idx + 1)}</div>
+            <div class="fw-bold text-dark">S${s.sessionId}</div>
+            <div class="badge bg-primary text-white fw-bold px-1 py-0" style="font-size: 0.68rem; font-weight: 700;">${dAbbr}</div>
+            <div class="text-secondary fw-normal" style="font-size: 0.64rem;">${s.day || (idx + 1)}</div>
           </th>`;
       });
       theadHtml += `

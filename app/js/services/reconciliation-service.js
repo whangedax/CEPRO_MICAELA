@@ -36,7 +36,7 @@ export const ReconciliationService = {
         recuentoAuditadoM04: 295,
         recuentoHistoricoLegado: 300,
         declaracionFormal: '300 = CONTEO HISTÓRICO NO REPRODUCIBLE CON LAS FUENTES VIGENTES',
-        fundamento: 'BD.zip contiene exactamente 295 filas candidatas reales con datos de estudiantes.'
+        fundamento: 'La fuente institucional contiene 295 filas candidatas reales con datos de estudiantes.'
       },
 
       // Explicación M04.2 de la discrepancia de identidades y 274

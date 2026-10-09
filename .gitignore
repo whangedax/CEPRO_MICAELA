@@ -38,4 +38,6 @@ CETPRO_BACKUP_*.json
 # Credenciales, claves, base local y copias de seguridad del servicio
 private-data/
 demo-data/
+data/
+*.sqlite
 tests/offline-artifacts/

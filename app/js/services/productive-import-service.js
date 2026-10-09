@@ -260,7 +260,7 @@ export class ProductiveImportService {
         estado: 'ACTIVO',
         fuente: 'IMPORTACION_BD',
         loteImportacion: ReconciliationService.LOTE_ID,
-        observaciones: `Importado de BD.zip lote ${ReconciliationService.LOTE_ID} (${rows.length} apariciones en fuente)`,
+        observaciones: `Importación institucional, lote ${ReconciliationService.LOTE_ID} (${rows.length} apariciones en fuente)`,
         incidencias: allIncidences,
         fechaCreacion: now,
         fechaActualizacion: now
