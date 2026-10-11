@@ -24,7 +24,12 @@
     "test:typography": "node --test --test-isolation=none tests/template-typography.test.cjs",
     "test:secretariat-ui": "node tests/secretariat-ui.test.cjs",
     "test:secretariat": "node --test --test-isolation=none tests/secretariat-context.test.cjs",
-    "test:director-guide-ui": "node tests/director-guide-ui.test.cjs"
+    "test:director-guide-ui": "node tests/director-guide-ui.test.cjs",
+    "test:account-context": "node --test --test-isolation=none tests/account-context.test.cjs",
+    "test:account-context-ui": "node tests/account-context-ui.test.cjs",
+    "test:system-core": "node tests/system-audit-core.cjs",
+    "test:system-ui": "node tests/system-audit-ui.cjs",
+    "test:demo-safety": "node --test --test-isolation=none tests/demo-safety.test.cjs"
   },
   "engines": {
     "node": ">=24"

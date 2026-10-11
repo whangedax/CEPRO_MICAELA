@@ -4,10 +4,13 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { OfflineCore } = require('../scripts/offline-core.cjs');
 const { renderPDF } = require('../scripts/offline-pdf.cjs');
+const {createPdfFixture}=require('./helpers/pdf-fixture.cjs');
 
 test('ATTENDANCE-SIM: Llenado simulado de asistencia de toda la unidad', async () => {
   const root = path.resolve(__dirname, '..');
-  const core = new OfflineCore('private-data');
+  const directory=path.join(__dirname,'offline-artifacts','isolated-'+'unit-attendance-simulation');fs.mkdirSync(directory,{recursive:true});const f=createPdfFixture(directory),core=f.c;
+  try {
+  core.setting('documentDemo',true);
   const user = core.users().find(u => u.username === 'docente1' || u.role === 'DOCENTE');
   assert.ok(user, 'Usuario docente debe existir');
 
@@ -68,4 +71,5 @@ test('ATTENDANCE-SIM: Llenado simulado de asistencia de toda la unidad', async (
     mode: 'realistic'
   });
   assert.ok(reSimResult.recordsCount > 0, 'Debe volver a simular satisfactoriamente');
+  } finally { core.close(); }
 });

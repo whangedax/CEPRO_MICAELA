@@ -325,6 +325,7 @@ class OfflineCore {
     }));
   }
   simulateUnitAttendance(actor, input) {
+    if(this.setting('documentDemo')!==true)fail('La simulación persistente solo está disponible en una base de demostración.',403);
     this.requireRole(actor, ['DOCENTE', 'DIRECTOR', 'SECRETARIA']);
     this.requireGroup(actor, input.groupId, input.unit);
     const group = this.record('groups', input.groupId);
@@ -396,6 +397,7 @@ class OfflineCore {
     });
   }
   clearUnitAttendance(actor, input) {
+    if(this.setting('documentDemo')!==true)fail('La limpieza masiva de demostración no está permitida en la base real.',403);
     this.requireRole(actor, ['DOCENTE', 'DIRECTOR', 'SECRETARIA']);
     this.requireGroup(actor, input.groupId, input.unit);
     const group = this.record('groups', input.groupId);
@@ -751,6 +753,7 @@ class OfflineCore {
     return DocumentSettings.enrich(this,actor,base);
   }
   submitDocument(actor,doc,pdf){
+    if(doc.demoFill||doc.demoMode)fail('Un documento con datos de demostración no puede entregarse. Genere la versión con los registros reales.',422);
     if(!doc.preflight.complete)fail('Complete los parámetros pendientes antes de entregar el documento.',422);
     if(pdf.length>8*1024*1024)fail('El PDF supera el tamaño máximo de una entrega.');
     const value={id:id(),groupId:doc.group.id,unit:doc.unitCode||null,templateId:doc.templateId,authorId:actor.id,authorName:actor.name,status:'ENTREGADO',createdAt:now(),fingerprint:doc.fingerprint,pdf:pdf.toString('base64'),pdfHash:hash(pdf.toString('base64')),parameters:doc.preflight.fields};

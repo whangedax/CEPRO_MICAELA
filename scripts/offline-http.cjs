@@ -5,6 +5,7 @@ const { OfflineCore, publicUser, fail } = require('./offline-core.cjs');
 const { renderPDF } = require('./offline-pdf.cjs');
 const DocumentSettings = require('./offline-documents.cjs');
 const Workspace=require('./workspace.cjs');
+const AccountContext=require('./account-context.cjs');
 const {DataUpdateService}=require('./data-update-service.cjs');
 function createService({ root, directory, backupFile }) {
   const core = new OfflineCore(directory, backupFile);
@@ -37,14 +38,14 @@ function createService({ root, directory, backupFile }) {
         if(route==='/api/workspace'&&req.method==='POST'){session.workspace=Workspace.select(core,user,body);return json(res,200,session.workspace);}
         Workspace.guard(core,user,context,route,body);
         const scopedUpdates=new DataUpdateService(Workspace.scopedCore(core,user,context),root);scopedUpdates.previews=updates.previews;
-        if(['/api/data/export','/api/data/template'].includes(route)&&context&&!context.overview&&body.kind!=='docentes'){body.options={...(body.options||{}),groupId:body.options?.groupId||context.groupId,unit:context.unit?(body.options?.unit||context.unit):body.options?.unit};if(body.options.unit)Workspace.assertUnit(context,body.options.unit);Workspace.assertGroup(core,user,context,body.options.groupId);}
+        if(['/api/data/export','/api/data/template'].includes(route)&&context&&!context.overview){body.options={...(body.options||{}),groupId:body.options?.groupId||context.groupId,unit:context.unit?(body.options?.unit||context.unit):body.options?.unit};if(body.options.unit)Workspace.assertUnit(context,body.options.unit);Workspace.assertGroup(core,user,context,body.options.groupId);}
         if(route==='/api/exchange/export'&&context&&!context.overview){if(body.groupId)Workspace.assertGroup(core,user,context,body.groupId);body={...body,moduleId:context.moduleId,groupId:body.groupId||context.groupId,unit:context.unit||body.unit};}
         if (route === '/api/me' && req.method === 'GET') return json(res, 200, publicUser(user));
         if (route === '/api/dashboard' && req.method === 'GET') return json(res, 200, Workspace.dashboard(core,user,user.role!=='DOCENTE'&&url.searchParams.get('overview')==='1'?{overview:true}:context));
         if(route==='/api/academic/configuration'&&req.method==='GET')return json(res,200,require('./academic-config.cjs').configuration(core,user));
         if(route==='/api/data/catalog'&&req.method==='GET'){const catalog=updates.catalog(user);if(context?.mode&&context.mode!=='UNIT')catalog.kinds=catalog.kinds.map(k=>({...k,canImport:['notas','asistencias'].includes(k.kind)?false:k.canImport}));return json(res,200,catalog);}
         if(route==='/api/document/configuration'&&req.method==='GET')return json(res,200,Workspace.filterConfiguration(core,user,context,DocumentSettings.configuration(core,user)));
-        if (route === '/api/users' && req.method === 'GET') return json(res,200,core.listUsers(user));
+        if (route === '/api/users' && req.method === 'GET') return json(res,200,url.searchParams.get('context')==='1'?AccountContext.list(core,user,context):core.listUsers(user));
         if(route==='/api/database/health'&&req.method==='GET')return json(res,200,core.databaseHealth(user));
         if (route === '/api/audit' && req.method === 'GET') { core.requireRole(user, ['DIRECTOR']); return json(res, 200, core.db.prepare('SELECT value FROM audit ORDER BY rowid DESC LIMIT 100').all().map(r => JSON.parse(r.value))); }
         if (req.method !== 'POST') fail('Ruta no encontrada.', 404);
@@ -68,12 +69,12 @@ function createService({ root, directory, backupFile }) {
           case '/api/logout': result = core.logout(token); break;
           case '/api/password': result = core.changePassword(user, body); break;
           case '/api/users/reject-request':result=core.rejectAccountRequest(user,body);break;
-          case '/api/users/archive':result=core.archiveUser(user,body);break;
+          case '/api/users/archive':result=AccountContext.remove(core,user,context,body);break;
           case '/api/students/archive':result=core.archiveStudent(user,body);break;
           case '/api/exchange/export':result=core.exchangePackage(user,body);break;
           case '/api/exchange/preview':result=core.importPackage(user,body.package,false,body.passphrase);break;
           case '/api/exchange/import':result=core.importPackage(user,body.package,true,body.passphrase);break;
-          case '/api/users': result = core.saveUser(user, body); break;
+          case '/api/users': result = AccountContext.save(core,user,context,body); break;
           case '/api/users/accept-request':result=core.acceptRegistrationRequest(user,body);break;
           case '/api/students/accept-request':result=core.acceptStudentRequest(user,body);break;
           case '/api/data/preview':if(context?.mode&&context.mode!=='UNIT'&&['notas','asistencias'].includes(body.kind))fail('Seleccione una unidad para importar sus notas o asistencias.');result=scopedUpdates.preview(user,body);scopedUpdates.previews.get(result.token).workspaceKey=JSON.stringify(context);break;

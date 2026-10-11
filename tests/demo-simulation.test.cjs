@@ -4,15 +4,17 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { OfflineCore } = require('../scripts/offline-core.cjs');
 const { renderPDF } = require('../scripts/offline-pdf.cjs');
+const {createPdfFixture}=require('./helpers/pdf-fixture.cjs');
 
 test('DEMO-01: Modo Demostración genera aula completa con 30 alumnos, marcas de asistencia y preflight completo', async () => {
   const root = path.resolve(__dirname, '..');
-  const core = new OfflineCore('private-data');
+  const directory=path.join(__dirname,'offline-artifacts','isolated-'+'demo-simulation');fs.mkdirSync(directory,{recursive:true});const f=createPdfFixture(directory),core=f.c;
+  try {
   const user = core.users().find(u => u.username === 'docente1' || u.role === 'DOCENTE');
   assert.ok(user, 'Usuario docente debe existir');
 
   const doc = core.document(user, {
-    groupId: 'G-9978cdc8-9287-484d-8964-d5fe7515c686',
+    groupId: f.group.id,
     templateId: 'TMPL-06',
     unit: 'UD2',
     demoFill: true
@@ -37,4 +39,5 @@ test('DEMO-01: Modo Demostración genera aula completa con 30 alumnos, marcas de
   const pdfBytes = await renderPDF(root, doc, user);
   assert.ok(pdfBytes instanceof Uint8Array || Buffer.isBuffer(pdfBytes), 'Debe devolver bytes de PDF válidos');
   assert.ok(pdfBytes.length > 50000, 'El PDF debe tener contenido significativo');
+  } finally { core.close(); }
 });
