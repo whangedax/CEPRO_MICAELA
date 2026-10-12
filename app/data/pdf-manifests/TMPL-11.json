@@ -60,9 +60,9 @@
       "styleProfile": "HEADER_TITLE",
       "overflowPolicy": "AUTOFIT_OR_FAIL",
       "box": {
-        "x": 245,
-        "y": 82,
-        "w": 575,
+        "x": 220,
+        "y": 95,
+        "w": 580,
         "h": 12
       },
       "geometryEvidence": "2026-10-06: margen blanco sobre el rótulo CENTRO DE EDUCACIÓN TÉCNICO PRODUCTIVA; sin superponer nombre institucional y leyenda."
@@ -110,9 +110,9 @@
       "overflowPolicy": "AUTOFIT_OR_FAIL",
       "box": {
         "x": 255,
-        "y": 148,
+        "y": 145.5,
         "w": 565,
-        "h": 13
+        "h": 12
       }
     },
     {

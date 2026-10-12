@@ -1,0 +1,8 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{OfflineCore}=require('../scripts/offline-core.cjs'),{apply,PLAN}=require('../scripts/assign-pending-teachers-2026.cjs');
+test('asignación provisional separa carreras y turnos, es editable y no modifica registros académicos',()=>{
+ const dir=path.join(__dirname,'offline-artifacts/pending-teachers');fs.mkdirSync(dir,{recursive:true});const c=new OfflineCore(fs.mkdtempSync(path.join(dir,'db-')));
+ try{c.setup({username:'director',name:'Dirección',password:'Password2026!'});const d=c.users()[0];for(const [username,programId,ids]of PLAN){c.saveUser(d,{username,name:username,password:'Password2026!',role:'DOCENTE',assignments:[],assignmentPending:true});for(const id of ids.flatMap(id=>[id,id+'-M2'])){const m=c.records('modules').find(m=>m.programaId===programId);c.write(d,'groups',{id,name:id,programId,moduleId:m.id,periodId:id.endsWith('-M2')?'2026-II':'2026-I',units:['UD1','EFSRT']});}}
+  const before=JSON.stringify(['students','enrollments','grades','attendance'].map(k=>c.records(k)));assert.equal(apply(c,d).length,4);assert.deepEqual(apply(c,d),[]);assert.equal(JSON.stringify(['students','enrollments','grades','attendance'].map(k=>c.records(k))),before);
+  const t=c.users().find(u=>u.username==='teofilo.larico');assert.deepEqual(t.assignments.map(a=>a.groupId),['GRP-BD-010','GRP-BD-010-M2']);assert.throws(()=>c.requireGroup(t,'GRP-BD-009'),/acceso/);c.saveUser(d,{...t,assignments:[t.assignments[0]]});assert.equal(c.user(t.id).assignments.length,1);assert.equal(c.databaseHealth(d).healthy,true);
+ }finally{c.close();}
+});

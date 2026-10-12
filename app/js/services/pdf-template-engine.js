@@ -1644,26 +1644,29 @@ export class PdfTemplateEngine {
     try {
       if (docType === 'TMPL-11') {
         page.drawRectangle({
-          x: 200.0,
-          y: pageHeight - 96.0,
-          width: 790.0,
+          x: 220.0,
+          y: pageHeight - 108.5,
+          width: 580.0,
           height: 20.0,
           color: rgb(1, 1, 1)
         });
-        const evalBox = { x: 200.0, y: 81.0, w: 790.0, h: 14.0 };
+        const evalBox = { x: 220.0, y: 95.0, w: 580.0, h: 12.0 };
         const instFit = this.fitTextOrThrow(headerTitle, boldFont, evalBox, pageHeight, {
           maxFontSize: 9.5, minFontSize: 5.5, paddingX: 2, align: 'center', fieldKey: 'institution.name'
         });
         page.drawText(instFit.text, { x: instFit.x, y: instFit.y, size: instFit.size, font: boldFont, color });
       } else {
+        const isTmpl16 = docType === 'TMPL-16';
+        const rectY = isTmpl16 ? pageHeight - 165.5 : pageHeight - 179.5;
+        const boxY = isTmpl16 ? 152.0 : 164.0;
         page.drawRectangle({
-          x: 180.0,
-          y: pageHeight - 165.0,
-          width: 620.0,
+          x: 200.0,
+          y: rectY,
+          width: 600.0,
           height: 20.0,
           color: rgb(1, 1, 1)
         });
-        const evalBox = { x: 180.0, y: 150.0, w: 620.0, h: 14.0 };
+        const evalBox = { x: 200.0, y: boxY, w: 600.0, h: 12.0 };
         const instFit = this.fitTextOrThrow(headerTitle, boldFont, evalBox, pageHeight, {
           maxFontSize: 9.5, minFontSize: 5.5, paddingX: 2, align: 'center', fieldKey: 'institution.name'
         });
@@ -1703,7 +1706,9 @@ export class PdfTemplateEngine {
 
     // Unidad Didáctica
     if (unitName) {
-      const uniBox = getFieldBox('curriculum.unit.name', { x: 255.0, y: 148.0, w: 565.0, h: 13.0 });
+      const uniBox = docType === 'TMPL-11'
+        ? { x: 255.0, y: 145.5, w: 565.0, h: 12.0 }
+        : getFieldBox('curriculum.unit.name', { x: 255.0, y: 148.0, w: 565.0, h: 13.0 });
       const uniFit = this.fitTextOrThrow(unitName, boldFont, uniBox, pageHeight, {
         maxFontSize: 8.0, minFontSize: 4.0, paddingX: 1, align: 'left', fieldKey: 'curriculum.unit.name'
       });

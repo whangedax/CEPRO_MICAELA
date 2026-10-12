@@ -1,5 +1,5 @@
 const crypto=require('node:crypto');
-const SCHEMA_VERSION=1;
+const SCHEMA_VERSION=2;
 function protectDatabase(db){
  const version=db.prepare('PRAGMA user_version').get().user_version;if(version>SCHEMA_VERSION)throw Error('Esta base usa una versión más nueva. Instale una versión compatible antes de abrirla.');
  db.exec('PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON;');
@@ -11,7 +11,16 @@ function protectDatabase(db){
   db.exec(`CREATE TRIGGER IF NOT EXISTS guard_user_identity_${action.toLowerCase()} BEFORE ${action} ON users WHEN json_type(NEW.value,'$.id') IS NULL OR CAST(json_extract(NEW.value,'$.id') AS TEXT)!=NEW.id OR json_extract(NEW.value,'$.username') IS NULL OR json_extract(NEW.value,'$.username')!=NEW.username OR json_extract(NEW.value,'$.role') NOT IN ('DIRECTOR','SECRETARIA','DOCENTE') OR json_extract(NEW.value,'$.version')<1 BEGIN SELECT RAISE(ABORT,'Cuenta interna inconsistente'); END;`);
  }
  db.exec(`CREATE INDEX IF NOT EXISTS idx_records_group ON records(entity,json_extract(value,'$.groupId')); CREATE INDEX IF NOT EXISTS idx_records_student ON records(entity,json_extract(value,'$.studentId'));`);
- db.exec(`PRAGMA user_version=${SCHEMA_VERSION}`);
+ db.exec('SAVEPOINT schema_v2');
+ try{
+ for(const action of ['INSERT','UPDATE']){
+  db.exec(`CREATE TRIGGER IF NOT EXISTS guard_parent_v2_${action.toLowerCase()} BEFORE ${action} ON records WHEN NEW.entity='enrollments' AND (NOT EXISTS(SELECT 1 FROM records WHERE entity='students' AND id=json_extract(NEW.value,'$.studentId')) OR NOT EXISTS(SELECT 1 FROM records WHERE entity='groups' AND id=json_extract(NEW.value,'$.groupId'))) BEGIN SELECT RAISE(ABORT,'Matricula sin estudiante o grupo valido'); END;`);
+  db.exec(`CREATE TRIGGER IF NOT EXISTS guard_academic_v2_${action.toLowerCase()} BEFORE ${action} ON records WHEN NEW.entity IN ('grades','attendance') AND (NOT EXISTS(SELECT 1 FROM records WHERE entity='enrollments' AND id=json_extract(NEW.value,'$.enrollmentId') AND json_extract(value,'$.groupId')=json_extract(NEW.value,'$.groupId')) OR NOT EXISTS(SELECT 1 FROM records g WHERE g.entity='groups' AND g.id=json_extract(NEW.value,'$.groupId') AND (json_array_length(g.value,'$.units')=0 OR EXISTS(SELECT 1 FROM json_each(g.value,'$.units') WHERE value=json_extract(NEW.value,'$.unit'))))) BEGIN SELECT RAISE(ABORT,'Registro academico sin matricula, grupo o unidad valida'); END;`);
+  db.exec(`CREATE TRIGGER IF NOT EXISTS guard_score_v2_${action.toLowerCase()} BEFORE ${action} ON records WHEN NEW.entity IN ('grades','attendance') AND COALESCE((json_type(NEW.value,'$.value')='null' AND json_extract(NEW.value,'$.pending')=1 OR NEW.entity='grades' AND json_type(NEW.value,'$.value') IN ('integer','real') AND json_extract(NEW.value,'$.value') BETWEEN 0 AND 20 OR NEW.entity='attendance' AND json_extract(NEW.value,'$.value') IN ('P','F','J','T')),0)=0 BEGIN SELECT RAISE(ABORT,'Nota o asistencia invalida'); END;`);
+ }
+ db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_grade_identity_v2 ON records(json_extract(value,'$.enrollmentId'),json_extract(value,'$.unit'),json_extract(value,'$.indicator')) WHERE entity='grades'; CREATE UNIQUE INDEX IF NOT EXISTS idx_attendance_identity_v2 ON records(json_extract(value,'$.enrollmentId'),json_extract(value,'$.unit'),json_extract(value,'$.date'),json_extract(value,'$.session')) WHERE entity='attendance'; CREATE UNIQUE INDEX IF NOT EXISTS idx_active_enrollment_v2 ON records(json_extract(value,'$.studentId'),json_extract(value,'$.groupId')) WHERE entity='enrollments' AND json_extract(value,'$.active')=1 AND json_extract(value,'$.periodId') IS NOT NULL; CREATE INDEX IF NOT EXISTS idx_group_period_v2 ON records(json_extract(value,'$.programId'),json_extract(value,'$.moduleId'),json_extract(value,'$.periodId')) WHERE entity='groups';`);
+ db.exec(`PRAGMA user_version=${SCHEMA_VERSION}`);db.exec('RELEASE schema_v2');
+ }catch(e){db.exec('ROLLBACK TO schema_v2; RELEASE schema_v2');throw Error('No se pudo actualizar la estructura de la base. Se conservó la versión anterior: '+e.message);}
 }
 function inspectDatabase(core){
  const errors=[],warnings=[],add=(list,code,entity,id,message)=>list.push({code,entity,id,message});

@@ -29,7 +29,9 @@
     "test:account-context-ui": "node tests/account-context-ui.test.cjs",
     "test:system-core": "node tests/system-audit-core.cjs",
     "test:system-ui": "node tests/system-audit-ui.cjs",
-    "test:demo-safety": "node --test --test-isolation=none tests/demo-safety.test.cjs"
+    "test:demo-safety": "node --test --test-isolation=none tests/demo-safety.test.cjs",
+    "audit:production": "node scripts/production-readiness.cjs",
+    "test:production-package": "node tests/production-package.cjs"
   },
   "engines": {
     "node": ">=24"

@@ -85,10 +85,10 @@ class OfflineCore {
   audit(action, user, detail) { this.db.prepare('INSERT INTO audit VALUES (?,?)').run(id(), canonical({ action, userId: user?.id, at: now(), detail })); }
   users() { return this.db.prepare('SELECT value FROM users').all().map(r => JSON.parse(r.value)); }
   user(userId) { return this.users().find(u => u.id === userId); }
-  putUser(u) { this.db.prepare('INSERT OR REPLACE INTO users VALUES (?,?,?)').run(u.id, u.username, canonical(u)); }
+  putUser(u) { this.db.prepare('INSERT INTO users VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET username=excluded.username,value=excluded.value').run(u.id, u.username, canonical(u)); }
   records(entity) { return this.db.prepare('SELECT value FROM records WHERE entity=?').all(entity).map(r => JSON.parse(r.value)); }
   record(entity, recordId) { const row = this.db.prepare('SELECT value FROM records WHERE entity=? AND id=?').get(entity, recordId); return row ? JSON.parse(row.value) : null; }
-  putRecord(entity, value) { this.db.prepare('INSERT OR REPLACE INTO records VALUES (?,?,?)').run(entity, value.id, canonical(value)); }
+  putRecord(entity, value) { this.db.prepare('INSERT INTO records VALUES (?,?,?) ON CONFLICT(entity,id) DO UPDATE SET value=excluded.value').run(entity, value.id, canonical(value)); }
   operations() { return this.db.prepare('SELECT value FROM operations').all().map(r => JSON.parse(r.value)); }
   status() {
     const institution = this.setting('institution');
@@ -106,7 +106,7 @@ class OfflineCore {
     const group = this.record('groups', groupId);
     return (user.assignments || []).some(a => a.groupId === groupId && (!a.section||a.section===this.groupSection(group)) && (!a.periodId || a.periodId === group?.periodId) && (!unit || (a.units || []).includes(unit)));
   }
-  requireGroup(user, groupId, unit = null) { if (!this.record('groups', groupId) || !this.assignment(user, groupId, unit)) fail('No tiene acceso a este grupo o unidad.', 403); }
+  requireGroup(user, groupId, unit = null) { if (!this.record('groups', groupId) || this.record('groups',groupId).archived || !this.assignment(user, groupId, unit)) fail('No tiene acceso a este grupo o unidad.', 403); }
   certificate(user, device) {
     const body = { institutionId: this.setting('institution').id, deviceId: device.id, signingKey: device.signingKey || device.signing.public,
       encryptionKey: device.encryptionKey || device.encryption.public, user: publicUser(user), validUntil: new Date(Date.now() + 90 * 86400000).toISOString() };
@@ -215,7 +215,8 @@ class OfflineCore {
   dashboard(user) {
     const entities = ['students', 'enrollments', 'groups', 'programs', 'modules', 'grades', 'attendance'];
     const result = Object.fromEntries(entities.map(e => [e, this.scoped(user, e)]));
-    result.groups=result.groups.map(g=>({...g,rawName:g.name,section:this.groupSection(g),name:groupName(this,g)}));
+    result.students=result.students.filter(s=>!s.developmentData);
+    result.groups=result.groups.filter(g=>!g.archived).map(g=>({...g,rawName:g.name,section:this.groupSection(g),name:groupName(this,g)}));
     return { ...result, user: publicUser(user),policy:policyFor(user),accountRequests:this.scoped(user,'accountRequests').map(({encryptedCredential,...r})=>r),studentRequests:this.scoped(user,'studentRequests'), status: this.status(), templates: TEMPLATES[user.role], lastSync: this.setting('lastSync'),
       pending: this.pendingCount(user),
       conflicts: user.role === 'DIRECTOR' ? this.db.prepare('SELECT value FROM conflicts').all().map(r => JSON.parse(r.value)).filter(c => !c.resolved).map(c => ({ ...c, observedDuringImport: c.current, current: this.record(c.operation.body.entity, c.operation.body.recordId) })) : [],
@@ -530,7 +531,7 @@ class OfflineCore {
       const legacyCode=b.value.scope?.kind==='enrollment'&&Object.hasOwn(b.value.fields||{},'code')&&ADMIN.includes(actor.role);const config=legacyCode?{...b.value,fields:Object.fromEntries(Object.entries(b.value.fields).filter(([key])=>key!=='code'))}:b.value;if(hub){const validationCore=Object.create(this);validationCore.record=(entity,recordId)=>this.record(entity,recordId)||(entity==='enrollments'?incomingEnrollments.get(recordId):null);DocumentSettings.validateSettings(validationCore,actor,config,false);}
       else for(const key of Object.keys(config.fields||{}))if(!DocumentSettings.SETTINGS_FIELDS[b.value.scope?.kind]?.some(f=>f.key===key&&f.roles.includes(actor.role)))fail('Parámetro documental no autorizado.',403);
     }else if (['grades', 'attendance'].includes(b.entity)) {
-      const trustedMigration = b.migration === true && actor.role === 'DIRECTOR' && cert.body.deviceId === this.setting('institution').hub.id;
+      const trustedMigration = (b.migration === true || b.value.developmentCleanup?.sourceRevision || b.value.developmentCleanup?.kind==='DEMO_GROUP') && actor.role === 'DIRECTOR' && cert.body.deviceId === this.setting('institution').hub.id;
       if (actor.role !== 'DOCENTE' && !trustedMigration) fail('Solo el docente origina notas/asistencia.', 403);
       if (!trustedMigration && hub) this.requireGroup(actor, b.value.groupId, b.value.unit);
       else if (!trustedMigration && !(actor.assignments || []).some(a => a.groupId === b.value.groupId && a.units.includes(b.value.unit))) fail('Asignación del emisor inválida.', 403);
