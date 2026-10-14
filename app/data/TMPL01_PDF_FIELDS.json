@@ -190,9 +190,9 @@
     "paddingX": 0
   },
   "row01.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 244.49,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.92,
     "align": "center",
     "maxFontSize": 8,
@@ -200,9 +200,9 @@
     "paddingX": 0
   },
   "row01.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 244.49,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.92,
     "align": "center",
     "maxFontSize": 8,
@@ -260,9 +260,9 @@
     "paddingX": 0
   },
   "row02.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 259.41,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -270,9 +270,9 @@
     "paddingX": 0
   },
   "row02.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 259.41,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -330,9 +330,9 @@
     "paddingX": 0
   },
   "row03.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 274.36,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -340,9 +340,9 @@
     "paddingX": 0
   },
   "row03.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 274.36,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -400,9 +400,9 @@
     "paddingX": 0
   },
   "row04.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 289.3,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -410,9 +410,9 @@
     "paddingX": 0
   },
   "row04.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 289.3,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -470,9 +470,9 @@
     "paddingX": 0
   },
   "row05.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 304.24,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.93,
     "align": "center",
     "maxFontSize": 8,
@@ -480,9 +480,9 @@
     "paddingX": 0
   },
   "row05.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 304.24,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.93,
     "align": "center",
     "maxFontSize": 8,
@@ -540,9 +540,9 @@
     "paddingX": 0
   },
   "row06.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 319.18,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -550,9 +550,9 @@
     "paddingX": 0
   },
   "row06.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 319.18,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -610,9 +610,9 @@
     "paddingX": 0
   },
   "row07.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 334.12,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -620,9 +620,9 @@
     "paddingX": 0
   },
   "row07.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 334.12,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -680,9 +680,9 @@
     "paddingX": 0
   },
   "row08.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 349.07,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -690,9 +690,9 @@
     "paddingX": 0
   },
   "row08.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 349.07,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -750,9 +750,9 @@
     "paddingX": 0
   },
   "row09.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 364.01,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.93,
     "align": "center",
     "maxFontSize": 8,
@@ -760,9 +760,9 @@
     "paddingX": 0
   },
   "row09.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 364.01,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.93,
     "align": "center",
     "maxFontSize": 8,
@@ -820,9 +820,9 @@
     "paddingX": 0
   },
   "row10.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 378.94,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -830,9 +830,9 @@
     "paddingX": 0
   },
   "row10.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 378.94,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -890,9 +890,9 @@
     "paddingX": 0
   },
   "row11.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 393.89,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -900,9 +900,9 @@
     "paddingX": 0
   },
   "row11.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 393.89,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -960,9 +960,9 @@
     "paddingX": 0
   },
   "row12.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 408.83,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -970,9 +970,9 @@
     "paddingX": 0
   },
   "row12.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 408.83,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -1030,9 +1030,9 @@
     "paddingX": 0
   },
   "row13.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 423.78,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.92,
     "align": "center",
     "maxFontSize": 8,
@@ -1040,9 +1040,9 @@
     "paddingX": 0
   },
   "row13.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 423.78,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.92,
     "align": "center",
     "maxFontSize": 8,
@@ -1100,9 +1100,9 @@
     "paddingX": 0
   },
   "row14.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 438.7,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -1110,9 +1110,9 @@
     "paddingX": 0
   },
   "row14.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 438.7,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -1170,9 +1170,9 @@
     "paddingX": 0
   },
   "row15.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 453.65,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1180,9 +1180,9 @@
     "paddingX": 0
   },
   "row15.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 453.65,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1240,9 +1240,9 @@
     "paddingX": 0
   },
   "row16.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 468.6,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1250,9 +1250,9 @@
     "paddingX": 0
   },
   "row16.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 468.6,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1310,9 +1310,9 @@
     "paddingX": 0
   },
   "row17.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 483.54,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.93,
     "align": "center",
     "maxFontSize": 8,
@@ -1320,9 +1320,9 @@
     "paddingX": 0
   },
   "row17.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 483.54,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.93,
     "align": "center",
     "maxFontSize": 8,
@@ -1380,9 +1380,9 @@
     "paddingX": 0
   },
   "row18.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 498.47,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1390,9 +1390,9 @@
     "paddingX": 0
   },
   "row18.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 498.47,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1450,9 +1450,9 @@
     "paddingX": 0
   },
   "row19.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 513.41,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -1460,9 +1460,9 @@
     "paddingX": 0
   },
   "row19.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 513.41,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -1520,9 +1520,9 @@
     "paddingX": 0
   },
   "row20.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 528.36,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1530,9 +1530,9 @@
     "paddingX": 0
   },
   "row20.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 528.36,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1590,9 +1590,9 @@
     "paddingX": 0
   },
   "row21.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 543.31,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.93,
     "align": "center",
     "maxFontSize": 8,
@@ -1600,9 +1600,9 @@
     "paddingX": 0
   },
   "row21.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 543.31,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.93,
     "align": "center",
     "maxFontSize": 8,
@@ -1660,9 +1660,9 @@
     "paddingX": 0
   },
   "row22.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 558.24,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1670,9 +1670,9 @@
     "paddingX": 0
   },
   "row22.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 558.24,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1730,9 +1730,9 @@
     "paddingX": 0
   },
   "row23.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 573.18,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1740,9 +1740,9 @@
     "paddingX": 0
   },
   "row23.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 573.18,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -1800,9 +1800,9 @@
     "paddingX": 0
   },
   "row24.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 588.12,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -1810,9 +1810,9 @@
     "paddingX": 0
   },
   "row24.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 588.12,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -1870,9 +1870,9 @@
     "paddingX": 0
   },
   "row25.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 603.07,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.92,
     "align": "center",
     "maxFontSize": 8,
@@ -1880,9 +1880,9 @@
     "paddingX": 0
   },
   "row25.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 603.07,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.92,
     "align": "center",
     "maxFontSize": 8,
@@ -1940,9 +1940,9 @@
     "paddingX": 0
   },
   "row26.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 617.99,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -1950,9 +1950,9 @@
     "paddingX": 0
   },
   "row26.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 617.99,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.95,
     "align": "center",
     "maxFontSize": 8,
@@ -2010,9 +2010,9 @@
     "paddingX": 0
   },
   "row27.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 632.95,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -2020,9 +2020,9 @@
     "paddingX": 0
   },
   "row27.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 632.95,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -2080,9 +2080,9 @@
     "paddingX": 0
   },
   "row28.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 647.89,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -2090,9 +2090,9 @@
     "paddingX": 0
   },
   "row28.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 647.89,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -2150,9 +2150,9 @@
     "paddingX": 0
   },
   "row29.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 662.83,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.93,
     "align": "center",
     "maxFontSize": 8,
@@ -2160,9 +2160,9 @@
     "paddingX": 0
   },
   "row29.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 662.83,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.93,
     "align": "center",
     "maxFontSize": 8,
@@ -2220,9 +2220,9 @@
     "paddingX": 0
   },
   "row30.condicion": {
-    "x": 443.62,
+    "x": 386.82,
     "y": 677.76,
-    "w": 26.08,
+    "w": 56.79,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,
@@ -2230,9 +2230,9 @@
     "paddingX": 0
   },
   "row30.numeroUnidades": {
-    "x": 469.7,
+    "x": 443.61,
     "y": 677.76,
-    "w": 40.92,
+    "w": 67.01,
     "h": 14.94,
     "align": "center",
     "maxFontSize": 8,

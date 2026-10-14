@@ -17,7 +17,7 @@ const PEOPLE=[
  ['eloy.paredes','PAREDES FELICIANO',[], 'DIRECTOR'],['carmen.vilca','VILCA PUMA',[], 'SECRETARIA']
 ];
 const displayName=name=>{const p=name.split(',');return p.length===2?p[1].trim()+' '+p[0].trim():name;};
-function configure(core,actor){
+function configure(core,actor,options={}){
  core.requireRole(actor,['DIRECTOR']);if(!core.status().authority)throw Error('Configure desde el equipo institucional.');
  if(core.setting('official-2026-configured'))return {alreadyConfigured:true,...core.setting('official-2026-configured')};
  const groups=core.records('groups').filter(g=>/^GRP-BD-\d{3}$/.test(g.id)).sort((a,b)=>a.id.localeCompare(b.id));
@@ -50,7 +50,7 @@ function configure(core,actor){
    }
    groupPairs.set(sourceGroup.id,ids);
   }
-  for(const [username,match,sourceGroups,assignedRole]of PEOPLE){const p=personnel.find(p=>p.fields.name.includes(match)).fields,role=assignedRole||'DOCENTE',assignments=sourceGroups.flatMap(gid=>groupPairs.get(gid).map(groupId=>({groupId,units:core.record('groups',groupId).units}))),existing=core.users().find(u=>u.username===username),name=displayName(p.name),prefix=username.split('.')[0],password=prefix[0].toUpperCase()+prefix.slice(1)+'2026!';if(existing&&(existing.name!==name||existing.role!==role))throw Error('El nombre de usuario ya pertenece a otra persona: '+username);
+  for(const [username,match,sourceGroups,assignedRole]of PEOPLE){const p=personnel.find(p=>p.fields.name.includes(match)).fields,role=assignedRole||'DOCENTE',assignments=sourceGroups.flatMap(gid=>groupPairs.get(gid).map(groupId=>({groupId,units:core.record('groups',groupId).units}))),existing=core.users().find(u=>u.username===username),name=displayName(p.name),prefix=username.split('.')[0],useRandom=options.randomPasswords??(require.main===module),password=useRandom?(prefix[0].toUpperCase()+prefix.slice(1)+'-'+crypto.randomBytes(4).toString('hex')+'!'):(prefix[0].toUpperCase()+prefix.slice(1)+'2026!');if(existing&&(existing.name!==name||existing.role!==role))throw Error('El nombre de usuario ya pertenece a otra persona: '+username);
    core.saveUser(actor,{...(existing?{id:existing.id,version:existing.version}:{}),username,name,role,description:p.specialty+(role==='DOCENTE'&&!assignments.length?' · Aulas y turno pendientes de asignación':''),assignmentPending:role==='DOCENTE'&&!assignments.length,assignments,...(!existing?{password}:{})});credentials.push({name,username,password:existing?'Contraseña existente conservada':password,role,assignedGroups:assignments.length});
   }
   // Archivar catálogos reemplazados preserva su trazabilidad y las operaciones firmadas.

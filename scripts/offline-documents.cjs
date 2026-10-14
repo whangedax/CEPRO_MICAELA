@@ -51,10 +51,16 @@ function validateSettings(core,actor,input,checkExisting=true){
 }
 function saveSettings(core,actor,input){const value=validateSettings(core,actor,input);return core.transaction(()=>{const saved=core.write(actor,'documentSettings',value,input.rev);require('./academic-config.cjs').synchronize(core,actor,saved);if(input.scope.kind==='institution'&&present(value.fields.nombre))core.setting('institution',{...core.setting('institution'),name:value.fields.nombre});return saved;});}
 function settings(core,scope){return core.record('documentSettings',idFor(scope))?.fields||{};}
+function splitNameParts(rawName){
+ const raw=String(rawName||'').trim();if(!raw)return {lastName1:'',lastName2:'',firstNames:''};
+ if(raw.includes(',')){const [ap,nom]=raw.split(','),t=ap.trim().split(/\s+/).filter(Boolean);return {lastName1:t[0]||'',lastName2:t.slice(1).join(' ')||'',firstNames:(nom||'').trim()};}
+ const t=raw.split(/\s+/).filter(Boolean);if(t.length>=3)return {lastName1:t[0],lastName2:t[1],firstNames:t.slice(2).join(' ')};if(t.length===2)return {lastName1:t[0],lastName2:'',firstNames:t[1]};return {lastName1:t[0]||'',lastName2:'',firstNames:''};
+}
 function configuration(core,actor){
  const legacy=core.db.prepare("SELECT value FROM settings WHERE key LIKE 'legacy-%'").all().map(r=>JSON.parse(r.value)).flatMap(s=>s.stores.institucion||[])[0]||{};
- const defaults={'institution:institution':{...legacy,nombre:core.setting('institution').name,resolucionAutorizacion:legacy.resolucionAutorizacion||legacy.resolucionAutorizacion1||'',resolucionConversion:legacy.resolucionConversion||legacy.resolucionAutorizacion2||'',directorNombre:legacy.director||''}};
- for(const g of core.scoped(actor,'groups'))defaults['group:'+g.id]={turno:g.turno||'',modalidad:g.modalidad||'',seccion:core.groupSection(g),ciclo:g.ciclo||''};
+ const yearRec=core.records('documentSettings').find(r=>r.scope?.kind==='academicYear'&&!r.archived);const yearInst=yearRec?.fields?.institutionJson?JSON.parse(yearRec.fields.institutionJson):{};
+ const defaults={'institution:institution':{...legacy,...yearInst,nombre:core.setting('institution').name,resolucionAutorizacion:yearInst.resolucionAutorizacion||legacy.resolucionAutorizacion||legacy.resolucionAutorizacion1||'',resolucionConversion:yearInst.resolucionConversion||legacy.resolucionConversion||legacy.resolucionAutorizacion2||'',directorNombre:yearInst.directorNombre||legacy.director||''}};
+ for(const g of core.scoped(actor,'groups')){const plan=curriculumFor(core,g),period=settings(core,{kind:'academicPeriod',target:g.periodId||plan.periodId}),efsrt=(plan.unitsJson?JSON.parse(plan.unitsJson):[]).find(u=>u.code==='EFSRT')||{};defaults['group:'+g.id]={turno:g.turno||plan.turno||'',modalidad:g.modalidad||'',seccion:core.groupSection(g),ciclo:g.ciclo||plan.nivelFormativo||'',fechaInicio:period.fechaInicio||g.fechaInicio||'',fechaFin:period.fechaFin||g.fechaFin||'',periodClase:g.periodId||'',efsrtInicio:efsrt.fechaInicio||'',efsrtFin:efsrt.fechaFin||''};if(g.programId&&!defaults['program:'+g.programId])defaults['program:'+g.programId]={nivelFormativo:plan.nivelFormativo||'',tipoPlan:'Modular'};}
  for(const g of core.scoped(actor,'groups')){const ref=require('./reference-defaults.cjs').get(core,g.moduleId),plan=curriculumFor(core,g);defaults['module:'+g.moduleId]={...ref.module,...Object.fromEntries(Object.entries(plan).filter(([k])=>SETTINGS_FIELDS.module.some(f=>f.key===k)))};for(const code of g.units||[]){const u=require('./reference-defaults.cjs').merge(ref.units.find(u=>u.code===code),plan.unitsJson?JSON.parse(plan.unitsJson).find(u=>u.code===code):{});defaults['unit:'+g.id+':'+code]=Object.fromEntries(Object.entries(u).filter(([k])=>SETTINGS_FIELDS.unit.some(f=>f.key===k)));defaults['unitCurriculum:'+g.id+':'+code]=Object.fromEntries(Object.entries(u).filter(([k])=>SETTINGS_FIELDS.unitCurriculum.some(f=>f.key===k)));}}
  for(const fields of Object.values(defaults))for(const key of Object.keys(fields))if(fields[key]==='PENDIENTE'||fields[key]==='[PENDIENTE]'||fields[key]==='NO_CONFIRMADO')fields[key]='';
  const templates=core.dashboard(actor).templates,allowed=policyFor(actor).settings;
@@ -63,36 +69,36 @@ function configuration(core,actor){
  return {schema,defaults:filteredDefaults,settings:core.records('documentSettings').filter(r=>allowed.includes(r.scope.kind)&&visible(core,actor,r)),catalog:catalog(path.join(__dirname,'..')).filter(t=>templates.includes(t.id))};
 }
 const DEMO_STUDENT_NAMES = [
- { name: 'ALVAREZ QUISPE, Carmen Rosa', doc: '45812903', sex: 'F', birth: '2004-03-12' },
- { name: 'APAZA MAMANI, Edwin Rolando', doc: '46923415', sex: 'M', birth: '2003-07-25' },
- { name: 'CALISAYA CONDORI, Javier Luis', doc: '47182934', sex: 'M', birth: '2004-11-03' },
- { name: 'CANAHUA HUANCA, Diana Maritza', doc: '48293012', sex: 'F', birth: '2005-01-18' },
- { name: 'CANSAYA HUAMANI, Gladys Pilar', doc: '49384721', sex: 'F', birth: '2004-09-09' },
- { name: 'CHAMBI TICONCA, Ricardo Miguel', doc: '44592019', sex: 'M', birth: '2002-12-04' },
- { name: 'COAQUIRA MAMANI, Miriam Yanet', doc: '43829104', sex: 'F', birth: '2001-08-14' },
- { name: 'CONDORI COILA, Rubén Darío', doc: '47201928', sex: 'M', birth: '2003-05-20' },
- { name: 'FLORES CALLATA, Beatriz Elena', doc: '46382910', sex: 'F', birth: '2004-02-28' },
- { name: 'GUTIERREZ VELASQUEZ, Jorge Luis', doc: '45910283', sex: 'M', birth: '2003-10-15' },
- { name: 'HUALLPA CHOQUE, Patricia Roxana', doc: '48920184', sex: 'F', birth: '2005-04-07' },
- { name: 'HUANCA QUISPE, Julio César', doc: '44829102', sex: 'M', birth: '2002-06-30' },
- { name: 'LEQQUE SUCASACA, Ana María', doc: '47291038', sex: 'F', birth: '2003-08-22' },
- { name: 'LOPEZ MAMANI, Verónica Soledad', doc: '48192039', sex: 'F', birth: '2004-12-11' },
- { name: 'MAMANI CALISAYA, Hernán Alberto', doc: '46192830', sex: 'M', birth: '2003-04-01' },
- { name: 'MAMANI CONDORI, Maritza Del Carmen', doc: '45382910', sex: 'F', birth: '2002-09-17' },
- { name: 'MEDINA CCAMA, Walter Marco', doc: '47281920', sex: 'M', birth: '2004-06-05' },
- { name: 'MENDOZA QUISPE, Silvia Karina', doc: '48392019', sex: 'F', birth: '2005-02-14' },
- { name: 'PARICAHUA TICONCA, César Augusto', doc: '44910283', sex: 'M', birth: '2002-11-23' },
- { name: 'QUISPE CONDORI, Bertha Elena', doc: '46291049', sex: 'F', birth: '2003-03-31' },
- { name: 'QUISPE MAMANI, Fredy Orlando', doc: '47102938', sex: 'M', birth: '2004-07-19' },
- { name: 'RAMOS CHURA, Liliana Maribel', doc: '48201948', sex: 'F', birth: '2005-05-02' },
- { name: 'RODRIGUEZ PAREDES, Marco Antonio', doc: '45291048', sex: 'M', birth: '2002-10-10' },
- { name: 'ROQUE MAMANI, Judith Vanessa', doc: '46820194', sex: 'F', birth: '2003-12-29' },
- { name: 'SUCASACA APAZA, David Alejandro', doc: '47392018', sex: 'M', birth: '2004-08-08' },
- { name: 'TICONCA HUALLPA, Norma Ruth', doc: '48492019', sex: 'F', birth: '2005-03-24' },
- { name: 'TURPO QUISPE, Carlos Daniel', doc: '45920184', sex: 'M', birth: '2003-01-16' },
- { name: 'VALENCIA CUEVA, Mónica Lucía', doc: '46392018', sex: 'F', birth: '2004-10-27' },
- { name: 'VILCA MAMANI, Oscar Efraín', doc: '47820193', sex: 'M', birth: '2004-04-13' },
- { name: 'ZEA CONDORI, Yessica Paola', doc: '48192047', sex: 'F', birth: '2005-06-08' }
+ { name: 'ALVAREZ QUISPE, Carmen Rosa', doc: '45812903', sex: 'M', birth: '2004-03-12' },
+ { name: 'APAZA MAMANI, Edwin Rolando', doc: '46923415', sex: 'H', birth: '2003-07-25' },
+ { name: 'CALISAYA CONDORI, Javier Luis', doc: '47182934', sex: 'H', birth: '2004-11-03' },
+ { name: 'CANAHUA HUANCA, Diana Maritza', doc: '48293012', sex: 'M', birth: '2005-01-18' },
+ { name: 'CANSAYA HUAMANI, Gladys Pilar', doc: '49384721', sex: 'M', birth: '2004-09-09' },
+ { name: 'CHAMBI TICONCA, Ricardo Miguel', doc: '44592019', sex: 'H', birth: '2002-12-04' },
+ { name: 'COAQUIRA MAMANI, Miriam Yanet', doc: '43829104', sex: 'M', birth: '2001-08-14' },
+ { name: 'CONDORI COILA, Rubén Darío', doc: '47201928', sex: 'H', birth: '2003-05-20' },
+ { name: 'FLORES CALLATA, Beatriz Elena', doc: '46382910', sex: 'M', birth: '2004-02-28' },
+ { name: 'GUTIERREZ VELASQUEZ, Jorge Luis', doc: '45910283', sex: 'H', birth: '2003-10-15' },
+ { name: 'HUALLPA CHOQUE, Patricia Roxana', doc: '48920184', sex: 'M', birth: '2005-04-07' },
+ { name: 'HUANCA QUISPE, Julio César', doc: '44829102', sex: 'H', birth: '2002-06-30' },
+ { name: 'LEQQUE SUCASACA, Ana María', doc: '47291038', sex: 'M', birth: '2003-08-22' },
+ { name: 'LOPEZ MAMANI, Verónica Soledad', doc: '48192039', sex: 'M', birth: '2004-12-11' },
+ { name: 'MAMANI CALISAYA, Hernán Alberto', doc: '46192830', sex: 'H', birth: '2003-04-01' },
+ { name: 'MAMANI CONDORI, Maritza Del Carmen', doc: '45382910', sex: 'M', birth: '2002-09-17' },
+ { name: 'MEDINA CCAMA, Walter Marco', doc: '47281920', sex: 'H', birth: '2004-06-05' },
+ { name: 'MENDOZA QUISPE, Silvia Karina', doc: '48392019', sex: 'M', birth: '2005-02-14' },
+ { name: 'PARICAHUA TICONCA, César Augusto', doc: '44910283', sex: 'H', birth: '2002-11-23' },
+ { name: 'QUISPE CONDORI, Bertha Elena', doc: '46291049', sex: 'M', birth: '2003-03-31' },
+ { name: 'QUISPE MAMANI, Fredy Orlando', doc: '47102938', sex: 'H', birth: '2004-07-19' },
+ { name: 'RAMOS CHURA, Liliana Maribel', doc: '48201948', sex: 'M', birth: '2005-05-02' },
+ { name: 'RODRIGUEZ PAREDES, Marco Antonio', doc: '45291048', sex: 'H', birth: '2002-10-10' },
+ { name: 'ROQUE MAMANI, Judith Vanessa', doc: '46820194', sex: 'M', birth: '2003-12-29' },
+ { name: 'SUCASACA APAZA, David Alejandro', doc: '47392018', sex: 'H', birth: '2004-08-08' },
+ { name: 'TICONCA HUALLPA, Norma Ruth', doc: '48492019', sex: 'M', birth: '2005-03-24' },
+ { name: 'TURPO QUISPE, Carlos Daniel', doc: '45920184', sex: 'H', birth: '2003-01-16' },
+ { name: 'VALENCIA CUEVA, Mónica Lucía', doc: '46392018', sex: 'M', birth: '2004-10-27' },
+ { name: 'VILCA MAMANI, Oscar Efraín', doc: '47820193', sex: 'H', birth: '2004-04-13' },
+ { name: 'ZEA CONDORI, Yessica Paola', doc: '48192047', sex: 'M', birth: '2005-06-08' }
 ];
 
 const DEMO_REFERENCE_UNITS = {
@@ -160,15 +166,21 @@ function enrich(core,actor,base){
  const units=g.units.map((code,index)=>({code,order:index+1})).filter(u=>u.code!=='EFSRT'&&(actor.role!=='DOCENTE'||core.assignment(actor,g.id,u.code))).map(({code,order})=>({code,order,...plan.find(u=>u.code===code),...settings(core,{kind:'unit',target:g.id,unit:code}),...settings(core,{kind:'unitCurriculum',target:g.id,unit:code})}));const selected=units.find(u=>u.code===base.unit)||null;
  const teachers=core.users().filter(u=>u.active&&u.role==='DOCENTE'&&u.assignments.some(a=>a.groupId===g.id&&(!base.unit||a.units.includes(base.unit))));
  const teacher=isDemo?(actor.role==='DOCENTE'?actor.name:(group.teacherName||(teachers[0]?.name||'Gonsalo Guzmán Jordán'))):(actor.role==='DOCENTE'?actor.name:group.teacherName||(teachers.length===1?teachers[0].name:''));
- let students=base.students.slice().sort((a,b)=>(a.student?.name||'').localeCompare(b.student?.name||'','es')).map(row=>({...row,parameters:{...settings(core,{kind:'enrollment',target:row.enrollment.id}),...settings(core,{kind:'registry',target:row.enrollment.id}),...settings(core,{kind:'practice',target:row.enrollment.id}),...settings(core,{kind:'closure',target:row.enrollment.id}),code:row.enrollment.code||enrollmentCode(core,row.enrollment.studentId,row.enrollment.id)}}));
+ let students=base.students.slice().sort((a,b)=>(a.student?.name||'').localeCompare(b.student?.name||'','es')).map(row=>{
+  const s=row.student||{},parsed=splitNameParts(s.name),docStr=String(s.document||'').trim();
+  const enrichedStudent={...s,lastName1:s.lastName1??s.legacy?.apellidoPaterno??parsed.lastName1,lastName2:s.lastName2??s.legacy?.apellidoMaterno??parsed.lastName2,firstNames:s.firstNames??s.legacy?.nombres??parsed.firstNames,documentType:s.documentType??s.legacy?.tipoDocumento??(/^\d{8}$/.test(docStr)?'DNI':'')};
+  return {...row,student:enrichedStudent,parameters:{...settings(core,{kind:'enrollment',target:row.enrollment.id}),...settings(core,{kind:'registry',target:row.enrollment.id}),...settings(core,{kind:'practice',target:row.enrollment.id}),...settings(core,{kind:'closure',target:row.enrollment.id}),code:row.enrollment.code||enrollmentCode(core,row.enrollment.studentId,row.enrollment.id)}};
+ });
  if(isDemo){
+  const demoUnitCount=(units.length||6),demoEndDate=period.fechaFin||'2026-07-31';
   students=DEMO_STUDENT_NAMES.map((item,idx)=>{
    const parts=item.name.split(', '),lastParts=(parts[0]||'').split(' '),lastName1=lastParts[0]||'',lastName2=lastParts.slice(1).join(' ')||'',firstNames=parts[1]||'';
    const sId=`demo-std-${idx+1}`,eId=`demo-enr-${idx+1}`,code=`MAT-2026-${String(idx+1).padStart(3,'0')}`;
+   const condition=idx%10===9?'B':idx%5===4?'P':'G';
    return {
     enrollment:{id:eId,studentId:sId,groupId:g.id,periodId:g.periodId||'2026-II',moduleId:g.moduleId,startDate:null,active:true,code},
     student:{id:sId,name:item.name,document:item.doc,documentType:'DNI',sex:item.sex,birthDate:item.birth,lastName1,lastName2,firstNames,active:true,archived:false},
-    parameters:{code,condition:'REGULAR',approvalMinimum:13,efsrtFinalGrade:16,modularGrade:16,approvedUnitsCount:2,failedUnitsCount:0,companyName:'MUNICIPALIDAD DE SAN ROMÁN',companyAddress:'JR. JAUREGUI 123, JULIACA'}
+    parameters:{code,condition,approvalMinimum:13,criterion1:3,criterion2:2,criterion3:2,criterion4:2,criterion5:3,criterion6:2,criterion7:1,criterion8:2,criterion9:1,efsrtFinalGrade:18,modularGrade:14+((idx*2)%6),approvedUnitsCount:demoUnitCount,failedUnitsCount:0,observations:'Aprobado satisfactoriamente',companyName:'MUNICIPALIDAD PROVINCIAL DE SAN ROMÁN',companyAddress:'JR. JÁUREGUI N° 123, JULIACA',emissionDate:demoEndDate,registerCode:`REG-2026-${String(idx+1).padStart(3,'0')}`,registryBook:'LIBRO 01',registryFolio:String(idx+1).padStart(3,'0'),registryNumber:String(idx+1).padStart(4,'0'),registryDate:demoEndDate,registryAsiento:`ASIENTO N° ${String(idx+1).padStart(3,'0')} - FOLIO ${String(idx+1).padStart(3,'0')}`}
    };
   });
  }
@@ -178,6 +190,7 @@ function enrich(core,actor,base){
   if(!institution.name)institution.name=institution.nombre;
   if(!institution.dre)institution.dre='DRE PUNO';
   if(!institution.ugel)institution.ugel='UGEL SAN ROMÁN';
+  if(!institution.region)institution.region='PUNO';
   if(!institution.codigoModular)institution.codigoModular='0734567';
   if(!institution.tipoGestion)institution.tipoGestion='PÚBLICA';
   if(!institution.direccion)institution.direccion='JR. TACNA N° 245';
@@ -185,10 +198,12 @@ function enrich(core,actor,base){
   if(!institution.provincia)institution.provincia='SAN ROMÁN';
   if(!institution.departamento)institution.departamento='PUNO';
   if(!institution.lugar)institution.lugar='JULIACA';
+  if(!institution.telefono)institution.telefono='051-321456';
   if(!institution.resolucionAutorizacion)institution.resolucionAutorizacion='RD N° 0125-1988-ED';
   if(!institution.resolucionConversion)institution.resolucionConversion='RD N° 0450-2022-DREP';
-  if(!institution.directorNombre)institution.directorNombre='MG. EDGAR CALLATA CONDORI';
-  if(!institution.secretariaNombre)institution.secretariaNombre='MARÍA LÓPEZ TORRES';
+  if(!institution.directorNombre)institution.directorNombre='MG. ELOY PAREDES FELICIANO';
+  if(!institution.secretariaNombre)institution.secretariaNombre='CARMEN VILCA PUMA';
+  if(!institution.coordinadorNombre)institution.coordinadorNombre='LIC. CARLOS MAMANI QUISPE';
  }
  institution.resolucion=[institution.resolucionAutorizacion||institution.resolucionAutorizacion1||'',institution.resolucionConversion||institution.resolucionAutorizacion2||''].filter(Boolean).join(' / ');if(!present(institution.nombre))institution.nombre=base.institution.name;
  const efsrt=plan.find(u=>u.code==='EFSRT')||{};
@@ -262,20 +277,25 @@ function enrich(core,actor,base){
   }
  }
  let grades=base.grades;
- if(isDemo&&(docNum>=11&&docNum<=19)){
+ if(isDemo&&(docNum>=11&&docNum<=20)){
   grades=[];
   for(let sIdx=0;sIdx<students.length;sIdx++){
    const row=students[sIdx];
    const unitList=units.length?units:[{code:base.unit||'UD1'}];
    for(const u of unitList){
     for(let i=1;i<=5;i++){
-     grades.push({id:digest(`grade:${row.enrollment.id}:${u.code}:IL${i}`),enrollmentId:row.enrollment.id,groupId:g.id,unit:u.code,indicator:`IL${i}`,value:13+((sIdx*3+i*5)%7)});
+     const baseScore=13+((sIdx*3+i*5)%7);
+     for(const [cIdx,comp] of ['IA1','IA2','IA3'].entries()){
+      const cScore=Math.min(20,Math.max(13,baseScore+(cIdx-1)));
+      grades.push({id:digest(`grade:${row.enrollment.id}:${u.code}:IL${i}.${comp}`),enrollmentId:row.enrollment.id,groupId:g.id,unit:u.code,indicator:`IL${i}.${comp}`,value:cScore});
+     }
+     grades.push({id:digest(`grade:${row.enrollment.id}:${u.code}:IL${i}`),enrollmentId:row.enrollment.id,groupId:g.id,unit:u.code,indicator:`IL${i}`,value:baseScore});
     }
     grades.push({id:digest(`grade:${row.enrollment.id}:${u.code}:RESULTADO_UD`),enrollmentId:row.enrollment.id,groupId:g.id,unit:u.code,indicator:'RESULTADO_UD',value:14+((sIdx*2)%6)});
    }
   }
  }
- const modObj={...base.module,...Reference.merge(reference.module,curriculum),...mod,...(isDemo?{presenceStates:mod.presenceStates||'P,T',absenceStates:mod.absenceStates||'F,J',absenceDenominator:mod.absenceDenominator||'REGISTRADAS',approvalMinimum:mod.approvalMinimum||13,hours:mod.hours||528,credits:mod.credits||22}:{})};
+ const modObj={...base.module,...Reference.merge(reference.module,curriculum),...mod,...(isDemo?{presenceStates:mod.presenceStates||'P,T',absenceStates:mod.absenceStates||'F,J',absenceDenominator:mod.absenceDenominator||'REGISTRADAS',approvalMinimum:mod.approvalMinimum||13,hours:mod.hours||528,credits:mod.credits||22,efsrtHours:mod.efsrtHours||192,resolucionAutorizacion:mod.resolucionAutorizacion||institution.resolucionConversion||'RD N° 0450-2022-DREP',competence:mod.competence||'Realiza procesos operativos y técnicos de la especialidad aplicando normas de seguridad, higiene y control de calidad.'}:{})};
   let demoUnitName = selected?.name || '';
   if (!demoUnitName || /pendiente de confirmar/i.test(demoUnitName)) {
    demoUnitName = getDemoUnitName(g.programId, g.moduleId, base.unit || 'UD1', selected?.name);
@@ -285,6 +305,8 @@ function enrich(core,actor,base){
   const unitInd1 = selected?.indicator1 || (isDemo ? `Organiza materiales, equipos y procedimientos técnicos para ${cleanDemoUnitName.toLowerCase()}.` : '');
   const unitInd2 = selected?.indicator2 || (isDemo ? `Ejecuta procesos operativos y destrezas técnicas en ${cleanDemoUnitName.toLowerCase()} con precisión.` : '');
   const unitInd3 = selected?.indicator3 || (isDemo ? `Verifica el control de calidad, acabado final y buenas prácticas ambientales en el taller.` : '');
+  const unitInd4 = selected?.indicator4 || (isDemo ? `Resuelve situaciones operativas y aplica criterios técnicos de mantenimiento en ${cleanDemoUnitName.toLowerCase()}.` : '');
+  const unitInd5 = selected?.indicator5 || (isDemo ? `Presenta el producto o servicio terminado cumpliendo estándares técnicos y tiempos establecidos.` : '');
   const unitData = isDemo ? {
    ...selected,
    code: base.unit || selected?.code || 'UD1',
@@ -294,7 +316,9 @@ function enrich(core,actor,base){
    capacity: unitCapacity,
    indicator1: unitInd1,
    indicator2: unitInd2,
-   indicator3: unitInd3
+   indicator3: unitInd3,
+   indicator4: unitInd4,
+   indicator5: unitInd5
   } : selected;
   const enrichedUnits = units.map(u => {
    if (!isDemo) return u;
@@ -308,7 +332,11 @@ function enrich(core,actor,base){
     capacity: u.capacity || `Desarrolla competencias operativas y destrezas técnicas en ${cleanUName.toLowerCase()}.`
    };
   });
-  const doc={...base,attendance,grades,demoFill:isDemo,demoMode:isDemo,institution:{...institution,name:institution.nombre},program:{...base.program,...prog,...(curriculum.programName?{nombre:curriculum.programName}:{}),...(curriculum.nivelFormativo?{nivelFormativo:curriculum.nivelFormativo}:{})},module:modObj,group:{...g,fechaInicio:period.fechaInicio||'',fechaFin:period.fechaFin||'',ciclo:curriculum.nivelFormativo||'',turno:curriculum.turno||'',periodClase:g.periodId,efsrtInicio:efsrt.fechaInicio||'',efsrtFin:efsrt.fechaFin||'',...group,seccion:core.groupSection(g)},units:enrichedUnits,unitCode:base.unit,unitData,teacher,students,academicDates,academicMonthSpans,parameters:students.length===1?students[0].parameters:{}};
+  const efsrtUnit = { ...efsrt, ...settings(core,{kind:'unit',target:g.id,unit:'EFSRT'}), ...settings(core,{kind:'unitCurriculum',target:g.id,unit:'EFSRT'}), ...(isDemo?{hours:modObj.efsrtHours||192,credits:efsrt.credits||6,capacity:efsrt.capacity||'Consolida desempeños técnicos en situaciones reales de trabajo cumpliendo estándares de calidad y seguridad.'}:{}) };
+  const progName = curriculum.programName || base.program?.nombre || '';
+  const programObj = {...base.program,...(curriculum.programName?{nombre:curriculum.programName}:{}),...(curriculum.nivelFormativo?{nivelFormativo:curriculum.nivelFormativo}:{}),...prog,...(isDemo?{nivelFormativo:prog.nivelFormativo||curriculum.nivelFormativo||'Auxiliar Técnico',tipoPlan:prog.tipoPlan||'Modular',resolucionPrograma:prog.resolucionPrograma||institution.resolucionAutorizacion||'RD N° 0125-1988-ED',officialTitleText:prog.officialTitleText||`AUXILIAR TÉCNICO EN ${(progName||'COMPUTACIÓN E INFORMÁTICA').toUpperCase()}`}:{})};
+  const groupObj = {...g,fechaInicio:period.fechaInicio||'',fechaFin:period.fechaFin||'',ciclo:curriculum.nivelFormativo||'',turno:curriculum.turno||g.turno||'',periodClase:g.periodId,efsrtInicio:efsrt.fechaInicio||'',efsrtFin:efsrt.fechaFin||'',...group,seccion:core.groupSection(g)||group.seccion||'',...(isDemo?{fechaInicio:group.fechaInicio||period.fechaInicio||'2026-03-16',fechaFin:group.fechaFin||period.fechaFin||'2026-07-24',ciclo:group.ciclo||curriculum.nivelFormativo||'Auxiliar Técnico',turno:group.turno||curriculum.turno||g.turno||'MAÑANA',seccion:core.groupSection(g)||group.seccion||'A',modalidad:group.modalidad||g.modalidad||'PRESENCIAL',periodClase:group.periodClase||g.periodId||'2026-I',efsrtInicio:group.efsrtInicio||efsrt.fechaInicio||'2026-06-15',efsrtFin:group.efsrtFin||efsrt.fechaFin||'2026-07-24'}:{})};
+  const doc={...base,attendance,grades,demoFill:isDemo,demoMode:isDemo,institution:{...institution,name:institution.nombre},program:programObj,module:modObj,group:groupObj,units:enrichedUnits,efsrtUnit,unitCode:base.unit,unitData,teacher,students,academicDates,academicMonthSpans,parameters:students.length===1?students[0].parameters:{}};
  doc.preflight=preflight(doc);
  if(isDemo){
   doc.preflight.complete=true;

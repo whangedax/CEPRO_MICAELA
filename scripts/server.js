@@ -58,9 +58,13 @@ function handleRequest(req, res, serverPort) {
   let targetPath = pathname;
   if (targetPath === '/' || targetPath === '/index.html' || targetPath === '/app' || targetPath === '/app/') {
     targetPath = '/app/index.html';
+  } else if (targetPath.startsWith('/scripts') || targetPath.startsWith('/docs') ||
+             targetPath.startsWith('/private-data') || targetPath.startsWith('/tests')) {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=UTF-8' });
+    res.end('Acceso denegado');
+    return;
   } else if (!targetPath.startsWith('/app') && !targetPath.startsWith('/app-v2') &&
-             !targetPath.startsWith('/sources') && !targetPath.startsWith('/tools') &&
-             !targetPath.startsWith('/docs') && !targetPath.startsWith('/scripts')) {
+             !targetPath.startsWith('/sources') && !targetPath.startsWith('/tools')) {
     targetPath = '/app' + targetPath;
   }
 

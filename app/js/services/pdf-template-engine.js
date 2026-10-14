@@ -197,7 +197,7 @@ export class PdfTemplateEngine {
     fixtureData['header.provincia'] = payload.institution?.provincia || '';
     fixtureData['header.resolucionAutorizacion'] = payload.institution?.resolucionAutorizacion || '';
     fixtureData['header.resolucionConversion'] = payload.institution?.resolucionConversion || '';
-    fixtureData['header.lugar'] = payload.institution?.lugar || '';
+    fixtureData['header.lugar'] = payload.institution?.lugar || payload.institution?.provincia || '';
 
     // Periodo y fechas
     fixtureData['header.fechaInicio'] = payload.period?.fechaInicio || '';
@@ -596,7 +596,7 @@ export class PdfTemplateEngine {
       'group.turno': sanitize(rfs['group.turno'] || grp.turno || ''),
       'group.seccion': sanitize(rfs['group.seccion'] || grp.seccion || ''),
       'teacher.name': sanitize(rfs['teacher.name'] || grp.docente || payload.teacher || ''),
-      'period.year': sanitize(rfs['period.year'] || per.anio || per.year || (per.fechaInicio ? String(per.fechaInicio).slice(0, 4) : ''))
+      'period.year': sanitize(rfs['period.year'] || per.anio || per.year || (per.nombre ? String(per.nombre).slice(0, 4) : '') || (per.fechaInicio ? String(per.fechaInicio).slice(0, 4) : ''))
     };
 
     const fields = physicalFieldsOf(manifest);
@@ -1519,7 +1519,7 @@ export class PdfTemplateEngine {
       };
       const tBox = teacherBoxes[docType] || { x: 113.81, y: 645.91, w: 160, h: 12 };
       this.fitTextOrThrow(teacherName, boldFont, tBox, pageHeight, {
-        maxFontSize: 8.0, minFontSize: 4.5, paddingX: 2, align: 'center', fieldKey: 'teacher.name'
+        maxFontSize: 8.0, minFontSize: 4.5, paddingX: 2, align: 'center', fieldKey: 'teacher.name', measureOnly: true
       });
       // El nombre del docente NO se imprime: se reserva el renglón libre para la firma presencial manuscrita.
     }
@@ -1676,7 +1676,7 @@ export class PdfTemplateEngine {
 
     // Programa de Estudios
     if (programName) {
-      const progBox = getFieldBox('program.name', { x: 255.0, y: 112.0, w: 565.0, h: 13.0 });
+      const progBox = getFieldBox('program.name', docType === 'TMPL-11' ? { x: 255.0, y: 112.0, w: 565.0, h: 13.0 } : { x: 232.5, y: 178.932, w: 587.39, h: 13.0 });
       const pFit = this.fitTextOrThrow(programName, boldFont, progBox, pageHeight, {
         maxFontSize: 8.5, minFontSize: 4.0, paddingX: 1, align: 'left', fieldKey: 'program.name'
       });
@@ -1688,7 +1688,7 @@ export class PdfTemplateEngine {
     const details = [turno ? `TURNO: ${turno}` : '', ciclo ? `CICLO: ${ciclo}` : '', seccion ? `SECCIÓN: ${seccion}` : ''].filter(Boolean).join('   ·   ');
     if (details) periodText = periodText ? `${periodText}   ·   ${details}` : details;
     if (periodText) {
-      const perBox = getFieldBox('period.name', { x: 255.0, y: 124.0, w: 565.0, h: 13.0 });
+      const perBox = getFieldBox('period.name', docType === 'TMPL-11' ? { x: 255.0, y: 124.0, w: 565.0, h: 13.0 } : { x: 232.5, y: 191.328, w: 587.39, h: 13.0 });
       const perFit = this.fitTextOrThrow(periodText, regularFont, perBox, pageHeight, {
         maxFontSize: 8.0, minFontSize: 4.0, paddingX: 1, align: 'left', fieldKey: 'period.name'
       });
@@ -1697,7 +1697,7 @@ export class PdfTemplateEngine {
 
     // Módulo Formativo
     if (moduleName) {
-      const modBox = getFieldBox('module.name', { x: 255.0, y: 136.0, w: 565.0, h: 13.0 });
+      const modBox = getFieldBox('module.name', docType === 'TMPL-11' ? { x: 255.0, y: 136.0, w: 565.0, h: 13.0 } : { x: 232.5, y: 204.264, w: 587.39, h: 13.0 });
       const modFit = this.fitTextOrThrow(moduleName, boldFont, modBox, pageHeight, {
         maxFontSize: 8.0, minFontSize: 4.0, paddingX: 1, align: 'left', fieldKey: 'module.name'
       });
@@ -1708,7 +1708,7 @@ export class PdfTemplateEngine {
     if (unitName) {
       const uniBox = docType === 'TMPL-11'
         ? { x: 255.0, y: 145.5, w: 565.0, h: 12.0 }
-        : getFieldBox('curriculum.unit.name', { x: 255.0, y: 148.0, w: 565.0, h: 13.0 });
+        : getFieldBox('curriculum.unit.name', { x: 232.5, y: 217.2, w: 587.39, h: 13.0 });
       const uniFit = this.fitTextOrThrow(unitName, boldFont, uniBox, pageHeight, {
         maxFontSize: 8.0, minFontSize: 4.0, paddingX: 1, align: 'left', fieldKey: 'curriculum.unit.name'
       });
@@ -1717,7 +1717,7 @@ export class PdfTemplateEngine {
 
     // Capacidad de la Unidad Didáctica
     if (capacityText) {
-      const capBox = getFieldBox('curriculum.unit.capacity', { x: 255.0, y: 167.0, w: 565.0, h: 13.0 });
+      const capBox = getFieldBox('curriculum.unit.capacity', docType === 'TMPL-11' ? { x: 255.0, y: 167.0, w: 565.0, h: 13.0 } : { x: 232.5, y: 230.136, w: 587.39, h: 25.0 });
       const capFit = this.fitTextOrThrow(capacityText, regularFont, capBox, pageHeight, {
         maxFontSize: 7.5, minFontSize: 4.0, paddingX: 1, align: 'left', fieldKey: 'curriculum.unit.capacity'
       });
@@ -2348,7 +2348,7 @@ export class PdfTemplateEngine {
         // Ajustar el nombre completo en varias líneas antes de rotarlo.
         const drawRotatedHeader = (page, height, column, baselineTop, length) => {
           const fit = this.fitTextOrThrow(uName, regularFont, {x:0,y:0,w:length,h:column.w-4}, height, {
-            maxFontSize:6, minFontSize:4, paddingX:0, align:'left', fieldKey:'acta.unit.'+u+'.rotatedHeader'
+            maxFontSize:6, minFontSize:4, paddingX:0, align:'left', fieldKey:'acta.unit.'+u+'.rotatedHeader', measureOnly:true
           });
           const lines=fit.text.split('\n'), lineHeight=fit.lineHeight||fit.size*1.12;
           const ascent=this._fontMetric(regularFont,'Ascender',fit.size),descent=this._fontMetric(regularFont,'Descender',fit.size);
@@ -2467,7 +2467,7 @@ export class PdfTemplateEngine {
       }
 
       // Observaciones
-      const obsText = sanitize(student.observaciones || student.obs || student.observacion);
+      const obsText = sanitize(student.observations || student['closure.observations'] || student.observaciones || student.obs || student.observacion);
       if (obsText) {
         const box = { x: 965, y: rowY, w: 200, h: 20.79 };
         const fit = this.fitTextOrThrow(obsText, regularFont, box, pageHeight1, {
@@ -2543,7 +2543,7 @@ export class PdfTemplateEngine {
       }
 
       // Observaciones
-      const obsText = sanitize(student.observaciones || student.obs || student.observacion);
+      const obsText = sanitize(student.observations || student['closure.observations'] || student.observaciones || student.obs || student.observacion);
       if (obsText) {
         const box = { x: 946, y: rowY, w: 190, h: 17.57 };
         const fit = this.fitTextOrThrow(obsText, regularFont, box, pageHeight2, {
