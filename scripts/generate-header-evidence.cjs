@@ -8,7 +8,8 @@ const root = path.resolve(__dirname, '..');
 const core = new OfflineCore('private-data');
 const director = core.users().find(u => u.role === 'DIRECTOR');
 
-const ARTIFACT_DIR = 'C:/Users/whangedax/.gemini/antigravity/brain/1c4aceed-e368-46ee-9dfd-d2dbefdec7b1';
+const ARTIFACT_DIR = path.join(root, 'tests/offline-artifacts/header-evidence');
+fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
 
 async function run() {
   console.log('--- Generando PDFs con nueva cabecera unificada ---');

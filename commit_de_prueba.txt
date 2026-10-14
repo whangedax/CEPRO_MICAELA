@@ -1,1 +1,0 @@
-Este es un archivo de prueba para verificar que Git está configurado y funcionando correctamente.
