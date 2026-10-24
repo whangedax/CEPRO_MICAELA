@@ -671,6 +671,285 @@ class OfflineCore {
     try{fs.writeFileSync(path.join(directory, filename), canonical({ backup, checksum: hash(backup) }), { mode: 0o600, flag: 'wx' });}catch(error){if(error.code==='ENOSPC')fail('No hay espacio para crear la copia de seguridad. Libere espacio antes de continuar; no se aplicó la actualización.',507);if(['EACCES','EPERM'].includes(error.code))fail('No se puede guardar la copia privada. Revise los permisos de la carpeta antes de continuar.',503);throw error;}
     return { filename, counts: { records: backup.records.length, operations: backup.operations.length } };
   }
+  assertSafeBackupFilename(filename) {
+    if (typeof filename !== 'string' || (!filename.endsWith('.json') && !filename.endsWith('.cetpro-backup')) || filename.includes('..') || filename.includes('/') || filename.includes('\\') || filename.includes('\0')) {
+      fail('Nombre de archivo de respaldo no permitido.', 400);
+    }
+    const backupsDir = path.resolve(this.directory, 'backups');
+    const safePath = path.resolve(backupsDir, filename);
+    if (!safePath.startsWith(backupsDir + path.sep)) {
+      fail('Acceso denegado fuera de la carpeta de respaldos.', 403);
+    }
+    return safePath;
+  }
+  exportEncryptedBackup(actor, input = {}) {
+    this.requireRole(actor, ['DIRECTOR']);
+    const passphrase = input.passphrase;
+    const hint = input.hint;
+    if (!passphrase || typeof passphrase !== 'string' || passphrase.length < 8) {
+      fail('La contraseña de cifrado debe tener al menos 8 caracteres.', 400);
+    }
+    let raw;
+    let baseFilename;
+    const backupsDir = path.join(this.directory, 'backups');
+    fs.mkdirSync(backupsDir, { recursive: true });
+    if (input.filename) {
+      const safePath = this.assertSafeBackupFilename(input.filename);
+      if (!fs.existsSync(safePath)) fail('Archivo de respaldo no encontrado.', 404);
+      raw = fs.readFileSync(safePath, 'utf8');
+      baseFilename = path.basename(input.filename).replace(/\.json$/, '');
+    } else {
+      const backup = {
+        app: APP,
+        version: VERSION,
+        at: now(),
+        settings: this.db.prepare('SELECT * FROM settings').all(),
+        users: this.db.prepare('SELECT * FROM users').all(),
+        records: this.db.prepare('SELECT * FROM records').all(),
+        operations: this.db.prepare('SELECT * FROM operations').all(),
+        receipts: this.db.prepare('SELECT * FROM receipts').all(),
+        deliveries: this.db.prepare('SELECT * FROM deliveries').all(),
+        conflicts: this.db.prepare('SELECT * FROM conflicts').all(),
+        audit: this.db.prepare('SELECT * FROM audit').all(),
+      };
+      raw = canonical({ backup, checksum: hash(backup) });
+      baseFilename = `respaldo-${now().replace(/[:.]/g, '-')}-cifrado-export`;
+    }
+    const salt = crypto.randomBytes(32);
+    const key = crypto.scryptSync(passphrase, salt, 32, { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    const ciphertext = Buffer.concat([cipher.update(raw, 'utf8'), cipher.final()]);
+    const tag = cipher.getAuthTag();
+    const envelope = {
+      app: APP,
+      type: 'ENCRYPTED_BACKUP_EXPORT',
+      version: 1,
+      exportedAt: now(),
+      sourceFilename: baseFilename,
+      kdf: 'scrypt',
+      algorithm: 'aes-256-gcm',
+      salt: salt.toString('hex'),
+      iv: iv.toString('hex'),
+      authTag: tag.toString('hex'),
+      ciphertext: ciphertext.toString('base64'),
+      hint: hint ? String(hint).trim().slice(0, 100) : null,
+    };
+    const exportFilename = `${baseFilename}.cetpro-backup`;
+    const exportBytes = Buffer.from(JSON.stringify(envelope, null, 2), 'utf8');
+    const exportPath = path.join(backupsDir, exportFilename);
+    fs.writeFileSync(exportPath, exportBytes, { mode: 0o600 });
+    this.audit('BACKUP_EXPORTED_ENCRYPTED', actor, {
+      sourceFile: input.filename || 'active_database',
+      exportFile: exportFilename,
+      hasHint: !!hint,
+    });
+    return {
+      filename: exportFilename,
+      size: exportBytes.length,
+      algorithm: 'aes-256-gcm',
+      kdf: 'scrypt',
+      hint: envelope.hint,
+      encryptedEnvelope: envelope,
+    };
+  }
+  listBackups(actor) {
+    this.requireRole(actor, ['DIRECTOR']);
+    const directory = path.join(this.directory, 'backups');
+    if (!fs.existsSync(directory)) return [];
+    const files = fs.readdirSync(directory).filter(f => f.endsWith('.json') || f.endsWith('.cetpro-backup'));
+    const list = [];
+    for (const filename of files) {
+      try {
+        const fullPath = path.join(directory, filename);
+        const stat = fs.statSync(fullPath);
+        let label = 'manual';
+        const match = filename.match(/^\d{4}-\d{2}-\d{2}T[\d-]+Z-([a-zA-Z0-9_-]+)-[a-f0-9]{8}\.json$/);
+        if (match) label = match[1];
+        list.push({
+          filename,
+          label,
+          size: stat.size,
+          createdAt: stat.mtime.toISOString(),
+        });
+      } catch {}
+    }
+    list.sort((a, b) => b.filename.localeCompare(a.filename));
+    return list;
+  }
+  inspectBackup(actor, input = {}) {
+    this.requireRole(actor, ['DIRECTOR']);
+    let raw;
+    let filename = input.filename || null;
+    if (filename) {
+      const safePath = this.assertSafeBackupFilename(filename);
+      if (!fs.existsSync(safePath)) fail('Archivo de respaldo no encontrado.', 404);
+      raw = fs.readFileSync(safePath, 'utf8');
+    } else if (input.source) {
+      raw = typeof input.source === 'string' ? input.source : JSON.stringify(input.source);
+    } else {
+      fail('Indique el archivo o contenido del respaldo a inspeccionar.');
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      fail('El respaldo no es un JSON válido.');
+    }
+    const isEncrypted = parsed?.type === 'ENCRYPTED_BACKUP_EXPORT';
+    if (isEncrypted) {
+      if (!input.passphrase) {
+        return {
+          valid: false,
+          encrypted: true,
+          isEncrypted: true,
+          requiresPassphrase: true,
+          app: parsed.app,
+          type: parsed.type,
+          version: parsed.version,
+          exportedAt: parsed.exportedAt,
+          algorithm: 'aes-256-gcm',
+          kdf: 'scrypt',
+          hint: parsed.hint || null,
+          filename,
+          message: 'El archivo está cifrado con AES-256-GCM. Ingrese la contraseña para inspeccionar su contenido.',
+        };
+      }
+      try {
+        const saltStr = parsed.salt || parsed.kdf?.salt || '';
+        const salt = Buffer.from(saltStr, saltStr.length === 64 ? 'hex' : 'base64');
+        const key = crypto.scryptSync(input.passphrase, salt, 32, {
+          N: parsed.kdf?.params?.N || 32768,
+          r: parsed.kdf?.params?.r || 8,
+          p: parsed.kdf?.params?.p || 1,
+          maxmem: 64 * 1024 * 1024,
+        });
+        const ivStr = parsed.iv || parsed.cipher?.iv || '';
+        const iv = Buffer.from(ivStr, ivStr.length === 24 ? 'hex' : 'base64');
+        const tagStr = parsed.authTag || parsed.cipher?.tag || '';
+        const tag = Buffer.from(tagStr, tagStr.length === 32 ? 'hex' : 'base64');
+        const cipherStr = parsed.ciphertext || parsed.cipher?.ciphertext || '';
+        const ciphertext = Buffer.from(cipherStr, 'base64');
+        const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+        decipher.setAuthTag(tag);
+        raw = Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
+        parsed = JSON.parse(raw);
+      } catch {
+        fail('Contraseña incorrecta o archivo de respaldo cifrado adulterado.', 400);
+      }
+    }
+    const b = parsed?.backup;
+    if (!b || b.app !== APP || b.version !== VERSION) {
+      fail('El archivo no corresponde a un respaldo institucional CETPRO_OFFLINE versión 1.');
+    }
+    const computedChecksum = hash(b);
+    if (parsed.checksum !== computedChecksum) {
+      fail('Checksum SHA-256 inválido: el archivo está corrupto o fue modificado externamente.');
+    }
+    const tables = {
+      settings: ['key', 'value'],
+      users: ['id', 'username', 'value'],
+      records: ['entity', 'id', 'value'],
+      operations: ['id', 'value', 'acknowledged'],
+      receipts: ['id', 'received'],
+      deliveries: ['deviceId', 'operationId', 'acknowledged'],
+      conflicts: ['id', 'value'],
+      audit: ['id', 'value']
+    };
+    b.deliveries ||= [];
+    for (const [table, columns] of Object.entries(tables)) {
+      if (!Array.isArray(b[table]) || b[table].some(row => columns.some(column => row[column] === undefined))) {
+        fail(`Tabla requerida incompleta o con columnas faltantes: ${table}`);
+      }
+    }
+    const recordCounts = {};
+    for (const r of b.records || []) {
+      recordCounts[r.entity] = (recordCounts[r.entity] || 0) + 1;
+    }
+    return {
+      valid: true,
+      isEncrypted: isEncrypted || !!input.passphrase,
+      encrypted: isEncrypted || !!input.passphrase,
+      decryptedOk: isEncrypted || !!input.passphrase,
+      filename,
+      app: b.app,
+      version: b.version,
+      at: b.at,
+      checksum: parsed.checksum,
+      checksumValid: true,
+      totalRecords: (b.records || []).length,
+      counts: {
+        students: recordCounts['students'] || 0,
+        enrollments: recordCounts['enrollments'] || 0,
+        groups: recordCounts['groups'] || 0,
+        grades: recordCounts['grades'] || 0,
+        attendance: recordCounts['attendance'] || 0,
+        programs: recordCounts['programs'] || 0,
+        modules: recordCounts['modules'] || 0,
+        users: (b.users || []).length,
+        operations: (b.operations || []).length,
+        settings: (b.settings || []).length,
+        audit: (b.audit || []).length,
+      },
+    };
+  }
+  restoreBackup(actor, input = {}) {
+    this.requireRole(actor, ['DIRECTOR']);
+    let raw;
+    let filename = input.filename || null;
+    if (filename) {
+      const safePath = this.assertSafeBackupFilename(filename);
+      if (!fs.existsSync(safePath)) fail('Archivo de respaldo no encontrado.', 404);
+      raw = fs.readFileSync(safePath, 'utf8');
+    } else if (input.source) {
+      raw = typeof input.source === 'string' ? input.source : JSON.stringify(input.source);
+    } else {
+      fail('Indique el archivo o contenido del respaldo a restaurar.');
+    }
+    let parsedRestore;
+    try { parsedRestore = JSON.parse(raw); } catch {}
+    const wasEncrypted = parsedRestore?.type === 'ENCRYPTED_BACKUP_EXPORT';
+    if (wasEncrypted) {
+      if (!input.passphrase) {
+        fail('El archivo de respaldo está cifrado. Debe proporcionar la contraseña para restaurarlo.', 400);
+      }
+      try {
+        const saltStr = parsedRestore.salt || parsedRestore.kdf?.salt || '';
+        const salt = Buffer.from(saltStr, saltStr.length === 64 ? 'hex' : 'base64');
+        const key = crypto.scryptSync(input.passphrase, salt, 32, {
+          N: parsedRestore.kdf?.params?.N || 32768,
+          r: parsedRestore.kdf?.params?.r || 8,
+          p: parsedRestore.kdf?.params?.p || 1,
+          maxmem: 64 * 1024 * 1024,
+        });
+        const ivStr = parsedRestore.iv || parsedRestore.cipher?.iv || '';
+        const iv = Buffer.from(ivStr, ivStr.length === 24 ? 'hex' : 'base64');
+        const tagStr = parsedRestore.authTag || parsedRestore.cipher?.tag || '';
+        const tag = Buffer.from(tagStr, tagStr.length === 32 ? 'hex' : 'base64');
+        const cipherStr = parsedRestore.ciphertext || parsedRestore.cipher?.ciphertext || '';
+        const ciphertext = Buffer.from(cipherStr, 'base64');
+        const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+        decipher.setAuthTag(tag);
+        raw = Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
+      } catch {
+        fail('Contraseña incorrecta o archivo de respaldo cifrado adulterado.', 400);
+      }
+    }
+    const { restore } = require('./restore-offline.cjs');
+    const result = restore(this, raw);
+    this.audit('BACKUP_RESTORED', actor, {
+      fromFile: filename,
+      previousCopy: result.previousCopy,
+      wasEncrypted,
+    });
+    return result;
+  }
+  readBackupFile(actor, filename) {
+    this.requireRole(actor, ['DIRECTOR']);
+    const safePath = this.assertSafeBackupFilename(filename);
+    if (!fs.existsSync(safePath)) fail('Archivo de respaldo no encontrado.', 404);
+    return fs.readFileSync(safePath);
+  }
   importLegacy(actor, pkg, insideTransaction = false) {
     this.requireRole(actor, ['DIRECTOR']);
     const stores = pkg.stores; if (!stores || !Array.isArray(stores.estudiantes) || !Array.isArray(stores.matriculas)) fail('El respaldo no contiene estudiantes y matrículas.');

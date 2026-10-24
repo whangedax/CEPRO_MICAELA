@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-institutional: #13594a;
+  --color-petroleum: #004034;
+  --color-mint: #e6f4f1;
+  --color-background-main: #f6f8fa;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+  background-color: #f6f8fa;
+  color: #172b28;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid #13594a;
+  outline-offset: 2px;
+}

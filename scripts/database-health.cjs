@@ -32,6 +32,14 @@ function inspectDatabase(core){
  for(const user of core.users())for(const a of user.assignments||[]){const g=groups.get(a.groupId);if(!g||a.units?.some(u=>!g.units.includes(u)))add(errors,'ASSIGNMENT_PARENT','users',user.id,'Asignación docente con grupo o unidades inexistentes.');if(a.section&&g&&a.section!==core.groupSection(g))add(errors,'ASSIGNMENT_SECTION','users',user.id,'La sección del docente no coincide con su aula.');}
  const academic=require('./academic-config.cjs');for(const r of core.records('documentSettings').filter(r=>academic.schema[r.scope?.kind])){try{academic.validate(core,r.scope,r.fields);}catch(error){add(errors,'ACADEMIC_CONFIG','documentSettings',r.id,error.message);}}
  for(const y of core.records('documentSettings').filter(r=>r.scope?.kind==='academicYear')){try{for(const message of academic.issues(core,y.scope.target))add(warnings,'CURRICULUM_PENDING','documentSettings',y.id,message);}catch{}}
- const physical=core.db.prepare('PRAGMA quick_check').all().every(r=>Object.values(r)[0]==='ok');return {at:new Date().toISOString(),schemaVersion:core.db.prepare('PRAGMA user_version').get().user_version,physicalIntegrity:physical,healthy:physical&&!errors.length,errors,warnings,counts:{students:students.size,enrollments:enrollments.size,groups:groups.size,grades:core.records('grades').length,attendance:core.records('attendance').length},journalMode:core.db.prepare('PRAGMA journal_mode').get().journal_mode};
+ const qcRows=core.db.prepare('PRAGMA quick_check').all();
+ const quickOk=qcRows.every(r=>Object.values(r)[0]==='ok');
+ const icRows=core.db.prepare('PRAGMA integrity_check').all();
+ const integrityOk=icRows.every(r=>Object.values(r)[0]==='ok');
+ const fkRows=core.db.prepare('PRAGMA foreign_key_check').all();
+ if(fkRows.length>0){for(const fk of fkRows){add(errors,'FOREIGN_KEY_VIOLATION',fk.table||'sqlite',fk.rowid||'unknown','Violación de clave foránea en tabla '+(fk.table||'desconocida'));}}
+ const physical=quickOk&&integrityOk&&fkRows.length===0;
+ const path=require('node:path');
+ return {at:new Date().toISOString(),schemaVersion:core.db.prepare('PRAGMA user_version').get().user_version,physicalIntegrity:physical,healthy:physical&&!errors.length,quickCheck:quickOk?'ok':'error',integrityCheck:integrityOk?'ok':'error',foreignKeyCheck:fkRows.length===0?'ok':'error',errors,warnings,counts:{students:students.size,enrollments:enrollments.size,groups:groups.size,grades:core.records('grades').length,attendance:core.records('attendance').length},journalMode:core.db.prepare('PRAGMA journal_mode').get().journal_mode,dbPath:core.directory?path.join(core.directory,'cetpro.sqlite'):null};
 }
 module.exports={protectDatabase,inspectDatabase,SCHEMA_VERSION};
