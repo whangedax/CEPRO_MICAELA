@@ -41,3 +41,7 @@ demo-data/
 data/
 *.sqlite
 tests/offline-artifacts/
+dev-sandbox/
+dist/
+
+release/

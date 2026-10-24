@@ -15,9 +15,26 @@ function createService({ root, directory, backupFile }) {
     try {
       // El servicio es local: no confía en Host arbitrario ni peticiones desde otros sitios.
       if (!/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(req.headers.host || '')) fail('Host no permitido.', 403);
-      if (req.headers.origin && req.headers.origin !== `http://${req.headers.host}`) fail('Origen no permitido.', 403);
+      const isAllowedOrigin = !req.headers.origin ||
+        req.headers.origin === 'null' ||
+        req.headers.origin === `http://${req.headers.host}` ||
+        /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(req.headers.origin);
+      if (!isAllowedOrigin) fail('Origen no permitido.', 403);
+      if (req.headers.origin && isAllowedOrigin) {
+        res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-CETPRO-Instance-Secret');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+      }
       const url = new URL(req.url, `http://${req.headers.host}`), route = url.pathname;
       if (route.startsWith('/api/')) {
+        if (process.env.CETPRO_INSTANCE_SECRET) {
+          const reqSecret = req.headers['x-cetpro-instance-secret'];
+          if (reqSecret !== process.env.CETPRO_INSTANCE_SECRET) {
+            fail('Acceso no autorizado: Secreto de instancia inválido o ausente.', 401);
+          }
+        }
         let body = {};
         if (req.method === 'POST') {
           if (!String(req.headers['content-type'] || '').startsWith('application/json')) fail('Envíe JSON.', 415);
@@ -46,13 +63,24 @@ function createService({ root, directory, backupFile }) {
         if(route==='/api/data/catalog'&&req.method==='GET'){const catalog=updates.catalog(user);if(context?.mode&&context.mode!=='UNIT')catalog.kinds=catalog.kinds.map(k=>({...k,canImport:['notas','asistencias'].includes(k.kind)?false:k.canImport}));return json(res,200,catalog);}
         if(route==='/api/document/configuration'&&req.method==='GET')return json(res,200,Workspace.filterConfiguration(core,user,context,DocumentSettings.configuration(core,user)));
         if (route === '/api/users' && req.method === 'GET') return json(res,200,url.searchParams.get('context')==='1'?AccountContext.list(core,user,context):core.listUsers(user));
-        if(route==='/api/database/health'&&req.method==='GET')return json(res,200,core.databaseHealth(user));
+        if((route==='/api/database/health'||route==='/api/system/health')&&req.method==='GET')return json(res,200,core.databaseHealth(user));
         if (route === '/api/audit' && req.method === 'GET') { core.requireRole(user, ['DIRECTOR']); return json(res, 200, core.db.prepare('SELECT value FROM audit ORDER BY rowid DESC LIMIT 100').all().map(r => JSON.parse(r.value))); }
+        if (route === '/api/backups' && req.method === 'GET') { core.requireRole(user, ['DIRECTOR']); return json(res, 200, core.listBackups(user)); }
+        if (route === '/api/backup/download' && req.method === 'GET') {
+          core.requireRole(user, ['DIRECTOR']);
+          const filename = url.searchParams.get('filename');
+          const bytes = core.readBackupFile(user, filename);
+          const contentType = filename && filename.endsWith('.cetpro-backup') ? 'application/octet-stream' : 'application/json; charset=utf-8';
+          res.writeHead(200, { 'Content-Type': contentType, 'Content-Disposition': `attachment; filename="${path.basename(filename)}"`, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+          res.end(bytes);
+          return;
+        }
         if (req.method !== 'POST') fail('Ruta no encontrada.', 404);
         if(route==='/api/data/export'||route==='/api/data/template'){const file=scopedUpdates.export(user,body.kind,body.format,body.options||{},route.endsWith('/template'));res.writeHead(200,{'Content-Type':file.type,'Content-Disposition':`attachment; filename="CETPRO_${body.kind}.${body.format||'csv'}"`,'Cache-Control':'no-store'});res.end(file.bytes);return;}
         if (route === '/api/document/pdf') {
           const doc = Workspace.document(core,user,context,body);if(body.fingerprint&&body.fingerprint!==doc.fingerprint)fail('Los datos cambiaron. Actualice la vista previa.',409);const bytes = await renderPDF(root, doc, user);
-          res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${doc.templateId}_COMPLETADO.pdf"`, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(bytes); return;
+          const isDemo = Boolean(doc.demoMode || doc.demoFill); const isDraft = !isDemo && !doc.preflight?.complete; const statusSuffix = isDemo ? 'DEMOSTRACION' : (isDraft ? 'BORRADOR' : 'COMPLETADO');
+          res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${doc.templateId}_${statusSuffix}.pdf"`, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(bytes); return;
         }
         if(route==='/api/document/submit'){
           const doc=Workspace.document(core,user,context,body);if(body.fingerprint!==doc.fingerprint)fail('Los datos cambiaron después de la vista previa. Actualícela antes de entregar.',409);
@@ -94,7 +122,10 @@ function createService({ root, directory, backupFile }) {
           case '/api/sync/preview': result = core.importPackage(user, body.package, false); break;
           case '/api/sync/import': result = core.importPackage(user, body.package, true); break;
           case '/api/conflicts/resolve': result = core.resolve(user, body); break;
-          case '/api/backup': core.requireRole(user, ['DIRECTOR']); result = core.createBackup(user); break;
+          case '/api/backup': core.requireRole(user, ['DIRECTOR']); result = core.createBackup(user, body.label || 'manual'); break;
+          case '/api/backup/export-encrypted': core.requireRole(user, ['DIRECTOR']); result = core.exportEncryptedBackup(user, body); break;
+          case '/api/backup/inspect': core.requireRole(user, ['DIRECTOR']); result = core.inspectBackup(user, body); break;
+          case '/api/restore': core.requireRole(user, ['DIRECTOR']); result = core.restoreBackup(user, body); break;
           case '/api/legacy/import': result = core.importLegacy(user, body); break;
           case '/api/document': result = Workspace.document(core,user,context,body); break;
           case '/api/document/configuration': result=DocumentSettings.saveSettings(core,user,body);break;

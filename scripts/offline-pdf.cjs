@@ -14,7 +14,7 @@ PDFLib.PDFDocument.prototype.embedFont=async function(font,options){const contex
 }return nativeEmbedFont.call(this,font,options);};
 // Mantiene la altura entre líneas calculada por el preflight dentro de cada caja física.
 const nativeDrawText=PDFLib.PDFPage.prototype.drawText;
-PDFLib.PDFPage.prototype.drawText=function(text,options={}){const context=renderContext.getStore();if(context&&Typography.diagnosticText(text,options))return;
+PDFLib.PDFPage.prototype.drawText=function(text,options={}){const context=renderContext.getStore();if(context&&Typography.diagnosticText(text,options,context))return;
  const override=context?.drawOverrides.get(drawKey(text,options));if(override)context.drawOverrides.delete(drawKey(text,options));
  const args={...options,...(override?{font:override.font}:{}),...(text.includes('\n')&&!options.lineHeight?{lineHeight:(options.size||12)*1.12}:{})};
  if(override?.syntheticBold)this.pushOperators(PDFLib.pushGraphicsState(),PDFLib.setTextRenderingMode(PDFLib.TextRenderingMode.FillAndOutline),PDFLib.setLineWidth(.12));
@@ -24,7 +24,12 @@ PDFLib.PDFPage.prototype.drawText=function(text,options={}){const context=render
  return result;
 };
 // Adaptador del motor existente: solo fuentes locales y contexto autorizado por el servicio.
-async function renderPDF(root,doc,actor,options={}){return renderContext.run({templateId:doc.templateId,fonts:new WeakMap(),drawOverrides:new Map(),drawnFields:[]},()=>renderPDFInternal(root,doc,actor,options));}
+async function renderPDF(root,doc,actor,options={}){
+ const isDemo=Boolean(doc.demoMode||doc.demoFill);
+ const isDraft=!isDemo&&(doc.preflight?!doc.preflight.complete:(doc.administrativeDraft!==false));
+ const isOfficial=!isDemo&&!isDraft;
+ return renderContext.run({templateId:doc.templateId,fonts:new WeakMap(),drawOverrides:new Map(),drawnFields:[],isDemo,isDraft,isOfficial},()=>renderPDFInternal(root,doc,actor,options));
+}
 async function renderPDFInternal(root, doc, actor,options) {
   if (!globalThis.window) globalThis.window = Object.freeze({ PDFLib, location: { origin: 'http://127.0.0.1:8080', href: 'http://127.0.0.1:8080/app/index.html' } });
   const { PdfTemplateEngine } = await import(pathToFileURL(path.join(root, 'app/js/services/pdf-template-engine.js')).href);
@@ -67,7 +72,7 @@ async function renderPDFInternal(root, doc, actor,options) {
     units:(doc.units||[]).map(u=>({...u,nombre:u.name||'',capacidad:u.capacity||'',competencia:u.competence||'',creditos:u.credits,horas:u.hours})),
     indicators:Array.from({length:5},(_,i)=>unit[`indicator${i+1}`]||''), sessions, teacher: doc.teacher||'',docente:{nombre:doc.teacher||''},document:{teacherName:doc.teacher||''},
     efsrt:{horas:doc.module?.efsrtHours,fechaInicio:doc.group.efsrtInicio,fechaTermino:doc.group.efsrtFin},approvalThreshold:doc.module?.approvalMinimum,
-    official: false, administrativeDraft: true };
+    official: !renderContext.getStore()?.isDraft && !renderContext.getStore()?.isDemo, administrativeDraft: renderContext.getStore()?.isDraft ?? true, demoMode: renderContext.getStore()?.isDemo ?? false };
   const manifest = getV2PdfManifest(doc.templateId), output = await PDFLib.PDFDocument.create();
   const append = async blob => {
     const source = await PDFLib.PDFDocument.load(await blob.arrayBuffer());
@@ -123,7 +128,11 @@ async function renderPDFInternal(root, doc, actor,options) {
   for(const slot of responsibilities){if(slot.key==='teacher'&&(n===4||n>=5&&n<=10))continue;const text=slot.key==='teacher'?(doc.teacher?(/Margen inferior/.test(slot.evidence)?'Docente: '+doc.teacher:doc.teacher):''):doc.institution[slot.key];if(!text)continue;for(const [pageIndex,page]of output.getPages().entries()){if(pageIndex%manifest.pages.length!==slot.page-1)continue;const fit=engine.fitTextOrThrow(text,font,slot,page.getHeight(),{maxFontSize:8,minFontSize:4.5,paddingX:2,align:'center',fieldKey:slot.key});page.drawText(fit.text,{x:fit.x,y:fit.y,size:fit.size,font});}}
   for (const [index, page] of output.getPages().entries()) {
 
-    page.drawText(`BORRADOR - NO OFICIAL | ${doc.templateId} | ${index + 1}/${output.getPageCount()}`, { x: 18, y: 8, size: 6, font, color: PDFLib.rgb(.6,.18,.18) });
+    if (renderContext.getStore()?.isDemo) {
+      page.drawText(`DEMOSTRACIÓN - SIN VALIDEZ OFICIAL | ${doc.templateId} | ${index + 1}/${output.getPageCount()}`, { x: 18, y: 8, size: 6.5, font, color: PDFLib.rgb(0.55, 0.18, 0.18) });
+    } else if (renderContext.getStore()?.isDraft) {
+      page.drawText(`BORRADOR - NO OFICIAL | ${doc.templateId} | ${index + 1}/${output.getPageCount()}`, { x: 18, y: 8, size: 6.5, font, color: PDFLib.rgb(0.6, 0.18, 0.18) });
+    }
     if([18,19].includes(n)&&rows.length>(manifest.capacity?.rows||40))page.drawText(`Continuación ${Math.floor(index/(n===19?2:1))+1}/${Math.ceil(rows.length/(manifest.capacity?.rows||40))} · ${rows.length} estudiantes en el grupo`,{x:page.getWidth()-260,y:8,size:6,font,color:PDFLib.rgb(.3,.3,.3)});
     if(doc.templateId==='TMPL-03'){page.drawRectangle({x:280,y:page.getHeight()-52.5,width:300,height:8.5,color:PDFLib.rgb(1,1,1)});const title='REGISTRO DE MATRÍCULA INSTITUCIONAL DEL PROGRAMA DE ESTUDIOS '+doc.group.periodId;const fit=engine.fitTextOrThrow(title,font,{x:280,y:44.2,w:300,h:8.5},page.getHeight(),{maxFontSize:7,minFontSize:4,paddingX:1,align:'center',fieldKey:'period.legend'});page.drawText(fit.text,{x:fit.x,y:fit.y,size:fit.size,font});}
   }

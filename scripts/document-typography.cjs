@@ -14,5 +14,20 @@ function fieldStyle(templateId,key){const n=Number(templateId.slice(5));
  return null;
 }
 function fontFiles(templateId){const n=Number(templateId.slice(5));return {Arial:'arial.ttf',ArialBold:'arialbd.ttf',...(n===1?{Calibri:'calibri.ttf'}:{}),...(n>=11&&n<=17?{CalibriLight:'calibril.ttf'}:{}),...([20,21].includes(n)?{CambriaBold:'cambriab.ttf'}:{})};}
-function diagnosticText(text,options){return /^(BORRADOR|DEMOSTRACI[ÓO]N|DEMO\s*[-—]\s*DATOS FICTICIOS|ACTA DE EVALUACIÓN MODULAR.*EMISIÓN ADMINISTRATIVA)/i.test(text)||Number(options.y)<=50&&/^(ESTUDIANTES:\s*\d|Página\s+\d+\s+de\s+\d+\s*[·|-]\s*Registros|TOTAL GENERAL DEL GRUPO:|Continuación\s+\d+\/\d+)/i.test(text);}
+function diagnosticText(text, options, context) {
+  // 1. Marcadores técnicos de depuración que nunca deben aparecer en ningún documento
+  if (/^(DEMO\s*[-—]\s*DATOS FICTICIOS|ACTA DE EVALUACIÓN MODULAR.*EMISIÓN ADMINISTRATIVA)/i.test(text)) return true;
+  if (Number(options?.y) <= 50 && /^(ESTUDIANTES:\s*\d|Página\s+\d+\s+de\s+\d+\s*[·|-]\s*Registros|TOTAL GENERAL DEL GRUPO:|REGISTROS EN ESTA PÁGINA|Continuación\s+\d+\/\d+)/i.test(text)) return true;
+
+  // 2. Documentos oficiales y finalizados: no deben mostrar advertencias de borrador ni demo (Requisito J)
+  if (context?.isOfficial) {
+    if (/^(BORRADOR|DEMOSTRACI[ÓO]N)/i.test(text)) return true;
+  }
+
+  // 3. Suprimir leyendas residuales con formato divergente de pdf-template-engine para que offline-pdf
+  // dibuje de forma homogénea las marcas oficiales reglamentarias en todas las páginas sin solapamientos
+  if (/^(BORRADOR ADMINISTRATIVO|DEMOSTRACI[ÓO]N\s*[-—]\s*NO OFICIAL)/i.test(text)) return true;
+
+  return false;
+}
 module.exports={fieldStyle,fontFiles,diagnosticText};
