@@ -425,7 +425,7 @@ export const EntregasRevision: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#F0FDF8]">
               {isTeacher ? 'Entrega de Documentos Académicos' : 'Bandeja de Entrega y Revisión'}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#13594A]/10 text-[#13594A]">
@@ -443,7 +443,7 @@ export const EntregasRevision: React.FC = () => {
           <button
             onClick={() => loadSubmissions()}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95 transition-all shadow-sm disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#1F2D2A] active:scale-95 transition-all shadow-sm disabled:opacity-60"
             title="Actualizar bandeja de entregas"
           >
             <RefreshIcon className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -489,7 +489,7 @@ export const EntregasRevision: React.FC = () => {
       {isTeacher && (
         <div className="space-y-6">
           {/* Barra de pestañas para docente */}
-          <div className="flex border-b border-slate-200">
+          <div className="flex border-b border-slate-200 dark:border-[#263834]">
             <button
               onClick={() => setTeacherTab('preparar')}
               className={`pb-3 px-4 text-sm font-bold border-b-2 transition-colors ${
@@ -519,7 +519,7 @@ export const EntregasRevision: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Columna Izquierda: Selección de Plantilla */}
               <div className="lg:col-span-5 space-y-4">
-                <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+                <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm">
                   <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center justify-between">
                     <span>{activeWorkspace?.groupId ? 'Formatos Disponibles en Aula' : 'Catálogo Informativo'}</span>
                     <span className="text-[11px] font-normal text-slate-500">
@@ -564,7 +564,7 @@ export const EntregasRevision: React.FC = () => {
                 </div>
 
                 {/* Tarjeta de ayuda a Configuración Documental */}
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-600 space-y-2">
+                <div className="bg-slate-50 dark:bg-[#131C1A] p-4 rounded-2xl border border-slate-200 dark:border-[#263834] text-xs text-slate-600 dark:text-slate-400 space-y-2">
                   <div className="font-bold text-slate-800 flex items-center gap-1.5">
                     <DocumentIcon className="w-4 h-4 text-[#13594A]" />
                     ¿Faltan datos en su documento?
@@ -581,9 +581,9 @@ export const EntregasRevision: React.FC = () => {
 
               {/* Columna Derecha: Estado Preflight y Acciones de Entrega */}
               <div className="lg:col-span-7 space-y-6">
-                <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+                <div className="bg-white dark:bg-[#182220] p-6 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm space-y-6">
                   {/* Encabezado del Documento Seleccionado */}
-                  <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-[#263834] pb-4">
                     <div>
                       <div className="text-xs font-bold text-[#13594A] uppercase tracking-wider">
                         {selectedTemplateId} · Verificación Preflight
@@ -788,7 +788,7 @@ export const EntregasRevision: React.FC = () => {
                         <button
                           onClick={() => handleViewSubmittedPdf(s)}
                           disabled={isLoadingPdf}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95 transition-all shadow-sm"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#1F2D2A] active:scale-95 transition-all shadow-sm"
                         >
                           <EyeIcon className="w-4 h-4 text-slate-500" />
                           <span>Ver PDF Custodial</span>
@@ -917,7 +917,7 @@ export const EntregasRevision: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/60">
+                    <tr className="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-[#263834]/60">
                       <th className="py-3 px-4">Documento</th>
                       <th className="py-3 px-4">Docente Remitente</th>
                       <th className="py-3 px-4">Aula / Unidad</th>
@@ -985,7 +985,7 @@ export const EntregasRevision: React.FC = () => {
       {showConfirmModal && preflightData && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-scaleUp">
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-3 border-b border-slate-100 dark:border-[#263834] pb-4">
               <div className="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center text-[#13594A]">
                 <SendIcon className="w-5 h-5" />
               </div>
@@ -1043,7 +1043,7 @@ export const EntregasRevision: React.FC = () => {
       {showReviewModal && selectedSubmission && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-scaleUp">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#263834] pb-4">
               <div>
                 <span className="text-xs font-bold text-[#13594A] uppercase tracking-wider">
                   Revisión Institucional
@@ -1194,7 +1194,7 @@ export const EntregasRevision: React.FC = () => {
       {showPdfViewer && (
         <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex flex-col p-4 md:p-8 animate-fadeIn">
           <div className="bg-white rounded-3xl flex-1 flex flex-col overflow-hidden shadow-2xl border border-slate-300">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 dark:border-[#263834] flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-slate-900">{pdfTitle}</h3>
                 <p className="text-[11px] text-slate-500">{pdfFilename}</p>

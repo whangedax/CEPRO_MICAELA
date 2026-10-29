@@ -12,6 +12,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { NavRoute, UserProfile, UserRole } from './types';
+import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import { PendingChangesProvider, usePendingChanges } from './context/PendingChangesContext';
@@ -313,13 +314,15 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <WorkspaceProvider>
-        <PendingChangesProvider>
-          <AppContent />
-        </PendingChangesProvider>
-      </WorkspaceProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <WorkspaceProvider>
+          <PendingChangesProvider>
+            <AppContent />
+          </PendingChangesProvider>
+        </WorkspaceProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

@@ -735,7 +735,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
       {/* ========================================== */}
       {/* 1. CABECERA INSTITUCIONAL                  */}
       {/* ========================================== */}
-      <header className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <header className="bg-white dark:bg-[#182220] rounded-2xl shadow-sm border border-slate-200 dark:border-[#263834] p-6 transition-colors">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -763,7 +763,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                 )}
               </span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-[#F0FDF8] tracking-tight">
               Configuración Académica y Periodos Lectivos
             </h1>
             <p className="text-sm text-slate-600">
@@ -904,7 +904,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
       {/* ========================================== */}
       {/* 3. PESTAÑAS PRINCIPALES                    */}
       {/* ========================================== */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white dark:bg-[#182220] rounded-2xl shadow-sm border border-slate-200 dark:border-[#263834] overflow-hidden">
         <div className="border-b border-slate-200 bg-slate-50/60 px-6 pt-3 flex flex-wrap gap-2">
           <button
             type="button"

@@ -131,22 +131,22 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
         </span>
       </div>
 
-      <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
+      <div className="bg-white dark:bg-[#182220] rounded-3xl p-8 border border-slate-200/90 dark:border-[#263834] shadow-[0_4px_24px_rgba(0,0,0,0.03)] transition-colors">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-xl bg-[#E6F4F1] text-[#13594A] flex items-center justify-center font-bold text-sm" aria-hidden="true">
             {detail.title.charAt(0)}
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#172B28]">{detail.title}</h1>
+            <h1 className="text-2xl font-bold text-[#172B28] dark:text-[#F0FDF8]">{detail.title}</h1>
             <p className="text-xs font-semibold text-slate-600">{detail.subtitle}</p>
           </div>
         </div>
 
-        <p className="text-sm text-slate-700 mb-6 leading-relaxed">
+        <p className="text-sm text-slate-700 dark:text-slate-300 mb-6 leading-relaxed">
           {detail.description}
         </p>
 
-        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 mb-6">
+        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-[#2E1E05]/60 border border-amber-300 dark:border-[#5C3C0A] mb-6">
           <div className="flex items-start gap-3">
             <span className="text-amber-800 font-bold text-sm mt-0.5" aria-hidden="true">ℹ</span>
             <div className="text-xs text-amber-950 space-y-1">
@@ -163,8 +163,8 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-          <span className="text-xs font-medium text-slate-600">
+        <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-[#263834]">
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
             CEPRO_MICAELA 2.0 · Prototipo offline
           </span>
           <button

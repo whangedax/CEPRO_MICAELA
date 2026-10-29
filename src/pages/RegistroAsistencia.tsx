@@ -675,8 +675,8 @@ export const RegistroAsistencia: React.FC = () => {
   if (isWorkspaceLoading && !dashboardData) {
     return (
       <div className="max-w-6xl mx-auto py-12 flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 border-4 border-[#13594A]/20 border-t-[#13594A] rounded-full animate-spin" />
-        <p className="text-sm font-semibold text-slate-700">
+        <div className="w-10 h-10 border-4 border-[#13594A]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin" />
+        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
           Cargando registros de asistencia desde el servicio local…
         </p>
       </div>
@@ -687,19 +687,19 @@ export const RegistroAsistencia: React.FC = () => {
   if (!activeWorkspace || !activeWorkspace.groupId) {
     return (
       <div className="max-w-4xl mx-auto py-10 px-4 animate-in fade-in duration-300">
-        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-[#E6F4F1] text-[#13594A] flex items-center justify-center">
+        <div className="bg-white dark:bg-[#182220] rounded-3xl p-8 border border-slate-200 dark:border-[#263834] shadow-sm text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-[#E6F4F1] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] flex items-center justify-center">
             <AttendanceIcon className="w-7 h-7" />
           </div>
-          <h2 className="text-2xl font-bold text-[#0D382F] mb-2">
+          <h2 className="text-2xl font-bold text-[#0D382F] dark:text-[#F0FDF8] mb-2">
             No hay un aula activa seleccionada
           </h2>
-          <p className="text-sm text-slate-600 max-w-lg mx-auto mb-6 leading-relaxed">
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-lg mx-auto mb-6 leading-relaxed">
             Para registrar asistencia, primero debe seleccionar una de sus aulas autorizadas desde el panel de inicio.
           </p>
           <a
             href="#/inicio"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#13594A] text-white font-bold text-xs hover:bg-[#0D382F] transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#13594A] text-white font-bold text-xs hover:bg-[#0D382F] dark:hover:bg-[#1A7360] transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
           >
             <span>Ir a Mis Aulas Asignadas</span>
             <ArrowForwardIcon className="w-4 h-4" />
@@ -713,27 +713,27 @@ export const RegistroAsistencia: React.FC = () => {
   if (activeWorkspace.mode === 'MODULE') {
     return (
       <div className="max-w-4xl mx-auto py-10 px-4 animate-in fade-in duration-300">
-        <div className="bg-white rounded-3xl p-8 border border-amber-200 shadow-sm text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center">
+        <div className="bg-white dark:bg-[#182220] rounded-3xl p-8 border border-amber-200 dark:border-amber-800/60 shadow-sm text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 flex items-center justify-center">
             <AttendanceIcon className="w-7 h-7" />
           </div>
-          <h2 className="text-2xl font-bold text-[#0D382F] mb-2">
+          <h2 className="text-2xl font-bold text-[#0D382F] dark:text-[#F0FDF8] mb-2">
             Seleccione una unidad didáctica para registrar asistencia
           </h2>
-          <p className="text-sm text-slate-600 max-w-lg mx-auto mb-6 leading-relaxed">
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-lg mx-auto mb-6 leading-relaxed">
             Actualmente se encuentra en la vista general del módulo. El registro de sesiones y asistencia requiere seleccionar una unidad didáctica autorizada.
           </p>
           <div className="flex justify-center gap-3">
             <button
               type="button"
               onClick={handleOpenUnitModal}
-              className="px-5 py-2.5 rounded-xl bg-[#13594A] text-white font-bold text-xs hover:bg-[#0D382F] transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+              className="px-5 py-2.5 rounded-xl bg-[#13594A] text-white font-bold text-xs hover:bg-[#0D382F] dark:hover:bg-[#1A7360] transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
             >
               Elegir Unidad Didáctica de este grupo
             </button>
             <a
               href="#/inicio"
-              className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs hover:bg-slate-200 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+              className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-slate-200 dark:hover:bg-[#202E2B] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
             >
               Volver al Inicio
             </a>
@@ -766,33 +766,33 @@ export const RegistroAsistencia: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300">
       {/* 1. Encabezado Institucional y Breadcrumbs */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#263834]">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-[11px] font-bold text-[#004034] uppercase tracking-widest bg-[#E6F4F1] px-2.5 py-1 rounded-md">
+            <span className="text-[11px] font-bold text-[#004034] dark:text-[#5EEAD4] uppercase tracking-widest bg-[#E6F4F1] dark:bg-[#132B25] px-2.5 py-1 rounded-md">
               Operación Académica
             </span>
             <StatusBadge size="sm" />
           </div>
-          <h1 className="text-3xl font-extrabold text-[#0D382F] tracking-tight">
+          <h1 className="text-3xl font-extrabold text-[#0D382F] dark:text-[#F0FDF8] tracking-tight">
             Control de Asistencia
           </h1>
-          <p className="text-sm font-medium text-slate-700 mt-1">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-1">
             Registro diario de asistencia por sesión y cómputo de asistencias institucionales.
           </p>
         </div>
 
         {/* Contexto Activo y Botón de Cambio */}
         <div className="flex items-center gap-3 self-start md:self-auto">
-          <div className="bg-white border border-slate-200 rounded-2xl px-4 py-2.5 shadow-xs flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#13594A]/10 text-[#13594A]">
+          <div className="bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] rounded-2xl px-4 py-2.5 shadow-xs flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
               <InstitutionalBrandIcon className="w-5 h-5" />
             </div>
             <div className="text-left">
-              <span className="text-[11px] font-bold text-slate-800 block">
+              <span className="text-[11px] font-bold text-slate-800 dark:text-[#F0FDF8] block">
                 {currentGroup?.rawName || currentGroup?.name || 'Aula asignada'}
               </span>
-              <span className="text-xs font-semibold text-[#13594A] block">
+              <span className="text-xs font-semibold text-[#13594A] dark:text-[#5EEAD4] block">
                 Unidad: {activeWorkspace.unit} {activeWorkspace.unitName ? `· ${activeWorkspace.unitName}` : ''}
               </span>
             </div>
@@ -801,7 +801,7 @@ export const RegistroAsistencia: React.FC = () => {
           <button
             type="button"
             onClick={handleOpenUnitModal}
-            className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#182220] hover:bg-slate-50 dark:hover:bg-[#131C1A] text-slate-700 dark:text-slate-300 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
             title="Cambiar aula o unidad didáctica"
           >
             Cambiar aula / UD
@@ -813,7 +813,7 @@ export const RegistroAsistencia: React.FC = () => {
       {currentGroup?.closed && (
         <div
           role="alert"
-          className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 flex items-center justify-between gap-3 shadow-xs"
+          className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-3 shadow-xs"
         >
           <div className="flex items-center gap-3">
             <span className="text-xl" aria-hidden="true">⚠️</span>
@@ -821,12 +821,12 @@ export const RegistroAsistencia: React.FC = () => {
               <strong className="block text-sm font-bold">
                 Registro cerrado institucionalmente
               </strong>
-              <p className="text-xs text-amber-800 mt-0.5">
+              <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
                 Este grupo ha sido cerrado por Dirección. La asistencia se encuentra en modo solo consulta. Solicite reapertura a dirección para realizar modificaciones.
               </p>
             </div>
           </div>
-          <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 bg-amber-200 text-amber-900 rounded-md">
+          <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 rounded-md">
             Solo Consulta
           </span>
         </div>
@@ -836,14 +836,14 @@ export const RegistroAsistencia: React.FC = () => {
       {calendarAlert && (
         <div
           role="alert"
-          className="p-4 rounded-2xl bg-sky-50 border border-sky-200 text-sky-950 flex items-start gap-3 shadow-xs"
+          className="p-4 rounded-2xl bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/60 text-sky-950 dark:text-sky-200 flex items-start gap-3 shadow-xs"
         >
           <span className="text-xl shrink-0 mt-0.5" aria-hidden="true">📅</span>
           <div>
             <strong className="block text-sm font-bold">
               {calendarAlert.title}
             </strong>
-            <p className="text-xs text-sky-800 mt-0.5 leading-relaxed">
+            <p className="text-xs text-sky-800 dark:text-sky-300 mt-0.5 leading-relaxed">
               {calendarAlert.message}
             </p>
           </div>
@@ -858,10 +858,10 @@ export const RegistroAsistencia: React.FC = () => {
           aria-live="polite"
           className={`p-4 rounded-2xl border flex items-center justify-between gap-3 shadow-xs ${
             saveFeedback.type === 'success'
-              ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+              ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200'
               : saveFeedback.type === 'conflict'
-              ? 'bg-purple-50 border-purple-300 text-purple-900'
-              : 'bg-rose-50 border-rose-300 text-rose-900'
+              ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800/60 text-purple-900 dark:text-purple-200'
+              : 'bg-rose-50 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800/60 text-rose-900 dark:text-rose-200'
           }`}
         >
           <div className="flex items-center gap-3">
@@ -875,7 +875,7 @@ export const RegistroAsistencia: React.FC = () => {
           <button
             type="button"
             onClick={() => setSaveFeedback(null)}
-            className="text-xs font-semibold px-2 py-1 rounded-md hover:bg-black/5"
+            className="text-xs font-semibold px-2 py-1 rounded-md text-slate-700 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/10"
             aria-label="Cerrar notificación"
           >
             ✕
@@ -884,13 +884,13 @@ export const RegistroAsistencia: React.FC = () => {
       )}
 
       {/* 5. Barra de Herramientas de Sesión */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="bg-white dark:bg-[#182220] rounded-2xl p-5 border border-slate-200 dark:border-[#263834] shadow-xs flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex flex-wrap items-center gap-4">
           {/* Selector de Fecha */}
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="attendance-date"
-              className="text-[11px] font-bold text-slate-700 uppercase tracking-wider"
+              className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
             >
               Fecha de sesión
             </label>
@@ -899,7 +899,7 @@ export const RegistroAsistencia: React.FC = () => {
               type="date"
               value={sessionDate}
               onChange={(e) => handleDateChange(e.target.value)}
-              className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+              className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-800 dark:text-[#F0FDF8] focus:bg-white dark:focus:bg-[#182220] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
             />
           </div>
 
@@ -907,7 +907,7 @@ export const RegistroAsistencia: React.FC = () => {
           <div className="flex flex-col gap-1.5 w-28">
             <label
               htmlFor="attendance-session"
-              className="text-[11px] font-bold text-slate-700 uppercase tracking-wider"
+              className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
             >
               N° Sesión
             </label>
@@ -918,13 +918,13 @@ export const RegistroAsistencia: React.FC = () => {
               max="120"
               value={sessionNumber}
               onChange={(e) => handleSessionChange(e.target.value)}
-              className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+              className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-800 dark:text-[#F0FDF8] focus:bg-white dark:focus:bg-[#182220] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
             />
           </div>
 
           {/* Etiqueta de Fecha en Español */}
           <div className="flex flex-col gap-1.5 self-end">
-            <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-2 rounded-xl border border-slate-200">
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#131C1A] px-3 py-2 rounded-xl border border-slate-200 dark:border-[#263834]">
               {formatDisplayDate(sessionDate)}
             </span>
           </div>
@@ -936,7 +936,7 @@ export const RegistroAsistencia: React.FC = () => {
             type="button"
             onClick={handleMarkAllPresent}
             disabled={Boolean(currentGroup?.closed) || rosterData.length === 0}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] hover:bg-slate-50 dark:hover:bg-[#182220] text-slate-700 dark:text-slate-200 text-xs font-bold transition-all disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
           >
             Marcar todos presentes (P)
           </button>
@@ -945,7 +945,7 @@ export const RegistroAsistencia: React.FC = () => {
             type="button"
             onClick={handleSaveClick}
             disabled={Boolean(currentGroup?.closed) || isSaving || !hasUnsavedChanges}
-            className="px-5 py-2.5 rounded-xl bg-[#13594A] hover:bg-[#0D382F] text-white text-xs font-extrabold shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="px-5 py-2.5 rounded-xl bg-[#13594A] hover:bg-[#0D382F] dark:bg-[#13594A] dark:hover:bg-[#1a7763] text-white text-xs font-extrabold shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
           >
             {isSaving ? (
               <>
@@ -965,23 +965,23 @@ export const RegistroAsistencia: React.FC = () => {
       </div>
 
       {/* 6. Barra de Resumen de Conteo y Filtro de Búsqueda */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#182220] rounded-2xl p-4 border border-slate-200 dark:border-[#263834] shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Contadores Accesibles */}
         <div className="flex items-center gap-2 text-xs flex-wrap">
-          <span className="font-bold text-slate-700 mr-1">Cómputo:</span>
-          <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">
+          <span className="font-bold text-slate-700 dark:text-slate-300 mr-1">Cómputo:</span>
+          <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800/60">
             {counts.pCount} Presentes
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 font-bold border border-rose-200">
+          <span className="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800/60">
             {counts.fCount} Faltas
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 font-bold border border-amber-200">
+          <span className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800/60">
             {counts.jCount} Justificadas
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold border border-blue-200">
+          <span className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800/60">
             {counts.tCount} Tardanzas
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+          <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-[#263834]">
             {counts.pending} Sin marcar
           </span>
         </div>
@@ -997,7 +997,7 @@ export const RegistroAsistencia: React.FC = () => {
             placeholder="Buscar por apellido, nombre o DNI…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs font-semibold text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-[#182220] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
           />
           <div aria-live="polite" role="status" className="sr-only">
             {filteredRoster.length} estudiantes listados
@@ -1006,11 +1006,11 @@ export const RegistroAsistencia: React.FC = () => {
       </div>
 
       {/* 7. Tabla Principal de Estudiantes */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse" aria-label="Nómina oficial de estudiantes">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+              <tr className="bg-slate-50 dark:bg-[#131C1A] border-b border-slate-200 dark:border-[#263834] text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                 <th scope="col" className="py-3.5 px-4 w-12 text-center">N°</th>
                 <th scope="col" className="py-3.5 px-4">Estudiante / Documento</th>
                 <th scope="col" className="py-3.5 px-4 text-center w-72">Control de Asistencia</th>
@@ -1018,10 +1018,10 @@ export const RegistroAsistencia: React.FC = () => {
                 <th scope="col" className="py-3.5 px-4 text-center w-28">Estado</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#263834] text-xs">
               {filteredRoster.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-500 font-medium">
+                  <td colSpan={5} className="py-12 text-center text-slate-500 dark:text-slate-400 font-medium">
                     No se encontraron estudiantes para los criterios seleccionados.
                   </td>
                 </tr>
@@ -1045,26 +1045,26 @@ export const RegistroAsistencia: React.FC = () => {
                   return (
                     <tr
                       key={enId}
-                      className={`hover:bg-slate-50/80 transition-colors ${
-                        row.isDirty ? 'bg-amber-50/30' : ''
+                      className={`hover:bg-slate-50/80 dark:hover:bg-[#131C1A]/60 transition-colors ${
+                        row.isDirty ? 'bg-amber-50/30 dark:bg-amber-950/20' : ''
                       }`}
                     >
                       {/* Número de Orden */}
-                      <td className="py-3 px-4 text-center font-bold text-slate-600">
+                      <td className="py-3 px-4 text-center font-bold text-slate-600 dark:text-slate-400">
                         {index + 1}
                       </td>
 
                       {/* Datos del Estudiante */}
                       <td className="py-3 px-4">
                         <div className="flex flex-col">
-                          <span className="font-bold text-slate-900">
+                          <span className="font-bold text-slate-900 dark:text-[#F0FDF8]">
                             {item.student.name}
                           </span>
-                          <span className="text-[11px] text-slate-600 font-mono mt-0.5">
+                          <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono mt-0.5">
                             DNI: {item.student.document || 'S/D'} · Matrícula: {item.enrollment.code || enId}
                           </span>
                           {isPriorToEnrollment && (
-                            <span className="text-[10px] font-bold text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded mt-1 self-start">
+                            <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-950/40 px-2 py-0.5 rounded mt-1 self-start">
                               Ingreso posterior ({item.enrollment.startDate})
                             </span>
                           )}
@@ -1083,8 +1083,8 @@ export const RegistroAsistencia: React.FC = () => {
                             onClick={() => handleMarkChange(enId, 'P')}
                             className={`w-9 h-9 rounded-xl font-bold text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] disabled:opacity-30 ${
                               row.value === 'P'
-                                ? 'bg-emerald-600 text-white shadow-xs font-black'
-                                : 'bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800'
+                                ? 'bg-emerald-600 dark:bg-emerald-600 text-white shadow-xs font-black'
+                                : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300'
                             }`}
                           >
                             P
@@ -1099,8 +1099,8 @@ export const RegistroAsistencia: React.FC = () => {
                             onClick={() => handleMarkChange(enId, 'F')}
                             className={`w-9 h-9 rounded-xl font-bold text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 disabled:opacity-30 ${
                               row.value === 'F'
-                                ? 'bg-rose-600 text-white shadow-xs font-black'
-                                : 'bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-800'
+                                ? 'bg-rose-600 dark:bg-rose-600 text-white shadow-xs font-black'
+                                : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-800 dark:hover:text-rose-300'
                             }`}
                           >
                             F
@@ -1115,8 +1115,8 @@ export const RegistroAsistencia: React.FC = () => {
                             onClick={() => handleMarkChange(enId, 'J')}
                             className={`w-9 h-9 rounded-xl font-bold text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 disabled:opacity-30 ${
                               row.value === 'J'
-                                ? 'bg-amber-600 text-white shadow-xs font-black'
-                                : 'bg-slate-100 text-slate-700 hover:bg-amber-50 hover:text-amber-800'
+                                ? 'bg-amber-600 dark:bg-amber-600 text-white shadow-xs font-black'
+                                : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-800 dark:hover:text-amber-300'
                             }`}
                           >
                             J
@@ -1131,8 +1131,8 @@ export const RegistroAsistencia: React.FC = () => {
                             onClick={() => handleMarkChange(enId, 'T')}
                             className={`w-9 h-9 rounded-xl font-bold text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:opacity-30 ${
                               row.value === 'T'
-                                ? 'bg-blue-600 text-white shadow-xs font-black'
-                                : 'bg-slate-100 text-slate-700 hover:bg-blue-50 hover:text-blue-800'
+                                ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs font-black'
+                                : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-800 dark:hover:text-blue-300'
                             }`}
                           >
                             T
@@ -1145,7 +1145,7 @@ export const RegistroAsistencia: React.FC = () => {
                               onClick={() => handleMarkChange(enId, row.value as AttendanceValue)}
                               aria-label={`Limpiar marca de ${item.student.name}`}
                               title="Desmarcar / Dejar pendiente"
-                              className="w-7 h-7 ml-1 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center text-xs transition-colors"
+                              className="w-7 h-7 ml-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center text-xs transition-colors"
                             >
                               ✕
                             </button>
@@ -1162,22 +1162,22 @@ export const RegistroAsistencia: React.FC = () => {
                           value={row.observation}
                           onChange={(e) => handleObservationChange(enId, e.target.value)}
                           maxLength={500}
-                          className="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#13594A] disabled:opacity-50"
+                          className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-[#182220] focus:outline-none focus:ring-1 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4] disabled:opacity-50"
                         />
                       </td>
 
                       {/* Estado de Persistencia */}
                       <td className="py-3 px-4 text-center">
                         {row.isDirty ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded-md">
                             ● Modificado
                           </span>
                         ) : row.savedValue !== null ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
                             ✔ Guardado
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-[#131C1A] px-2 py-0.5 rounded-md">
                             Sin registrar
                           </span>
                         )}
@@ -1214,63 +1214,63 @@ export const RegistroAsistencia: React.FC = () => {
           aria-modal="true"
           aria-labelledby="conflict-dialog-title"
           aria-describedby="conflict-dialog-desc"
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-purple-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-purple-200 dark:border-purple-800/60 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             {/* Encabezado */}
-            <div className="flex items-start gap-4 mb-4 pb-4 border-b border-slate-100">
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-200 text-purple-700 flex items-center justify-center shrink-0">
+            <div className="flex items-start gap-4 mb-4 pb-4 border-b border-slate-100 dark:border-[#263834]">
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 id="conflict-dialog-title" className="text-lg font-bold text-slate-900 tracking-tight">
+                <h3 id="conflict-dialog-title" className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
                   Conflicto de actualización — Registro modificado en otra sesión
                 </h3>
-                <p id="conflict-dialog-desc" className="text-xs text-slate-600 mt-1 leading-relaxed">
+                <p id="conflict-dialog-desc" className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                   Este registro fue modificado en otra sesión o equipo. A continuación puede consultar la información actualizada del servidor y compararla con sus modificaciones locales antes de decidir cómo proceder:
                 </p>
               </div>
             </div>
 
             {/* Comparación de Registros en Conflicto */}
-            <div className="overflow-y-auto flex-1 my-2 border border-slate-200 rounded-xl">
+            <div className="overflow-y-auto flex-1 my-2 border border-slate-200 dark:border-[#263834] rounded-xl">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase text-[10px]">
+                  <tr className="bg-slate-50 dark:bg-[#131C1A] border-b border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 font-bold uppercase text-[10px]">
                     <th className="py-2.5 px-3">Estudiante</th>
                     <th className="py-2.5 px-3">Modificación local</th>
                     <th className="py-2.5 px-3">Versión actual en servidor</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#263834]">
                   {conflictItems.map((c) => (
-                    <tr key={c.enrollmentId} className="hover:bg-slate-50/50">
+                    <tr key={c.enrollmentId} className="hover:bg-slate-50/50 dark:hover:bg-[#131C1A]/50">
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-slate-900 block">{c.studentName}</span>
-                        <span className="text-[10px] text-slate-500 font-mono">DNI: {c.document}</span>
+                        <span className="font-bold text-slate-900 dark:text-[#F0FDF8] block">{c.studentName}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">DNI: {c.document}</span>
                       </td>
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded text-[11px]">
+                        <span className="font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded text-[11px]">
                           {c.localValue ? `Estado: ${c.localValue}` : 'Pendiente / Sin marca'}
                         </span>
                         {c.localObservation && (
-                          <span className="block text-[10px] text-slate-600 mt-0.5 italic">
+                          <span className="block text-[10px] text-slate-600 dark:text-slate-300 mt-0.5 italic">
                             "{c.localObservation}"
                           </span>
                         )}
                       </td>
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded text-[11px]">
+                        <span className="font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950/40 px-2 py-0.5 rounded text-[11px]">
                           {c.serverValue ? `Estado: ${c.serverValue}` : 'Sin registrar'}
                         </span>
                         {c.serverObservation && (
-                          <span className="block text-[10px] text-slate-600 mt-0.5 italic">
+                          <span className="block text-[10px] text-slate-600 dark:text-slate-300 mt-0.5 italic">
                             "{c.serverObservation}"
                           </span>
                         )}
-                        <span className="block text-[9px] text-slate-600 font-mono mt-0.5">
+                        <span className="block text-[9px] text-slate-600 dark:text-slate-400 font-mono mt-0.5">
                           Rev: {c.serverRev || 'null'}
                         </span>
                       </td>
@@ -1281,13 +1281,13 @@ export const RegistroAsistencia: React.FC = () => {
             </div>
 
             {/* Acciones de Resolución Segura */}
-            <div className="flex flex-col sm:flex-row gap-2.5 mt-4 pt-3 border-t border-slate-100">
+            <div className="flex flex-col sm:flex-row gap-2.5 mt-4 pt-3 border-t border-slate-100 dark:border-[#263834]">
               <button
                 type="button"
                 id="btn-conflict-keep"
                 onClick={handleConflictKeepLocal}
                 disabled={isResolvingConflict}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 transition-colors text-center disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 dark:hover:bg-[#182220] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 transition-colors text-center disabled:opacity-50"
               >
                 Conservar cambios locales (sin enviar)
               </button>
@@ -1297,7 +1297,7 @@ export const RegistroAsistencia: React.FC = () => {
                 id="btn-conflict-discard"
                 onClick={handleConflictDiscardAndLoadServer}
                 disabled={isResolvingConflict}
-                className="px-4 py-2.5 rounded-xl border border-purple-300 bg-purple-50 text-purple-900 text-xs font-bold hover:bg-purple-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors text-center disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl border border-purple-300 dark:border-purple-800/60 bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-200 text-xs font-bold hover:bg-purple-100 dark:hover:bg-purple-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors text-center disabled:opacity-50"
               >
                 Descartar cambios y cargar servidor
               </button>
@@ -1307,7 +1307,7 @@ export const RegistroAsistencia: React.FC = () => {
                 id="btn-conflict-reapply"
                 onClick={handleConflictReapplyWithServerRev}
                 disabled={isResolvingConflict}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 transition-colors text-center shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] dark:bg-[#13594A] dark:hover:bg-[#1a7763] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 transition-colors text-center shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isResolvingConflict ? (
                   <>

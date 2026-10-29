@@ -401,7 +401,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
   return (
     <div className="space-y-6">
       {/* Cabecera institucional Stitch */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-xl bg-[#13594A]/10 text-[#13594A] flex items-center justify-center shrink-0">
             <BackupIcon className="w-7 h-7" />
@@ -523,8 +523,8 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
       {activeTab === 'list' && (
         <div className="space-y-6">
           {/* Card: Generar Respaldo Inmediato */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <h2 className="text-base font-bold text-[#172B28]">Crear Respaldo Manual Inmediato</h2>
+          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm space-y-4 transition-colors">
+            <h2 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Crear Respaldo Manual Inmediato</h2>
             <p className="text-xs text-slate-500">
               Genera una copia completa estructurada en formato JSON canónico con suma de verificación SHA-256 (checksum)
               en la carpeta privada del servicio. Incluye todos los registros académicos, configuraciones, usuarios y
@@ -602,10 +602,10 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
           </div>
 
           {/* Card: Tabla de Respaldos Existentes */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm space-y-4 transition-colors">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h3 className="text-base font-bold text-[#172B28]">Historial de Respaldos Disponibles</h3>
+                <h3 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Historial de Respaldos Disponibles</h3>
                 <p className="text-xs text-slate-500">
                   Archivos de seguridad almacenados localmente en la carpeta privada del sistema.
                 </p>
@@ -931,8 +931,8 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
             </div>
           )}
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-            <h3 className="text-base font-bold text-[#172B28]">Paso 1: Seleccionar Origen del Respaldo</h3>
+          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm space-y-6">
+            <h3 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Paso 1: Seleccionar Origen del Respaldo</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Opción A: Archivo en servidor */}
@@ -1111,10 +1111,10 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
       {/* ========================================================================= */}
       {activeTab === 'health' && (
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm space-y-4 transition-colors">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h2 className="text-base font-bold text-[#172B28]">Auditoría de Integridad SQLite</h2>
+                <h2 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Auditoría de Integridad SQLite</h2>
                 <p className="text-xs text-slate-500">
                   Evaluación en tiempo real de la consistencia física y lógica de la base de datos institucional.
                 </p>

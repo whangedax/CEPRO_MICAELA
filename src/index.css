@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-institutional: #13594a;
   --color-petroleum: #004034;
@@ -16,7 +18,34 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+html.dark {
+  background-color: #0F1715;
+  color: #F0FDF8;
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0F1715;
+  color: #F0FDF8;
+}
+
 :focus-visible {
   outline: 2px solid #13594a;
   outline-offset: 2px;
 }
+
+html.dark :focus-visible {
+  outline: 2px solid #5EEAD4;
+}
+
+@media print {
+  html, body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    color-scheme: light !important;
+  }
+  .dark {
+    color-scheme: light !important;
+  }
+}
+

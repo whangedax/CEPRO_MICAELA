@@ -27,7 +27,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   // con atajos nativos del navegador o reglas de accesibilidad.
 
   return (
-    <div className="min-h-screen bg-[#F6F8FA] text-[#172B28] antialiased">
+    <div className="min-h-screen bg-[#F6F8FA] dark:bg-[#0F1715] text-[#172B28] dark:text-[#F0FDF8] antialiased transition-colors duration-200">
       {/* Sidebar fijo a la izquierda */}
       <Sidebar
         currentRoute={currentRoute}
@@ -45,7 +45,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             window.location.hash = '#/perfil';
           }}
         />
-        <main className="relative pt-20 w-full min-h-screen bg-[#F6F8FA] px-10 py-10" id="main-content">
+        <main className="relative pt-20 w-full min-h-screen bg-[#F6F8FA] dark:bg-[#0F1715] px-4 py-5 md:px-6 md:py-6 xl:px-10 xl:py-8 transition-colors duration-200" id="main-content">
           {children}
         </main>
       </div>

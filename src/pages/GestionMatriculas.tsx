@@ -391,27 +391,27 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
     switch (state) {
       case 'PROVISIONAL':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
             Provisional: confirmar módulo
           </span>
         );
       case 'CONFIRMED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Confirmada
           </span>
         );
       case 'EXCLUDED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
             Excluida de este módulo
           </span>
         );
       case 'RETIRED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-400 border border-slate-200 dark:border-[#263834]">
             Retirada
           </span>
         );
@@ -423,18 +423,18 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
   return (
     <div className="flex flex-col w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
       {/* 1. Encabezado Institucional */}
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-200">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-[#263834]">
         <div className="flex flex-col gap-1.5 max-w-3xl">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[11px] font-bold text-[#004034] uppercase tracking-widest bg-[#E6F4F1] px-2.5 py-1 rounded-md">
+            <span className="text-[11px] font-bold text-[#004034] dark:text-[#5EEAD4] uppercase tracking-widest bg-[#E6F4F1] dark:bg-[#132B25] px-2.5 py-1 rounded-md">
               Ámbito Institucional · Admisión y Matrícula
             </span>
             <StatusBadge size="sm" />
           </div>
-          <h1 className="text-[30px] text-[#0D382F] font-bold tracking-tight leading-tight">
+          <h1 className="text-[30px] text-[#0D382F] dark:text-[#F0FDF8] font-bold tracking-tight leading-tight">
             Matrículas por Módulo
           </h1>
-          <p className="text-[14px] text-slate-700 font-normal leading-relaxed">
+          <p className="text-[14px] text-slate-700 dark:text-slate-300 font-normal leading-relaxed">
             Incorporación formal de estudiantes, asignación de código MAT y rectificación de pertenencia a módulos curriculares.
           </p>
         </div>
@@ -446,9 +446,9 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
             onClick={() => loadData(true)}
             disabled={isRefreshing}
             aria-label="Actualizar datos de matrículas"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-slate-200/80 text-slate-700 hover:text-[#13594A] hover:border-[#13594A]/30 text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4] hover:border-[#13594A]/30 dark:hover:border-[#5EEAD4]/40 text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
           >
-            <RefreshIcon className={`w-4 h-4 text-[#13594A] ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshIcon className={`w-4 h-4 text-[#13594A] dark:text-[#5EEAD4] ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>{isRefreshing ? 'Actualizando…' : 'Actualizar'}</span>
           </button>
         </div>
@@ -456,15 +456,15 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
       {/* 2. Mensajes de Notificación */}
       {errorMsg && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-start justify-between gap-3 animate-fadeIn">
+        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-sm flex items-start justify-between gap-3 animate-fadeIn">
           <div className="flex items-center gap-2">
-            <AlertCircleIcon className="w-5 h-5 text-rose-600 shrink-0" />
+            <AlertCircleIcon className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
             <span>{errorMsg}</span>
           </div>
           <button
             type="button"
             onClick={() => setErrorMsg(null)}
-            className="text-rose-600 hover:text-rose-800 text-xs font-bold shrink-0"
+            className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-200 text-xs font-bold shrink-0"
           >
             Cerrar
           </button>
@@ -472,15 +472,15 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
       )}
 
       {successMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-start justify-between gap-3 animate-fadeIn">
+        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-sm flex items-start justify-between gap-3 animate-fadeIn">
           <div className="flex items-center gap-2">
-            <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0" />
+            <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{successMsg}</span>
           </div>
           <button
             type="button"
             onClick={() => setSuccessMsg(null)}
-            className="text-emerald-600 hover:text-emerald-800 text-xs font-bold shrink-0"
+            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 text-xs font-bold shrink-0"
           >
             Cerrar
           </button>
@@ -489,58 +489,58 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
       {/* 3. Métricas Rápidas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
               Matrículas Activas
             </span>
-            <span className="text-2xl font-extrabold text-[#0D382F] mt-1 block">
+            <span className="text-2xl font-extrabold text-[#0D382F] dark:text-[#F0FDF8] mt-1 block">
               {counts.active}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-[#132B25] text-emerald-700 dark:text-[#5EEAD4] flex items-center justify-center font-bold">
             <EnrollmentIcon className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
               Provisionales
             </span>
-            <span className="text-2xl font-extrabold text-amber-700 mt-1 block">
+            <span className="text-2xl font-extrabold text-amber-700 dark:text-amber-400 mt-1 block">
               {counts.provisional}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold">
             <AlertCircleIcon className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
               Confirmadas
             </span>
-            <span className="text-2xl font-extrabold text-[#0D382F] mt-1 block">
+            <span className="text-2xl font-extrabold text-[#0D382F] dark:text-[#F0FDF8] mt-1 block">
               {counts.confirmed}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-[#132B25] text-emerald-700 dark:text-[#5EEAD4] flex items-center justify-center font-bold">
             <CheckCircleIcon className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
               Excluidas de Módulo
             </span>
-            <span className="text-2xl font-extrabold text-rose-700 mt-1 block">
+            <span className="text-2xl font-extrabold text-rose-700 dark:text-rose-400 mt-1 block">
               {counts.excluded}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-700 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 flex items-center justify-center font-bold">
             <AlertCircleIcon className="w-5 h-5" />
           </div>
         </div>
@@ -548,15 +548,15 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
       {/* 4. Formulario de Nueva Matrícula (DIRECTOR y SECRETARIA) */}
       {canManage && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 lg:p-8 space-y-6">
-          <div className="pb-4 border-b border-slate-100">
-            <span className="text-xs font-bold text-[#13594A] uppercase tracking-wider">
+        <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs p-6 lg:p-8 space-y-6">
+          <div className="pb-4 border-b border-slate-100 dark:border-[#263834]">
+            <span className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider">
               Trámite de Incorporación
             </span>
-            <h2 className="text-lg font-bold text-slate-900 mt-0.5">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8] mt-0.5">
               Registrar Nueva Matrícula
             </h2>
-            <p className="text-xs text-slate-600 mt-1">
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
               Seleccione un estudiante del padrón activo y el aula correspondiente al periodo y turno lectivo.
             </p>
           </div>
@@ -565,8 +565,8 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* Selección de Estudiante */}
               <div className="space-y-1.5">
-                <label htmlFor="select-student" className="block text-xs font-bold text-slate-700">
-                  Estudiante Participante <span className="text-rose-600">*</span>
+                <label htmlFor="select-student" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Estudiante Participante <span className="text-rose-600 dark:text-rose-400">*</span>
                 </label>
                 <input
                   type="text"
@@ -576,7 +576,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                     setStudentSearchInput(e.target.value);
                     setIsFormDirty(true);
                   }}
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs mb-1.5 focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs mb-1.5 focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                 />
                 <select
                   id="select-student"
@@ -586,7 +586,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                     setSelectedStudentId(e.target.value);
                     setIsFormDirty(true);
                   }}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                 >
                   <option value="">Seleccionar estudiante…</option>
                   {eligibleStudents.map((st) => (
@@ -599,8 +599,8 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
               {/* Selección de Grupo / Aula */}
               <div className="space-y-1.5">
-                <label htmlFor="select-group" className="block text-xs font-bold text-slate-700">
-                  Aula y Módulo Curricular <span className="text-rose-600">*</span>
+                <label htmlFor="select-group" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Aula y Módulo Curricular <span className="text-rose-600 dark:text-rose-400">*</span>
                 </label>
                 <select
                   id="select-group"
@@ -610,7 +610,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                     setSelectedGroupId(e.target.value);
                     setIsFormDirty(true);
                   }}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] mt-8 md:mt-0"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4] mt-8 md:mt-0"
                 >
                   <option value="">Seleccionar aula…</option>
                   {availableGroups.map((g) => {
@@ -623,7 +623,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                   })}
                 </select>
                 {selectedGroupId && groups.find((g) => g.id === selectedGroupId)?.closed && (
-                  <span className="text-[11px] font-bold text-rose-600 block mt-1">
+                  <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-1">
                     ⚠ Aula cerrada: Requiere reapertura para admitir nuevas matrículas.
                   </span>
                 )}
@@ -631,8 +631,8 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
               {/* Fecha de Ingreso */}
               <div className="space-y-1.5">
-                <label htmlFor="input-start-date" className="block text-xs font-bold text-slate-700">
-                  Fecha de Ingreso <span className="text-rose-600">*</span>
+                <label htmlFor="input-start-date" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Fecha de Ingreso <span className="text-rose-600 dark:text-rose-400">*</span>
                 </label>
                 <input
                   id="input-start-date"
@@ -643,17 +643,17 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                     setStartDate(e.target.value);
                     setIsFormDirty(true);
                   }}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] mt-8 md:mt-0"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4] mt-8 md:mt-0"
                 />
-                <span className="text-[11px] text-slate-500 block">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
                   Fecha formal de inicio lectivo del participante.
                 </span>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
-              <div className="text-xs text-slate-500">
-                {isFormDirty && <span className="text-amber-800 font-semibold">● Datos de matrícula listos para confirmación</span>}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-[#263834]">
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                {isFormDirty && <span className="text-amber-800 dark:text-amber-400 font-semibold">● Datos de matrícula listos para confirmación</span>}
               </div>
 
               <div className="flex items-center gap-3">
@@ -664,14 +664,14 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                     setStudentSearchInput('');
                     setIsFormDirty(false);
                   }}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors"
                 >
                   Limpiar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                  className="px-6 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#1A7360] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? 'Registrando en SQLite…' : 'Registrar Matrícula'}
                 </button>
@@ -682,18 +682,18 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
       )}
 
       {/* 5. Tabla de Matrículas y Pertenencia Modular */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 space-y-5">
+      <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs p-6 space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-base font-bold text-slate-900">
+            <h2 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
               Padrón de Matrículas y Control Modular
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Supervisión de módulos cursados, ratificación y rectificación de asignación de aula.
             </p>
           </div>
 
-          <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#131C1A] px-3 py-1 rounded-full">
             {filteredEnrollments.length} matrículas encontradas
           </span>
         </div>
@@ -702,14 +702,14 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
           {/* Filtro por Aula */}
           <div>
-            <label htmlFor="filter-group" className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+            <label htmlFor="filter-group" className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
               Aula / Grupo
             </label>
             <select
               id="filter-group"
               value={selectedGroupFilter}
               onChange={(e) => setSelectedGroupFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
             >
               <option value="">Todas las aulas</option>
               {availableGroups.map((g) => (
@@ -722,14 +722,14 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
           {/* Filtro por Estado */}
           <div>
-            <label htmlFor="filter-state" className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+            <label htmlFor="filter-state" className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
               Estado Modular
             </label>
             <select
               id="filter-state"
               value={selectedStateFilter}
               onChange={(e) => setSelectedStateFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
             >
               <option value="">Todos los estados</option>
               <option value="PROVISIONAL">Provisionales (Confirmar módulo)</option>
@@ -741,18 +741,18 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
           {/* Búsqueda */}
           <div>
-            <label htmlFor="search-input-enroll" className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+            <label htmlFor="search-input-enroll" className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
               Buscar Estudiante
             </label>
             <div className="relative">
-              <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <SearchIcon className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 id="search-input-enroll"
                 type="search"
                 placeholder="DNI, nombre o código MAT…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
               />
             </div>
           </div>
@@ -762,26 +762,26 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <tr className="border-b border-slate-100 dark:border-[#263834] text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <th className="py-3 px-4">Estudiante</th>
                 <th className="py-3 px-4">Aula / Módulo</th>
                 <th className="py-3 px-4">Estado Modular</th>
                 {canManage && <th className="py-3 px-4 text-right">Acciones</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#263834] text-xs">
               {isLoading ? (
                 <tr>
-                  <td colSpan={canManage ? 4 : 3} className="py-12 text-center text-slate-500">
-                    <div className="w-8 h-8 border-3 border-[#13594A]/20 border-t-[#13594A] rounded-full animate-spin mx-auto mb-2" />
+                  <td colSpan={canManage ? 4 : 3} className="py-12 text-center text-slate-500 dark:text-slate-400">
+                    <div className="w-8 h-8 border-3 border-[#13594A]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin mx-auto mb-2" />
                     Cargando padrón de matrículas desde SQLite…
                   </td>
                 </tr>
               ) : filteredEnrollments.length === 0 ? (
                 <tr>
-                  <td colSpan={canManage ? 4 : 3} className="py-12 text-center text-slate-500">
-                    <p className="font-bold text-slate-800 text-sm">No se encontraron matrículas</p>
-                    <span className="text-xs text-slate-500 mt-1 block">
+                  <td colSpan={canManage ? 4 : 3} className="py-12 text-center text-slate-500 dark:text-slate-400">
+                    <p className="font-bold text-slate-800 dark:text-[#F0FDF8] text-sm">No se encontraron matrículas</p>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
                       No existen registros que coincidan con los filtros seleccionados.
                     </span>
                   </td>
@@ -796,16 +796,16 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                   const state = getEnrollmentState(en);
 
                   return (
-                    <tr key={en.id} className="hover:bg-slate-50/70 transition-colors">
+                    <tr key={en.id} className="hover:bg-slate-50/70 dark:hover:bg-[#131C1A]/50 transition-colors">
                       {/* Estudiante y código */}
                       <td className="py-3.5 px-4">
-                        <span className="font-bold text-slate-900 block leading-tight">
+                        <span className="font-bold text-slate-900 dark:text-[#F0FDF8] block leading-tight">
                           {studentName}
                         </span>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-slate-500 mt-0.5">
-                          <span>Doc: <strong className="text-slate-700">{studentDoc}</strong></span>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          <span>Doc: <strong className="text-slate-700 dark:text-slate-200">{studentDoc}</strong></span>
                           <span>•</span>
-                          <span className="font-mono font-semibold text-slate-700">{en.code || 'MAT'}</span>
+                          <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{en.code || 'MAT'}</span>
                           <span>•</span>
                           <span>Ingreso: {en.startDate || 'Pendiente'}</span>
                         </div>
@@ -813,10 +813,10 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
                       {/* Aula / Módulo */}
                       <td className="py-3.5 px-4">
-                        <span className="font-semibold text-slate-800 block">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 block">
                           {group?.name || en.groupId}
                         </span>
-                        <span className="text-[11px] text-slate-500 block">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
                           {prog?.nombre || prog?.name || 'Programa'} · {mod?.nombre || mod?.name || 'Módulo'}
                         </span>
                       </td>
@@ -825,7 +825,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                       <td className="py-3.5 px-4">
                         {renderStateBadge(state)}
                         {en.moduleCorrection?.reason && (
-                          <span className="text-[10px] text-slate-500 block mt-1 italic">
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-1 italic">
                             Motivo: "{en.moduleCorrection.reason}"
                           </span>
                         )}
@@ -841,7 +841,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                                   <button
                                     type="button"
                                     onClick={() => handleOpenModuleModal(en, 'CONFIRM')}
-                                    className="px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs transition-colors border border-emerald-200"
+                                    className="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-bold text-xs transition-colors border border-emerald-200 dark:border-emerald-800"
                                   >
                                     Confirmar
                                   </button>
@@ -849,14 +849,14 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                                 <button
                                   type="button"
                                   onClick={() => handleOpenModuleModal(en, 'EXCLUDE')}
-                                  className="px-2.5 py-1 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs transition-colors border border-amber-200"
+                                  className="px-2.5 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 font-bold text-xs transition-colors border border-amber-200 dark:border-amber-800"
                                 >
                                   Quitar de módulo
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleOpenRetireModal(en)}
-                                  className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 font-bold text-xs transition-colors border border-slate-200"
+                                  className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-[#131C1A] hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-300 hover:text-rose-700 dark:hover:text-rose-300 font-bold text-xs transition-colors border border-slate-200 dark:border-[#263834]"
                                 >
                                   Retirar / Trasladar
                                 </button>
@@ -865,7 +865,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                               <button
                                 type="button"
                                 onClick={() => handleOpenModuleModal(en, 'RESTORE')}
-                                className="px-3 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs transition-colors border border-emerald-200"
+                                className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-bold text-xs transition-colors border border-emerald-200 dark:border-emerald-800"
                               >
                                 Restaurar en módulo
                               </button>
@@ -884,9 +884,9 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
       {/* 6. Modal de Corrección Modular */}
       {moduleModal.isOpen && moduleModal.enrollment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200">
-            <h3 className="text-base font-bold text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200 dark:border-[#263834]">
+            <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
               {moduleModal.action === 'CONFIRM'
                 ? 'Confirmar Pertenencia al Módulo'
                 : moduleModal.action === 'EXCLUDE'
@@ -894,13 +894,13 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                 : 'Restaurar Matrícula en el Módulo'}
             </h3>
 
-            <p className="text-xs text-slate-600">
-              Estudiante: <strong>{getStudentName(moduleModal.enrollment.studentId)}</strong>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Estudiante: <strong className="text-slate-800 dark:text-slate-200">{getStudentName(moduleModal.enrollment.studentId)}</strong>
               <br />
-              Aula: <strong>{groups.find((g) => g.id === moduleModal.enrollment?.groupId)?.name}</strong>
+              Aula: <strong className="text-slate-800 dark:text-slate-200">{groups.find((g) => g.id === moduleModal.enrollment?.groupId)?.name}</strong>
             </p>
 
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs text-slate-700 dark:text-slate-300">
               {moduleModal.action === 'EXCLUDE'
                 ? 'El estudiante será desvinculado exclusivamente de este módulo. Se preservan sus notas previas, asistencias y fichas en otros módulos.'
                 : moduleModal.action === 'CONFIRM'
@@ -909,8 +909,8 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
             </div>
 
             <div>
-              <label htmlFor="module-reason" className="block text-xs font-bold text-slate-700 mb-1.5">
-                Motivo de la Corrección Modular <span className="text-rose-600">*</span>
+              <label htmlFor="module-reason" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                Motivo de la Corrección Modular <span className="text-rose-600 dark:text-rose-400">*</span>
               </label>
               <textarea
                 id="module-reason"
@@ -919,16 +919,16 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                 placeholder="Indique la justificación técnica o resolución de dirección/secretaría…"
                 value={moduleModal.reason}
                 onChange={(e) => setModuleModal((prev) => ({ ...prev, reason: e.target.value }))}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#263834]">
               <button
                 type="button"
                 onClick={() => setModuleModal({ isOpen: false, enrollment: null, action: 'CONFIRM', reason: '' })}
                 disabled={isSubmittingModuleAction}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors"
               >
                 Cancelar
               </button>
@@ -936,7 +936,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                 type="button"
                 onClick={handleConfirmModuleAction}
                 disabled={isSubmittingModuleAction || !moduleModal.reason.trim()}
-                className="px-5 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] transition-colors shadow-xs disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#1A7360] transition-colors shadow-xs disabled:opacity-50"
               >
                 {isSubmittingModuleAction ? 'Guardando…' : 'Confirmar Operación'}
               </button>
@@ -947,22 +947,22 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
       {/* 7. Modal de Retiro / Traslado de Matrícula */}
       {retireModal.isOpen && retireModal.enrollment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200">
-            <h3 className="text-base font-bold text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200 dark:border-[#263834]">
+            <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
               Retiro Formal o Traslado de Matrícula
             </h3>
 
-            <p className="text-xs text-slate-600">
-              Estudiante: <strong>{getStudentName(retireModal.enrollment.studentId)}</strong>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Estudiante: <strong className="text-slate-800 dark:text-slate-200">{getStudentName(retireModal.enrollment.studentId)}</strong>
               <br />
-              Aula actual: <strong>{groups.find((g) => g.id === retireModal.enrollment?.groupId)?.name}</strong>
+              Aula actual: <strong className="text-slate-800 dark:text-slate-200">{groups.find((g) => g.id === retireModal.enrollment?.groupId)?.name}</strong>
             </p>
 
             <div className="space-y-3">
               <div>
-                <label htmlFor="retire-date" className="block text-xs font-bold text-slate-700 mb-1">
-                  Fecha de Retiro / Traslado <span className="text-rose-600">*</span>
+                <label htmlFor="retire-date" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Fecha de Retiro / Traslado <span className="text-rose-600 dark:text-rose-400">*</span>
                 </label>
                 <input
                   id="retire-date"
@@ -970,19 +970,19 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                   required
                   value={retireModal.date}
                   onChange={(e) => setRetireModal((prev) => ({ ...prev, date: e.target.value }))}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                 />
               </div>
 
               <div>
-                <label htmlFor="retire-target-group" className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="retire-target-group" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Trasladar a otro Grupo (Opcional)
                 </label>
                 <select
                   id="retire-target-group"
                   value={retireModal.targetGroupId}
                   onChange={(e) => setRetireModal((prev) => ({ ...prev, targetGroupId: e.target.value }))}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                 >
                   <option value="">Solo retirar (Sin traslado)</option>
                   {availableGroups
@@ -993,14 +993,14 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                       </option>
                     ))}
                 </select>
-                <span className="text-[11px] text-slate-500 block mt-1">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-1">
                   Si selecciona un aula destino, se creará la nueva matrícula en una sola transacción.
                 </span>
               </div>
 
               <div>
-                <label htmlFor="retire-reason" className="block text-xs font-bold text-slate-700 mb-1">
-                  Motivo Administrativo <span className="text-rose-600">*</span>
+                <label htmlFor="retire-reason" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Motivo Administrativo <span className="text-rose-600 dark:text-rose-400">*</span>
                 </label>
                 <textarea
                   id="retire-reason"
@@ -1009,17 +1009,17 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                   placeholder="Ej.: Retiro voluntario, cambio de turno, traslado de sección…"
                   value={retireModal.reason}
                   onChange={(e) => setRetireModal((prev) => ({ ...prev, reason: e.target.value }))}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#263834]">
               <button
                 type="button"
                 onClick={() => setRetireModal({ isOpen: false, enrollment: null, reason: '', date: '', targetGroupId: '' })}
                 disabled={isSubmittingRetire}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors"
               >
                 Cancelar
               </button>
@@ -1037,7 +1037,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
       )}
 
       {/* 8. Pie de Página */}
-      <footer className="text-center py-4 text-xs text-slate-600 border-t border-slate-200">
+      <footer className="text-center py-4 text-xs text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-[#263834]">
         CEPRO_MICAELA 2.0 · Módulo de Matrículas e Historial Modular Fuera de Línea
       </footer>
     </div>

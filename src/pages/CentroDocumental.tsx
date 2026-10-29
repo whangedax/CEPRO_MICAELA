@@ -564,7 +564,7 @@ export const CentroDocumental: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-200">
       {/* 1. Encabezado institucional y contexto activo */}
-      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-[#263834] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
             <a href="#/inicio" className="hover:text-[#13594A] transition-colors">
@@ -577,7 +577,7 @@ export const CentroDocumental: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-[#F0FDF8] tracking-tight flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-[#13594A]" />
               Centro de Documentos Académicos
             </h1>
@@ -605,7 +605,7 @@ export const CentroDocumental: React.FC = () => {
             onClick={() => {
               if (modalTargetGroup) setIsUnitModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-[#1F2D2A] hover:bg-slate-200 dark:hover:bg-[#263834] text-slate-700 dark:text-slate-200 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#34D399]"
             title="Cambiar aula o unidad activa"
           >
             <FolderOpenIcon className="w-4 h-4 text-slate-600" />
@@ -614,7 +614,7 @@ export const CentroDocumental: React.FC = () => {
 
           <a
             href="#/configuracion-documental"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-[#1F2D2A] hover:bg-slate-200 dark:hover:bg-[#263834] text-slate-700 dark:text-slate-200 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#34D399]"
             title="Consultar datos institucionales y parámetros de las unidades"
           >
             <DocConfigIcon className="w-4 h-4 text-slate-600" />
@@ -683,10 +683,10 @@ export const CentroDocumental: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Columna Izquierda: Catálogo de las 21 plantillas oficiales (4 columnas lg) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 border border-slate-200/80 dark:border-[#263834] shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 tracking-tight">Catálogo de Formatos</h2>
+                <h2 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">Catálogo de Formatos</h2>
                 <span className="text-[11px] text-slate-500">21 plantillas oficiales del MINEDU</span>
               </div>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
@@ -701,7 +701,7 @@ export const CentroDocumental: React.FC = () => {
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 placeholder="Buscar por nombre o TMPL…"
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
               />
               <svg
                 className="w-4 h-4 text-slate-400 absolute left-2.5 top-2"
@@ -723,7 +723,7 @@ export const CentroDocumental: React.FC = () => {
                 className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
                   selectedCategory === 'TODOS'
                     ? 'bg-[#13594A] text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    : 'bg-slate-100 dark:bg-[#1F2D2A] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#263834]'
                 }`}
               >
                 Todos
@@ -736,7 +736,7 @@ export const CentroDocumental: React.FC = () => {
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
                     selectedCategory === cat
                       ? 'bg-[#13594A] text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-slate-100 dark:bg-[#1F2D2A] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#263834]'
                   }`}
                 >
                   {cat.split(' ')[0]}
@@ -759,8 +759,8 @@ export const CentroDocumental: React.FC = () => {
                     onClick={() => handleSelectTemplate(tmpl)}
                     className={`w-full text-left p-3 rounded-2xl border transition-all flex items-start gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] ${
                       isSelected
-                        ? 'bg-[#13594A]/5 border-[#13594A] shadow-xs ring-1 ring-[#13594A]'
-                        : 'bg-white border-slate-200/80 hover:bg-slate-50/80 hover:border-slate-300'
+                        ? 'bg-[#13594A]/10 dark:bg-[#132B25] border-[#13594A] dark:border-[#208B73] shadow-xs ring-1 ring-[#13594A] dark:ring-[#208B73]'
+                        : 'bg-white dark:bg-[#131C1A] border-slate-200/80 dark:border-[#263834] hover:bg-slate-50/80 dark:hover:bg-[#1F2D2A] hover:border-slate-300 dark:hover:border-[#34524B]'
                     }`}
                   >
                     <div
@@ -775,7 +775,7 @@ export const CentroDocumental: React.FC = () => {
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className="font-bold text-xs text-slate-900 truncate block">
+                        <span className="font-bold text-xs text-slate-900 dark:text-[#F0FDF8] truncate block">
                           {tmpl.name}
                         </span>
                         <span className="font-mono text-[9px] text-slate-500 font-bold shrink-0">
@@ -795,7 +795,7 @@ export const CentroDocumental: React.FC = () => {
                         </span>
                       </div>
 
-                      <p className="text-[11px] text-slate-600 line-clamp-1 mt-1">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-1 mt-1">
                         {tmpl.description}
                       </p>
                     </div>
@@ -809,14 +809,14 @@ export const CentroDocumental: React.FC = () => {
         {/* Columna Derecha: Parámetros del Documento, Checklist Preflight y Visor PDF (8 columnas lg) */}
         <div className="lg:col-span-8 space-y-5">
           {/* Tarjeta de Configuración y Parámetros del Formato Seleccionado */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 border border-slate-200/80 dark:border-[#263834] shadow-sm space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-[#13594A] text-white">
                     {activeTemplateMeta.id}
                   </span>
-                  <h2 className="text-base font-bold text-slate-900 tracking-tight">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
                     {activeTemplateMeta.name}
                   </h2>
                 </div>
@@ -854,8 +854,8 @@ export const CentroDocumental: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 pt-1 text-xs">
               {/* Selector de Aula / Grupo */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Grupo / Aula:</label>
-                <div className="p-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold truncate">
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Grupo / Aula:</label>
+                <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-slate-200 font-semibold truncate">
                   {currentGroup?.name || 'Aula no seleccionada'}
                 </div>
               </div>
@@ -863,14 +863,14 @@ export const CentroDocumental: React.FC = () => {
               {/* Selector de Unidad Didáctica (si aplica para asistencia o evaluación) */}
               {activeTemplateMeta.scope === 'Unidad' && (
                 <div>
-                  <label htmlFor="select-unit" className="font-bold text-slate-700 block mb-1">
+                  <label htmlFor="select-unit" className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                     Unidad Didáctica:
                   </label>
                   <select
                     id="select-unit"
                     value={selectedUnit}
                     onChange={(e) => setSelectedUnit(e.target.value)}
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="w-full p-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
                   >
                     {availableUnits.map((u) => (
                       <option key={u} value={u}>
@@ -884,14 +884,14 @@ export const CentroDocumental: React.FC = () => {
               {/* Selector de Estudiante (para formatos individuales TMPL-02, TMPL-20, TMPL-21) */}
               {activeTemplateMeta.isIndividual && (
                 <div>
-                  <label htmlFor="select-enrollment" className="font-bold text-slate-700 block mb-1">
+                  <label htmlFor="select-enrollment" className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                     Estudiante / Matrícula:
                   </label>
                   <select
                     id="select-enrollment"
                     value={selectedEnrollmentId}
                     onChange={(e) => setSelectedEnrollmentId(e.target.value)}
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="w-full p-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
                   >
                     {rosterEnrollments.length === 0 ? (
                       <option value="">Sin estudiantes activos</option>
@@ -938,7 +938,7 @@ export const CentroDocumental: React.FC = () => {
 
           {/* Checklist Preflight Oficial */}
           {preflightDoc && (
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm space-y-3.5">
+            <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 border border-slate-200/80 dark:border-[#263834] shadow-sm space-y-3.5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2.5">
                   <div
@@ -951,7 +951,7 @@ export const CentroDocumental: React.FC = () => {
                     {preflightDoc.preflight.complete ? '✓' : '⚠'}
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-900">
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">
                       Checklist Preflight del Documento
                     </h3>
                     <span className="text-[11px] text-slate-500 font-mono">
@@ -982,8 +982,8 @@ export const CentroDocumental: React.FC = () => {
                       key={f.key}
                       className={`p-2.5 rounded-xl border flex items-start gap-2 ${
                         isReady
-                          ? 'bg-emerald-50/30 border-emerald-200/70 text-slate-800'
-                          : 'bg-amber-50/50 border-amber-200 text-amber-950'
+                          ? 'bg-emerald-50/30 dark:bg-[#062E1F]/50 border-emerald-200/70 dark:border-[#0A5C3D] text-slate-800 dark:text-slate-200'
+                          : 'bg-amber-50/50 dark:bg-[#2E1E05]/50 border-amber-200 dark:border-[#5C3C0A] text-amber-950 dark:text-[#FDE68A]'
                       }`}
                     >
                       <span
@@ -1057,11 +1057,11 @@ export const CentroDocumental: React.FC = () => {
               }
             />
           ) : (
-            <div className="bg-white rounded-3xl p-12 border border-slate-200/80 shadow-sm text-center">
-              <div className="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+            <div className="bg-white dark:bg-[#182220] rounded-3xl p-12 border border-slate-200/80 dark:border-[#263834] shadow-sm text-center">
+              <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-[#131C1A] text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto mb-3">
                 <DocumentIcon className="w-8 h-8" />
               </div>
-              <h3 className="text-sm font-bold text-slate-800">Vista Previa del Documento</h3>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-[#F0FDF8]">Vista Previa del Documento</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
                 Haga clic en <strong>"Ver formato rellenado"</strong> para generar el archivo PDF oficial
                 y visualizarlo en el visor interactivo de alta resolución.

@@ -95,29 +95,29 @@ export const DashboardDocente: React.FC = () => {
           <div className="flex items-center gap-2 mb-1">
             <StatusBadge size="sm" />
             <span className="text-slate-400" aria-hidden="true">•</span>
-            <span className="text-[12px] font-semibold text-slate-700">
+            <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300">
               Panel del Docente
             </span>
           </div>
-          <h1 className="text-[30px] text-[#172B28] font-bold tracking-tight leading-tight">
+          <h1 className="text-[30px] text-[#172B28] dark:text-[#F0FDF8] font-bold tracking-tight leading-tight">
             {user ? `Buenos días, ${user.name}` : 'Buenos días, profesor'}
           </h1>
-          <p className="text-[14px] text-slate-700 font-normal leading-relaxed">
+          <p className="text-[14px] text-slate-700 dark:text-slate-300 font-normal leading-relaxed">
             Organiza tus clases y actividades académicas de forma rápida y clara.
           </p>
         </div>
 
         {/* Period Card oficial */}
         <div className="flex flex-wrap items-center gap-3 self-start lg:self-center">
-          <div className="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] text-slate-800">
-            <div className="w-8 h-8 rounded-xl bg-[#e6f4f1] flex items-center justify-center text-[#13594A]">
-              <CalendarIcon className="w-4 h-4 text-[#13594A]" />
+          <div className="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] shadow-[0_2px_8px_rgba(0,0,0,0.03)] text-slate-800 dark:text-slate-200">
+            <div className="w-8 h-8 rounded-xl bg-[#e6f4f1] dark:bg-[#132B25] flex items-center justify-center text-[#13594A] dark:text-[#5EEAD4]">
+              <CalendarIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
             </div>
             <div className="flex flex-col pr-1">
-              <span className="text-[10px] text-slate-600 uppercase tracking-widest font-bold leading-none">
+              <span className="text-[10px] text-slate-600 dark:text-slate-400 uppercase tracking-widest font-bold leading-none">
                 Periodo Activo
               </span>
-              <span className="text-[13px] text-[#172B28] font-bold leading-tight">
+              <span className="text-[13px] text-[#172B28] dark:text-[#F0FDF8] font-bold leading-tight">
                 {activePeriod}
               </span>
             </div>
@@ -129,30 +129,30 @@ export const DashboardDocente: React.FC = () => {
       {activeWorkspace && activeGroup && (
         <aside
           aria-label="Espacio académico activo"
-          className="mb-8 p-4 rounded-2xl bg-[#e6f4f1] border border-[#13594A]/25 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-slate-800 shadow-[0_2px_12px_rgba(19,89,74,0.06)] animate-in fade-in duration-300"
+          className="mb-8 p-4 rounded-2xl bg-[#e6f4f1] dark:bg-[#182220] border border-[#13594A]/25 dark:border-[#263834] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-slate-800 dark:text-slate-200 shadow-[0_2px_12px_rgba(19,89,74,0.06)] animate-in fade-in duration-300"
         >
           <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-[#13594A] text-white flex items-center justify-center font-bold text-[13px] shadow-sm shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#13594A] dark:bg-[#132B25] dark:border dark:border-[#205C4E] text-white dark:text-[#5EEAD4] flex items-center justify-center font-bold text-[13px] shadow-sm shrink-0">
               {activeWorkspace.mode === 'UNIT' ? (activeWorkspace.unit || 'U.D.') : 'MOD'}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-[#004034] uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-[#004034] dark:text-[#5EEAD4] uppercase tracking-wider">
                   Espacio de Trabajo Activo en Sesión
                 </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-[#5EEAD4] animate-pulse" />
               </div>
-              <h2 className="text-[15px] font-bold text-[#172B28] leading-snug">
+              <h2 className="text-[15px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-snug">
                 {getProgramName(activeGroup.programId)} · {getModuleName(activeGroup.moduleId)}
               </h2>
-              <p className="text-[12px] text-slate-700 font-medium">
-                Aula: <span className="font-bold text-slate-900">{activeGroup.name}</span>
+              <p className="text-[12px] text-slate-700 dark:text-slate-300 font-medium">
+                Aula: <span className="font-bold text-slate-900 dark:text-slate-100">{activeGroup.name}</span>
                 {activeWorkspace.mode === 'UNIT' && activeWorkspace.unit ? (
-                  <> · Unidad: <span className="font-bold text-[#13594A]">{activeWorkspace.unit}</span></>
+                  <> · Unidad: <span className="font-bold text-[#13594A] dark:text-[#5EEAD4]">{activeWorkspace.unit}</span></>
                 ) : (
                   <> · Módulo Completo</>
                 )}
-                {' · '}Turno: <span className="font-semibold text-slate-800">{activeGroup.turno || 'Mañana'}</span>
+                {' · '}Turno: <span className="font-semibold text-slate-800 dark:text-slate-200">{activeGroup.turno || 'Mañana'}</span>
               </p>
             </div>
           </div>
@@ -160,7 +160,7 @@ export const DashboardDocente: React.FC = () => {
           <button
             type="button"
             onClick={() => handleOpenUnitModal(activeGroup)}
-            className="self-start sm:self-center px-4 py-2 rounded-xl bg-white border border-[#13594A]/30 text-[#13594A] text-[12px] font-bold hover:bg-[#13594A] hover:text-white transition-all shadow-xs shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="self-start sm:self-center px-4 py-2 rounded-xl bg-white dark:bg-[#131C1A] border border-[#13594A]/30 dark:border-[#205C4E] text-[#13594A] dark:text-[#5EEAD4] text-[12px] font-bold hover:bg-[#13594A] hover:text-white dark:hover:bg-[#1A6B5A] transition-all shadow-xs shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4]"
           >
             Cambiar unidad
           </button>
@@ -171,10 +171,10 @@ export const DashboardDocente: React.FC = () => {
       <section className="mb-12" aria-labelledby="section-pedagogical-title">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 id="section-pedagogical-title" className="text-[16px] text-[#172B28] font-bold tracking-tight">
+            <h2 id="section-pedagogical-title" className="text-[16px] text-[#172B28] dark:text-[#F0FDF8] font-bold tracking-tight">
               Actividades pedagógicas
             </h2>
-            <p className="text-[12px] text-slate-600 font-medium">
+            <p className="text-[12px] text-slate-600 dark:text-slate-400 font-medium">
               Gestión curricular, asistencia, evaluación y documentación
             </p>
           </div>
@@ -195,27 +195,27 @@ export const DashboardDocente: React.FC = () => {
       <section className="space-y-4 mb-10" aria-labelledby="section-classrooms-title">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <h2 id="section-classrooms-title" className="text-[20px] text-[#172B28] font-bold tracking-tight">
+            <h2 id="section-classrooms-title" className="text-[20px] text-[#172B28] dark:text-[#F0FDF8] font-bold tracking-tight">
               Mis Aulas asignadas
             </h2>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#e6f4f1] text-[#004034] text-[11px] font-bold border border-[#13594A]/15">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#e6f4f1] dark:bg-[#132B25] text-[#004034] dark:text-[#5EEAD4] text-[11px] font-bold border border-[#13594A]/15 dark:border-[#205C4E]">
               {options?.groups ? `${options.groups.length} aula(s) autorizadas por Dirección` : 'Consultando aulas...'}
             </span>
           </div>
 
-          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
+          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider bg-slate-100 dark:bg-[#182220] px-2.5 py-1 rounded-md border border-slate-200 dark:border-[#263834]">
             DATOS DE PRUEBA · CONECTADO A SQLITE LOCAL
           </span>
         </div>
 
         {/* Estado 1: Cargando */}
         {isLoading && !options && (
-          <div className="p-12 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex flex-col items-center justify-center gap-3 text-center">
-            <div className="w-8 h-8 border-3 border-[#13594A]/20 border-t-[#13594A] rounded-full animate-spin" />
-            <span className="text-[14px] font-semibold text-slate-700">
+          <div className="p-12 rounded-3xl bg-white dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] shadow-xs flex flex-col items-center justify-center gap-3 text-center">
+            <div className="w-8 h-8 border-3 border-[#13594A]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin" />
+            <span className="text-[14px] font-semibold text-slate-700 dark:text-slate-300">
               Consultando aulas y asignaciones docentes en el servidor local...
             </span>
-            <span className="text-[12px] text-slate-500">
+            <span className="text-[12px] text-slate-500 dark:text-slate-400">
               Verificando permisos y alcance de cuenta autorizada
             </span>
           </div>
@@ -225,11 +225,11 @@ export const DashboardDocente: React.FC = () => {
         {error && (
           <div
             role="alert"
-            className="p-6 rounded-3xl bg-red-50 border border-red-200 text-red-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            className="p-6 rounded-3xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 text-red-900 dark:text-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           >
             <div>
               <h3 className="text-[14px] font-bold">Error de conexión con el servicio académico local</h3>
-              <p className="text-[12px] text-red-700 mt-0.5">{error}</p>
+              <p className="text-[12px] text-red-700 dark:text-rose-300 mt-0.5">{error}</p>
             </div>
             <button
               type="button"
@@ -243,14 +243,14 @@ export const DashboardDocente: React.FC = () => {
 
         {/* Estado 3: Sin aulas asignadas */}
         {!isLoading && options && options.groups.length === 0 && (
-          <div className="p-12 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex flex-col items-center justify-center gap-2 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center mb-1">
+          <div className="p-12 rounded-3xl bg-white dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] shadow-xs flex flex-col items-center justify-center gap-2 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center mb-1">
               <CalendarIcon className="w-6 h-6" />
             </div>
-            <h3 className="text-[16px] font-bold text-slate-800">
+            <h3 className="text-[16px] font-bold text-slate-800 dark:text-slate-200">
               Sin aulas asignadas en el periodo actual
             </h3>
-            <p className="text-[13px] text-slate-600 max-w-md">
+            <p className="text-[13px] text-slate-600 dark:text-slate-400 max-w-md">
               Actualmente su cuenta docente no registra grupos ni unidades didácticas asignadas.
               Comuníquese con Dirección Académica o Secretaría para verificar sus asignaciones oficiales.
             </p>
@@ -282,10 +282,10 @@ export const DashboardDocente: React.FC = () => {
       </section>
 
       {/* 4. Footnote Académico Minimalista (WCAG 2.2 AA contrast) */}
-      <footer className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-600 text-[11px]">
+      <footer className="pt-4 border-t border-slate-200 dark:border-[#263834] flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-600 dark:text-slate-400 text-[11px]">
         <div className="inline-flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />
-          <span className="font-semibold text-slate-800">
+          <span className="font-semibold text-slate-800 dark:text-slate-200">
             CETPRO Micaela Bastidas · Dirección Regional de Educación (DRE)
           </span>
           <span className="text-slate-400" aria-hidden="true">•</span>
@@ -293,8 +293,8 @@ export const DashboardDocente: React.FC = () => {
             Terminal activa de uso exclusivo para docentes · Base de datos sintética local
           </span>
         </div>
-        <div className="inline-flex items-center gap-2 font-bold text-slate-700 uppercase tracking-wider text-[10px]">
-          <span className="bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
+        <div className="inline-flex items-center gap-2 font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[10px]">
+          <span className="bg-slate-100 dark:bg-[#182220] px-2.5 py-0.5 rounded border border-slate-200 dark:border-[#263834]">
             SISTEMA OFFLINE CONECTADO
           </span>
         </div>

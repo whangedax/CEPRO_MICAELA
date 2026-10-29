@@ -885,7 +885,7 @@ export const RegistroEvaluaciones: React.FC = () => {
   if (!activeWorkspace?.groupId) {
     return (
       <div className="p-6 max-w-5xl mx-auto animate-in fade-in duration-300">
-        <div className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-sm text-center max-w-xl mx-auto">
+        <div className="bg-white dark:bg-[#182220] rounded-3xl p-8 border border-slate-200/80 dark:border-[#263834] shadow-sm text-center max-w-xl mx-auto">
           <div className="w-16 h-16 rounded-2xl bg-[#13594A]/10 text-[#13594A] flex items-center justify-center mx-auto mb-4">
             <EvaluationIcon className="w-8 h-8" />
           </div>
@@ -1032,7 +1032,7 @@ export const RegistroEvaluaciones: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-[#F0FDF8] tracking-tight flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-[#13594A]" />
               {currentGroup?.name || 'Aula Asignada'}
             </h1>
@@ -1103,7 +1103,7 @@ export const RegistroEvaluaciones: React.FC = () => {
       )}
 
       {/* 3. Panel de navegación por pestañas de indicadores y resumen estadístico */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 border border-slate-200/80 dark:border-[#263834] shadow-sm space-y-4">
         {/* Pestañas de indicadores */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div
@@ -1158,7 +1158,7 @@ export const RegistroEvaluaciones: React.FC = () => {
         </div>
 
         {/* Guía contextual del indicador seleccionado */}
-        <div className="bg-[#F6F8FA] rounded-2xl p-3.5 border border-slate-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="bg-[#F6F8FA] dark:bg-[#131C1A] rounded-2xl p-3.5 border border-slate-200/60 dark:border-[#263834] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="space-y-0.5">
             <span className="font-bold text-slate-900 block">
               {activeTab === 6
@@ -1180,15 +1180,15 @@ export const RegistroEvaluaciones: React.FC = () => {
 
           {/* Tarjetas de estadísticas de la pestaña */}
           <div className="flex items-center gap-2 shrink-0">
-            <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-center">
+            <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-center">
               <span className="text-[10px] uppercase font-bold text-slate-500 block">Aprobados</span>
               <span className="text-xs font-black text-emerald-700">{metrics.approved}</span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-center">
+            <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-center">
               <span className="text-[10px] uppercase font-bold text-slate-500 block">Desaprobados</span>
               <span className="text-xs font-black text-rose-700">{metrics.failed}</span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-center">
+            <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-center">
               <span className="text-[10px] uppercase font-bold text-slate-500 block">Pendientes</span>
               <span className="text-xs font-black text-slate-600">{metrics.pending}</span>
             </div>
@@ -1286,21 +1286,21 @@ export const RegistroEvaluaciones: React.FC = () => {
       </div>
 
       {/* 4. Tabla de calificaciones (Matriz con soporte de navegación horizontal y sticky) */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm overflow-hidden">
         <div className="overflow-x-auto max-h-[700px]">
           <table
             className="w-full text-left text-xs border-collapse grade-matrix"
             aria-label="Tabla de registro de evaluaciones"
           >
             {/* Cabecera de la tabla */}
-            <thead className="bg-[#F6F8FA] sticky top-0 z-20 border-b border-slate-200 text-slate-700 uppercase font-black tracking-wider text-[11px]">
+            <thead className="bg-[#F6F8FA] dark:bg-[#131C1A] sticky top-0 z-20 border-b border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 uppercase font-black tracking-wider text-[11px]">
               {/* Si es pestaña completa (activeTab === 0), cabecera multinivel */}
               {activeTab === 0 ? (
                 <>
                   <tr className="border-b border-slate-200">
                     <th
                       rowSpan={2}
-                      className="py-3 px-4 sticky left-0 z-30 bg-[#F6F8FA] border-r border-slate-200 min-w-[240px] shadow-sm"
+                      className="py-3 px-4 sticky left-0 z-30 bg-[#F6F8FA] dark:bg-[#131C1A] border-r border-slate-200 dark:border-[#263834] min-w-[240px] shadow-sm"
                     >
                       Estudiante
                     </th>
@@ -1338,7 +1338,7 @@ export const RegistroEvaluaciones: React.FC = () => {
               ) : (
                 /* Cabecera para pestañas individuales (Indicadores 1..5 o Resultado UD) */
                 <tr>
-                  <th className="py-3.5 px-4 sticky left-0 z-30 bg-[#F6F8FA] border-r border-slate-200 min-w-[280px] shadow-sm">
+                  <th className="py-3.5 px-4 sticky left-0 z-30 bg-[#F6F8FA] dark:bg-[#131C1A] border-r border-slate-200 dark:border-[#263834] min-w-[280px] shadow-sm">
                     Estudiante ({filteredRoster.length})
                   </th>
                   {displayedIndicators.map((ind) => {

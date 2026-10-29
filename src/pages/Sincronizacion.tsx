@@ -468,13 +468,13 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
   return (
     <div className="space-y-6">
       {/* Cabecera institucional Stitch */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-xl bg-[#13594A]/10 text-[#13594A] flex items-center justify-center shrink-0">
             <SyncIcon className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-[#172B28]">Sincronización USB y Transferencia</h1>
+            <h1 className="text-xl font-bold text-[#172B28] dark:text-[#F0FDF8]">Sincronización USB y Transferencia</h1>
             <p className="text-sm text-slate-500 mt-1">
               Intercambio seguro de datos entre computadoras institucionales sin necesidad de internet.
             </p>
@@ -509,7 +509,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       </div>
 
       {/* Selector de pestañas principales */}
-      <div className="flex border-b border-slate-200 gap-2">
+      <div className="flex border-b border-slate-200 dark:border-[#263834] gap-2">
         <button
           onClick={() => setActiveTab('exchange')}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
@@ -567,7 +567,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       {activeTab === 'exchange' && (
         <div className="space-y-6">
           {/* Tarjeta explicativa de los 3 pasos offline */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors">
             <h2 className="text-base font-bold text-[#172B28]">Tus datos viajan en un archivo protegido</h2>
             <p className="text-sm text-slate-600 mt-1">
               {isTeacher
@@ -646,7 +646,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
           {/* SUBPANEL 1: ENVIAR MIS DATOS (EXPORT) */}
           {exchangeSubTab === 'send' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+            <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-6">
               <div>
                 <h3 className="text-base font-bold text-[#172B28]">
                   Enviar {isTeacher ? 'mi trabajo docente' : 'datos a otra computadora'}
@@ -842,7 +842,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
           {/* SUBPANEL 2: RECIBIR UN ARCHIVO (IMPORT) */}
           {exchangeSubTab === 'receive' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+            <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-6">
               <div>
                 <h3 className="text-base font-bold text-[#172B28]">Recibir un archivo desde USB</h3>
                 <p className="text-xs text-slate-500 mt-1">
@@ -1091,7 +1091,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       {/* ========================================================================= */}
       {activeTab === 'devices' && isAdmin && (
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-4">
             <h2 className="text-base font-bold text-[#172B28]">Equipos Vinculados a la Institución</h2>
             <p className="text-xs text-slate-500">
               {systemStatus?.authority
@@ -1150,7 +1150,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
           {/* Sección de vinculación de nuevo equipo (Director) */}
           {isDirector && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-4">
               <h3 className="text-sm font-bold text-[#172B28]">Autorizar nuevo equipo docente o secretaría</h3>
               <p className="text-xs text-slate-500">
                 El usuario del nuevo equipo debe generar su archivo <code>SOLICITUD_VINCULACION.json</code> y traértelo en USB.
@@ -1222,7 +1222,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
           {/* Generar solicitud si este no es el hub */}
           {!systemStatus?.authority && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-4">
               <h3 className="text-sm font-bold text-[#172B28]">Solicitar vinculación de este equipo</h3>
               <p className="text-xs text-slate-500">
                 Genera la clave pública de este equipo para entregarla a Dirección en un USB.
@@ -1245,7 +1245,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       {/* ========================================================================= */}
       {activeTab === 'conflicts' && isDirector && (
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-2">
             <h2 className="text-base font-bold text-[#172B28]">Bandeja de Conflictos y Diferencias Académicas</h2>
             <p className="text-xs text-slate-500">
               Cuando dos computadoras modifican el mismo registro de forma concurrente, el sistema no borra datos ni
