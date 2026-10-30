@@ -199,10 +199,10 @@ export const PendingChangesProvider: React.FC<{ children: React.ReactNode }> = (
           aria-describedby="unsaved-modal-desc"
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-[#263834] animate-in zoom-in-95 duration-200">
             {/* Encabezado con icono de advertencia */}
             <div className="flex items-start gap-4 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
                 <svg
                   className="w-6 h-6"
                   fill="none"
@@ -221,11 +221,11 @@ export const PendingChangesProvider: React.FC<{ children: React.ReactNode }> = (
               <div className="flex-1">
                 <h3
                   id="unsaved-modal-title"
-                  className="text-lg font-bold text-slate-900 tracking-tight"
+                  className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight"
                 >
                   Cambios pendientes sin guardar
                 </h3>
-                <p id="unsaved-modal-desc" className="text-sm text-slate-600 mt-1 leading-relaxed">
+                <p id="unsaved-modal-desc" className="text-sm text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                   {displayMessage}
                 </p>
               </div>
@@ -235,9 +235,9 @@ export const PendingChangesProvider: React.FC<{ children: React.ReactNode }> = (
             {saveError && (
               <div
                 role="alert"
-                className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-center gap-2"
+                className="mb-5 p-3.5 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 text-red-800 dark:text-rose-300 text-xs font-semibold flex items-center gap-2"
               >
-                <svg className="w-4 h-4 shrink-0 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 shrink-0 text-red-600 dark:text-rose-400" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -249,13 +249,13 @@ export const PendingChangesProvider: React.FC<{ children: React.ReactNode }> = (
             )}
 
             {/* Botones de acción accesibles */}
-            <div className="flex flex-col sm:flex-row gap-2.5 mt-6 pt-4 border-t border-slate-100">
+            <div className="flex flex-col sm:flex-row gap-2.5 mt-6 pt-4 border-t border-slate-100 dark:border-[#263834]">
               <button
                 type="button"
                 id="btn-unsaved-stay"
                 onClick={handleStay}
                 disabled={isSaving}
-                className="order-2 sm:order-1 px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 transition-colors text-center disabled:opacity-50"
+                className="order-2 sm:order-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-200 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-[#1F2D2A] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 transition-colors text-center disabled:opacity-50"
               >
                 Permanecer y continuar editando
               </button>
@@ -265,7 +265,7 @@ export const PendingChangesProvider: React.FC<{ children: React.ReactNode }> = (
                 id="btn-unsaved-discard"
                 onClick={handleDiscardAndProceed}
                 disabled={isSaving}
-                className="order-3 sm:order-2 px-4 py-2.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-sm font-semibold hover:bg-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 transition-colors text-center disabled:opacity-50"
+                className="order-3 sm:order-2 px-4 py-2.5 rounded-xl border border-amber-300 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 text-sm font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 transition-colors text-center disabled:opacity-50"
               >
                 Descartar cambios y continuar
               </button>

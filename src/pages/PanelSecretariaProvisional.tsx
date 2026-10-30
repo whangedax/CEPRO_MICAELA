@@ -78,33 +78,33 @@ export const PanelSecretariaProvisional: React.FC<PanelSecretariaProvisionalProp
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-[11px] font-bold text-[#004034] uppercase tracking-widest bg-[#E6F4F1] px-2.5 py-1 rounded-md">
+            <span className="text-[11px] font-bold text-[#004034] dark:text-[#5EEAD4] uppercase tracking-widest bg-[#E6F4F1] dark:bg-[#132B25] px-2.5 py-1 rounded-md">
               Ámbito Institucional · Secretaría
             </span>
             <StatusBadge size="sm" />
           </div>
-          <h1 className="text-3xl font-extrabold text-[#0D382F] tracking-tight">
+          <h1 className="text-3xl font-extrabold text-[#0D382F] dark:text-[#F0FDF8] tracking-tight">
             Panel de Secretaría
-            <span className="block text-2xl font-semibold text-slate-600 mt-1">
+            <span className="block text-2xl font-semibold text-slate-600 dark:text-slate-400 mt-1">
               pendiente de modernización
             </span>
           </h1>
-          <p className="text-sm font-medium text-slate-700 mt-2 max-w-2xl leading-relaxed">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-2 max-w-2xl leading-relaxed">
             La interfaz de gestión académica de Secretaría se encuentra en proceso de modernización visual Stitch.
             Las funciones de registro, matrícula y control documental se encuentran disponibles a través del menú lateral.
           </p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0 self-start md:self-auto">
-          <div className="p-3 bg-white border border-slate-200 rounded-2xl shadow-xs flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#13594A]/10 text-[#13594A]">
+          <div className="p-3 bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] rounded-2xl shadow-xs flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
               <InstitutionalBrandIcon className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[11px] font-bold text-slate-800 block">
+              <span className="text-[11px] font-bold text-slate-800 dark:text-[#F0FDF8] block">
                 Nivel de Autoridad
               </span>
-              <span className="text-xs font-semibold text-[#13594A]">
+              <span className="text-xs font-semibold text-[#13594A] dark:text-[#5EEAD4]">
                 Secretaría Académica
               </span>
             </div>
@@ -115,7 +115,7 @@ export const PanelSecretariaProvisional: React.FC<PanelSecretariaProvisionalProp
       {/* Tarjeta de estado institucional */}
       <div className="bg-gradient-to-br from-[#13594A] to-[#0A3D32] rounded-3xl p-8 text-white shadow-[0_8px_30px_rgba(19,89,74,0.12)] relative overflow-hidden">
         <div className="relative z-10 max-w-3xl">
-          <span className="inline-block px-3 py-1 rounded-full bg-white/15 text-white text-[11px] font-bold tracking-wide uppercase mb-3 backdrop-blur-xs">
+          <span className="inline-block px-3 py-1 rounded-full bg-white/15 dark:bg-white/10 text-white text-[11px] font-bold tracking-wide uppercase mb-3 backdrop-blur-xs">
             Guía de Secretaría Académica
           </span>
           <h2 className="text-xl md:text-2xl font-bold mb-3 tracking-tight">
@@ -131,7 +131,7 @@ export const PanelSecretariaProvisional: React.FC<PanelSecretariaProvisionalProp
             <button
               type="button"
               onClick={() => onNavigate('matriculas')}
-              className="px-4 py-2.5 bg-white text-[#004034] hover:bg-[#E6F4F1] font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#13594A]"
+              className="px-4 py-2.5 bg-white dark:bg-[#182220] text-[#004034] dark:text-[#5EEAD4] hover:bg-[#E6F4F1] dark:hover:bg-[#132B25] font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#13594A]"
             >
               <span>Gestionar matrículas</span>
               <ArrowForwardIcon className="w-3.5 h-3.5" />
@@ -154,16 +154,16 @@ export const PanelSecretariaProvisional: React.FC<PanelSecretariaProvisionalProp
         </div>
 
         {/* Decoración de fondo */}
-        <div className="absolute -right-8 -bottom-8 w-64 h-64 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -right-8 -bottom-8 w-64 h-64 bg-white/5 dark:bg-white/5 rounded-full blur-2xl pointer-events-none" />
       </div>
 
       {/* Módulos de Secretaría */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-[#0D382F] tracking-tight">
+          <h3 className="text-base font-bold text-[#0D382F] dark:text-[#F0FDF8] tracking-tight">
             Módulos autorizados para Secretaría
           </h3>
-          <span className="text-xs font-semibold text-slate-500">
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
             6 accesos principales
           </span>
         </div>
@@ -172,21 +172,21 @@ export const PanelSecretariaProvisional: React.FC<PanelSecretariaProvisionalProp
           {secretariatActions.map((action) => (
             <div
               key={action.route}
-              className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:border-[#13594A]/30 hover:shadow-md transition-all flex flex-col justify-between group"
+              className="bg-white dark:bg-[#182220] rounded-2xl p-6 border border-slate-200/90 dark:border-[#263834] shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:border-[#13594A]/30 dark:hover:border-[#208B73]/50 hover:shadow-md transition-all flex flex-col justify-between group"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-2.5 rounded-xl bg-[#E6F4F1] border border-[#13594A]/10">
+                  <div className="p-2.5 rounded-xl bg-[#E6F4F1] dark:bg-[#132B25] border border-[#13594A]/10 dark:border-[#208B73]/30">
                     {action.icon}
                   </div>
-                  <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
+                  <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-[#131C1A] px-2 py-0.5 rounded-md">
                     {action.badge}
                   </span>
                 </div>
-                <h4 className="text-[15px] font-bold text-[#172B28] group-hover:text-[#13594A] transition-colors mb-2">
+                <h4 className="text-[15px] font-bold text-[#172B28] dark:text-[#F0FDF8] group-hover:text-[#13594A] dark:group-hover:text-[#5EEAD4] transition-colors mb-2">
                   {action.title}
                 </h4>
-                <p className="text-xs text-slate-600 leading-relaxed font-normal mb-5">
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal mb-5">
                   {action.description}
                 </p>
               </div>
@@ -194,10 +194,10 @@ export const PanelSecretariaProvisional: React.FC<PanelSecretariaProvisionalProp
               <button
                 type="button"
                 onClick={() => onNavigate(action.route)}
-                className="w-full py-2.5 px-3 rounded-xl bg-slate-50 hover:bg-[#E6F4F1] text-slate-700 hover:text-[#004034] text-xs font-bold transition-all flex items-center justify-center gap-2 group/btn focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+                className="w-full py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-[#131C1A] hover:bg-[#E6F4F1] dark:hover:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 hover:text-[#004034] dark:hover:text-[#5EEAD4] text-xs font-bold transition-all flex items-center justify-center gap-2 group/btn focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
               >
                 <span>Acceder al módulo</span>
-                <ArrowForwardIcon className="w-3.5 h-3.5 text-slate-500 group-hover/btn:text-[#13594A] group-hover/btn:translate-x-0.5 transition-all" />
+                <ArrowForwardIcon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover/btn:text-[#13594A] dark:group-hover/btn:text-[#5EEAD4] group-hover/btn:translate-x-0.5 transition-all" />
               </button>
             </div>
           ))}

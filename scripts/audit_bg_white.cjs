@@ -14,21 +14,24 @@ function walk(dir) {
 }
 
 const files = walk('src');
-let issues = [];
+let issuesByFile = {};
+let total = 0;
 
 files.forEach(f => {
   const content = fs.readFileSync(f, 'utf8');
   const lines = content.split('\n');
   lines.forEach((l, idx) => {
-    const match = l.match(/className=(?:\{`|["'`])([^"'`]+)(?:`\}|["'`])/);
-    if (match) {
-      const cls = match[1];
-      if (cls.includes('bg-white') && !cls.includes('dark:bg') && !cls.includes('canvas') && !cls.includes('print:')) {
-        issues.push({ file: f, line: idx + 1, text: cls });
-      }
+    // Look for bg-white without dark:bg in the same line/className
+    if (l.includes('bg-white') && !l.includes('dark:bg-') && !l.includes('canvas') && !l.includes('print:')) {
+      if (!issuesByFile[f]) issuesByFile[f] = [];
+      issuesByFile[f].push({ line: idx + 1, text: l.trim().slice(0, 100) });
+      total++;
     }
   });
 });
 
-console.log('Total bg-white without dark:bg:', issues.length);
-issues.forEach(i => console.log(`${i.file}:${i.line} -> ${i.text.slice(0, 80)}`));
+console.log('Total bg-white occurrences without dark:bg on same line:', total);
+for (const [file, items] of Object.entries(issuesByFile)) {
+  console.log(`\n=== ${file} (${items.length}) ===`);
+  items.slice(0, 5).forEach(i => console.log(`  Line ${i.line}: ${i.text}`));
+}

@@ -875,7 +875,7 @@ export const RegistroAsistencia: React.FC = () => {
           <button
             type="button"
             onClick={() => setSaveFeedback(null)}
-            className="text-xs font-semibold px-2 py-1 rounded-md text-slate-700 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/10"
+            className="text-xs font-semibold px-2 py-1 rounded-md text-slate-700 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/10 dark:bg-transparent"
             aria-label="Cerrar notificación"
           >
             ✕

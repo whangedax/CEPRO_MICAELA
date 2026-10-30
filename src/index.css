@@ -65,7 +65,21 @@ html.dark table thead tr {
   border-color: #263834 !important;
 }
 
+html.dark table tbody {
+  background-color: transparent !important;
+}
+
 html.dark table tbody tr {
+  background-color: #182220;
+  border-color: #263834 !important;
+  color: #F0FDF8;
+}
+
+html.dark table tbody tr:hover {
+  background-color: #1F2D2A !important;
+}
+
+html.dark table td {
   border-color: #263834 !important;
 }
 

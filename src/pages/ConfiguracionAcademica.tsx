@@ -739,25 +739,25 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 dark:bg-[#132B25] text-emerald-800 dark:text-[#5EEAD4] border border-emerald-200 dark:border-[#208B73]/50">
                 <AcademicConfigIcon className="w-3.5 h-3.5" />
                 Configuración Académica
               </span>
               <span
                 className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                   isEditable
-                    ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
-                    : 'bg-amber-100 text-amber-900 border border-amber-300'
+                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                    : 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
                 }`}
               >
                 {isEditable ? (
                   <>
-                    <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-700" />
+                    <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                     Edición autorizada (Dirección)
                   </>
                 ) : (
                   <>
-                    <LockIcon className="w-3.5 h-3.5 text-amber-700" />
+                    <LockIcon className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                     Solo lectura institucional
                   </>
                 )}
@@ -766,7 +766,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
             <h1 className="text-2xl font-black text-slate-900 dark:text-[#F0FDF8] tracking-tight">
               Configuración Académica y Periodos Lectivos
             </h1>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Gestión centralizada del año lectivo, calendarios oficiales, periodos académicos, planes curriculares y directorio del personal.
             </p>
           </div>
@@ -776,7 +776,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
               type="button"
               onClick={() => loadConfiguration(selectedYear)}
               disabled={isLoading}
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] rounded-xl hover:bg-slate-50 dark:hover:bg-[#1F2D2A] transition-colors disabled:opacity-50"
               title="Recargar configuración desde el servidor"
             >
               <RefreshIcon className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -791,7 +791,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                   setCloneError(null);
                   setIsCloneModalOpen(true);
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl shadow-sm transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-emerald-800 dark:bg-[#13594A] hover:bg-emerald-900 dark:hover:bg-[#0D3E34] rounded-xl shadow-sm transition-colors"
                 title="Clonar estructura a un nuevo año lectivo"
               >
                 <CalendarIcon className="w-4 h-4" />
@@ -802,16 +802,16 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
         </div>
 
         {/* Barra de herramientas: Selector de Año y Modo */}
-        <div className="mt-6 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
+        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-[#263834] flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <label htmlFor="year-select" className="text-sm font-bold text-slate-700">
+            <label htmlFor="year-select" className="text-sm font-bold text-slate-700 dark:text-slate-300">
               Año lectivo activo:
             </label>
             <select
               id="year-select"
               value={selectedYear}
               onChange={(e) => handleYearChange(e.target.value)}
-              className="px-3 py-1.5 text-sm font-bold text-emerald-900 bg-emerald-50/70 border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700"
+              className="px-3 py-1.5 text-sm font-bold text-emerald-900 dark:text-[#5EEAD4] bg-emerald-50/70 dark:bg-[#131C1A] border border-emerald-300 dark:border-[#263834] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399]"
             >
               {availableYearsList.map((y) => (
                 <option key={y} value={y}>
@@ -819,14 +819,14 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                 </option>
               ))}
             </select>
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
               ({(config?.records.filter((r) => r.scope.target.includes(selectedYear) || r.fields.year === selectedYear) || []).length} registros vinculados)
             </span>
           </div>
 
           {!isEditable && (
-            <div className="flex items-center gap-2 text-xs font-semibold text-amber-800 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
-              <LockIcon className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="flex items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800/60">
+              <LockIcon className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>Modo consulta: Secretaría tiene permisos de solo lectura. Las modificaciones requieren rol Director.</span>
             </div>
           )}
@@ -837,8 +837,8 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
       {/* 2. ALERTAS Y CONFLICTOS                    */}
       {/* ========================================== */}
       {serverError && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 text-red-800">
-          <AlertCircleIcon className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+        <div className="p-4 bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 rounded-xl flex items-start gap-3 text-red-800 dark:text-rose-200">
+          <AlertCircleIcon className="w-5 h-5 text-red-600 dark:text-rose-400 shrink-0 mt-0.5" />
           <div className="text-sm">
             <p className="font-bold">Error en la operación</p>
             <p className="mt-0.5">{serverError}</p>
@@ -847,9 +847,9 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
       )}
 
       {conflictError && (
-        <div className="p-4 bg-amber-50 border border-amber-300 rounded-xl flex items-start justify-between gap-3 text-amber-900">
+        <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/60 rounded-xl flex items-start justify-between gap-3 text-amber-900 dark:text-amber-200">
           <div className="flex items-start gap-3">
-            <AlertCircleIcon className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <AlertCircleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="text-sm">
               <p className="font-bold">Conflicto de concurrencia detectado (HTTP 409)</p>
               <p className="mt-0.5">{conflictError}</p>
@@ -858,7 +858,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
           <button
             type="button"
             onClick={() => loadConfiguration(selectedYear)}
-            className="px-3 py-1.5 bg-amber-800 text-white text-xs font-bold rounded-lg hover:bg-amber-900 shrink-0"
+            className="px-3 py-1.5 bg-amber-800 dark:bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-900 dark:hover:bg-amber-600 shrink-0"
           >
             Sincronizar ahora
           </button>
@@ -866,15 +866,15 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
       )}
 
       {successMessage && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start justify-between gap-3 text-emerald-900">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-start justify-between gap-3 text-emerald-900 dark:text-emerald-200">
           <div className="flex items-center gap-3">
-            <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0" />
+            <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <p className="text-sm font-semibold">{successMessage}</p>
           </div>
           <button
             type="button"
             onClick={() => setSuccessMessage(null)}
-            className="text-xs text-emerald-700 hover:text-emerald-950 font-bold"
+            className="text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-950 dark:hover:text-emerald-200 font-bold"
           >
             Cerrar
           </button>
@@ -883,20 +883,20 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
 
       {/* Banner de Inconsistencias Curriculares */}
       {currentYearIssues.length > 0 ? (
-        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl space-y-2">
-          <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
-            <AlertCircleIcon className="w-4 h-4 text-amber-600" />
+        <div className="bg-amber-50 dark:bg-amber-950/40 border-l-4 border-amber-500 dark:border-amber-400 p-4 rounded-r-xl space-y-2 border border-amber-200 dark:border-amber-800/60">
+          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-bold text-sm">
+            <AlertCircleIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             <span>Inconsistencias curriculares detectadas ({currentYearIssues.length})</span>
           </div>
-          <ul className="list-disc list-inside text-xs text-amber-800 space-y-1 pl-2">
+          <ul className="list-disc list-inside text-xs text-amber-800 dark:text-amber-300 space-y-1 pl-2">
             {currentYearIssues.map((issue, idx) => (
               <li key={idx}>{issue}</li>
             ))}
           </ul>
         </div>
       ) : (
-        <div className="bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs text-emerald-800 font-semibold">
-          <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
+        <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs text-emerald-800 dark:text-emerald-300 font-semibold">
+          <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <span>Planes curriculares consistentes para el año lectivo {selectedYear}. No se detectan omisiones de horas o créditos.</span>
         </div>
       )}
@@ -905,14 +905,14 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
       {/* 3. PESTAÑAS PRINCIPALES                    */}
       {/* ========================================== */}
       <div className="bg-white dark:bg-[#182220] rounded-2xl shadow-sm border border-slate-200 dark:border-[#263834] overflow-hidden">
-        <div className="border-b border-slate-200 bg-slate-50/60 px-6 pt-3 flex flex-wrap gap-2">
+        <div className="border-b border-slate-200 dark:border-[#263834] bg-slate-50/60 dark:bg-[#131C1A] px-6 pt-3 flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => setActiveTab('institucion')}
             className={`px-4 py-2.5 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
               activeTab === 'institucion'
-                ? 'border-emerald-800 text-emerald-900 bg-white rounded-t-xl shadow-xs'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-emerald-800 dark:border-[#5EEAD4] text-emerald-900 dark:text-[#5EEAD4] bg-white dark:bg-[#182220] rounded-t-xl shadow-xs'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-[#F0FDF8]'
             }`}
           >
             <DocConfigIcon className="w-4 h-4" />
@@ -924,8 +924,8 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
             onClick={() => setActiveTab('periodos')}
             className={`px-4 py-2.5 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
               activeTab === 'periodos'
-                ? 'border-emerald-800 text-emerald-900 bg-white rounded-t-xl shadow-xs'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-emerald-800 dark:border-[#5EEAD4] text-emerald-900 dark:text-[#5EEAD4] bg-white dark:bg-[#182220] rounded-t-xl shadow-xs'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-[#F0FDF8]'
             }`}
           >
             <CalendarIcon className="w-4 h-4" />
@@ -937,8 +937,8 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
             onClick={() => setActiveTab('curriculo')}
             className={`px-4 py-2.5 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
               activeTab === 'curriculo'
-                ? 'border-emerald-800 text-emerald-900 bg-white rounded-t-xl shadow-xs'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-emerald-800 dark:border-[#5EEAD4] text-emerald-900 dark:text-[#5EEAD4] bg-white dark:bg-[#182220] rounded-t-xl shadow-xs'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-[#F0FDF8]'
             }`}
           >
             <AcademicConfigIcon className="w-4 h-4" />
@@ -950,8 +950,8 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
             onClick={() => setActiveTab('valores')}
             className={`px-4 py-2.5 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
               activeTab === 'valores'
-                ? 'border-emerald-800 text-emerald-900 bg-white rounded-t-xl shadow-xs'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-emerald-800 dark:border-[#5EEAD4] text-emerald-900 dark:text-[#5EEAD4] bg-white dark:bg-[#182220] rounded-t-xl shadow-xs'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-[#F0FDF8]'
             }`}
           >
             <DocConfigIcon className="w-4 h-4" />
@@ -963,8 +963,8 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
             onClick={() => setActiveTab('personal')}
             className={`px-4 py-2.5 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
               activeTab === 'personal'
-                ? 'border-emerald-800 text-emerald-900 bg-white rounded-t-xl shadow-xs'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-emerald-800 dark:border-[#5EEAD4] text-emerald-900 dark:text-[#5EEAD4] bg-white dark:bg-[#182220] rounded-t-xl shadow-xs'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-[#F0FDF8]'
             }`}
           >
             <SearchIcon className="w-4 h-4" />
@@ -980,10 +980,10 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8]">
                     Parámetros Institucionales y Calendarización ({selectedYear})
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Configuración de cabeceras oficiales y fechas de inicio/fin de actividades del año lectivo.
                   </p>
                 </div>
@@ -992,7 +992,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                     type="button"
                     onClick={handleSaveYear}
                     disabled={isSaving}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl shadow-sm transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-emerald-800 dark:bg-[#13594A] hover:bg-emerald-900 dark:hover:bg-[#0D3E34] rounded-xl shadow-sm transition-colors disabled:opacity-50"
                   >
                     <SaveIcon className="w-4 h-4" />
                     {isSaving ? 'Guardando...' : 'Guardar parámetros del año'}
@@ -1001,9 +1001,9 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
               </div>
 
               {/* Parámetros anuales declarados */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-[#131C1A] rounded-xl border border-slate-200 dark:border-[#263834]">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                     Horas anuales declaradas
                   </label>
                   <input
@@ -1014,13 +1014,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                       setFormYear({ ...formYear, hours: Number(e.target.value) });
                       setIsDirty(true);
                     }}
-                    className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100 font-semibold"
+                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8] font-semibold"
                     placeholder="1700"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                     Créditos anuales declarados
                   </label>
                   <input
@@ -1031,13 +1031,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                       setFormYear({ ...formYear, credits: Number(e.target.value) });
                       setIsDirty(true);
                     }}
-                    className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100 font-semibold"
+                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8] font-semibold"
                     placeholder="64"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                     Fecha del directorio
                   </label>
                   <input
@@ -1048,12 +1048,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                       setFormYear({ ...formYear, directoryDate: e.target.value });
                       setIsDirty(true);
                     }}
-                    className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100"
+                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                     Lugar del directorio
                   </label>
                   <input
@@ -1064,7 +1064,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                       setFormYear({ ...formYear, directoryPlace: e.target.value });
                       setIsDirty(true);
                     }}
-                    className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100"
+                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                     placeholder="Juliaca"
                   />
                 </div>
@@ -1072,12 +1072,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
 
               {/* Perfil institucional para documentos (institutionJson) */}
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-[#F0FDF8] uppercase tracking-wide">
                   Identidad y Jurisdicción Institucional
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       Nombre oficial de la institución
                     </label>
                     <input
@@ -1091,13 +1091,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                         });
                         setIsDirty(true);
                       }}
-                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                       placeholder="CETPRO Micaela Bastidas"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       DRE
                     </label>
                     <input
@@ -1111,13 +1111,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                         });
                         setIsDirty(true);
                       }}
-                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                       placeholder="DRE Puno"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       UGEL
                     </label>
                     <input
@@ -1131,13 +1131,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                         });
                         setIsDirty(true);
                       }}
-                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                       placeholder="UGEL San Román"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       Región / Departamento
                     </label>
                     <input
@@ -1151,13 +1151,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                         });
                         setIsDirty(true);
                       }}
-                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                       placeholder="Puno"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       Provincia
                     </label>
                     <input
@@ -1171,13 +1171,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                         });
                         setIsDirty(true);
                       }}
-                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                       placeholder="San Román"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       Distrito
                     </label>
                     <input
@@ -1191,13 +1191,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                         });
                         setIsDirty(true);
                       }}
-                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                       placeholder="Juliaca"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       Director/a oficial
                     </label>
                     <input
@@ -1211,7 +1211,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                         });
                         setIsDirty(true);
                       }}
-                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                       placeholder="Lic. Roberto Morales"
                     />
                   </div>
@@ -1219,13 +1219,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
               </div>
 
               {/* Calendarización del año lectivo (calendarJson) */}
-              <div className="space-y-3 pt-4 border-t border-slate-200">
+              <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-[#263834]">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-[#F0FDF8] uppercase tracking-wide">
                       Calendarización Oficial ({formYear._calendar?.length || 0} bloques)
                     </h3>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       Fechas de los periodos académicos y actividades oficiales. Se sincroniza con los periodos académicos individuales.
                     </p>
                   </div>
@@ -1233,16 +1233,16 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                     <button
                       type="button"
                       onClick={handleAddCalendarBlock}
-                      className="px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 rounded-lg hover:bg-emerald-100"
+                      className="px-3 py-1.5 text-xs font-bold text-emerald-800 dark:text-[#5EEAD4] bg-emerald-50 dark:bg-[#132B25] border border-emerald-300 dark:border-[#208B73]/50 rounded-lg hover:bg-emerald-100 dark:hover:bg-[#183B33]"
                     >
                       + Añadir bloque de calendario
                     </button>
                   )}
                 </div>
 
-                <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                  <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
-                    <thead className="bg-slate-50 text-slate-700 font-bold">
+                <div className="overflow-x-auto border border-slate-200 dark:border-[#263834] rounded-xl">
+                  <table className="min-w-full divide-y divide-slate-200 dark:divide-[#263834] text-left text-xs">
+                    <thead className="bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-bold">
                       <tr>
                         <th className="px-4 py-2.5">Bloque / Denominación</th>
                         <th className="px-4 py-2.5">Inicio (AAAA-MM-DD)</th>
@@ -1251,23 +1251,23 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                         {isEditable && <th className="px-4 py-2.5 text-right">Acción</th>}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 bg-white">
+                    <tbody className="divide-y divide-slate-200 dark:divide-[#263834] bg-white dark:bg-[#182220]">
                       {(formYear._calendar || []).length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-4 py-6 text-center text-slate-400">
+                          <td colSpan={5} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">
                             No hay bloques de calendarización registrados.
                           </td>
                         </tr>
                       ) : (
                         (formYear._calendar || []).map((row: CalendarBlock, idx: number) => (
-                          <tr key={idx} className="hover:bg-slate-50/50">
+                          <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-[#1F2D2A] transition-colors">
                             <td className="px-4 py-2">
                               <input
                                 type="text"
                                 disabled={!isEditable}
                                 value={row.name}
                                 onChange={(e) => handleUpdateCalendarBlock(idx, 'name', e.target.value)}
-                                className="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 font-medium"
+                                className="w-full px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700 font-medium"
                               />
                             </td>
                             <td className="px-4 py-2">
@@ -1276,7 +1276,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 disabled={!isEditable}
                                 value={row.start}
                                 onChange={(e) => handleUpdateCalendarBlock(idx, 'start', e.target.value)}
-                                className="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700"
+                                className="w-full px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700"
                               />
                             </td>
                             <td className="px-4 py-2">
@@ -1285,7 +1285,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 disabled={!isEditable}
                                 value={row.end}
                                 onChange={(e) => handleUpdateCalendarBlock(idx, 'end', e.target.value)}
-                                className="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700"
+                                className="w-full px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700"
                               />
                             </td>
                             <td className="px-4 py-2">
@@ -1294,7 +1294,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 disabled={!isEditable}
                                 value={row.detail || ''}
                                 onChange={(e) => handleUpdateCalendarBlock(idx, 'detail', e.target.value)}
-                                className="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700"
+                                className="w-full px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700"
                                 placeholder="Notas u observaciones"
                               />
                             </td>
@@ -1303,7 +1303,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveCalendarBlock(idx)}
-                                  className="text-red-600 hover:text-red-800 font-bold"
+                                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-bold"
                                   title="Eliminar bloque"
                                 >
                                   Quitar
@@ -1327,10 +1327,10 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8]">
                     Periodos Académicos del Año {selectedYear}
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Semestres y ciclos académicos que definen las ventanas de clases y notas.
                   </p>
                 </div>
@@ -1339,19 +1339,19 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
               {/* Lista de periodos disponibles */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Object.keys(formPeriods).length === 0 ? (
-                  <div className="col-span-2 p-8 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                  <div className="col-span-2 p-8 text-center text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-[#131C1A] rounded-xl border border-dashed border-slate-300 dark:border-[#263834]">
                     No se encontraron periodos académicos para el año {selectedYear}.
                   </div>
                 ) : (
                   Object.entries(formPeriods).map(([target, pr]) => (
                     <div
                       key={target}
-                      className="p-5 bg-white rounded-xl border border-slate-200 shadow-xs space-y-4"
+                      className="p-5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs space-y-4"
                     >
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                      <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#263834] pb-3">
                         <div className="flex items-center gap-2">
-                          <CalendarIcon className="w-5 h-5 text-emerald-800" />
-                          <span className="text-base font-bold text-slate-900">
+                          <CalendarIcon className="w-5 h-5 text-emerald-800 dark:text-[#5EEAD4]" />
+                          <span className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
                             Periodo {target}
                           </span>
                         </div>
@@ -1360,7 +1360,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                             type="button"
                             onClick={() => handleSavePeriod(target)}
                             disabled={isSaving}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-lg shadow-xs transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-800 dark:bg-[#13594A] hover:bg-emerald-900 dark:hover:bg-[#0D3E34] rounded-lg shadow-xs transition-colors disabled:opacity-50"
                           >
                             <SaveIcon className="w-3.5 h-3.5" />
                             Guardar periodo
@@ -1370,7 +1370,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
 
                       <div className="grid grid-cols-2 gap-3 text-xs">
                         <div>
-                          <label className="block font-semibold text-slate-600 mb-1">
+                          <label className="block font-semibold text-slate-600 dark:text-slate-400 mb-1">
                             Fecha de inicio
                           </label>
                           <input
@@ -1384,12 +1384,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                           />
                         </div>
 
                         <div>
-                          <label className="block font-semibold text-slate-600 mb-1">
+                          <label className="block font-semibold text-slate-600 dark:text-slate-400 mb-1">
                             Fecha de término
                           </label>
                           <input
@@ -1403,12 +1403,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                           />
                         </div>
 
                         <div>
-                          <label className="block font-semibold text-slate-600 mb-1">
+                          <label className="block font-semibold text-slate-600 dark:text-slate-400 mb-1">
                             Horas declaradas
                           </label>
                           <input
@@ -1422,13 +1422,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100 font-medium"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8] font-medium"
                             placeholder="850"
                           />
                         </div>
 
                         <div>
-                          <label className="block font-semibold text-slate-600 mb-1">
+                          <label className="block font-semibold text-slate-600 dark:text-slate-400 mb-1">
                             Créditos declarados
                           </label>
                           <input
@@ -1442,13 +1442,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700 disabled:bg-slate-100 font-medium"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8] font-medium"
                             placeholder="32"
                           />
                         </div>
                       </div>
 
-                      <div className="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-[#131C1A] p-2.5 rounded-lg border border-slate-100 dark:border-[#263834]">
                         Nota: Al guardar las fechas de este periodo, el sistema sincroniza automáticamente la fila correspondiente en la calendarización del año lectivo.
                       </div>
                     </div>
@@ -1465,24 +1465,24 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8]">
                     Planes Curriculares y Estructura Modular ({selectedYear})
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Especificación de módulos, unidades didácticas y prácticas pre-profesionales (EFSRT).
                   </p>
                 </div>
 
                 {/* Selector de módulo */}
                 <div className="flex items-center gap-3">
-                  <label htmlFor="curriculum-select" className="text-xs font-bold text-slate-700 uppercase">
+                  <label htmlFor="curriculum-select" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
                     Módulo curricular:
                   </label>
                   <select
                     id="curriculum-select"
                     value={selectedCurriculumId}
                     onChange={(e) => setSelectedCurriculumId(e.target.value)}
-                    className="px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-700"
+                    className="px-3 py-1.5 text-xs font-semibold bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8] rounded-xl focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399]"
                   >
                     {Object.entries(formCurriculum).map(([mid, c]) => (
                       <option key={mid} value={mid}>
@@ -1499,12 +1499,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                   return (
                     <div className="space-y-6">
                       {/* Cabecera de acciones del módulo */}
-                      <div className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200 flex flex-wrap items-center justify-between gap-3">
+                      <div className="p-4 bg-emerald-50/60 dark:bg-[#132B25]/60 rounded-xl border border-emerald-200 dark:border-[#208B73]/50 flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <span className="text-xs font-bold uppercase text-emerald-800">
+                          <span className="text-xs font-bold uppercase text-emerald-800 dark:text-[#5EEAD4]">
                             {cur.programName || 'Programa'} · Código {cur.programCode || 'S/C'}
                           </span>
-                          <h3 className="text-base font-black text-slate-900">
+                          <h3 className="text-base font-black text-slate-900 dark:text-[#F0FDF8]">
                             {cur.nombre} ({selectedCurriculumId})
                           </h3>
                         </div>
@@ -1515,7 +1515,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               type="button"
                               onClick={() => handleApplyReference(selectedCurriculumId)}
                               disabled={isApplyingRef}
-                              className="px-3 py-1.5 text-xs font-bold text-emerald-900 bg-white border border-emerald-400 rounded-lg hover:bg-emerald-100 shadow-xs transition-colors disabled:opacity-50"
+                              className="px-3 py-1.5 text-xs font-bold text-emerald-900 dark:text-[#5EEAD4] bg-white dark:bg-[#131C1A] border border-emerald-400 dark:border-[#208B73] rounded-lg hover:bg-emerald-100 dark:hover:bg-[#183B33] shadow-xs transition-colors disabled:opacity-50"
                               title="Restablece unidades y horas con los valores oficiales de referencia"
                             >
                               {isApplyingRef ? 'Aplicando...' : 'Aplicar valores de referencia'}
@@ -1527,7 +1527,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               type="button"
                               onClick={() => handleSaveCurriculum(selectedCurriculumId)}
                               disabled={isSaving}
-                              className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-lg shadow-xs transition-colors disabled:opacity-50"
+                              className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-emerald-800 dark:bg-[#13594A] hover:bg-emerald-900 dark:hover:bg-[#0D3E34] rounded-lg shadow-xs transition-colors disabled:opacity-50"
                             >
                               <SaveIcon className="w-3.5 h-3.5" />
                               Guardar cambios de plan
@@ -1537,9 +1537,9 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                       </div>
 
                       {/* Campos del módulo */}
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-[#131C1A] rounded-xl border border-slate-200 dark:border-[#263834] text-xs">
                         <div>
-                          <label className="block font-bold text-slate-700 mb-1">
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Nombre oficial del módulo
                           </label>
                           <input
@@ -1553,12 +1553,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 font-semibold"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded focus:ring-1 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8] font-semibold"
                           />
                         </div>
 
                         <div>
-                          <label className="block font-bold text-slate-700 mb-1">
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Periodo de clase
                           </label>
                           <input
@@ -1572,13 +1572,13 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 font-semibold"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded focus:ring-1 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8] font-semibold"
                             placeholder="2026-I"
                           />
                         </div>
 
                         <div>
-                          <label className="block font-bold text-slate-700 mb-1">
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Nivel formativo
                           </label>
                           <input
@@ -1592,12 +1592,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded focus:ring-1 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                           />
                         </div>
 
                         <div>
-                          <label className="block font-bold text-slate-700 mb-1">
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Turno confirmado
                           </label>
                           <select
@@ -1610,7 +1610,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded focus:ring-1 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                           >
                             <option value="">(Seleccione turno)</option>
                             <option value="Mañana">Mañana</option>
@@ -1620,7 +1620,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                         </div>
 
                         <div>
-                          <label className="block font-bold text-slate-700 mb-1">
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Horas declaradas del módulo
                           </label>
                           <input
@@ -1634,12 +1634,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 font-semibold"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded focus:ring-1 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8] font-semibold"
                           />
                         </div>
 
                         <div>
-                          <label className="block font-bold text-slate-700 mb-1">
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Créditos declarados del módulo
                           </label>
                           <input
@@ -1653,12 +1653,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 font-semibold"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded focus:ring-1 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8] font-semibold"
                           />
                         </div>
 
                         <div>
-                          <label className="block font-bold text-slate-700 mb-1">
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Horas EFSRT (Prácticas)
                           </label>
                           <input
@@ -1672,12 +1672,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 font-semibold"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded focus:ring-1 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8] font-semibold"
                           />
                         </div>
 
                         <div>
-                          <label className="block font-bold text-slate-700 mb-1">
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Docentes de referencia
                           </label>
                           <input
@@ -1691,7 +1691,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100"
+                            className="w-full px-2.5 py-1.5 bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded focus:ring-1 focus:ring-emerald-700 dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] text-slate-800 dark:text-[#F0FDF8]"
                             placeholder="Prof. Martín Valdivia"
                           />
                         </div>
@@ -1700,17 +1700,17 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                       {/* Tabla de Unidades Didácticas (unitsJson) */}
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider">
+                          <h4 className="text-xs font-bold uppercase text-slate-800 dark:text-[#F0FDF8] tracking-wider">
                             Unidades Didácticas y Prácticas Formativas (EFSRT)
                           </h4>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
                             Total de unidades: {(cur._units || []).length}
                           </span>
                         </div>
 
-                        <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                          <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
-                            <thead className="bg-slate-50 text-slate-700 font-bold">
+                        <div className="overflow-x-auto border border-slate-200 dark:border-[#263834] rounded-xl">
+                          <table className="min-w-full divide-y divide-slate-200 dark:divide-[#263834] text-left text-xs">
+                            <thead className="bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-bold">
                               <tr>
                                 <th className="px-3 py-2">Código</th>
                                 <th className="px-3 py-2">Denominación de la Unidad</th>
@@ -1724,10 +1724,10 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 <th className="px-3 py-2 text-center">Estado</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200 bg-white">
+                            <tbody className="divide-y divide-slate-200 dark:divide-[#263834] bg-white dark:bg-[#182220]">
                               {(cur._units || []).map((u: CurriculumUnit, uidx: number) => (
-                                <tr key={u.code || uidx} className="hover:bg-slate-50/50">
-                                  <td className="px-3 py-2 font-mono font-bold text-emerald-900">
+                                <tr key={u.code || uidx} className="hover:bg-slate-50/50 dark:hover:bg-[#1F2D2A] transition-colors">
+                                  <td className="px-3 py-2 font-mono font-bold text-emerald-900 dark:text-[#5EEAD4]">
                                     {u.code}
                                   </td>
                                   <td className="px-3 py-2">
@@ -1736,7 +1736,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                       disabled={!isEditable}
                                       value={u.name || ''}
                                       onChange={(e) => handleUpdateUnit(selectedCurriculumId, uidx, 'name', e.target.value)}
-                                      className="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 font-medium"
+                                      className="w-full px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 dark:disabled:bg-[#182220] font-medium"
                                     />
                                   </td>
                                   <td className="px-3 py-2 text-center">
@@ -1745,7 +1745,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                       disabled={!isEditable}
                                       value={u.hours ?? ''}
                                       onChange={(e) => handleUpdateUnit(selectedCurriculumId, uidx, 'hours', Number(e.target.value))}
-                                      className="w-16 px-1.5 py-1 text-xs text-center border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 font-semibold"
+                                      className="w-16 px-1.5 py-1 text-xs text-center border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 dark:disabled:bg-[#182220] font-semibold"
                                     />
                                   </td>
                                   <td className="px-3 py-2 text-center">
@@ -1754,7 +1754,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                       disabled={!isEditable}
                                       value={u.credits ?? ''}
                                       onChange={(e) => handleUpdateUnit(selectedCurriculumId, uidx, 'credits', Number(e.target.value))}
-                                      className="w-14 px-1.5 py-1 text-xs text-center border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 font-semibold"
+                                      className="w-14 px-1.5 py-1 text-xs text-center border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 dark:disabled:bg-[#182220] font-semibold"
                                     />
                                   </td>
                                   <td className="px-3 py-2 text-center">
@@ -1763,7 +1763,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                       disabled={!isEditable}
                                       value={u.theoryHours ?? ''}
                                       onChange={(e) => handleUpdateUnit(selectedCurriculumId, uidx, 'theoryHours', Number(e.target.value))}
-                                      className="w-14 px-1.5 py-1 text-xs text-center border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100"
+                                      className="w-14 px-1.5 py-1 text-xs text-center border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                                     />
                                   </td>
                                   <td className="px-3 py-2 text-center">
@@ -1772,7 +1772,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                       disabled={!isEditable}
                                       value={u.practiceHours ?? ''}
                                       onChange={(e) => handleUpdateUnit(selectedCurriculumId, uidx, 'practiceHours', Number(e.target.value))}
-                                      className="w-14 px-1.5 py-1 text-xs text-center border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100"
+                                      className="w-14 px-1.5 py-1 text-xs text-center border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                                     />
                                   </td>
                                   <td className="px-3 py-2 text-center">
@@ -1781,7 +1781,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                       disabled={!isEditable}
                                       value={u.days ?? ''}
                                       onChange={(e) => handleUpdateUnit(selectedCurriculumId, uidx, 'days', Number(e.target.value))}
-                                      className="w-14 px-1.5 py-1 text-xs text-center border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100"
+                                      className="w-14 px-1.5 py-1 text-xs text-center border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                                     />
                                   </td>
                                   <td className="px-3 py-2">
@@ -1790,7 +1790,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                       disabled={!isEditable}
                                       value={u.fechaInicio || ''}
                                       onChange={(e) => handleUpdateUnit(selectedCurriculumId, uidx, 'fechaInicio', e.target.value)}
-                                      className="px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100"
+                                      className="px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                                     />
                                   </td>
                                   <td className="px-3 py-2">
@@ -1799,15 +1799,15 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                       disabled={!isEditable}
                                       value={u.fechaFin || ''}
                                       onChange={(e) => handleUpdateUnit(selectedCurriculumId, uidx, 'fechaFin', e.target.value)}
-                                      className="px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100"
+                                      className="px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                                     />
                                   </td>
                                   <td className="px-3 py-2 text-center">
                                     <span
                                       className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                         u.confirmed
-                                          ? 'bg-emerald-100 text-emerald-800'
-                                          : 'bg-amber-100 text-amber-800'
+                                          ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                                          : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
                                       }`}
                                     >
                                       {u.confirmed ? 'Confirmada' : 'Pendiente'}
@@ -1823,7 +1823,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                   );
                 })()
               ) : (
-                <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                <div className="p-8 text-center text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-[#131C1A] rounded-xl border border-dashed border-slate-300 dark:border-[#263834]">
                   Seleccione un módulo curricular para consultar su estructura.
                 </div>
               )}
@@ -1837,23 +1837,23 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8]">
                     Valores Oficiales de Referencia ({selectedYear})
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Catálogo nacional de oferta formativa y parámetros de cotejo curricular oficial.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <label htmlFor="defaults-select" className="text-xs font-bold text-slate-700 uppercase">
+                  <label htmlFor="defaults-select" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
                     Referencia del módulo:
                   </label>
                   <select
                     id="defaults-select"
                     value={selectedDefaultsId}
                     onChange={(e) => setSelectedDefaultsId(e.target.value)}
-                    className="px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-700"
+                    className="px-3 py-1.5 text-xs font-semibold bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8] rounded-xl focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399]"
                   >
                     {Object.keys(formDefaults).map((mid) => (
                       <option key={mid} value={mid}>
@@ -1871,12 +1871,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                   const units = def._data?.units || [];
                   return (
                     <div className="space-y-6">
-                      <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                      <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-[#131C1A] rounded-xl border border-slate-200 dark:border-[#263834]">
                         <div className="space-y-1">
-                          <span className="text-xs font-bold text-slate-500 uppercase">
+                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">
                             Origen normativo: {def.source || 'MINEDU / CNOF'}
                           </span>
-                          <p className="text-xs text-slate-600">
+                          <p className="text-xs text-slate-600 dark:text-slate-300">
                             {def.notes || 'Sin observaciones normativas.'}
                           </p>
                         </div>
@@ -1886,7 +1886,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                             type="button"
                             onClick={() => handleSaveDefaults(selectedDefaultsId)}
                             disabled={isSaving}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-800 dark:bg-[#13594A] hover:bg-emerald-900 dark:hover:bg-[#0D3E34] rounded-xl shadow-xs transition-colors disabled:opacity-50"
                           >
                             <SaveIcon className="w-3.5 h-3.5" />
                             Guardar valores oficiales
@@ -1895,9 +1895,9 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                       </div>
 
                       {/* Totales de referencia */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-xl border border-slate-200 text-xs">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] text-xs">
                         <div>
-                          <label className="block font-bold text-slate-700 mb-1">
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Horas de referencia del módulo
                           </label>
                           <input
@@ -1912,12 +1912,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-semibold focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100"
+                            className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded font-semibold focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                           />
                         </div>
 
                         <div>
-                          <label className="block font-bold text-slate-700 mb-1">
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Créditos de referencia del módulo
                           </label>
                           <input
@@ -1932,12 +1932,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-semibold focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100"
+                            className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded font-semibold focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                           />
                         </div>
 
                         <div>
-                          <label className="block font-bold text-slate-700 mb-1">
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Horas de EFSRT de referencia
                           </label>
                           <input
@@ -1952,19 +1952,19 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                               });
                               setIsDirty(true);
                             }}
-                            className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-semibold focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100"
+                            className="w-full px-2.5 py-1.5 border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded font-semibold focus:ring-1 focus:ring-emerald-700 disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                           />
                         </div>
                       </div>
 
                       {/* Unidades de referencia */}
                       <div className="space-y-3">
-                        <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider">
+                        <h4 className="text-xs font-bold uppercase text-slate-800 dark:text-[#F0FDF8] tracking-wider">
                           Unidades del Catálogo de Referencia
                         </h4>
-                        <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                          <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
-                            <thead className="bg-slate-50 text-slate-700 font-bold">
+                        <div className="overflow-x-auto border border-slate-200 dark:border-[#263834] rounded-xl">
+                          <table className="min-w-full divide-y divide-slate-200 dark:divide-[#263834] text-left text-xs">
+                            <thead className="bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-bold">
                               <tr>
                                 <th className="px-3 py-2">Código</th>
                                 <th className="px-3 py-2">Denominación Oficial</th>
@@ -1976,23 +1976,23 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 <th className="px-3 py-2">Indicador IL2</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200 bg-white">
+                            <tbody className="divide-y divide-slate-200 dark:divide-[#263834] bg-white dark:bg-[#182220]">
                               {units.map((u: any, uidx: number) => (
-                                <tr key={u.code || uidx} className="hover:bg-slate-50/50">
-                                  <td className="px-3 py-2 font-mono font-bold text-emerald-900">
+                                <tr key={u.code || uidx} className="hover:bg-slate-50/50 dark:hover:bg-[#1F2D2A] transition-colors">
+                                  <td className="px-3 py-2 font-mono font-bold text-emerald-900 dark:text-[#5EEAD4]">
                                     {u.code}
                                   </td>
-                                  <td className="px-3 py-2 font-medium text-slate-800">
+                                  <td className="px-3 py-2 font-medium text-slate-800 dark:text-[#F0FDF8]">
                                     {u.name}
                                   </td>
-                                  <td className="px-3 py-2 text-center font-bold">{u.hours ?? '-'}</td>
-                                  <td className="px-3 py-2 text-center font-bold">{u.credits ?? '-'}</td>
-                                  <td className="px-3 py-2 text-center">{u.theoryHours ?? '-'}</td>
-                                  <td className="px-3 py-2 text-center">{u.practiceHours ?? '-'}</td>
-                                  <td className="px-3 py-2 text-slate-600 truncate max-w-[180px]">
+                                  <td className="px-3 py-2 text-center font-bold text-slate-700 dark:text-slate-300">{u.hours ?? '-'}</td>
+                                  <td className="px-3 py-2 text-center font-bold text-slate-700 dark:text-slate-300">{u.credits ?? '-'}</td>
+                                  <td className="px-3 py-2 text-center text-slate-700 dark:text-slate-300">{u.theoryHours ?? '-'}</td>
+                                  <td className="px-3 py-2 text-center text-slate-700 dark:text-slate-300">{u.practiceHours ?? '-'}</td>
+                                  <td className="px-3 py-2 text-slate-600 dark:text-slate-400 truncate max-w-[180px]">
                                     {u.indicator1 || '-'}
                                   </td>
-                                  <td className="px-3 py-2 text-slate-600 truncate max-w-[180px]">
+                                  <td className="px-3 py-2 text-slate-600 dark:text-slate-400 truncate max-w-[180px]">
                                     {u.indicator2 || '-'}
                                   </td>
                                 </tr>
@@ -2005,7 +2005,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                   );
                 })()
               ) : (
-                <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                <div className="p-8 text-center text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-[#131C1A] rounded-xl border border-dashed border-slate-300 dark:border-[#263834]">
                   No hay valores de referencia registrados para este módulo en {selectedYear}.
                 </div>
               )}
@@ -2019,10 +2019,10 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8]">
                     Directorio Institucional del Personal ({selectedYear})
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Nómina oficial del personal directivo, jerárquico, docente y administrativo.
                   </p>
                 </div>
@@ -2035,7 +2035,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                       value={personnelFilter}
                       onChange={(e) => setPersonnelFilter(e.target.value)}
                       placeholder="Buscar por DNI, nombre o cargo..."
-                      className="pl-9 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-700 w-64"
+                      className="pl-9 pr-3 py-1.5 text-xs bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8] rounded-xl focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399] w-64"
                     />
                   </div>
 
@@ -2046,7 +2046,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                         setCloneError(null);
                         setIsAddPersonModalOpen(true);
                       }}
-                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl shadow-xs transition-colors shrink-0"
+                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-800 dark:bg-[#13594A] hover:bg-emerald-900 dark:hover:bg-[#0D3E34] rounded-xl shadow-xs transition-colors shrink-0"
                     >
                       + Registrar persona
                     </button>
@@ -2055,9 +2055,9 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
               </div>
 
               {/* Tabla de Directorio */}
-              <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
-                  <thead className="bg-slate-50 text-slate-700 font-bold">
+              <div className="overflow-x-auto border border-slate-200 dark:border-[#263834] rounded-xl">
+                <table className="min-w-full divide-y divide-slate-200 dark:divide-[#263834] text-left text-xs">
+                  <thead className="bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-bold">
                     <tr>
                       <th className="px-4 py-2.5">DNI</th>
                       <th className="px-4 py-2.5">Apellidos y Nombres</th>
@@ -2069,7 +2069,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                       {isEditable && <th className="px-4 py-2.5 text-right">Acción</th>}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200 bg-white">
+                  <tbody className="divide-y divide-slate-200 dark:divide-[#263834] bg-white dark:bg-[#182220]">
                     {(() => {
                       const filtered = Object.entries(formPersonnel).filter(([_, p]) => {
                         if (!personnelFilter.trim()) return true;
@@ -2085,7 +2085,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                       if (filtered.length === 0) {
                         return (
                           <tr>
-                            <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
+                            <td colSpan={8} className="px-4 py-8 text-center text-slate-400 dark:text-slate-500">
                               No se encontraron registros de personal en el directorio de {selectedYear}.
                             </td>
                           </tr>
@@ -2093,8 +2093,8 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                       }
 
                       return filtered.map(([targetId, p]) => (
-                        <tr key={targetId} className="hover:bg-slate-50/50">
-                          <td className="px-4 py-2 font-mono font-bold text-slate-900">
+                        <tr key={targetId} className="hover:bg-slate-50/50 dark:hover:bg-[#1F2D2A] transition-colors">
+                          <td className="px-4 py-2 font-mono font-bold text-slate-900 dark:text-[#F0FDF8]">
                             {p.document || targetId.split(':')[1]}
                           </td>
                           <td className="px-4 py-2">
@@ -2109,7 +2109,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 });
                                 setIsDirty(true);
                               }}
-                              className="w-full px-2 py-1 text-xs border border-slate-300 rounded font-semibold disabled:bg-slate-100"
+                              className="w-full px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded font-semibold disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                             />
                           </td>
                           <td className="px-4 py-2">
@@ -2124,7 +2124,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 });
                                 setIsDirty(true);
                               }}
-                              className="w-full px-2 py-1 text-xs border border-slate-300 rounded disabled:bg-slate-100"
+                              className="w-full px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                             />
                           </td>
                           <td className="px-4 py-2">
@@ -2139,7 +2139,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 });
                                 setIsDirty(true);
                               }}
-                              className="w-full px-2 py-1 text-xs border border-slate-300 rounded disabled:bg-slate-100"
+                              className="w-full px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                             />
                           </td>
                           <td className="px-4 py-2">
@@ -2154,7 +2154,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 });
                                 setIsDirty(true);
                               }}
-                              className="w-full px-2 py-1 text-xs border border-slate-300 rounded disabled:bg-slate-100"
+                              className="w-full px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                             />
                           </td>
                           <td className="px-4 py-2">
@@ -2169,7 +2169,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 });
                                 setIsDirty(true);
                               }}
-                              className="w-24 px-2 py-1 text-xs border border-slate-300 rounded disabled:bg-slate-100 font-mono"
+                              className="w-24 px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded disabled:bg-slate-100 dark:disabled:bg-[#182220] font-mono"
                             />
                           </td>
                           <td className="px-4 py-2">
@@ -2184,7 +2184,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 });
                                 setIsDirty(true);
                               }}
-                              className="w-20 px-2 py-1 text-xs border border-slate-300 rounded disabled:bg-slate-100"
+                              className="w-20 px-2 py-1 text-xs border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-800 dark:text-[#F0FDF8] rounded disabled:bg-slate-100 dark:disabled:bg-[#182220]"
                             />
                           </td>
                           {isEditable && (
@@ -2193,7 +2193,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                                 type="button"
                                 onClick={() => handleSavePerson(targetId)}
                                 disabled={isSaving}
-                                className="px-2.5 py-1 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded shadow-2xs transition-colors"
+                                className="px-2.5 py-1 text-xs font-bold text-white bg-emerald-800 dark:bg-[#13594A] hover:bg-emerald-900 dark:hover:bg-[#0D3E34] rounded shadow-2xs transition-colors"
                               >
                                 Guardar
                               </button>
@@ -2215,18 +2215,18 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
       {/* ======================================================== */}
       {isCloneModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white dark:bg-[#182220] rounded-2xl shadow-xl border border-slate-200 dark:border-[#263834] max-w-lg w-full overflow-hidden">
+            <div className="p-6 border-b border-slate-100 dark:border-[#263834] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5 text-emerald-800" />
-                <h3 className="text-lg font-black text-slate-900">
+                <CalendarIcon className="w-5 h-5 text-emerald-800 dark:text-[#5EEAD4]" />
+                <h3 className="text-lg font-black text-slate-900 dark:text-[#F0FDF8]">
                   Preparar nuevo año académico
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCloneModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 text-lg font-bold"
               >
                 ✕
               </button>
@@ -2234,25 +2234,25 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
 
             <form onSubmit={handleCloneYear} className="p-6 space-y-4 text-xs">
               {cloneError && (
-                <div className="p-3 bg-red-50 text-red-800 border border-red-200 rounded-xl font-medium">
+                <div className="p-3 bg-red-50 dark:bg-rose-950/40 text-red-800 dark:text-rose-200 border border-red-200 dark:border-rose-900/60 rounded-xl font-medium">
                   {cloneError}
                 </div>
               )}
 
               <div>
-                <label className="block font-bold text-slate-700 uppercase mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                   Año de origen (modelo de clonación)
                 </label>
                 <input
                   type="text"
                   readOnly
                   value={`Año lectivo ${selectedYear} (vigente)`}
-                  className="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg font-semibold text-slate-700"
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] rounded-lg font-semibold text-slate-700 dark:text-slate-300"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 uppercase mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                   Nuevo año a crear (cuatro dígitos)
                 </label>
                 <input
@@ -2262,14 +2262,14 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                   value={targetCloneYear}
                   onChange={(e) => setTargetCloneYear(e.target.value)}
                   placeholder="2027"
-                  className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg font-mono font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-700"
+                  className="w-full px-3 py-2 text-sm bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] rounded-lg font-mono font-bold text-emerald-900 dark:text-[#5EEAD4] focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399]"
                 />
               </div>
 
               {/* Advertencia institucional de aislamiento histórico */}
-              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2 text-emerald-950">
+              <div className="p-3.5 bg-emerald-50 dark:bg-[#132B25]/60 border border-emerald-200 dark:border-[#208B73]/50 rounded-xl space-y-2 text-emerald-950 dark:text-emerald-200">
                 <p className="font-bold">Garantías institucionales de la clonación:</p>
-                <ul className="list-disc list-inside space-y-1 text-[11px] text-emerald-900">
+                <ul className="list-disc list-inside space-y-1 text-[11px] text-emerald-900 dark:text-emerald-300">
                   <li>Se crearán módulos y programas con nuevos identificadores independientes.</li>
                   <li>Las fechas de unidades didácticas y calendarios inician en blanco para su programación.</li>
                   <li><strong>NUNCA se copian estudiantes, matrículas, notas ni asistencias.</strong> Todo el historial académico anterior queda intacto.</li>
@@ -2281,14 +2281,14 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                 <button
                   type="button"
                   onClick={() => setIsCloneModalOpen(false)}
-                  className="px-4 py-2 font-bold text-slate-600 hover:text-slate-800"
+                  className="px-4 py-2 font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-[#F0FDF8] bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] rounded-xl hover:bg-slate-50 dark:hover:bg-[#1F2D2A]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isCloning}
-                  className="px-5 py-2 font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl shadow-sm transition-colors disabled:opacity-50"
+                  className="px-5 py-2 font-bold text-white bg-emerald-800 dark:bg-[#13594A] hover:bg-emerald-900 dark:hover:bg-[#0D3E34] rounded-xl shadow-sm transition-colors disabled:opacity-50"
                 >
                   {isCloning ? 'Clonando año...' : 'Confirmar y clonar año'}
                 </button>
@@ -2303,15 +2303,15 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
       {/* ======================================================== */}
       {isAddPersonModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-base font-black text-slate-900">
+          <div className="bg-white dark:bg-[#182220] rounded-2xl shadow-xl border border-slate-200 dark:border-[#263834] max-w-md w-full overflow-hidden">
+            <div className="p-5 border-b border-slate-100 dark:border-[#263834] flex items-center justify-between">
+              <h3 className="text-base font-black text-slate-900 dark:text-[#F0FDF8]">
                 Incorporar persona al directorio {selectedYear}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsAddPersonModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 text-lg font-bold"
               >
                 ✕
               </button>
@@ -2319,7 +2319,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
 
             <form onSubmit={handleCreatePerson} className="p-5 space-y-3.5 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 uppercase mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                   Documento Nacional de Identidad (DNI)
                 </label>
                 <input
@@ -2330,12 +2330,12 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                   value={newPersonDni}
                   onChange={(e) => setNewPersonDni(e.target.value.replace(/\D/g, ''))}
                   placeholder="8 dígitos (ej.: 42345678)"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono font-bold focus:ring-2 focus:ring-emerald-700"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-900 dark:text-[#F0FDF8] rounded-lg font-mono font-bold focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 uppercase mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                   Apellidos y nombres completos
                 </label>
                 <input
@@ -2344,18 +2344,18 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                   value={newPersonName}
                   onChange={(e) => setNewPersonName(e.target.value)}
                   placeholder="Ej.: Quispe Mamani, Juan Carlos"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold focus:ring-2 focus:ring-emerald-700"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-900 dark:text-[#F0FDF8] rounded-lg font-semibold focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 uppercase mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                   Cargo institucional
                 </label>
                 <select
                   value={newPersonPosition}
                   onChange={(e) => setNewPersonPosition(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-900 dark:text-[#F0FDF8] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399]"
                 >
                   <option value="Docente">Docente</option>
                   <option value="Director">Director</option>
@@ -2366,7 +2366,7 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 uppercase mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                   Especialidad / Función
                 </label>
                 <input
@@ -2374,18 +2374,18 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                   value={newPersonSpecialty}
                   onChange={(e) => setNewPersonSpecialty(e.target.value)}
                   placeholder="Ej.: Computación e Informática"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-900 dark:text-[#F0FDF8] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 uppercase mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                   Turno asignado
                 </label>
                 <select
                   value={newPersonTurno}
                   onChange={(e) => setNewPersonTurno(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-700"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-900 dark:text-[#F0FDF8] rounded-lg focus:ring-2 focus:ring-emerald-700 dark:focus:ring-[#34D399]"
                 >
                   <option value="Mañana">Mañana</option>
                   <option value="Tarde">Tarde</option>
@@ -2398,14 +2398,14 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                 <button
                   type="button"
                   onClick={() => setIsAddPersonModalOpen(false)}
-                  className="px-3.5 py-1.5 font-bold text-slate-600 hover:text-slate-800"
+                  className="px-3.5 py-1.5 font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-[#F0FDF8] bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] rounded-xl hover:bg-slate-50 dark:hover:bg-[#1F2D2A]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-4 py-2 font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl shadow-xs transition-colors"
+                  className="px-4 py-2 font-bold text-white bg-emerald-800 dark:bg-[#13594A] hover:bg-emerald-900 dark:hover:bg-[#0D3E34] rounded-xl shadow-xs transition-colors"
                 >
                   {isSaving ? 'Registrando...' : 'Registrar en directorio'}
                 </button>

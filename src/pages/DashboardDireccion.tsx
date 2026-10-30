@@ -559,7 +559,7 @@ export const DashboardDireccion: React.FC<DashboardDireccionProps> = ({ onNaviga
                 <button
                   type="button"
                   onClick={() => onNavigate('entregas')}
-                  className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4] hover:border-[#13594A]/30 dark:hover:border-[#205C4E] hover:bg-white dark:hover:bg-[#131C1A] transition-all shrink-0 cursor-pointer self-start sm:self-auto"
+                  className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50 dark:bg-[#182220] text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4] hover:border-[#13594A]/30 dark:hover:border-[#205C4E] hover:bg-white dark:hover:bg-[#1F2D2A] transition-all shrink-0 cursor-pointer self-start sm:self-auto"
                 >
                   Supervisar
                 </button>

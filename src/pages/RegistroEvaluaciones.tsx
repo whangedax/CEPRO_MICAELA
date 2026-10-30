@@ -987,7 +987,7 @@ export const RegistroEvaluaciones: React.FC = () => {
             </button>
             <a
               href="#/inicio"
-              className="px-5 py-2.5 rounded-xl bg-white text-slate-700 font-semibold text-xs border border-slate-300 hover:bg-slate-50 transition-all"
+              className="px-5 py-2.5 rounded-xl bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-300 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] transition-all"
             >
               Volver al Inicio
             </a>
@@ -1142,10 +1142,10 @@ export const RegistroEvaluaciones: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar estudiante o DNI…"
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-[#182220] focus:outline-none focus:ring-2 focus:ring-[#13594A]"
             />
             <svg
-              className="w-4 h-4 text-slate-400 absolute left-2.5 top-2"
+              className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-2.5 top-2"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -1160,7 +1160,7 @@ export const RegistroEvaluaciones: React.FC = () => {
         {/* Guía contextual del indicador seleccionado */}
         <div className="bg-[#F6F8FA] dark:bg-[#131C1A] rounded-2xl p-3.5 border border-slate-200/60 dark:border-[#263834] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="space-y-0.5">
-            <span className="font-bold text-slate-900 block">
+            <span className="font-bold text-slate-900 dark:text-[#F0FDF8] block">
               {activeTab === 6
                 ? 'Resultado de la Unidad Didáctica (Logro UD)'
                 : activeTab === 0
@@ -1244,17 +1244,17 @@ export const RegistroEvaluaciones: React.FC = () => {
           </div>
 
           {/* Leyenda visual rápida */}
-          <div className="flex items-center gap-3 text-[11px] text-slate-600">
+          <div className="flex items-center gap-3 text-[11px] text-slate-600 dark:text-slate-400">
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-emerald-100 border border-emerald-400" />
+              <span className="w-3 h-3 rounded bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-400 dark:border-emerald-800/80" />
               <span>Aprobado (≥ 13)</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-rose-100 border border-rose-400" />
+              <span className="w-3 h-3 rounded bg-rose-100 dark:bg-rose-950/60 border border-rose-400 dark:border-rose-800/80" />
               <span>Desaprobado (&lt; 13)</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-white border border-slate-300" />
+              <span className="w-3 h-3 rounded bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834]" />
               <span>Pendiente (vacío)</span>
             </span>
           </div>
@@ -1266,17 +1266,17 @@ export const RegistroEvaluaciones: React.FC = () => {
             role="status"
             className={`p-3.5 rounded-2xl text-xs font-semibold flex items-center justify-between gap-3 animate-in fade-in duration-200 ${
               saveFeedback.type === 'success'
-                ? 'bg-emerald-50 border border-emerald-200 text-emerald-900'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200'
                 : saveFeedback.type === 'conflict'
-                ? 'bg-amber-50 border border-amber-200 text-amber-900'
-                : 'bg-rose-50 border border-rose-200 text-rose-900'
+                ? 'bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200'
+                : 'bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-900 dark:text-rose-200'
             }`}
           >
             <span>{saveFeedback.message}</span>
             <button
               type="button"
               onClick={() => setSaveFeedback(null)}
-              className="text-slate-400 hover:text-slate-600 p-1"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
               aria-label="Cerrar notificación"
             >
               ✕
@@ -1297,40 +1297,40 @@ export const RegistroEvaluaciones: React.FC = () => {
               {/* Si es pestaña completa (activeTab === 0), cabecera multinivel */}
               {activeTab === 0 ? (
                 <>
-                  <tr className="border-b border-slate-200">
+                  <tr className="border-b border-slate-200 dark:border-[#263834]">
                     <th
                       rowSpan={2}
-                      className="py-3 px-4 sticky left-0 z-30 bg-[#F6F8FA] dark:bg-[#131C1A] border-r border-slate-200 dark:border-[#263834] min-w-[240px] shadow-sm"
+                      className="py-3 px-4 sticky left-0 z-30 bg-[#F6F8FA] dark:bg-[#131C1A] border-r border-slate-200 dark:border-[#263834] min-w-[240px] shadow-sm text-slate-800 dark:text-[#F0FDF8]"
                     >
                       Estudiante
                     </th>
-                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 bg-[#E8F0EE] text-[#13594A]">
+                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 dark:border-[#263834] bg-[#E8F0EE] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
                       Indicador de Logro 1
                     </th>
-                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 bg-[#E8F0EE] text-[#13594A]">
+                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 dark:border-[#263834] bg-[#E8F0EE] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
                       Indicador de Logro 2
                     </th>
-                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 bg-[#E8F0EE] text-[#13594A]">
+                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 dark:border-[#263834] bg-[#E8F0EE] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
                       Indicador de Logro 3
                     </th>
-                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 bg-[#E8F0EE] text-[#13594A]">
+                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 dark:border-[#263834] bg-[#E8F0EE] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
                       Indicador de Logro 4
                     </th>
-                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 bg-[#E8F0EE] text-[#13594A]">
+                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 dark:border-[#263834] bg-[#E8F0EE] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
                       Indicador de Logro 5
                     </th>
-                    <th rowSpan={2} className="py-3 px-4 text-center bg-emerald-50 text-emerald-900 border-l border-slate-200 min-w-[90px]">
+                    <th rowSpan={2} className="py-3 px-4 text-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border-l border-slate-200 dark:border-[#263834] min-w-[90px]">
                       Logro UD
                     </th>
                   </tr>
                   <tr>
                     {Array.from({ length: 5 }).map((_, gIdx) => (
                       <React.Fragment key={gIdx}>
-                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 font-bold">IA1</th>
-                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 font-bold">IA2</th>
-                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 font-bold">IA3</th>
-                        <th className="py-2 px-2 text-center min-w-[70px] border-r border-slate-200 font-black text-[#13594A] bg-[#E8F0EE]/40">IL</th>
-                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 font-bold text-amber-900">R</th>
+                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 dark:border-[#263834] font-bold text-slate-700 dark:text-slate-300">IA1</th>
+                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 dark:border-[#263834] font-bold text-slate-700 dark:text-slate-300">IA2</th>
+                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 dark:border-[#263834] font-bold text-slate-700 dark:text-slate-300">IA3</th>
+                        <th className="py-2 px-2 text-center min-w-[70px] border-r border-slate-200 dark:border-[#263834] font-black text-[#13594A] dark:text-[#5EEAD4] bg-[#E8F0EE]/40 dark:bg-[#132B25]/60">IL</th>
+                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 dark:border-[#263834] font-bold text-amber-900 dark:text-amber-300">R</th>
                       </React.Fragment>
                     ))}
                   </tr>
@@ -1338,7 +1338,7 @@ export const RegistroEvaluaciones: React.FC = () => {
               ) : (
                 /* Cabecera para pestañas individuales (Indicadores 1..5 o Resultado UD) */
                 <tr>
-                  <th className="py-3.5 px-4 sticky left-0 z-30 bg-[#F6F8FA] dark:bg-[#131C1A] border-r border-slate-200 dark:border-[#263834] min-w-[280px] shadow-sm">
+                  <th className="py-3.5 px-4 sticky left-0 z-30 bg-[#F6F8FA] dark:bg-[#131C1A] border-r border-slate-200 dark:border-[#263834] min-w-[280px] shadow-sm text-slate-800 dark:text-[#F0FDF8]">
                     Estudiante ({filteredRoster.length})
                   </th>
                   {displayedIndicators.map((ind) => {
@@ -1346,20 +1346,20 @@ export const RegistroEvaluaciones: React.FC = () => {
                     return (
                       <th
                         key={ind}
-                        className={`py-3.5 px-3 text-center min-w-[90px] border-r border-slate-200 ${
+                        className={`py-3.5 px-3 text-center min-w-[90px] border-r border-slate-200 dark:border-[#263834] ${
                           ind === 'RESULTADO_UD'
-                            ? 'bg-emerald-50/70 text-emerald-950 font-black'
+                            ? 'bg-emerald-50/70 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-200 font-black'
                             : ind.endsWith('.RECOVERY')
-                            ? 'bg-amber-50/50 text-amber-900'
+                            ? 'bg-amber-50/50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300'
                             : !ind.includes('.')
-                            ? 'bg-[#13594A]/10 text-[#13594A] font-black'
+                            ? 'bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] font-black'
                             : ''
                         }`}
                         title={info.title}
                       >
                         <div className="flex flex-col items-center">
                           <span className="font-black text-xs">{info.code}</span>
-                          <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-tighter">
+                          <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
                             {info.typeBadge}
                           </span>
                         </div>
@@ -1371,12 +1371,12 @@ export const RegistroEvaluaciones: React.FC = () => {
             </thead>
 
             {/* Cuerpo de la tabla */}
-            <tbody id="academic-rows" className="divide-y divide-slate-100">
+            <tbody id="academic-rows" className="divide-y divide-slate-100 dark:divide-[#263834]">
               {filteredRoster.length === 0 ? (
                 <tr>
                   <td
                     colSpan={displayedIndicators.length + 1}
-                    className="py-12 text-center text-slate-500 text-xs italic"
+                    className="py-12 text-center text-slate-500 dark:text-slate-400 text-xs italic"
                   >
                     {searchQuery
                       ? 'No se encontraron estudiantes que coincidan con la búsqueda.'
@@ -1393,19 +1393,19 @@ export const RegistroEvaluaciones: React.FC = () => {
                     <tr
                       key={enId}
                       data-enrollment={enId}
-                      className="hover:bg-slate-50/60 transition-colors"
+                      className="hover:bg-slate-50/60 dark:hover:bg-[#1F2D2A] transition-colors"
                     >
                       {/* Columna Estudiante (Sticky) */}
-                      <td className="py-2.5 px-4 sticky left-0 z-10 bg-white border-r border-slate-200 shadow-sm">
+                      <td className="py-2.5 px-4 sticky left-0 z-10 bg-white dark:bg-[#182220] border-r border-slate-200 dark:border-[#263834] shadow-sm">
                         <div className="flex items-center gap-2.5">
-                          <span className="text-[10px] font-mono text-slate-600 font-bold w-5 shrink-0">
+                          <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 font-bold w-5 shrink-0">
                             {rowIdx + 1}.
                           </span>
                           <div className="min-w-0">
-                            <span className="font-bold text-slate-900 block truncate text-xs">
+                            <span className="font-bold text-slate-900 dark:text-[#F0FDF8] block truncate text-xs">
                               {studentName}
                             </span>
-                            <span className="text-[10px] text-slate-600 font-mono">
+                            <span className="text-[10px] text-slate-600 dark:text-slate-400 font-mono">
                               DNI: {doc}
                             </span>
                           </div>
@@ -1420,14 +1420,14 @@ export const RegistroEvaluaciones: React.FC = () => {
                         const isDirty = cellState?.isDirty ?? false;
 
                         // Clases según la escala vigesimal
-                        let scoreColorClass = 'text-slate-800 border-slate-200 bg-white';
+                        let scoreColorClass = 'text-slate-800 dark:text-[#F0FDF8] border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A]';
                         if (val !== null) {
                           if (val >= 13) {
                             scoreColorClass =
-                              'text-emerald-900 font-bold bg-emerald-50/70 border-emerald-300';
+                              'text-emerald-900 dark:text-emerald-300 font-bold bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800/60';
                           } else {
                             scoreColorClass =
-                              'text-rose-900 font-bold bg-rose-50/70 border-rose-300';
+                              'text-rose-900 dark:text-rose-300 font-bold bg-rose-50/70 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800/60';
                           }
                         }
 
@@ -1436,8 +1436,8 @@ export const RegistroEvaluaciones: React.FC = () => {
                         return (
                           <td
                             key={ind}
-                            className={`py-1.5 px-2 text-center border-r border-slate-100 ${
-                              isDirty ? 'bg-amber-50/40' : ''
+                            className={`py-1.5 px-2 text-center border-r border-slate-100 dark:border-[#263834] ${
+                              isDirty ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''
                             }`}
                           >
                             <div className="relative inline-block w-full max-w-[80px]">
@@ -1460,7 +1460,7 @@ export const RegistroEvaluaciones: React.FC = () => {
                               />
                               {isDirty && (
                                 <span
-                                  className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white"
+                                  className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white dark:ring-[#182220]"
                                   title="Calificación modificada sin guardar"
                                 />
                               )}
@@ -1557,43 +1557,43 @@ export const RegistroEvaluaciones: React.FC = () => {
                 <h3 id="conflict-dialog-title" className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
                   Conflicto de actualización — Calificación modificada en otra sesión
                 </h3>
-                <p id="conflict-dialog-desc" className="text-xs text-slate-600 mt-1 leading-relaxed">
+                <p id="conflict-dialog-desc" className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                   Uno o más registros fueron modificados en otra sesión o equipo. A continuación puede
                   consultar la versión del servidor y compararla con sus notas locales:
                 </p>
               </div>
             </div>
 
-            <div className="overflow-y-auto flex-1 my-2 border border-slate-200 rounded-xl">
+            <div className="overflow-y-auto flex-1 my-2 border border-slate-200 dark:border-[#263834] rounded-xl">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase text-[10px]">
+                  <tr className="bg-slate-50 dark:bg-[#131C1A] border-b border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 font-bold uppercase text-[10px]">
                     <th className="py-2.5 px-3">Estudiante</th>
                     <th className="py-2.5 px-3">Criterio</th>
                     <th className="py-2.5 px-3">Modificación local</th>
                     <th className="py-2.5 px-3">Versión en servidor</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#263834]">
                   {conflictItems.map((c) => (
-                    <tr key={`${c.enrollmentId}-${c.indicator}`} className="hover:bg-slate-50/50">
+                    <tr key={`${c.enrollmentId}-${c.indicator}`} className="hover:bg-slate-50/50 dark:hover:bg-[#1F2D2A]">
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-slate-900 block">{c.studentName}</span>
-                        <span className="text-[10px] text-slate-500 font-mono">DNI: {c.document}</span>
+                        <span className="font-bold text-slate-900 dark:text-[#F0FDF8] block">{c.studentName}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">DNI: {c.document}</span>
                       </td>
-                      <td className="py-2.5 px-3 font-mono font-bold text-slate-700">
+                      <td className="py-2.5 px-3 font-mono font-bold text-slate-700 dark:text-slate-300">
                         {c.indicator}
                       </td>
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded text-[11px]">
+                        <span className="font-bold text-amber-900 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded text-[11px]">
                           {c.localValue !== null ? `Nota: ${c.localValue}` : 'Pendiente (Borrada)'}
                         </span>
                       </td>
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded text-[11px]">
+                        <span className="font-bold text-emerald-900 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded text-[11px]">
                           {c.serverValue !== null ? `Nota: ${c.serverValue}` : 'Sin registrar'}
                         </span>
-                        <span className="block text-[9px] text-slate-600 font-mono mt-0.5">
+                        <span className="block text-[9px] text-slate-600 dark:text-slate-400 font-mono mt-0.5">
                           Rev: {c.serverRev || 'null'}
                         </span>
                       </td>
@@ -1603,12 +1603,12 @@ export const RegistroEvaluaciones: React.FC = () => {
               </table>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2.5 mt-4 pt-3 border-t border-slate-100">
+            <div className="flex flex-col sm:flex-row gap-2.5 mt-4 pt-3 border-t border-slate-100 dark:border-[#263834]">
               <button
                 type="button"
                 onClick={handleConflictKeepLocal}
                 disabled={isResolvingConflict}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 transition-colors text-center disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-[#1F2D2A] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 transition-colors text-center disabled:opacity-50"
               >
                 Conservar notas locales (sin enviar)
               </button>
@@ -1617,7 +1617,7 @@ export const RegistroEvaluaciones: React.FC = () => {
                 type="button"
                 onClick={handleConflictDiscardAndLoadServer}
                 disabled={isResolvingConflict}
-                className="px-4 py-2.5 rounded-xl border border-purple-300 bg-purple-50 text-purple-900 text-xs font-bold hover:bg-purple-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors text-center disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl border border-purple-300 dark:border-purple-800/60 bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-300 text-xs font-bold hover:bg-purple-100 dark:hover:bg-purple-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors text-center disabled:opacity-50"
               >
                 Descartar notas y cargar servidor
               </button>
