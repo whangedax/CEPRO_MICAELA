@@ -20,20 +20,19 @@
 
 const http = require('node:http');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const puppeteer = require('puppeteer');
 const { initQaBaseline, startQaServer } = require('./helpers/qa-env.cjs');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const QA_DATA_DIR = path.join(ROOT_DIR, 'dev-sandbox', 'data', 'qa-ux-evidence');
-const SCREENSHOT_DIR = path.join(ROOT_DIR, 'capturas_ux_modo_oscuro');
-const SCREENSHOT_DIR_V2 = path.join(SCREENSHOT_DIR, 'v2');
+const SCREENSHOT_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'cetpro-ux-screenshots-'));
+const SCREENSHOT_DIR_V2 = SCREENSHOT_DIR;
 
 async function capture(page, filename) {
   const p1 = path.join(SCREENSHOT_DIR, filename);
-  const p2 = path.join(SCREENSHOT_DIR_V2, filename);
   await page.screenshot({ path: p1 });
-  try { fs.copyFileSync(p1, p2); } catch {}
 }
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 
@@ -485,10 +484,20 @@ async function run() {
       detail: err.message,
     });
   } finally {
-    await browser.close();
-    frontendServer.close();
-    backendServer.server.close();
-    console.log('\n✔ Servidores desmontados y recursos liberados.');
+    if (browser) await browser.close();
+    if (frontendServer) frontendServer.close();
+    if (backendServer && backendServer.server) backendServer.server.close();
+    try {
+      if (fs.existsSync(QA_DATA_DIR)) {
+        fs.rmSync(QA_DATA_DIR, { recursive: true, force: true });
+      }
+    } catch {}
+    try {
+      if (fs.existsSync(SCREENSHOT_DIR)) {
+        fs.rmSync(SCREENSHOT_DIR, { recursive: true, force: true });
+      }
+    } catch {}
+    console.log('\n✔ Servidores desmontados y recursos temporales liberados.');
   }
 
   // -------------------------------------------------------------
@@ -507,23 +516,6 @@ async function run() {
   console.log('========================================================================');
   console.log(`DICTAMEN FINAL: ${allPassed ? '100% CONTROLES APROBADOS' : 'FALLOS REGISTRADOS'}`);
   console.log('========================================================================\n');
-
-  // Guardar resumen JSON de evidencia
-  const evData = 
-    JSON.stringify(
-      {
-        fecha: new Date().toISOString(),
-        suite: 'CEPRO_MICAELA 2.0 - Suite de Verificación UX y Modo Oscuro',
-        worktree: 'C:/CETPRO/CETPRO_MODERNIZACION_V2_UX',
-        branch: 'feat/ux-darkmode-modernizacion',
-        dictamen: allPassed ? 'APROBADO' : 'RECHAZADO',
-        resultados: testResults,
-      },
-      null,
-      2
-    );
-  fs.writeFileSync(path.join(SCREENSHOT_DIR, 'evidencia-auditoria-ux.json'), evData);
-  fs.writeFileSync(path.join(SCREENSHOT_DIR_V2, 'evidencia-auditoria-ux.json'), evData);
 
   process.exit(allPassed ? 0 : 1);
 }

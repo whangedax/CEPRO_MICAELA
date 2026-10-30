@@ -12,6 +12,7 @@
  */
 
 const { spawn } = require('node:child_process');
+const fs = require('node:fs');
 const path = require('node:path');
 const {
   QA_DATA_DIR,
@@ -78,6 +79,14 @@ async function main() {
       console.log('✔ Servidor QA detenido limpiamente.');
     } catch (err) {
       console.error('⚠ Error al detener servidor QA:', err.message);
+    }
+    try {
+      if (fs.existsSync(QA_DATA_DIR)) {
+        fs.rmSync(QA_DATA_DIR, { recursive: true, force: true });
+        console.log('✔ Directorio temporal QA eliminado.');
+      }
+    } catch (err) {
+      console.error('⚠ Error al limpiar directorio temporal QA:', err.message);
     }
   };
 

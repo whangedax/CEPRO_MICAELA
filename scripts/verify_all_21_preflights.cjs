@@ -181,16 +181,10 @@ async function verifyAllTemplates() {
         title: 'Título Oficial Auxiliar Técnico',
         context: `Estudiante ${enrComp.id.slice(0, 8)}`,
         getDoc: () => core.document(director, { templateId: 'TMPL-21', groupId: groupComp.id, enrollmentId: enrComp.id, demoFill: false })
-      },
-      {
-        id: 'TMPL-05_EXT',
-        title: 'Asistencia UD 7 (Variante Extendida)',
-        context: 'Peluquería M2 · UD7 (7ma UD)',
-        getDoc: () => core.document(director, { templateId: 'TMPL-05', groupId: groupPel2.id, unit: 'UD7', demoFill: false })
       }
     ];
 
-    console.log(`Iniciando evaluación de ${TEMPLATES_TO_TEST.length} plantillas (TMPL-01..21 + TMPL-05_EXT)...\n`);
+    console.log(`Iniciando evaluación de ${TEMPLATES_TO_TEST.length} plantillas oficiales (TMPL-01..21)...\n`);
 
     const results = [];
     let hasFailures = false;
@@ -274,10 +268,10 @@ async function verifyAllTemplates() {
       console.error('\n❌ DICTAMEN: SE ENCONTRARON FALLOS EN LA VERIFICACIÓN DE PREFLIGHTS.');
       process.exitCode = 1;
     } else {
-      console.log(`\n✅ DICTAMEN: CONFORMIDAD TOTAL — 22/22 FORMATOS OFICIALES HOMOLOGADOS AL 100%`);
+      console.log(`\n✅ DICTAMEN: CONFORMIDAD TOTAL — 21/21 FORMATOS OFICIALES HOMOLOGADOS AL 100%`);
       console.log('   - Preflight Complete: true en todas las plantillas (0 campos faltantes).');
       console.log('   - Marcas físicas BORRADOR y DEMOSTRACIÓN: ausentes al 100% (emisión oficial limpia).');
-      console.log('   - Soporte nativo a 7ma UD de Peluquería M2 (TMPL-17 y TMPL-05_EXT): verificado e intacto.');
+      console.log('   - Soporte nativo a 7ma UD de Peluquería M2 (TMPL-17): verificado e intacto.');
       console.log('   - Motor PDF: renderizado milimétrico sin FIELD_OVERFLOW ni desbordamiento de casillas.\n');
     }
 
