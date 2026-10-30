@@ -382,3 +382,74 @@ export function getTemplateById(id: string): TemplateMetadata | undefined {
 export function getTemplatesByCategory(category: TemplateCategory): TemplateMetadata[] {
   return OFFICIAL_TEMPLATES.filter((t) => t.category === category);
 }
+
+export interface FilterTemplatesOptions {
+  role?: string;
+  groupId?: string;
+  unitCode?: string;
+  availableUnits?: string[];
+  mode?: 'MODULE' | 'UNIT' | 'PRACTICE';
+  onlyCurrentUnit?: boolean;
+}
+
+/**
+ * Retorna las plantillas visibles y pertinentes según el rol, aula y unidad didáctica activa.
+ * Cumple estrictamente con el RBAC de scripts/offline-core.cjs y la segmentación académica.
+ */
+export function getVisibleTemplates(options: FilterTemplatesOptions = {}): TemplateMetadata[] {
+  const { role, groupId, unitCode, availableUnits, mode, onlyCurrentUnit = true } = options;
+
+  let list = OFFICIAL_TEMPLATES;
+
+  // 1. Filtrar por rol institucional
+  if (role) {
+    list = list.filter((t) => t.rolesAllowed.includes(role as any));
+  }
+
+  // 2. Si no hay grupo activo
+  if (!groupId) {
+    return list;
+  }
+
+  // 3. Filtrar por unidad didáctica activa si aplica
+  if (unitCode && onlyCurrentUnit) {
+    let unitIndex = -1;
+    if (availableUnits && availableUnits.includes(unitCode)) {
+      unitIndex = availableUnits.indexOf(unitCode);
+    } else {
+      const match = unitCode.match(/\d+/);
+      if (match) {
+        unitIndex = parseInt(match[0], 10) - 1;
+      }
+    }
+
+    if (unitIndex >= 0) {
+      list = list.filter((t) => {
+        if (t.scope === 'Unidad') {
+          return t.targetUnitIndex === unitIndex;
+        }
+        return true;
+      });
+    }
+  } else if (availableUnits && availableUnits.length > 0) {
+    // Si no hay unidad específica pero tenemos la cantidad de UDs del aula,
+    // descartar plantillas para UDs inexistentes en esa aula
+    list = list.filter((t) => {
+      if (t.scope === 'Unidad' && t.targetUnitIndex !== undefined) {
+        return t.targetUnitIndex < availableUnits.length;
+      }
+      return true;
+    });
+  }
+
+  return list;
+}
+
+/**
+ * Retorna exclusivamente las categorías que tienen al menos una plantilla visible
+ */
+export function getAvailableCategories(templates: TemplateMetadata[]): TemplateCategory[] {
+  const catSet = new Set(templates.map((t) => t.category));
+  return TEMPLATE_CATEGORIES.filter((cat) => catSet.has(cat));
+}
+

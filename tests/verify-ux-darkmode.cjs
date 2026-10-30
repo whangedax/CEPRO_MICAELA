@@ -314,14 +314,21 @@ async function run() {
 
     // Si requiere seleccionar aula o unidad didáctica, abrir modal
     const needModal = await page.evaluate(() => {
-      return document.body.innerText.includes('Seleccionar Aula y Espacio');
+      return (
+        document.body.innerText.includes('Seleccionar Aula y Espacio') ||
+        document.body.innerText.includes('Seleccionar Aula y Unidad')
+      );
     });
 
     if (needModal) {
       console.log('  -> Abriendo modal de selección de aula y espacio...');
       await page.evaluate(() => {
         const btns = [...document.querySelectorAll('button')];
-        const btn = btns.find((b) => b.textContent.includes('Seleccionar Aula y Espacio'));
+        const btn = btns.find(
+          (b) =>
+            b.textContent.includes('Seleccionar Aula y Espacio') ||
+            b.textContent.includes('Seleccionar Aula y Unidad')
+        );
         if (btn) btn.click();
       });
       await page.waitForSelector('[role="dialog"]', { timeout: 6000 });

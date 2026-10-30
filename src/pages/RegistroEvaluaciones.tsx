@@ -1019,7 +1019,7 @@ export const RegistroEvaluaciones: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-in fade-in duration-200">
       {/* 1. Encabezado institucional e información contextual de aula */}
-      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-[#263834] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
             <a href="#/inicio" className="hover:text-[#13594A] transition-colors">
@@ -1501,16 +1501,16 @@ export const RegistroEvaluaciones: React.FC = () => {
           aria-labelledby="clear-dialog-title"
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-amber-200">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto mb-3">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-md w-full p-6 shadow-2xl border border-amber-200 dark:border-amber-800/60">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 flex items-center justify-center mx-auto mb-3">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <h3 id="clear-dialog-title" className="text-base font-bold text-slate-900 text-center">
+            <h3 id="clear-dialog-title" className="text-base font-bold text-slate-900 dark:text-[#F0FDF8] text-center">
               ¿Confirmar notas que quedarán pendientes?
             </h3>
-            <p className="text-xs text-slate-600 mt-2 text-center leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 text-center leading-relaxed">
               Algunas notas quedarán pendientes. Se conserva su historial en la base de datos de auditoría.
               ¿Desea continuar y guardar los cambios?
             </p>
@@ -1518,7 +1518,7 @@ export const RegistroEvaluaciones: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setPendingClearConfirm(false)}
-                className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors"
+                className="px-4 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-[#1F2D2A] transition-colors"
               >
                 Cancelar
               </button>
@@ -1546,15 +1546,15 @@ export const RegistroEvaluaciones: React.FC = () => {
           aria-describedby="conflict-dialog-desc"
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-purple-200 flex flex-col max-h-[90vh]">
-            <div className="flex items-start gap-4 mb-4 pb-4 border-b border-slate-100">
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-200 text-purple-700 flex items-center justify-center shrink-0">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-purple-200 dark:border-purple-800/60 flex flex-col max-h-[90vh]">
+            <div className="flex items-start gap-4 mb-4 pb-4 border-b border-slate-100 dark:border-[#263834]">
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 id="conflict-dialog-title" className="text-lg font-bold text-slate-900 tracking-tight">
+                <h3 id="conflict-dialog-title" className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
                   Conflicto de actualización — Calificación modificada en otra sesión
                 </h3>
                 <p id="conflict-dialog-desc" className="text-xs text-slate-600 mt-1 leading-relaxed">

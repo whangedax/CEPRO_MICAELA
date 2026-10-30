@@ -745,15 +745,15 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
 
           {/* Modal / Card de Inspección de Respaldo */}
           {inspectReport && (
-            <div className="bg-white p-6 rounded-2xl border border-[#13594A]/30 shadow-md space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-[#13594A]/30 dark:border-[#263834] shadow-md space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#263834] pb-3">
                 <div className="flex items-center gap-2">
                   {inspectReport.requiresPassphrase ? (
-                    <LockIcon className="w-5 h-5 text-amber-600" />
+                    <LockIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   ) : (
-                    <CheckCircleIcon className="w-5 h-5 text-emerald-600" />
+                    <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   )}
-                  <h4 className="font-bold text-sm text-slate-900">
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-[#F0FDF8]">
                     {inspectReport.requiresPassphrase ? 'Respaldo Cifrado Detectado: ' : 'Inspección de Integridad: '}
                     {inspectReport.filename || 'Archivo Subido'}
                   </h4>
@@ -1301,27 +1301,27 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
       {/* Modal: Exportar Respaldo Cifrado Portátil */}
       {showExportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="bg-white dark:bg-[#182220] rounded-2xl shadow-2xl border border-slate-200 dark:border-[#263834] max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#263834] pb-3">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-[#E8F3F0] rounded-xl text-[#13594A]">
+                <div className="p-2 bg-[#E8F3F0] dark:bg-[#132B25] rounded-xl text-[#13594A] dark:text-[#5EEAD4]">
                   <LockIcon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-[#172B28]">Exportar Respaldo Cifrado Portátil</h3>
-                  <p className="text-[11px] text-slate-500">Formato seguro .cetpro-backup (AES-256-GCM + scrypt)</p>
+                  <h3 className="font-bold text-sm text-[#172B28] dark:text-[#F0FDF8]">Exportar Respaldo Cifrado Portátil</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Formato seguro .cetpro-backup (AES-256-GCM + scrypt)</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowExportModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-xs font-bold"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold"
               >
                 ✕ Cerrar
               </button>
             </div>
 
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
               Protege las contraseñas institucionales y datos confidenciales antes de copiarlos a una memoria USB o transmitirlos por red externa. Requiere una contraseña de al menos 8 caracteres para ser descifrado posteriormente.
             </p>
 

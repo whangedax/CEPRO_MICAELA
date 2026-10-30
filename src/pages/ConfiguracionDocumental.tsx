@@ -572,10 +572,10 @@ export const ConfiguracionDocumental: React.FC = () => {
   if (isLoadingConfig && !docConfig) {
     return (
       <div className="space-y-6 animate-in fade-in duration-150">
-        <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-sm flex flex-col items-center justify-center min-h-[360px] text-center">
-          <div className="w-10 h-10 border-4 border-[#13594A]/20 border-t-[#13594A] rounded-full animate-spin mb-4" />
-          <h2 className="text-base font-bold text-slate-800">Cargando Parámetros Documentales…</h2>
-          <p className="text-xs text-slate-500 mt-1">
+        <div className="bg-white dark:bg-[#182220] rounded-3xl p-8 border border-slate-200/90 dark:border-[#263834] shadow-sm flex flex-col items-center justify-center min-h-[360px] text-center">
+          <div className="w-10 h-10 border-4 border-[#13594A]/20 dark:border-[#5EEAD4]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin mb-4" />
+          <h2 className="text-base font-bold text-slate-800 dark:text-[#F0FDF8]">Cargando Parámetros Documentales…</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Consultando el esquema y las asignaciones autorizadas en el servidor local.
           </p>
         </div>
@@ -731,37 +731,39 @@ export const ConfiguracionDocumental: React.FC = () => {
       )}
 
       {/* 3. Selector de Ámbito, Grupo, Destino y Unidad */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-sm space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+      <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 border border-slate-200/90 dark:border-[#263834] shadow-sm space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-[#263834] pb-3">
           <div className="flex items-center gap-2">
-            <DocConfigIcon className="w-4 h-4 text-[#13594A]" />
-            <h2 className="text-sm font-bold text-slate-900 tracking-tight">
+            <DocConfigIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
+            <h2 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
               Selección de Ámbito y Contexto Académico
             </h2>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-slate-500 font-mono">
-              Identificador: <strong>{currentScopeId}</strong>
-            </span>
-            {currentSettingRecord?.rev && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
-                rev: {currentSettingRecord.rev.slice(0, 8)}
+          {user?.role !== 'DOCENTE' && (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                Identificador: <strong className="text-slate-700 dark:text-slate-200">{currentScopeId}</strong>
               </span>
-            )}
-          </div>
+              {currentSettingRecord?.rev && (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#1F2D2A] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
+                  rev: {currentSettingRecord.rev.slice(0, 8)}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
           {/* A. Selector de Ámbito (Kind) */}
           <div className="space-y-1">
-            <label htmlFor="parameter-kind" className="font-bold text-slate-700 block">
+            <label htmlFor="parameter-kind" className="font-bold text-slate-700 dark:text-slate-300 block">
               Datos a Configurar
             </label>
             <select
               id="parameter-kind"
               value={selectedKind}
               onChange={(e) => safeChangeKind(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
             >
               {availableKinds.map((k) => (
                 <option key={k} value={k}>
@@ -774,14 +776,14 @@ export const ConfiguracionDocumental: React.FC = () => {
           {/* B. Selector de Grupo (Aula) */}
           {!['institution', 'program', 'module'].includes(selectedKind) && (
             <div className="space-y-1" id="parameter-group-label">
-              <label htmlFor="parameter-group" className="font-bold text-slate-700 block">
+              <label htmlFor="parameter-group" className="font-bold text-slate-700 dark:text-slate-300 block">
                 Aula / Grupo
               </label>
               <select
                 id="parameter-group"
                 value={selectedGroupId}
                 onChange={(e) => safeChangeGroup(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
               >
                 {availableGroups.map((g) => (
                   <option key={g.id} value={g.id}>
@@ -795,14 +797,14 @@ export const ConfiguracionDocumental: React.FC = () => {
           {/* C. Selector de Unidad Didáctica (Solo para unit y unitCurriculum) */}
           {['unit', 'unitCurriculum'].includes(selectedKind) && (
             <div className="space-y-1" id="parameter-unit-label">
-              <label htmlFor="parameter-unit" className="font-bold text-slate-700 block">
+              <label htmlFor="parameter-unit" className="font-bold text-slate-700 dark:text-slate-300 block">
                 Unidad Didáctica
               </label>
               <select
                 id="parameter-unit"
                 value={selectedUnitCode}
                 onChange={(e) => safeChangeUnit(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
               >
                 {groupUnits.map((u) => (
                   <option key={u} value={u}>
@@ -816,14 +818,14 @@ export const ConfiguracionDocumental: React.FC = () => {
           {/* D. Selector de Destino / Estudiante (para enrollment, practice, program, module, etc.) */}
           {!['institution', 'group', 'unit', 'unitCurriculum'].includes(selectedKind) && (
             <div className="space-y-1" id="parameter-target-label">
-              <label htmlFor="parameter-target" className="font-bold text-slate-700 block">
+              <label htmlFor="parameter-target" className="font-bold text-slate-700 dark:text-slate-300 block">
                 Destino / Registro
               </label>
               <select
                 id="parameter-target"
                 value={selectedTargetId}
                 onChange={(e) => safeChangeTarget(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
               >
                 {['enrollment', 'registry', 'practice', 'closure'].includes(selectedKind) &&
                   groupEnrollments.map((en) => (
@@ -849,23 +851,23 @@ export const ConfiguracionDocumental: React.FC = () => {
         </div>
 
         {/* Nota informativa de permisos */}
-        <div className="pt-2 text-[11px] text-slate-600 flex flex-wrap items-center justify-between gap-2">
+        <div className="pt-2 text-[11px] text-slate-600 dark:text-slate-400 flex flex-wrap items-center justify-between gap-2">
           <span>
             {isScopeEditable ? (
-              <span className="text-emerald-800 font-semibold flex items-center gap-1.5">
+              <span className="text-emerald-800 dark:text-emerald-300 font-semibold flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 Los campos habilitados corresponden a su alcance pedagógico y administrativo autorizado.
               </span>
             ) : (
-              <span className="text-amber-800 font-semibold flex items-center gap-1.5">
-                <LockIcon className="w-3.5 h-3.5 text-amber-600" />
+              <span className="text-amber-800 dark:text-amber-300 font-semibold flex items-center gap-1.5">
+                <LockIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                 Modo Consulta (Solo Lectura): Los datos de este ámbito son administrados por Dirección o Secretaría.
               </span>
             )}
           </span>
 
           {isDirty && (
-            <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 font-bold animate-pulse text-[11px]">
+            <span className="px-2.5 py-1 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-500/40 font-bold animate-pulse text-[11px]">
               ● Hay modificaciones sin guardar en este formulario
             </span>
           )}
@@ -886,12 +888,12 @@ export const ConfiguracionDocumental: React.FC = () => {
           <>
             {/* Sección 1: Datos Generales de la Unidad */}
             <div className="bg-white dark:bg-[#182220] rounded-3xl p-6 border border-slate-200/90 dark:border-[#263834] shadow-sm space-y-4">
-              <div className="border-b border-slate-100 pb-3">
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#13594A]" />
+              <div className="border-b border-slate-100 dark:border-[#263834] pb-3">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-[#5EEAD4] tracking-tight flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#13594A] dark:bg-[#5EEAD4]" />
                   1. Identificación y Capacidades de la Unidad ({selectedUnitCode})
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Defina la denominación de la unidad didáctica, su capacidad terminal y la competencia modular asociada.
                 </p>
               </div>
@@ -907,7 +909,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <label
                           htmlFor={`field-${field.key}`}
-                          className="text-xs font-bold text-slate-700 flex items-center gap-1"
+                          className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1"
                         >
                           <span>{field.label}</span>
                           <span className="text-rose-500" title="Campo requerido para emisión oficial">*</span>
@@ -928,7 +930,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                           onChange={(e) => handleFieldChange(field.key, e.target.value)}
                           disabled={!editable}
                           placeholder={placeholder}
-                          className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#13594A] disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed transition-all leading-relaxed"
+                          className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-50 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all leading-relaxed"
                         />
                       ) : (
                         <input
@@ -939,7 +941,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                           onChange={(e) => handleFieldChange(field.key, e.target.value)}
                           disabled={!editable}
                           placeholder={placeholder}
-                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#13594A] disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-50 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
                         />
                       )}
                     </div>
@@ -950,17 +952,17 @@ export const ConfiguracionDocumental: React.FC = () => {
 
             {/* Sección 2: Indicadores de Logro (IL1 a IL5) */}
             <div className="bg-white dark:bg-[#182220] rounded-3xl p-6 border border-slate-200/90 dark:border-[#263834] shadow-sm space-y-4">
-              <div className="border-b border-slate-100 pb-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="border-b border-slate-100 dark:border-[#263834] pb-3 flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#13594A]" />
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-[#5EEAD4] tracking-tight flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#13594A] dark:bg-[#5EEAD4]" />
                     2. Indicadores de Logro Pedagógicos (IL1 a IL5)
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Redacte de manera concisa cada criterio de logro. Estos textos se imprimen en los Registros de Evaluación y Calificaciones.
                   </p>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                   5 Indicadores Normados
                 </span>
               </div>
@@ -974,16 +976,16 @@ export const ConfiguracionDocumental: React.FC = () => {
                   return (
                     <div
                       key={field.key}
-                      className={`space-y-1.5 p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 ${
+                      className={`space-y-1.5 p-4 rounded-2xl border border-slate-200/80 dark:border-[#263834] bg-slate-50/50 dark:bg-[#131C1A] ${
                         idx === 4 ? 'md:col-span-2' : ''
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <label
                           htmlFor={`field-${field.key}`}
-                          className="text-xs font-bold text-slate-800 flex items-center gap-1.5"
+                          className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5"
                         >
-                          <span className="px-1.5 py-0.5 rounded bg-[#13594A] text-white font-mono text-[10px]">
+                          <span className="px-1.5 py-0.5 rounded bg-[#13594A] dark:bg-[#107560] text-white font-mono text-[10px]">
                             IL{idx + 1}
                           </span>
                           <span>{field.label}</span>
@@ -1003,7 +1005,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                         onChange={(e) => handleFieldChange(field.key, e.target.value)}
                         disabled={!editable}
                         placeholder={placeholder}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#13594A] disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed transition-all leading-relaxed"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all leading-relaxed"
                       />
                     </div>
                   );
@@ -1014,13 +1016,13 @@ export const ConfiguracionDocumental: React.FC = () => {
         ) : (
           /* Caso B: Otros Ámbitos (Institución, Módulo, Grupo, Práctica, etc.) */
           <div className="bg-white dark:bg-[#182220] rounded-3xl p-6 border border-slate-200/90 dark:border-[#263834] shadow-sm space-y-4">
-            <div className="border-b border-slate-100 pb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="border-b border-slate-100 dark:border-[#263834] pb-3 flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#13594A]" />
+                <h3 className="text-sm font-bold text-slate-900 dark:text-[#5EEAD4] tracking-tight flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#13594A] dark:bg-[#5EEAD4]" />
                   Campos Oficiales — {SCOPE_NAMES[selectedKind] || selectedKind}
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {isScopeEditable
                     ? 'Los campos marcados con asterisco (*) son obligatorios para la emisión formal de documentos.'
                     : 'Su cuenta no dispone de permisos de edición para este ámbito. Los valores se presentan para fines de auditoría y consulta.'}
@@ -1044,7 +1046,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <label
                           htmlFor={`field-${field.key}`}
-                          className="text-xs font-bold text-slate-700 flex items-center gap-1"
+                          className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1"
                         >
                           <span>{field.label}</span>
                           {editable && field.key === 'nombre' && selectedKind === 'institution' && (
@@ -1067,7 +1069,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                           onChange={(e) => handleFieldChange(field.key, e.target.value)}
                           disabled={!editable}
                           placeholder={placeholder}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#13594A] disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-50 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
                         />
                       ) : field.type === 'select' ? (
                         <select
@@ -1076,7 +1078,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                           value={String(val)}
                           onChange={(e) => handleFieldChange(field.key, e.target.value)}
                           disabled={!editable}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#13594A] disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-50 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
                         >
                           <option value="">Sin configurar</option>
                           {field.options?.map((opt) => (
@@ -1096,7 +1098,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                           onChange={(e) => handleFieldChange(field.key, field.type === 'number' ? e.target.value : e.target.value)}
                           disabled={!editable}
                           placeholder={placeholder}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#13594A] disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-50 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
                         />
                       )}
                     </div>
@@ -1107,14 +1109,14 @@ export const ConfiguracionDocumental: React.FC = () => {
         )}
 
         {/* 5. Barra de Acciones y Guardado */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 border border-slate-200/90 dark:border-[#263834] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <button
               type="button"
               id="save-parameters"
               onClick={handleSave}
               disabled={isSaving || !isScopeEditable || !isDirty}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#13594A] hover:bg-[#0D3E34] text-white text-xs font-bold transition-all shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#13594A] hover:bg-[#0D3E34] text-white text-xs font-bold transition-all shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5EEAD4] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <SaveIcon className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
               <span>{isSaving ? 'Guardando en Servidor…' : 'Guardar Parámetros'}</span>
@@ -1125,7 +1127,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                 type="button"
                 onClick={handleDiscard}
                 disabled={isSaving}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors disabled:opacity-50"
               >
                 Descartar Cambios
               </button>
@@ -1135,7 +1137,7 @@ export const ConfiguracionDocumental: React.FC = () => {
           <div className="flex items-center gap-3">
             <a
               href="#/documentos"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#1F2D2A] hover:bg-slate-200 dark:hover:bg-[#263834] text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors"
             >
               <span>Ver Formatos en Centro Documental</span>
               <span>→</span>
@@ -1145,32 +1147,32 @@ export const ConfiguracionDocumental: React.FC = () => {
       </form>
 
       {/* 6. Panel Informativo: Integración con Preflight y Centro Documental */}
-      <div className="bg-gradient-to-r from-slate-50 to-emerald-50/40 rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-3">
+      <div className="bg-gradient-to-r from-slate-50 to-emerald-50/40 dark:from-[#182220] dark:to-[#131C1A] rounded-3xl p-6 border border-slate-200/80 dark:border-[#263834] shadow-sm space-y-3">
         <div className="flex items-center gap-2">
-          <DocumentIcon className="w-5 h-5 text-[#13594A]" />
-          <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+          <DocumentIcon className="w-5 h-5 text-[#13594A] dark:text-[#5EEAD4]" />
+          <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
             Efecto sobre el Centro Documental y el Checklist Preflight
           </h3>
         </div>
 
-        <p className="text-xs text-slate-600 leading-relaxed max-w-4xl">
+        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-4xl">
           Los indicadores de logro guardados se integrarán en la próxima validación documental.
           <br /><br />
           La disponibilidad de cada formato dependerá del cumplimiento de todos los requisitos del Preflight.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
-          <div className="bg-white p-3 rounded-2xl border border-slate-200/80">
-            <strong className="font-bold text-slate-800 block mb-0.5">TMPL-04 · Carpeta Pedagógica</strong>
-            <span className="text-[11px] text-slate-500">Refleja la programación, horas y capacidades de la unidad.</span>
+          <div className="bg-white dark:bg-[#131C1A] p-3 rounded-2xl border border-slate-200/80 dark:border-[#263834]">
+            <strong className="font-bold text-slate-800 dark:text-slate-200 block mb-0.5">TMPL-04 · Carpeta Pedagógica</strong>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">Refleja la programación, horas y capacidades de la unidad.</span>
           </div>
-          <div className="bg-white p-3 rounded-2xl border border-slate-200/80">
-            <strong className="font-bold text-slate-800 block mb-0.5">TMPL-05..10 · Asistencia UD1..UD6</strong>
-            <span className="text-[11px] text-slate-500">Valida fechas lectivas y nombre oficial de la unidad.</span>
+          <div className="bg-white dark:bg-[#131C1A] p-3 rounded-2xl border border-slate-200/80 dark:border-[#263834]">
+            <strong className="font-bold text-slate-800 dark:text-slate-200 block mb-0.5">TMPL-05..10 · Asistencia UD1..UD6</strong>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">Valida fechas lectivas y nombre oficial de la unidad.</span>
           </div>
-          <div className="bg-white p-3 rounded-2xl border border-slate-200/80">
-            <strong className="font-bold text-slate-800 block mb-0.5">TMPL-11..17 · Evaluación UD1..UD7</strong>
-            <span className="text-[11px] text-slate-500">Imprime los 5 indicadores de logro en la cabecera del registro.</span>
+          <div className="bg-white dark:bg-[#131C1A] p-3 rounded-2xl border border-slate-200/80 dark:border-[#263834]">
+            <strong className="font-bold text-slate-800 dark:text-slate-200 block mb-0.5">TMPL-11..17 · Evaluación UD1..UD7</strong>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">Imprime los 5 indicadores de logro en la cabecera del registro.</span>
           </div>
         </div>
       </div>

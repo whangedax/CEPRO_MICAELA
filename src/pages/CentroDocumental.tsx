@@ -37,6 +37,8 @@ import {
   TemplateCategory,
   TEMPLATE_CATEGORIES,
   getTemplateById,
+  getVisibleTemplates,
+  getAvailableCategories,
 } from '../utils/documentTemplates';
 import { SelectUnitModal } from '../components/academic/SelectUnitModal';
 import { PdfViewer } from '../components/ui/PdfViewer';
@@ -191,22 +193,52 @@ export const CentroDocumental: React.FC = () => {
     return getTemplateById(selectedTemplateId) || OFFICIAL_TEMPLATES[0];
   }, [selectedTemplateId]);
 
+  // Plantillas pertinentes según el rol, aula y unidad didáctica activa
+  const contextTemplates = useMemo(() => {
+    return getVisibleTemplates({
+      role: user?.role,
+      groupId: activeWorkspace?.groupId,
+      unitCode: activeWorkspace?.unit,
+      availableUnits,
+      mode: activeWorkspace?.mode,
+      onlyCurrentUnit: Boolean(activeWorkspace?.unit),
+    });
+  }, [user?.role, activeWorkspace?.groupId, activeWorkspace?.unit, availableUnits, activeWorkspace?.mode]);
+
+  // Categorías con al menos una plantilla visible para el usuario y contexto actual
+  const availableCategories = useMemo(() => {
+    return getAvailableCategories(contextTemplates);
+  }, [contextTemplates]);
+
+  // Reajustar categoría seleccionada si ya no existe en las pertinentes
+  useEffect(() => {
+    if (selectedCategory !== 'TODOS' && !availableCategories.includes(selectedCategory as any)) {
+      setSelectedCategory('TODOS');
+    }
+  }, [availableCategories, selectedCategory]);
+
+  // Reajustar plantilla seleccionada si queda fuera del alcance de la UD o rol
+  useEffect(() => {
+    if (contextTemplates.length > 0) {
+      const exists = contextTemplates.some((t) => t.id === selectedTemplateId);
+      if (!exists) {
+        setSelectedTemplateId(contextTemplates[0].id);
+      }
+    }
+  }, [contextTemplates, selectedTemplateId]);
+
   // Plantillas permitidas según el backend y el rol del usuario
   const allowedTemplateIds = useMemo(() => {
     if (docConfig?.catalog?.length) {
-      return new Set(docConfig.catalog.map((t: DocumentCatalogItem) => t.id));
+      const backendSet = new Set(docConfig.catalog.map((t: DocumentCatalogItem) => t.id));
+      return new Set(contextTemplates.filter((t) => backendSet.has(t.id)).map((t) => t.id));
     }
-    // Fallback basado en roles institucionales
-    return new Set(
-      OFFICIAL_TEMPLATES.filter((t) =>
-        user?.role ? t.rolesAllowed.includes(user.role) : false
-      ).map((t) => t.id)
-    );
-  }, [docConfig, user]);
+    return new Set(contextTemplates.map((t) => t.id));
+  }, [docConfig, contextTemplates]);
 
-  // Filtrado de las 21 plantillas del catálogo
+  // Filtrado final de las plantillas del catálogo interactivo
   const filteredCatalog = useMemo(() => {
-    return OFFICIAL_TEMPLATES.filter((tmpl) => {
+    return contextTemplates.filter((tmpl) => {
       // Filtro por categoría
       if (selectedCategory !== 'TODOS' && tmpl.category !== selectedCategory) {
         return false;
@@ -223,7 +255,7 @@ export const CentroDocumental: React.FC = () => {
       }
       return true;
     });
-  }, [selectedCategory, searchFilter]);
+  }, [contextTemplates, selectedCategory, searchFilter]);
 
   // Comprobar compatibilidad con el modo de workspace actual
   const isWorkspaceModeCompatible = useMemo(() => {
@@ -508,16 +540,17 @@ export const CentroDocumental: React.FC = () => {
   if (!activeWorkspace?.groupId) {
     return (
       <div className="p-6 max-w-5xl mx-auto animate-in fade-in duration-300">
-        <div className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-sm text-center max-w-xl mx-auto">
-          <div className="w-16 h-16 rounded-2xl bg-[#13594A]/10 text-[#13594A] flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white dark:bg-[#182220] rounded-3xl p-8 border border-slate-200/80 dark:border-[#263834] shadow-sm text-center max-w-xl mx-auto">
+          <div className="w-16 h-16 rounded-2xl bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] flex items-center justify-center mx-auto mb-4">
             <DocumentIcon className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
             Centro de Documentos Académicos
           </h2>
-          <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-            Para consultar las 21 plantillas oficiales, validar requisitos preflight y generar
-            documentos en PDF con el motor institucional, seleccione primero un aula y unidad.
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+            {user?.role === 'DOCENTE'
+              ? 'Para consultar los documentos oficiales de su aula y unidad didáctica asignada, validar requisitos preflight y generar formatos en PDF, seleccione primero su aula y espacio de trabajo.'
+              : 'Para consultar las plantillas oficiales, validar requisitos preflight y generar documentos en PDF con el motor institucional, seleccione primero un aula y unidad.'}
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <button
@@ -528,7 +561,7 @@ export const CentroDocumental: React.FC = () => {
                   setIsUnitModalOpen(true);
                 }
               }}
-              className="px-6 py-2.5 rounded-xl bg-[#13594A] text-white font-bold text-xs hover:bg-[#0D382F] transition-all shadow-sm"
+              className="px-6 py-2.5 rounded-xl bg-[#13594A] dark:bg-[#107560] text-white font-bold text-xs hover:bg-[#0D382F] dark:hover:bg-[#0B5C4B] transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5EEAD4]"
             >
               Seleccionar Aula y Espacio
             </button>
@@ -566,35 +599,38 @@ export const CentroDocumental: React.FC = () => {
       {/* 1. Encabezado institucional y contexto activo */}
       <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-[#263834] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-            <a href="#/inicio" className="hover:text-[#13594A] transition-colors">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <a href="#/inicio" className="hover:text-[#13594A] dark:hover:text-[#5EEAD4] transition-colors">
               Inicio
             </a>
             <span>/</span>
-            <span className="text-slate-700 font-bold">Documentos</span>
+            <span className="text-slate-700 dark:text-slate-200 font-bold">Documentos</span>
             <span>/</span>
-            <span className="text-[#13594A] font-bold">Catálogo Oficial de 21 Formatos</span>
+            <span className="text-[#13594A] dark:text-[#5EEAD4] font-bold">
+              {user?.role === 'DIRECTOR' ? 'Catálogo Oficial de 21 Formatos' : 'Formatos Oficiales del Aula'}
+            </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-[#F0FDF8] tracking-tight flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#13594A]" />
+              <span className="w-3 h-3 rounded-full bg-[#13594A] dark:bg-[#5EEAD4]" />
               Centro de Documentos Académicos
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#13594A]/10 text-[#13594A]">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
               Aula: {currentGroup?.name || 'Aula Asignada'} · Modo {activeWorkspace.mode}
               {activeWorkspace.unit ? ` (${activeWorkspace.unit})` : ''}
             </span>
             {!__IS_INSTITUTIONAL__ && isDemoActive && (
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300 uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 dark:bg-amber-500/15 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-500/40 uppercase tracking-wider">
                 Entorno de Pruebas · Sin Validez Oficial
               </span>
             )}
           </div>
 
-          <p className="text-xs text-slate-600">
-            Emisión y verificación de los 21 formatos normados por el MINEDU · Generación mediante el
-            motor PDF oficial de CEPRO_MICAELA 2.0
+          <p className="text-xs text-slate-600 dark:text-slate-300">
+            {user?.role === 'DOCENTE'
+              ? 'Formatos normados por el MINEDU asignados a su aula y unidad · Generación mediante el motor PDF oficial de CEPRO_MICAELA 2.0'
+              : 'Emisión y verificación de los formatos normados por el MINEDU · Generación mediante el motor PDF oficial de CEPRO_MICAELA 2.0'}
           </p>
         </div>
 
@@ -687,10 +723,14 @@ export const CentroDocumental: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h2 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">Catálogo de Formatos</h2>
-                <span className="text-[11px] text-slate-500">21 plantillas oficiales del MINEDU</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {user?.role === 'DIRECTOR'
+                    ? '21 plantillas oficiales del MINEDU'
+                    : `${contextTemplates.length} formatos pertinentes para su rol y aula`}
+                </span>
               </div>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                {filteredCatalog.length} / 21
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-[#1F2D2A] text-slate-700 dark:text-slate-200">
+                {filteredCatalog.length} / {contextTemplates.length}
               </span>
             </div>
 
@@ -700,7 +740,7 @@ export const CentroDocumental: React.FC = () => {
                 type="text"
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
-                placeholder="Buscar por nombre o TMPL…"
+                placeholder="Buscar por nombre o formato…"
                 className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
               />
               <svg
@@ -715,7 +755,7 @@ export const CentroDocumental: React.FC = () => {
               </svg>
             </div>
 
-            {/* Filtro por Categorías */}
+            {/* Filtro por Categorías con documentos visibles */}
             <div className="flex flex-wrap gap-1 text-[11px]">
               <button
                 type="button"
@@ -728,7 +768,7 @@ export const CentroDocumental: React.FC = () => {
               >
                 Todos
               </button>
-              {TEMPLATE_CATEGORIES.map((cat) => (
+              {availableCategories.map((cat) => (
                 <button
                   key={cat}
                   type="button"
@@ -913,39 +953,41 @@ export const CentroDocumental: React.FC = () => {
                   id="include-retired"
                   checked={includeRetired}
                   onChange={(e) => setIncludeRetired(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#13594A] focus:ring-[#13594A] border-slate-300"
+                  className="w-4 h-4 rounded text-[#13594A] focus:ring-[#13594A] border-slate-300 dark:border-[#263834]"
                 />
-                <label htmlFor="include-retired" className="text-slate-700 font-semibold cursor-pointer">
+                <label htmlFor="include-retired" className="text-slate-700 dark:text-slate-300 font-semibold cursor-pointer">
                   Incluir historial (retirados)
                 </label>
               </div>
 
-              {/* Checkbox: Modo Demostración */}
-              <div className="flex items-center gap-2 pt-5">
-                <input
-                  type="checkbox"
-                  id="demo-fill"
-                  checked={demoFill}
-                  onChange={(e) => setDemoFill(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#13594A] focus:ring-[#13594A] border-slate-300"
-                />
-                <label htmlFor="demo-fill" className="text-amber-900 font-bold cursor-pointer">
-                  Modo Demostración (simular datos)
-                </label>
-              </div>
+              {/* Checkbox: Modo Demostración (solo en pruebas / desarrollo) */}
+              {!__IS_INSTITUTIONAL__ && (
+                <div className="flex items-center gap-2 pt-5">
+                  <input
+                    type="checkbox"
+                    id="demo-fill"
+                    checked={demoFill}
+                    onChange={(e) => setDemoFill(e.target.checked)}
+                    className="w-4 h-4 rounded text-[#13594A] focus:ring-[#13594A] border-slate-300 dark:border-[#263834]"
+                  />
+                  <label htmlFor="demo-fill" className="text-amber-800 dark:text-amber-300 font-bold cursor-pointer">
+                    Modo Demostración (simular datos)
+                  </label>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Checklist Preflight Oficial */}
           {preflightDoc && (
             <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 border border-slate-200/80 dark:border-[#263834] shadow-sm space-y-3.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#263834] pb-3">
                 <div className="flex items-center gap-2.5">
                   <div
                     className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
                       preflightDoc.preflight.complete
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-amber-100 text-amber-800'
+                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
+                        : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
                     }`}
                   >
                     {preflightDoc.preflight.complete ? '✓' : '⚠'}
@@ -954,9 +996,11 @@ export const CentroDocumental: React.FC = () => {
                     <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">
                       Checklist Preflight del Documento
                     </h3>
-                    <span className="text-[11px] text-slate-500 font-mono">
-                      Huella digital: {preflightDoc.fingerprint.slice(0, 16)}…
-                    </span>
+                    {user?.role === 'DIRECTOR' && (
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                        Huella digital: {preflightDoc.fingerprint.slice(0, 16)}…
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -964,8 +1008,8 @@ export const CentroDocumental: React.FC = () => {
                   <span
                     className={`px-3 py-1 rounded-xl text-xs font-bold ${
                       preflightDoc.preflight.complete
-                        ? 'bg-emerald-50 text-emerald-900 border border-emerald-300'
-                        : 'bg-amber-50 text-amber-900 border border-amber-300'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
                     }`}
                   >
                     {preflightDoc.preflight.filled} / {preflightDoc.preflight.total} parámetros completos
@@ -995,10 +1039,12 @@ export const CentroDocumental: React.FC = () => {
                       </span>
                       <div className="min-w-0 flex-1">
                         <strong className="block text-[11px] truncate">{f.label || f.key}</strong>
-                        <span className="text-[10px] text-slate-500 block truncate">
-                          Origen: {f.source}
-                        </span>
-                        <span className="text-[11px] font-mono block mt-0.5 text-slate-700 truncate">
+                        {user?.role !== 'DOCENTE' && (
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate">
+                            Origen: {f.source}
+                          </span>
+                        )}
+                        <span className="text-[11px] font-mono block mt-0.5 text-slate-700 dark:text-slate-300 truncate">
                           {isReady ? f.value : 'Pendiente de registrar'}
                         </span>
                       </div>
@@ -1009,7 +1055,7 @@ export const CentroDocumental: React.FC = () => {
 
               {/* Advertencias emitidas por el backend */}
               {preflightDoc.warnings && preflightDoc.warnings.length > 0 && (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 space-y-1">
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-900 dark:text-amber-200 space-y-1">
                   <strong className="block font-bold">Observaciones del motor documental:</strong>
                   {preflightDoc.warnings.map((w, idx) => (
                     <p key={idx}>• {w}</p>

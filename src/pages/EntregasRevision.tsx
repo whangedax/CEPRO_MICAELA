@@ -31,6 +31,7 @@ import {
   SubmissionStatus,
   ApiError,
 } from '../api/types';
+import { getVisibleTemplates } from '../utils/documentTemplates';
 import { PdfViewer } from '../components/ui/PdfViewer';
 import {
   DeliveriesIcon,
@@ -135,12 +136,35 @@ export const EntregasRevision: React.FC = () => {
     { id: 'TMPL-21', title: 'Título Técnico Institucional', kind: 'MODULE', desc: 'Título oficial registrado en actas institucionales.' },
   ], []);
 
-  // Plantillas autorizadas para el docente en su espacio activo
+  // Plantillas autorizadas para el rol y contexto académico activo
   const authorizedTemplates = useMemo(() => {
-    if (!isTeacher) return catalogTemplates;
-    const available = dashboardData?.templates || [];
-    return catalogTemplates.filter(t => available.includes(t.id));
-  }, [isTeacher, catalogTemplates, dashboardData?.templates]);
+    if (isTeacher) {
+      const visible = getVisibleTemplates({
+        role: 'DOCENTE',
+        groupId: activeWorkspace?.groupId,
+        unitCode: activeWorkspace?.unit,
+        onlyCurrentUnit: Boolean(activeWorkspace?.unit),
+      });
+      const visibleIds = new Set(visible.map(v => v.id));
+      return catalogTemplates.filter(t => visibleIds.has(t.id));
+    }
+    if (isSecretaria) {
+      const visible = getVisibleTemplates({ role: 'SECRETARIA' });
+      const visibleIds = new Set(visible.map(v => v.id));
+      return catalogTemplates.filter(t => visibleIds.has(t.id));
+    }
+    return catalogTemplates;
+  }, [isTeacher, isSecretaria, catalogTemplates, activeWorkspace?.groupId, activeWorkspace?.unit]);
+
+  // Sincronizar plantilla seleccionada si queda fuera de las autorizadas
+  useEffect(() => {
+    if (authorizedTemplates.length > 0) {
+      const exists = authorizedTemplates.some(t => t.id === selectedTemplateId);
+      if (!exists) {
+        setSelectedTemplateId(authorizedTemplates[0].id);
+      }
+    }
+  }, [authorizedTemplates, selectedTemplateId]);
 
   // Cargar lista de entregas desde dashboard
   const loadSubmissions = useCallback(async () => {
@@ -402,22 +426,22 @@ export const EntregasRevision: React.FC = () => {
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Banner de Entorno de Pruebas Institucional (solo en desarrollo/QA) */}
       {!__IS_INSTITUTIONAL__ && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-950">
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-950 dark:text-amber-200">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
-              <DeliveriesIcon className="w-5 h-5 text-amber-800" />
+              <DeliveriesIcon className="w-5 h-5 text-amber-800 dark:text-amber-300" />
             </div>
             <div>
-              <div className="text-xs font-bold tracking-wider uppercase text-amber-800">
+              <div className="text-xs font-bold tracking-wider uppercase text-amber-800 dark:text-amber-300">
                 ENTORNO DE PRUEBAS LOCAL · OPERACIÓN SIMULADA EN SQLITE
               </div>
-              <div className="text-xs text-amber-900/80">
-                Las entregas y dictámenes operan sobre registros sintéticos en <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[11px]">dev-sandbox/data</code> sin validez institucional externa.
+              <div className="text-xs text-amber-900/80 dark:text-amber-200/90">
+                Las entregas y dictámenes operan sobre registros sintéticos en <code className="bg-amber-100 dark:bg-amber-500/20 px-1 py-0.5 rounded font-mono text-[11px] text-amber-900 dark:text-amber-200">dev-sandbox/data</code> sin validez institucional externa.
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/80 border border-amber-300 text-amber-900 shadow-sm">
+            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/80 dark:bg-[#182220] border border-amber-300 dark:border-amber-500/40 text-amber-900 dark:text-amber-200 shadow-sm">
               Rol Activo: {role}
             </span>
           </div>
@@ -497,8 +521,8 @@ export const EntregasRevision: React.FC = () => {
               onClick={() => setTeacherTab('preparar')}
               className={`pb-3 px-4 text-sm font-bold border-b-2 transition-colors ${
                 teacherTab === 'preparar'
-                  ? 'border-[#13594A] text-[#13594A]'
-                  : 'border-transparent text-slate-500 hover:text-slate-700'
+                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
               }`}
             >
               1. Preparar y Entregar Documento
@@ -507,12 +531,12 @@ export const EntregasRevision: React.FC = () => {
               onClick={() => setTeacherTab('historial')}
               className={`pb-3 px-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
                 teacherTab === 'historial'
-                  ? 'border-[#13594A] text-[#13594A]'
-                  : 'border-transparent text-slate-500 hover:text-slate-700'
+                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
               }`}
             >
               <span>2. Historial de Mis Entregas</span>
-              <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-700 font-semibold">
+              <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 dark:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 font-semibold">
                 {submissions.length}
               </span>
             </button>
@@ -523,18 +547,18 @@ export const EntregasRevision: React.FC = () => {
               {/* Columna Izquierda: Selección de Plantilla */}
               <div className="lg:col-span-5 space-y-4">
                 <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm">
-                  <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center justify-between">
-                    <span>{activeWorkspace?.groupId ? 'Formatos Disponibles en Aula' : 'Catálogo Informativo'}</span>
-                    <span className="text-[11px] font-normal text-slate-500">
-                      {activeWorkspace?.groupId ? `${authorizedTemplates.length} formatos de aula` : 'Catálogo de referencia'}
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] mb-3 flex items-center justify-between">
+                    <span>{activeWorkspace?.groupId ? 'Formatos Disponibles en Aula' : 'Formatos Autorizados'}</span>
+                    <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                      {authorizedTemplates.length} formatos pertinentes
                     </span>
                   </h3>
 
                   {!activeWorkspace?.groupId && (
-                    <div className="mb-3 p-3 rounded-2xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
-                      <AlertCircleIcon className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                    <div className="mb-3 p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
+                      <AlertCircleIcon className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
                       <p>
-                        Seleccione un aula para consultar los formatos disponibles en su contexto académico.
+                        Seleccione un aula para consultar y validar los formatos disponibles en su contexto académico.
                       </p>
                     </div>
                   )}
@@ -548,18 +572,18 @@ export const EntregasRevision: React.FC = () => {
                           onClick={() => handleSelectTemplate(tmpl.id)}
                           className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
                             isSelected
-                              ? 'bg-emerald-50/60 border-[#13594A] ring-1 ring-[#13594A] shadow-sm'
-                              : 'bg-slate-50/50 border-slate-200/70 hover:bg-slate-50 hover:border-slate-300'
+                              ? 'bg-emerald-50/60 dark:bg-[#132B25] border-[#13594A] dark:border-[#208B73] ring-1 ring-[#13594A] dark:ring-[#208B73] shadow-sm'
+                              : 'bg-slate-50/50 dark:bg-[#131C1A] border-slate-200/70 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] hover:border-slate-300 dark:hover:border-[#34524B]'
                           }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-slate-900">{tmpl.id}</span>
-                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white text-slate-600 border border-slate-200">
+                            <span className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8]">{tmpl.id}</span>
+                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white dark:bg-[#182220] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
                               {tmpl.kind}
                             </span>
                           </div>
-                          <div className="text-xs font-semibold text-slate-800 mt-1">{tmpl.title}</div>
-                          <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">{tmpl.desc}</div>
+                          <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-1">{tmpl.title}</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">{tmpl.desc}</div>
                         </div>
                       );
                     })}
@@ -568,13 +592,13 @@ export const EntregasRevision: React.FC = () => {
 
                 {/* Tarjeta de ayuda a Configuración Documental */}
                 <div className="bg-slate-50 dark:bg-[#131C1A] p-4 rounded-2xl border border-slate-200 dark:border-[#263834] text-xs text-slate-600 dark:text-slate-400 space-y-2">
-                  <div className="font-bold text-slate-800 flex items-center gap-1.5">
-                    <DocumentIcon className="w-4 h-4 text-[#13594A]" />
+                  <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <DocumentIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
                     ¿Faltan datos en su documento?
                   </div>
                   <p>
                     Si el informe Preflight reporta parámetros faltantes, diríjase a{' '}
-                    <a href="#/configuracion-documental" className="text-[#13594A] font-bold underline">
+                    <a href="#/configuracion-documental" className="text-[#13594A] dark:text-[#5EEAD4] font-bold underline">
                       Configuración Documental
                     </a>{' '}
                     para registrar capacidades, competencias o los 5 indicadores de logro.
@@ -588,15 +612,15 @@ export const EntregasRevision: React.FC = () => {
                   {/* Encabezado del Documento Seleccionado */}
                   <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-[#263834] pb-4">
                     <div>
-                      <div className="text-xs font-bold text-[#13594A] uppercase tracking-wider">
+                      <div className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider">
                         {selectedTemplateId} · Verificación Preflight
                       </div>
-                      <h2 className="text-lg font-bold text-slate-900 mt-0.5">
+                      <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8] mt-0.5">
                         {catalogTemplates.find(t => t.id === selectedTemplateId)?.title}
                       </h2>
-                      <div className="text-xs text-slate-500 mt-1">
-                        Docente: <strong className="text-slate-700">{user?.name}</strong> | Aula:{' '}
-                        <strong className="text-slate-700">{activeWorkspace?.groupId || 'Sin aula'}</strong>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Docente: <strong className="text-slate-700 dark:text-slate-200">{user?.name}</strong> | Aula:{' '}
+                        <strong className="text-slate-700 dark:text-slate-200">{activeWorkspace?.groupId || 'Sin aula'}</strong>
                         {activeWorkspace?.unit && ` | Unidad: ${activeWorkspace.unit}`}
                       </div>
                     </div>

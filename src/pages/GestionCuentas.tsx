@@ -646,45 +646,45 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
       {/* 2. Tarjetas de métricas rápidas (Solo para Directivos) */}
       {canManageAccounts && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-6">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+          <div className="bg-white dark:bg-[#182220] p-4 rounded-2xl border border-slate-200/80 dark:border-[#263834] shadow-2xs">
+            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
               {isSecretaria ? 'Docentes Registrados' : 'Cuentas Totales'}
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900">
+              <span className="text-2xl font-bold text-slate-900 dark:text-[#F0FDF8]">
                 {isSecretaria ? stats.docentes : stats.total}
               </span>
               <span className="text-xs text-slate-400 font-medium">cuentas</span>
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-            <span className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider block mb-1">
+          <div className="bg-white dark:bg-[#182220] p-4 rounded-2xl border border-slate-200/80 dark:border-[#263834] shadow-2xs">
+            <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block mb-1">
               Cuentas Activas
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-emerald-800">{stats.activos}</span>
-              <span className="text-xs text-emerald-600 font-medium">habilitadas</span>
+              <span className="text-2xl font-bold text-emerald-800 dark:text-emerald-300">{stats.activos}</span>
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">habilitadas</span>
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-            <span className="text-[11px] font-semibold text-[#13594A] uppercase tracking-wider block mb-1">
+          <div className="bg-white dark:bg-[#182220] p-4 rounded-2xl border border-slate-200/80 dark:border-[#263834] shadow-2xs">
+            <span className="text-[11px] font-semibold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider block mb-1">
               Docentes con Aula
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-[#13594A]">{stats.conAsignacion}</span>
+              <span className="text-2xl font-bold text-[#13594A] dark:text-[#5EEAD4]">{stats.conAsignacion}</span>
               <span className="text-xs text-slate-400 font-medium">asignados</span>
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-            <span className="text-[11px] font-semibold text-amber-700 uppercase tracking-wider block mb-1">
+          <div className="bg-white dark:bg-[#182220] p-4 rounded-2xl border border-slate-200/80 dark:border-[#263834] shadow-2xs">
+            <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider block mb-1">
               Asignación Pendiente
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-amber-800">{stats.pendientes}</span>
-              <span className="text-xs text-amber-600 font-medium">provisionales</span>
+              <span className="text-2xl font-bold text-amber-800 dark:text-amber-300">{stats.pendientes}</span>
+              <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">provisionales</span>
             </div>
           </div>
         </div>
@@ -693,16 +693,16 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
       {/* 3. VISTA PARA DOCENTE: Solo lectura de su perfil y aulas */}
       {isDocente && (
         <div className="space-y-6">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-2xs">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl p-6 sm:p-8 border border-slate-200/90 dark:border-[#263834] shadow-2xs">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-100 dark:border-[#263834]">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-[#E6F4F1] text-[#13594A] flex items-center justify-center font-bold text-xl">
+                <div className="w-14 h-14 rounded-2xl bg-[#E6F4F1] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] flex items-center justify-center font-bold text-xl">
                   {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'D'}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-bold text-slate-900">{currentUser?.name}</h2>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E6F4F1] text-[#13594A] border border-[#13594A]/20">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-[#F0FDF8]">{currentUser?.name}</h2>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E6F4F1] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] border border-[#13594A]/20 dark:border-[#208B73]">
                       DOCENTE
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
@@ -796,9 +796,9 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
 
       {/* 4. VISTA PARA DIRECTIVOS (DIRECTOR Y SECRETARIA): Directorio de Cuentas */}
       {canManageAccounts && (
-        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
+        <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/90 dark:border-[#263834] shadow-2xs overflow-hidden">
           {/* Barra de Filtros y Búsqueda */}
-          <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-[#263834] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
             {/* Input de Búsqueda */}
             <div className="relative flex-1 max-w-md">
               <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -807,7 +807,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar por nombre o usuario..."
-                className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 focus:border-[#13594A] transition-all"
+                className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50/50 dark:bg-[#131C1A] text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 focus:border-[#13594A] transition-all"
               />
             </div>
 
@@ -1388,34 +1388,34 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
       {/* 6. MODAL: Confirmación de Archivación / Baja */}
       {archiveModal.isOpen && archiveModal.user && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-[#263834] animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-red-50 dark:bg-rose-950/40 text-red-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                 <AlertCircleIcon className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
                   Dar de Baja / Archivar Cuenta
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   @{archiveModal.user.username} — {archiveModal.user.name}
                 </p>
               </div>
             </div>
 
             {archiveModal.error && (
-              <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-900 text-xs font-medium">
+              <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 text-red-900 dark:text-rose-200 text-xs font-medium">
                 {archiveModal.error}
               </div>
             )}
 
-            <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
               Esta acción desactivará la cuenta institucional y retirará sus permisos activos de inicio de sesión.
               Para proceder, indique el motivo oficial de la baja:
             </p>
 
             <div className="mb-5">
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Motivo de Baja o Retiro <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -1426,7 +1426,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                   setArchiveModal((prev) => ({ ...prev, reason: e.target.value, error: null }))
                 }
                 placeholder="Ej. Cese de contrato docente por fin de periodo lectivo..."
-                className="w-full text-xs rounded-xl border border-slate-200 p-3 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                className="w-full text-xs rounded-xl border border-slate-200 dark:border-[#263834] p-3 bg-slate-50/50 dark:bg-[#131C1A] text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
               />
             </div>
 

@@ -38,6 +38,27 @@ html.dark :focus-visible {
   outline: 2px solid #5EEAD4;
 }
 
+/* Red de seguridad base para controles de formulario en Modo Oscuro */
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]):not([type="range"]),
+html.dark select,
+html.dark textarea {
+  background-color: #0F1715;
+  border-color: #263834;
+  color: #F1F5F9;
+  color-scheme: dark;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748B;
+}
+
+html.dark select option {
+  background-color: #131C1A;
+  color: #F1F5F9;
+}
+
+
 @media print {
   html, body {
     background-color: #ffffff !important;

@@ -568,64 +568,64 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
         <div className="space-y-6">
           {/* Tarjeta explicativa de los 3 pasos offline */}
           <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors">
-            <h2 className="text-base font-bold text-[#172B28]">Tus datos viajan en un archivo protegido</h2>
-            <p className="text-sm text-slate-600 mt-1">
+            <h2 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Tus datos viajan en un archivo protegido</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
               {isTeacher
                 ? 'Guarda tus notas y asistencias. Después crea un archivo .cetpro y entrégalo a secretaría o dirección. Cuando te devuelvan otro archivo, recíbelo aquí.'
                 : 'Recibe el trabajo de los docentes y envía las matrículas o correcciones a la cuenta del docente correspondiente mediante una memoria USB.'}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3">
-                <span className="w-7 h-7 rounded-full bg-[#13594A] text-white flex items-center justify-center text-xs font-bold shrink-0">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] flex items-start gap-3">
+                <span className="w-7 h-7 rounded-full bg-[#13594A] dark:bg-[#107560] text-white flex items-center justify-center text-xs font-bold shrink-0">
                   1
                 </span>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">Crear el archivo</h3>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-[#F0FDF8]">Crear el archivo</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     El sistema reúne los datos guardados y los encripta con una clave de seguridad.
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3">
-                <span className="w-7 h-7 rounded-full bg-[#13594A] text-white flex items-center justify-center text-xs font-bold shrink-0">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] flex items-start gap-3">
+                <span className="w-7 h-7 rounded-full bg-[#13594A] dark:bg-[#107560] text-white flex items-center justify-center text-xs font-bold shrink-0">
                   2
                 </span>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">Llevarlo en USB</h3>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-[#F0FDF8]">Llevarlo en USB</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Copia el archivo a tu memoria USB y entrégalo junto con la clave asignada.
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3">
-                <span className="w-7 h-7 rounded-full bg-[#13594A] text-white flex items-center justify-center text-xs font-bold shrink-0">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] flex items-start gap-3">
+                <span className="w-7 h-7 rounded-full bg-[#13594A] dark:bg-[#107560] text-white flex items-center justify-center text-xs font-bold shrink-0">
                   3
                 </span>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">Revisar y recibir</h3>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-[#F0FDF8]">Revisar y recibir</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     La otra computadora verifica la firma y previsualiza los cambios sin duplicar datos.
                   </p>
                 </div>
               </div>
             </div>
 
-            <p className="text-xs text-slate-400 mt-4 italic">
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-4 italic">
               * No requiere internet. Un archivo .cetpro sirve exclusivamente para actualizar computadoras de CEPRO_MICAELA.
             </p>
           </div>
 
           {/* Sub-selector Enviar / Recibir */}
-          <div className="inline-flex p-1 bg-slate-100 rounded-xl">
+          <div className="inline-flex p-1 bg-slate-100 dark:bg-[#131C1A] rounded-xl border border-transparent dark:border-[#263834]">
             <button
               onClick={() => setExchangeSubTab('send')}
               className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${
                 exchangeSubTab === 'send'
-                  ? 'bg-white text-[#13594A] shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-[#1F2D2A] text-[#13594A] dark:text-[#5EEAD4] shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               <DownloadIcon className="w-4 h-4" />
@@ -635,8 +635,8 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
               onClick={() => setExchangeSubTab('receive')}
               className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${
                 exchangeSubTab === 'receive'
-                  ? 'bg-white text-[#13594A] shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-[#1F2D2A] text-[#13594A] dark:text-[#5EEAD4] shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               <UploadIcon className="w-4 h-4" />
@@ -648,10 +648,10 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
           {exchangeSubTab === 'send' && (
             <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-6">
               <div>
-                <h3 className="text-base font-bold text-[#172B28]">
+                <h3 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">
                   Enviar {isTeacher ? 'mi trabajo docente' : 'datos a otra computadora'}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   {isTeacher
                     ? 'Este archivo incluye únicamente tus aulas y unidades. Entrégalo a secretaría o dirección.'
                     : 'Elige primero para quién prepararás el archivo. Si eliges un docente, se incluirán únicamente sus aulas asignadas.'}
@@ -659,8 +659,8 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
               </div>
 
               {exportError && (
-                <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-700 text-sm">
-                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600" />
+                <div className="p-4 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 flex items-start gap-3 text-red-700 dark:text-rose-200 text-sm">
+                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-rose-400" />
                   <div>
                     <h4 className="font-semibold">No se pudo crear el archivo</h4>
                     <p className="text-xs mt-0.5">{exportError}</p>
@@ -672,13 +672,13 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                 {/* Selector de destinatario (Solo Admin) */}
                 {!isTeacher && (
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       ¿Quién recibirá este archivo?
                     </label>
                     <select
                       value={exportRecipientId}
                       onChange={e => setExportRecipientId(e.target.value)}
-                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
                     >
                       <option value="">Dirección o secretaría: archivo institucional</option>
                       {teacherUsers.map(u => (
@@ -687,7 +687,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                         </option>
                       ))}
                     </select>
-                    <p className="text-[11px] text-slate-400 mt-1">
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                       Si preparas el archivo para un docente específico, solo contendrá sus grupos autorizados.
                     </p>
                   </div>
@@ -695,13 +695,13 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
                 {/* Selector de aula / grupo */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     ¿Qué aula quieres incluir?
                   </label>
                   <select
                     value={exportGroupId}
                     onChange={e => setExportGroupId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
                   >
                     <option value="">Todas mis aulas permitidas</option>
                     {(dashboardData?.groups || []).map(g => (
@@ -710,15 +710,15 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                       </option>
                     ))}
                   </select>
-                  <p className="text-[11px] text-slate-400 mt-1">
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                     Para una sincronización completa y confiable, se recomienda dejar seleccionadas todas las aulas.
                   </p>
                 </div>
               </div>
 
               {/* Clave de protección */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                <label className="block text-xs font-semibold text-slate-800">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-3">
+                <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200">
                   Clave que protege este archivo (mínimo 8 caracteres)
                 </label>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -728,14 +728,14 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                       value={exportPassphrase}
                       onChange={e => setExportPassphrase(e.target.value)}
                       minLength={8}
-                      className="w-full pl-9 pr-10 py-2 text-sm font-mono bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                      className="w-full pl-9 pr-10 py-2 text-sm font-mono bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
                       placeholder="Ingrese o use la clave generada"
                     />
                     <KeyIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                     <button
                       type="button"
                       onClick={() => setShowExportPassphrase(!showExportPassphrase)}
-                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                       title={showExportPassphrase ? 'Ocultar clave' : 'Mostrar clave'}
                     >
                       <EyeIcon className="w-4 h-4" />
@@ -745,7 +745,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                   <button
                     type="button"
                     onClick={handleCopyPassphrase}
-                    className="px-3 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                    className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#182220] hover:bg-slate-100 dark:hover:bg-[#263834] border border-slate-300 dark:border-[#263834] rounded-lg transition-colors flex items-center justify-center gap-1.5"
                   >
                     <span>{copiedKey ? '¡Copiada!' : 'Copiar clave'}</span>
                   </button>
@@ -753,12 +753,12 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                   <button
                     type="button"
                     onClick={() => setExportPassphrase(generateSecurePassphrase())}
-                    className="px-3 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg transition-colors"
+                    className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#182220] hover:bg-slate-100 dark:hover:bg-[#263834] border border-slate-300 dark:border-[#263834] rounded-lg transition-colors"
                   >
                     Generar otra
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   El sistema prepara una clave segura para proteger el paquete. Comunícala a la persona que recibirá el USB;
                   no es tu contraseña de inicio de sesión.
                 </p>
@@ -844,20 +844,20 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
           {exchangeSubTab === 'receive' && (
             <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-6">
               <div>
-                <h3 className="text-base font-bold text-[#172B28]">Recibir un archivo desde USB</h3>
-                <p className="text-xs text-slate-500 mt-1">
+                <h3 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Recibir un archivo desde USB</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   Elige el archivo <code>.cetpro</code> que te entregaron y escribe su clave de seguridad para revisar los cambios
                   antes de incorporarlos a tu base local.
                 </p>
               </div>
 
               {previewError && (
-                <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-700 text-sm">
-                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600" />
+                <div className="p-4 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 flex items-start gap-3 text-red-700 dark:text-rose-200 text-sm">
+                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-rose-400" />
                   <div>
                     <h4 className="font-semibold">No se pudo verificar el archivo</h4>
                     <p className="text-xs mt-0.5">{previewError}</p>
-                    <p className="text-[11px] text-red-500 mt-1">
+                    <p className="text-[11px] text-red-500 dark:text-rose-300 mt-1">
                       Comprueba que hayas seleccionado el archivo correcto y que la clave coincida exactamente.
                     </p>
                   </div>
@@ -865,8 +865,8 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
               )}
 
               {importError && (
-                <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-700 text-sm">
-                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600" />
+                <div className="p-4 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 flex items-start gap-3 text-red-700 dark:text-rose-200 text-sm">
+                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-rose-400" />
                   <div>
                     <h4 className="font-semibold">Error al aplicar la actualización</h4>
                     <p className="text-xs mt-0.5">{importError}</p>
@@ -877,10 +877,10 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Selector de archivo */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Archivo de actualización (.cetpro)
                   </label>
-                  <div className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:border-[#13594A] transition-colors bg-slate-50/50">
+                  <div className="border-2 border-dashed border-slate-300 dark:border-[#263834] rounded-xl p-4 text-center hover:border-[#13594A] dark:hover:border-[#5EEAD4] transition-colors bg-slate-50/50 dark:bg-[#131C1A]">
                     <input
                       type="file"
                       id="exchange-file-input"
@@ -889,13 +889,13 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                       className="hidden"
                     />
                     <label htmlFor="exchange-file-input" className="cursor-pointer flex flex-col items-center gap-2">
-                      <div className="w-10 h-10 rounded-full bg-[#13594A]/10 text-[#13594A] flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] flex items-center justify-center">
                         <UploadIcon className="w-5 h-5" />
                       </div>
-                      <span className="text-xs font-bold text-slate-800">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                         {selectedFile ? selectedFile.name : 'Seleccionar archivo .cetpro'}
                       </span>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500">
                         {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : 'Hasta 32 MB'}
                       </span>
                     </label>
@@ -904,7 +904,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
                 {/* Clave de protección */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Clave que acompaña al archivo
                   </label>
                   <div className="relative">
@@ -912,20 +912,20 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                       type={showReceivePassphrase ? 'text' : 'password'}
                       value={receivePassphrase}
                       onChange={e => setReceivePassphrase(e.target.value)}
-                      className="w-full pl-9 pr-10 py-2.5 text-sm font-mono bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                      className="w-full pl-9 pr-10 py-2.5 text-sm font-mono bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
                       placeholder="Escribe la clave entregada"
                     />
                     <KeyIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                     <button
                       type="button"
                       onClick={() => setShowReceivePassphrase(!showReceivePassphrase)}
-                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                       title={showReceivePassphrase ? 'Ocultar clave' : 'Mostrar clave'}
                     >
                       <EyeIcon className="w-4 h-4" />
                     </button>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                     Solicita esta clave a la persona que generó el paquete en la otra computadora.
                   </p>
                 </div>
@@ -937,16 +937,16 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                   type="button"
                   onClick={handlePreviewPackage}
                   disabled={isPreviewing || !filePackage}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition-all shadow-sm disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#182220] hover:bg-slate-50 dark:hover:bg-[#263834] border border-slate-300 dark:border-[#263834] rounded-xl transition-all shadow-sm disabled:opacity-50"
                 >
                   {isPreviewing ? (
                     <>
-                      <div className="w-3.5 h-3.5 border-2 border-slate-500/20 border-t-slate-700 rounded-full animate-spin" />
+                      <div className="w-3.5 h-3.5 border-2 border-slate-500/20 border-t-slate-700 dark:border-t-slate-200 rounded-full animate-spin" />
                       <span>Verificando firma y descifrando...</span>
                     </>
                   ) : (
                     <>
-                      <EyeIcon className="w-4 h-4 text-[#13594A]" />
+                      <EyeIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
                       <span>Revisar archivo (Vista previa)</span>
                     </>
                   )}
