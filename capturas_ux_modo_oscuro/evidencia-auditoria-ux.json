@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-10-30T02:27:54.545Z",
+  "fecha": "2026-10-30T02:46:20.665Z",
   "suite": "CEPRO_MICAELA 2.0 - Suite de Verificación UX y Modo Oscuro",
   "worktree": "C:/CETPRO/CETPRO_MODERNIZACION_V2_UX",
   "branch": "feat/ux-darkmode-modernizacion",
@@ -23,7 +23,7 @@
     {
       "name": "Cumplimiento Accesibilidad y Contraste WCAG 2.2 AA/AAA",
       "passed": true,
-      "detail": "Ratio de contraste: 13.5:1 (Supera el mínimo de 4.5:1 para AA y 7.0:1 para AAA)"
+      "detail": "Ratio medido dinámicamente en DOM: 17.43:1 (Texto: rgb(240, 253, 248) sobre Fondo: rgb(15, 23, 21))"
     },
     {
       "name": "Regla de Impresión Oficial (@media print siempre papel blanco)",

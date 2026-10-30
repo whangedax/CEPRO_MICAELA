@@ -27,6 +27,14 @@ const { initQaBaseline, startQaServer } = require('./helpers/qa-env.cjs');
 const ROOT_DIR = path.resolve(__dirname, '..');
 const QA_DATA_DIR = path.join(ROOT_DIR, 'dev-sandbox', 'data', 'qa-ux-evidence');
 const SCREENSHOT_DIR = path.join(ROOT_DIR, 'capturas_ux_modo_oscuro');
+const SCREENSHOT_DIR_V2 = path.join(SCREENSHOT_DIR, 'v2');
+
+async function capture(page, filename) {
+  const p1 = path.join(SCREENSHOT_DIR, filename);
+  const p2 = path.join(SCREENSHOT_DIR_V2, filename);
+  await page.screenshot({ path: p1 });
+  try { fs.copyFileSync(p1, p2); } catch {}
+}
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 
 const BACKEND_PORT = 8092;
@@ -115,6 +123,7 @@ async function run() {
   console.log('========================================================================\n');
 
   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
+  fs.mkdirSync(SCREENSHOT_DIR_V2, { recursive: true });
 
   // 1. Preparar sandbox QA sintético
   console.log('[1/7] Inicializando base de datos sintética en:', QA_DATA_DIR);
@@ -172,9 +181,9 @@ async function run() {
 
     // Captura Login en Modo Oscuro (1920x1080 y 1366x768)
     await page.setViewport({ width: 1920, height: 1080 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '01-login-modo-oscuro-1920x1080.png') });
+    await capture(page, '01-login-modo-oscuro-1920x1080.png');
     await page.setViewport({ width: 1366, height: 768 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '01-login-modo-oscuro-1366x768.png') });
+    await capture(page, '01-login-modo-oscuro-1366x768.png');
 
     // Cambiar a Modo Claro y capturar
     await page.evaluate(() => {
@@ -182,7 +191,7 @@ async function run() {
     });
     await page.reload({ waitUntil: 'networkidle0' });
     await page.setViewport({ width: 1920, height: 1080 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '01-login-modo-claro-1920x1080.png') });
+    await capture(page, '01-login-modo-claro-1920x1080.png');
 
     // -------------------------------------------------------------
     // PRUEBA 2: DIRECTOR GENERAL — DASHBOARD COMPARATIVO
@@ -201,7 +210,7 @@ async function run() {
 
     // Captura Director en Modo Claro
     await page.setViewport({ width: 1920, height: 1080 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '02-dashboard-director-claro-1920x1080.png') });
+    await capture(page, '02-dashboard-director-claro-1920x1080.png');
 
     // Alternar a Modo Oscuro usando el ThemeSwitcher en Topbar
     console.log('Cambiando a Modo Oscuro mediante ThemeSwitcher...');
@@ -225,9 +234,9 @@ async function run() {
     });
 
     // Capturas Director en Modo Oscuro (1920x1080 y 1366x768)
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '02-dashboard-director-oscuro-1920x1080.png') });
+    await capture(page, '02-dashboard-director-oscuro-1920x1080.png');
     await page.setViewport({ width: 1366, height: 768 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '02-dashboard-director-oscuro-1366x768.png') });
+    await capture(page, '02-dashboard-director-oscuro-1366x768.png');
     console.log(`[TEST] Dashboard Director: APROBADO`);
 
     // -------------------------------------------------------------
@@ -250,9 +259,9 @@ async function run() {
 
     // Capturas Secretaría en Modo Oscuro (1920x1080 y 1366x768)
     await page.setViewport({ width: 1920, height: 1080 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '03-dashboard-secretaria-oscuro-1920x1080.png') });
+    await capture(page, '03-dashboard-secretaria-oscuro-1920x1080.png');
     await page.setViewport({ width: 1366, height: 768 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '03-dashboard-secretaria-oscuro-1366x768.png') });
+    await capture(page, '03-dashboard-secretaria-oscuro-1366x768.png');
 
     // Alternar a Claro para evidencia comparativa
     const lightButtonSec = await page.$('button[aria-label="Tema Claro (Modo diurno)"]');
@@ -261,7 +270,7 @@ async function run() {
       await new Promise((r) => setTimeout(r, 500));
     }
     await page.setViewport({ width: 1920, height: 1080 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '03-dashboard-secretaria-claro-1920x1080.png') });
+    await capture(page, '03-dashboard-secretaria-claro-1920x1080.png');
 
     // Restaurar a Oscuro
     const darkButtonSec = await page.$('button[aria-label="Tema Oscuro Ergonómico (Modo nocturno)"]');
@@ -287,9 +296,9 @@ async function run() {
 
     // Captura Docente en Modo Oscuro (1920x1080 y 1366x768)
     await page.setViewport({ width: 1920, height: 1080 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '04-dashboard-docente-oscuro-1920x1080.png') });
+    await capture(page, '04-dashboard-docente-oscuro-1920x1080.png');
     await page.setViewport({ width: 1366, height: 768 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '04-dashboard-docente-oscuro-1366x768.png') });
+    await capture(page, '04-dashboard-docente-oscuro-1366x768.png');
 
     // Alternar a Claro para evidencia comparativa
     const lightButtonDoc = await page.$('button[aria-label="Tema Claro (Modo diurno)"]');
@@ -298,7 +307,7 @@ async function run() {
       await new Promise((r) => setTimeout(r, 500));
     }
     await page.setViewport({ width: 1920, height: 1080 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '04-dashboard-docente-claro-1920x1080.png') });
+    await capture(page, '04-dashboard-docente-claro-1920x1080.png');
 
     // Restaurar a Oscuro
     const darkButtonDoc = await page.$('button[aria-label="Tema Oscuro Ergonómico (Modo nocturno)"]');
@@ -339,7 +348,7 @@ async function run() {
 
     // Captura catálogo oficial en modo oscuro
     await page.setViewport({ width: 1920, height: 1080 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '05-centro-documental-oscuro-1920x1080.png') });
+    await capture(page, '05-centro-documental-oscuro-1920x1080.png');
 
     // Seleccionar plantilla TMPL-05
     console.log('  -> Seleccionando plantilla TMPL-05 (Asistencia UD1)...');
@@ -391,7 +400,7 @@ async function run() {
     console.log(`[TEST] Inviolabilidad de Formato PDF: ${isCanvasInviolate ? 'APROBADO (Lienzo blanco intacto)' : 'FALLO'}`);
 
     // Captura del visor de PDF con lienzo blanco sobre mesa de luz oscura
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '05-pdf-viewer-mesa-luz-oscura-lienzo-blanco-1920x1080.png') });
+    await capture(page, '05-pdf-viewer-mesa-luz-oscura-lienzo-blanco-1920x1080.png');
 
     // -------------------------------------------------------------
     // PRUEBA 6: REGISTRO DE EVALUACIONES
@@ -399,7 +408,7 @@ async function run() {
     console.log('\n--- PRUEBA 6: Registro de Evaluaciones ---');
     await page.goto(`${BASE_URL}/#/evaluacion`, { waitUntil: 'networkidle0' });
     await new Promise((r) => setTimeout(r, 1500));
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '06-registro-evaluaciones-oscuro-1920x1080.png') });
+    await capture(page, '06-registro-evaluaciones-oscuro-1920x1080.png');
     console.log(`[TEST] Registro de Evaluaciones: APROBADO`);
 
     // -------------------------------------------------------------
@@ -408,23 +417,48 @@ async function run() {
     console.log('\n--- PRUEBA 7: Padrón de Estudiantes ---');
     await page.goto(`${BASE_URL}/#/estudiantes`, { waitUntil: 'networkidle0' });
     await new Promise((r) => setTimeout(r, 1500));
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '07-gestion-estudiantes-oscuro-1920x1080.png') });
+    await capture(page, '07-gestion-estudiantes-oscuro-1920x1080.png');
     await page.setViewport({ width: 1366, height: 768 });
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '07-gestion-estudiantes-oscuro-1366x768.png') });
+    await capture(page, '07-gestion-estudiantes-oscuro-1366x768.png');
     console.log(`[TEST] Gestión de Estudiantes: APROBADO`);
 
     // -------------------------------------------------------------
     // PRUEBA 8: ACCESIBILIDAD Y CONTRASTES WCAG 2.2 AA
     // -------------------------------------------------------------
-    console.log('\n--- PRUEBA 8: Medición de Contraste WCAG 2.2 AA ---');
-    const contrastRatio = 13.5; // #F0FDF8 sobre #0F1715 calculado espectrofotométricamente
-    const isWcagCompliant = contrastRatio >= 7.0; // Pasa incluso WCAG AAA
+    console.log('\n--- PRUEBA 8: Medición Dinámica de Contraste WCAG 2.2 AA ---');
+    const contrastData = await page.evaluate(() => {
+      function getLuminance(r, g, b) {
+        const a = [r, g, b].map(v => {
+          v /= 255;
+          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        });
+        return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+      }
+      function parseRgb(colorStr) {
+        const match = colorStr ? colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/) : null;
+        return match ? [Number(match[1]), Number(match[2]), Number(match[3])] : [255, 255, 255];
+      }
+      const bgElem = document.querySelector('main') || document.body;
+      const textElem = document.querySelector('h1, h2, h3, strong, p') || bgElem;
+      const bgRgb = parseRgb(window.getComputedStyle(bgElem).backgroundColor);
+      const fgRgb = parseRgb(window.getComputedStyle(textElem).color);
+      const l1 = getLuminance(fgRgb[0], fgRgb[1], fgRgb[2]);
+      const l2 = getLuminance(bgRgb[0], bgRgb[1], bgRgb[2]);
+      const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+      return {
+        ratio: Number(ratio.toFixed(2)),
+        fg: window.getComputedStyle(textElem).color,
+        bg: window.getComputedStyle(bgElem).backgroundColor
+      };
+    });
+    const contrastRatio = contrastData.ratio;
+    const isWcagCompliant = contrastRatio >= 4.5;
     testResults.push({
       name: 'Cumplimiento Accesibilidad y Contraste WCAG 2.2 AA/AAA',
       passed: isWcagCompliant,
-      detail: `Ratio de contraste: ${contrastRatio}:1 (Supera el mínimo de 4.5:1 para AA y 7.0:1 para AAA)`,
+      detail: `Ratio medido dinámicamente en DOM: ${contrastRatio}:1 (Texto: ${contrastData.fg} sobre Fondo: ${contrastData.bg})`,
     });
-    console.log(`[TEST] Accesibilidad WCAG: APROBADO (${contrastRatio}:1)`);
+    console.log(`[TEST] Accesibilidad WCAG: ${isWcagCompliant ? 'APROBADO' : 'FALLO'} (${contrastRatio}:1 medido dinámicamente)`);
 
     // -------------------------------------------------------------
     // PRUEBA 9: REGLA DE IMPRESIÓN OFICIAL (@media print)
@@ -475,8 +509,7 @@ async function run() {
   console.log('========================================================================\n');
 
   // Guardar resumen JSON de evidencia
-  fs.writeFileSync(
-    path.join(SCREENSHOT_DIR, 'evidencia-auditoria-ux.json'),
+  const evData = 
     JSON.stringify(
       {
         fecha: new Date().toISOString(),
@@ -488,8 +521,9 @@ async function run() {
       },
       null,
       2
-    )
-  );
+    );
+  fs.writeFileSync(path.join(SCREENSHOT_DIR, 'evidencia-auditoria-ux.json'), evData);
+  fs.writeFileSync(path.join(SCREENSHOT_DIR_V2, 'evidencia-auditoria-ux.json'), evData);
 
   process.exit(allPassed ? 0 : 1);
 }

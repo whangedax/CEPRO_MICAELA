@@ -57,7 +57,8 @@
     "test:system-ui": "node tests/system-audit-ui.cjs",
     "test:demo-safety": "node --test --test-isolation=none tests/demo-safety.test.cjs",
     "audit:production": "node scripts/production-readiness.cjs",
-    "test:production-package": "node tests/production-package.cjs"
+    "test:production-package": "node tests/production-package.cjs",
+    "test:document-filter": "node --experimental-strip-types tests/document-template-filter.test.mjs"
   },
   "engines": {
     "node": ">=24"
