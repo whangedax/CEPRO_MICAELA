@@ -205,9 +205,9 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200/90 shadow-lg overflow-hidden flex flex-col animate-in fade-in duration-200">
+    <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/90 dark:border-[#263834] shadow-lg overflow-hidden flex flex-col animate-in fade-in duration-200">
       {/* 1. Barra de herramientas superior del visor */}
-      <div className="bg-[#13594A] text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 select-none">
+      <div className="bg-[#13594A] dark:bg-[#182220] dark:border-b dark:border-[#263834] text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 select-none">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 text-emerald-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -327,7 +327,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
       ) : null}
 
       {/* 2. Controles de navegación de página y zoom */}
-      <div className="bg-[#F6F8FA] border-b border-slate-200 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs select-none">
+      <div className="bg-[#F6F8FA] dark:bg-[#131C1A] border-b border-slate-200 dark:border-[#263834] px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs select-none">
         {/* Controles de página */}
         <div className="flex items-center gap-1.5">
           <button
@@ -335,12 +335,12 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             data-prev
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage <= 1 || isLoading}
-            className="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             ← Anterior
           </button>
 
-          <span data-page className="px-2.5 py-1 font-mono font-bold text-slate-800 bg-slate-200/60 rounded-lg">
+          <span data-page className="px-2.5 py-1 font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-200/60 dark:bg-[#182220] dark:border dark:border-[#263834] rounded-lg">
             Página {currentPage} de {numPages}
           </span>
 
@@ -349,7 +349,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             data-next
             onClick={() => setCurrentPage((p) => Math.min(numPages, p + 1))}
             disabled={currentPage >= numPages || isLoading}
-            className="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Siguiente →
           </button>
@@ -357,7 +357,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
 
         {/* Controles de zoom */}
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 text-slate-600 font-semibold text-[11px]">
+          <label className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-semibold text-[11px]">
             <span>Zoom:</span>
             <select
               data-zoom
@@ -366,7 +366,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 const val = e.target.value;
                 setZoomMode(val === 'fit' ? 'fit' : Number(val));
               }}
-              className="px-2 py-1 rounded-lg border border-slate-300 bg-white text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+              className="px-2 py-1 rounded-lg border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
             >
               <option value="fit">Ajustar ancho</option>
               <option value="1">100%</option>
@@ -382,7 +382,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
               if (zoomMode === 'fit') setZoomMode(1.25);
               else setZoomMode((z) => Math.min(2.5, (typeof z === 'number' ? z : 1) + 0.25));
             }}
-            className="w-7 h-7 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold flex items-center justify-center transition-colors"
+            className="w-7 h-7 rounded-lg border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center transition-colors"
             title="Aumentar zoom"
           >
             +
@@ -394,7 +394,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
               if (zoomMode === 'fit') setZoomMode(0.75);
               else setZoomMode((z) => Math.max(0.5, (typeof z === 'number' ? z : 1) - 0.25));
             }}
-            className="w-7 h-7 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold flex items-center justify-center transition-colors"
+            className="w-7 h-7 rounded-lg border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center transition-colors"
             title="Disminuir zoom"
           >
             -
@@ -405,47 +405,47 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
       {/* 3. Escenario de visualización con canvas */}
       <div
         ref={containerRef}
-        className="relative bg-slate-200/70 p-4 sm:p-6 overflow-auto max-h-[750px] min-h-[380px] flex items-center justify-center"
+        className="relative bg-slate-200/70 dark:bg-[#0B1210] p-4 sm:p-6 overflow-auto max-h-[750px] min-h-[380px] flex items-center justify-center"
       >
         {isLoading && (
-          <div className="absolute inset-0 z-10 bg-white/70 backdrop-blur-[1px] flex flex-col items-center justify-center">
-            <div className="w-8 h-8 border-4 border-[#13594A]/20 border-t-[#13594A] rounded-full animate-spin mb-2" />
-            <span className="text-xs font-bold text-slate-700">Procesando páginas del PDF…</span>
+          <div className="absolute inset-0 z-10 bg-white/70 dark:bg-[#0B1210]/80 backdrop-blur-[1px] flex flex-col items-center justify-center">
+            <div className="w-8 h-8 border-4 border-[#13594A]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin mb-2" />
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Procesando páginas del PDF…</span>
           </div>
         )}
 
         {error && (
-          <div className="p-6 text-center max-w-md bg-white rounded-2xl border border-rose-200 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-2">
+          <div className="p-6 text-center max-w-md bg-white dark:bg-[#182220] rounded-2xl border border-rose-200 dark:border-rose-900/60 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto mb-2">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <p className="text-xs font-bold text-rose-900">{error}</p>
-            <p className="text-[11px] text-slate-500 mt-1">Verifique que el backend esté activo y los parámetros sean válidos.</p>
+            <p className="text-xs font-bold text-rose-900 dark:text-rose-200">{error}</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Verifique que el backend esté activo y los parámetros sean válidos.</p>
           </div>
         )}
 
         <canvas
           ref={canvasRef}
           aria-label="Vista previa del documento institucional oficial"
-          className="bg-white shadow-xl rounded-sm mx-auto transition-all"
+          className="bg-white shadow-2xl rounded-sm mx-auto transition-all"
         />
       </div>
 
       {/* 4. Pie con aviso institucional */}
-      <div className="bg-slate-50 border-t border-slate-200 px-4 py-2 flex items-center justify-between text-[11px] text-slate-500">
+      <div className="bg-slate-50 dark:bg-[#131C1A] border-t border-slate-200 dark:border-[#263834] px-4 py-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
         <span>Renderizado con motor PDF institucional oficial CEPRO_MICAELA 2.0</span>
         {isDemo ? (
-          <span className="text-amber-800 font-semibold">
+          <span className="text-amber-800 dark:text-amber-300 font-semibold">
             Modo Demostración activo: Datos simulados. Sin validez oficial.
           </span>
         ) : isDraft ? (
-          <span className="text-rose-800 font-semibold">
+          <span className="text-rose-800 dark:text-rose-300 font-semibold">
             Borrador de trabajo: Documento incompleto. Sin validez oficial.
           </span>
         ) : (
-          <span className="text-emerald-800 font-semibold">
+          <span className="text-emerald-800 dark:text-emerald-300 font-semibold">
             Verificación completada · Listo para revisión preliminar
           </span>
         )}

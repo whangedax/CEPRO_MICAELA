@@ -538,7 +538,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
               <AccountsIcon className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
                 Gestión de Cuentas, Usuarios y Asignaciones
               </h1>
               <p className="text-xs text-slate-500 font-medium">

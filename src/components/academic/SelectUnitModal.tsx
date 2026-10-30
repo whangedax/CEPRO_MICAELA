@@ -84,38 +84,38 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200"
     >
       <div
-        className="bg-white rounded-3xl border border-slate-200/90 shadow-[0_20px_60px_rgba(0,0,0,0.15)] w-full max-w-lg overflow-hidden flex flex-col"
+        className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/90 dark:border-[#263834] shadow-[0_20px_60px_rgba(0,0,0,0.15)] w-full max-w-lg overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Encabezado */}
-        <div className="p-6 border-b border-slate-100 bg-[#F6F8FA]/70">
+        <div className="p-6 border-b border-slate-100 dark:border-[#263834] bg-[#F6F8FA]/70 dark:bg-[#131C1A]/70">
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-[#13594A]" aria-hidden="true" />
-            <span className="text-[11px] font-bold text-[#13594A] uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-[#13594A] dark:bg-[#5EEAD4]" aria-hidden="true" />
+            <span className="text-[11px] font-bold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider">
               Selección de Espacio de Trabajo
             </span>
           </div>
-          <h2 id="select-unit-modal-title" className="text-[20px] font-bold text-[#172B28] leading-snug">
+          <h2 id="select-unit-modal-title" className="text-[20px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-snug">
             {programName}
           </h2>
-          <p className="text-[13px] text-slate-600 font-medium mt-1">
+          <p className="text-[13px] text-slate-600 dark:text-slate-300 font-medium mt-1">
             {moduleName}
           </p>
         </div>
 
         {/* Resumen del Aula */}
-        <div className="px-6 py-3.5 bg-slate-50/60 border-b border-slate-100 flex flex-wrap items-center gap-4 text-[12px] text-slate-700">
+        <div className="px-6 py-3.5 bg-slate-50/60 dark:bg-[#131C1A]/40 border-b border-slate-100 dark:border-[#263834] flex flex-wrap items-center gap-4 text-[12px] text-slate-700 dark:text-slate-300">
           <div>
-            <span className="font-semibold text-slate-500">Periodo: </span>
-            <span className="font-bold text-slate-800">{group.periodId}</span>
+            <span className="font-semibold text-slate-500 dark:text-slate-400">Periodo: </span>
+            <span className="font-bold text-slate-800 dark:text-slate-200">{group.periodId}</span>
           </div>
           <div>
-            <span className="font-semibold text-slate-500">Turno: </span>
-            <span className="font-bold text-slate-800">{group.turno || 'Sin turno'}</span>
+            <span className="font-semibold text-slate-500 dark:text-slate-400">Turno: </span>
+            <span className="font-bold text-slate-800 dark:text-slate-200">{group.turno || 'Sin turno'}</span>
           </div>
           <div>
-            <span className="font-semibold text-slate-500">Matriculados: </span>
-            <span className="font-bold text-[#13594A]">{group.studentCount} estudiantes</span>
+            <span className="font-semibold text-slate-500 dark:text-slate-400">Matriculados: </span>
+            <span className="font-bold text-[#13594A] dark:text-[#5EEAD4]">{group.studentCount} estudiantes</span>
           </div>
         </div>
 
@@ -132,7 +132,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
 
           {/* Selector de Modo */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
               Modo de trabajo
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -141,12 +141,12 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
                 onClick={() => setMode('UNIT')}
                 className={`px-3.5 py-2.5 rounded-xl text-[12px] font-semibold border transition-all text-left flex flex-col gap-0.5 ${
                   mode === 'UNIT'
-                    ? 'bg-[#e6f4f1] border-[#13594A] text-[#004034] shadow-sm'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'bg-[#e6f4f1] dark:bg-[#132B25] border-[#13594A] dark:border-[#205C4E] text-[#004034] dark:text-[#5EEAD4] shadow-sm'
+                    : 'bg-white dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
                 }`}
               >
                 <span className="font-bold">Unidad Didáctica</span>
-                <span className="text-[10px] text-slate-500 font-normal">Notas, asistencia y sesiones</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Notas, asistencia y sesiones</span>
               </button>
 
               <button
@@ -154,12 +154,12 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
                 onClick={() => setMode('MODULE')}
                 className={`px-3.5 py-2.5 rounded-xl text-[12px] font-semibold border transition-all text-left flex flex-col gap-0.5 ${
                   mode === 'MODULE'
-                    ? 'bg-[#e6f4f1] border-[#13594A] text-[#004034] shadow-sm'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'bg-[#e6f4f1] dark:bg-[#132B25] border-[#13594A] dark:border-[#205C4E] text-[#004034] dark:text-[#5EEAD4] shadow-sm'
+                    : 'bg-white dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
                 }`}
               >
                 <span className="font-bold">Módulo Completo</span>
-                <span className="text-[10px] text-slate-500 font-normal">Formatos globales del módulo</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Formatos globales del módulo</span>
               </button>
             </div>
           </div>
@@ -167,7 +167,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
           {/* Lista de Unidades si mode === 'UNIT' */}
           {mode === 'UNIT' && (
             <div>
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2">
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
                 Unidad Didáctica asignada
               </label>
 
@@ -180,8 +180,8 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
                         key={unit.code}
                         className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
                           isSelected
-                            ? 'bg-[#e6f4f1]/70 border-[#13594A] shadow-xs'
-                            : 'bg-white border-slate-200 hover:bg-slate-50'
+                            ? 'bg-[#e6f4f1]/70 dark:bg-[#132B25]/70 border-[#13594A] dark:border-[#205C4E] shadow-xs'
+                            : 'bg-white dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -191,14 +191,14 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
                             value={unit.code}
                             checked={isSelected}
                             onChange={() => setSelectedUnit(unit.code)}
-                            className="w-4 h-4 text-[#13594A] focus:ring-[#13594A] border-slate-300"
+                            className="w-4 h-4 text-[#13594A] focus:ring-[#13594A] border-slate-300 dark:border-[#263834]"
                           />
                           <div>
-                            <span className="text-[13px] font-bold text-slate-900 block">
+                            <span className="text-[13px] font-bold text-slate-900 dark:text-slate-100 block">
                               {unit.name ? `${unit.code}: ${unit.name}` : `Unidad: ${unit.code}`}
                             </span>
                             {unit.hours && (
-                              <span className="text-[11px] text-slate-500 font-medium">
+                              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                                 Horas: {unit.hours} {unit.credits ? `· Créditos: ${unit.credits}` : ''}
                               </span>
                             )}
@@ -206,7 +206,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
                         </div>
 
                         {isSelected && (
-                          <span className="text-[10px] font-bold text-[#13594A] uppercase tracking-wider px-2 py-0.5 rounded bg-white/80 border border-[#13594A]/20">
+                          <span className="text-[10px] font-bold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider px-2 py-0.5 rounded bg-white/80 dark:bg-[#182220] border border-[#13594A]/20 dark:border-[#205C4E]">
                             Seleccionada
                           </span>
                         )}
@@ -215,7 +215,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
                   })}
                 </div>
               ) : (
-                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[12px]">
+                <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 text-[12px]">
                   No se registran unidades configuradas en esta aula.
                 </div>
               )}
@@ -223,19 +223,19 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
           )}
 
           {/* Botones de acción */}
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+          <div className="pt-3 border-t border-slate-100 dark:border-[#263834] flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2.5 rounded-xl text-[12px] font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="px-4 py-2.5 rounded-xl text-[12px] font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#131C1A] transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#13594A] text-white text-[12px] font-semibold shadow-sm hover:bg-[#004034] hover:shadow-[0_4px_12px_rgba(19,89,74,0.25)] transition-all duration-200 disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#13594A] text-white text-[12px] font-semibold shadow-sm hover:bg-[#004034] dark:hover:bg-[#1A6B5A] hover:shadow-[0_4px_12px_rgba(19,89,74,0.25)] transition-all duration-200 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

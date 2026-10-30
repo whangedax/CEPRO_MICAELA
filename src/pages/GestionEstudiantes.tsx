@@ -356,7 +356,7 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
       .join('') || 'EST';
 
     return (
-      <div className="w-9 h-9 rounded-full bg-[#13594A]/10 text-[#13594A] font-bold text-xs flex items-center justify-center shrink-0 border border-[#13594A]/20">
+      <div className="w-9 h-9 rounded-full bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] font-bold text-xs flex items-center justify-center shrink-0 border border-[#13594A]/20 dark:border-[#5EEAD4]/30">
         {initials}
       </div>
     );
@@ -365,18 +365,18 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
   return (
     <div className="flex flex-col w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
       {/* 1. Encabezado Institucional */}
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-200">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-[#263834]">
         <div className="flex flex-col gap-1.5 max-w-3xl">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[11px] font-bold text-[#004034] uppercase tracking-widest bg-[#E6F4F1] px-2.5 py-1 rounded-md">
+            <span className="text-[11px] font-bold text-[#004034] dark:text-[#5EEAD4] uppercase tracking-widest bg-[#E6F4F1] dark:bg-[#132B25] px-2.5 py-1 rounded-md">
               Ámbito Académico · Padrón Estudiantil
             </span>
             <StatusBadge size="sm" />
           </div>
-          <h1 className="text-[30px] text-[#0D382F] font-bold tracking-tight leading-tight">
+          <h1 className="text-[30px] text-[#0D382F] dark:text-[#F0FDF8] font-bold tracking-tight leading-tight">
             {isTeacher ? 'Mis Estudiantes' : 'Padrón Consolidado de Estudiantes'}
           </h1>
-          <p className="text-[14px] text-slate-700 font-normal leading-relaxed">
+          <p className="text-[14px] text-slate-700 dark:text-slate-300 font-normal leading-relaxed">
             {isTeacher
               ? 'Consulta de participantes matriculados en sus aulas asignadas y seguimiento académico.'
               : 'Administración de legajos, registro de nuevos participantes y consulta integral de historias de matrícula.'}
@@ -390,9 +390,9 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
             onClick={() => loadData(true)}
             disabled={isRefreshing}
             aria-label="Actualizar padrón de estudiantes"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-slate-200/80 text-slate-700 hover:text-[#13594A] hover:border-[#13594A]/30 text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4] hover:border-[#13594A]/30 dark:hover:border-[#5EEAD4]/40 text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
           >
-            <RefreshIcon className={`w-4 h-4 text-[#13594A] ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshIcon className={`w-4 h-4 text-[#13594A] dark:text-[#5EEAD4] ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>{isRefreshing ? 'Actualizando…' : 'Actualizar'}</span>
           </button>
         </div>
@@ -400,15 +400,15 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
 
       {/* 2. Mensajes de Notificación */}
       {errorMsg && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-start justify-between gap-3 animate-fadeIn">
+        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-sm flex items-start justify-between gap-3 animate-fadeIn">
           <div className="flex items-center gap-2">
-            <AlertCircleIcon className="w-5 h-5 text-rose-600 shrink-0" />
+            <AlertCircleIcon className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
             <span>{errorMsg}</span>
           </div>
           <button
             type="button"
             onClick={() => setErrorMsg(null)}
-            className="text-rose-600 hover:text-rose-800 text-xs font-bold shrink-0"
+            className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-200 text-xs font-bold shrink-0"
           >
             Cerrar
           </button>
@@ -416,15 +416,15 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
       )}
 
       {successMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-start justify-between gap-3 animate-fadeIn">
+        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-sm flex items-start justify-between gap-3 animate-fadeIn">
           <div className="flex items-center gap-2">
-            <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0" />
+            <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{successMsg}</span>
           </div>
           <button
             type="button"
             onClick={() => setSuccessMsg(null)}
-            className="text-emerald-600 hover:text-emerald-800 text-xs font-bold shrink-0"
+            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 text-xs font-bold shrink-0"
           >
             Cerrar
           </button>
@@ -433,44 +433,44 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
 
       {/* 3. Métricas Rápidas */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
               Padrón Activo
             </span>
-            <span className="text-2xl font-extrabold text-[#0D382F] mt-1 block">
+            <span className="text-2xl font-extrabold text-[#0D382F] dark:text-[#F0FDF8] mt-1 block">
               {counts.activeCount}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-[#132B25] text-emerald-700 dark:text-[#5EEAD4] flex items-center justify-center font-bold">
             <StudentsIcon className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
               Fichas Archivadas
             </span>
-            <span className="text-2xl font-extrabold text-slate-700 mt-1 block">
+            <span className="text-2xl font-extrabold text-slate-700 dark:text-slate-300 mt-1 block">
               {counts.archivedCount}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-[#131C1A] text-slate-600 dark:text-slate-400 flex items-center justify-center font-bold">
             <StudentsIcon className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
               Total Registrados
             </span>
-            <span className="text-2xl font-extrabold text-[#0D382F] mt-1 block">
+            <span className="text-2xl font-extrabold text-[#0D382F] dark:text-[#F0FDF8] mt-1 block">
               {counts.totalCount}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold">
             <StudentsIcon className="w-5 h-5" />
           </div>
         </div>
@@ -480,14 +480,14 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
       {canEdit && (
         <div
           ref={formRef}
-          className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 lg:p-8 space-y-6"
+          className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs p-6 lg:p-8 space-y-6"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-[#263834]">
             <div>
-              <span className="text-xs font-bold text-[#13594A] uppercase tracking-wider">
+              <span className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider">
                 {editingStudentId ? 'Modificación de Datos' : 'Alta de Participante'}
               </span>
-              <h2 className="text-lg font-bold text-slate-900 mt-0.5">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8] mt-0.5">
                 {editingStudentId ? 'Actualizar Ficha del Estudiante' : 'Registrar Nuevo Estudiante'}
               </h2>
             </div>
@@ -495,7 +495,7 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
               <button
                 type="button"
                 onClick={handleResetForm}
-                className="text-xs font-bold text-slate-600 hover:text-slate-900 self-start sm:self-auto px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+                className="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-[#F0FDF8] self-start sm:self-auto px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors"
               >
                 Cancelar edición y crear nuevo
               </button>
@@ -506,8 +506,8 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {/* Documento de Identidad */}
               <div>
-                <label htmlFor="field-document" className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Documento de Identidad <span className="text-rose-600">*</span>
+                <label htmlFor="field-document" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Documento de Identidad <span className="text-rose-600 dark:text-rose-400">*</span>
                 </label>
                 <div className="flex gap-2">
                   <select
@@ -515,7 +515,7 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                     name="documentType"
                     value={formData.documentType || 'DNI'}
                     onChange={handleInputChange}
-                    className="w-24 px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="w-24 px-3 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                   >
                     <option value="DNI">DNI</option>
                     <option value="CE">C.E.</option>
@@ -530,14 +530,14 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                     placeholder="Ej.: 00112233"
                     value={formData.document}
                     onChange={handleInputChange}
-                    className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                   />
                 </div>
               </div>
 
               {/* Apellido Paterno */}
               <div>
-                <label htmlFor="field-lastName1" className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label htmlFor="field-lastName1" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   Apellido Paterno
                 </label>
                 <input
@@ -547,13 +547,13 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                   placeholder="Ej.: Pérez"
                   value={formData.lastName1 || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                 />
               </div>
 
               {/* Apellido Materno */}
               <div>
-                <label htmlFor="field-lastName2" className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label htmlFor="field-lastName2" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   Apellido Materno
                 </label>
                 <input
@@ -563,13 +563,13 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                   placeholder="Ej.: Gómez"
                   value={formData.lastName2 || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                 />
               </div>
 
               {/* Nombres */}
               <div>
-                <label htmlFor="field-firstNames" className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label htmlFor="field-firstNames" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   Nombres
                 </label>
                 <input
@@ -579,14 +579,14 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                   placeholder="Ej.: Ana María"
                   value={formData.firstNames || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                 />
               </div>
 
               {/* Nombre Completo Oficial */}
               <div className="md:col-span-2">
-                <label htmlFor="field-name" className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Nombre Completo Oficial <span className="text-rose-600">*</span>
+                <label htmlFor="field-name" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Nombre Completo Oficial <span className="text-rose-600 dark:text-rose-400">*</span>
                 </label>
                 <input
                   id="field-name"
@@ -596,13 +596,13 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                   placeholder="Ej.: Pérez Gómez, Ana María"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                 />
               </div>
 
               {/* Sexo */}
               <div>
-                <label htmlFor="field-sex" className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label htmlFor="field-sex" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   Sexo (Norma MINEDU)
                 </label>
                 <select
@@ -610,7 +610,7 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                   name="sex"
                   value={formData.sex || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                 >
                   <option value="">Pendiente de registrar</option>
                   <option value="H">H — Hombre</option>
@@ -620,7 +620,7 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
 
               {/* Fecha de Nacimiento */}
               <div>
-                <label htmlFor="field-birthDate" className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label htmlFor="field-birthDate" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   Fecha de Nacimiento
                 </label>
                 <input
@@ -630,42 +630,42 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                   max={new Date().toISOString().slice(0, 10)}
                   value={formData.birthDate || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                 />
               </div>
 
               {/* Estado Activo */}
               <div className="flex items-center pt-6">
-                <label className="inline-flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-slate-800">
+                <label className="inline-flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
                   <input
                     type="checkbox"
                     name="active"
                     checked={formData.active !== false}
                     onChange={handleInputChange}
-                    className="w-4 h-4 rounded text-[#13594A] focus:ring-[#13594A] border-slate-300"
+                    className="w-4 h-4 rounded text-[#13594A] focus:ring-[#13594A] border-slate-300 dark:border-[#263834] dark:bg-[#131C1A]"
                   />
                   <span>Estudiante con ficha activa en el sistema</span>
                 </label>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
-              <div className="text-xs text-slate-500">
-                {isDirty && <span className="text-amber-800 font-semibold">● Cambios pendientes en el formulario</span>}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-[#263834]">
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                {isDirty && <span className="text-amber-800 dark:text-amber-400 font-semibold">● Cambios pendientes en el formulario</span>}
               </div>
 
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={handleResetForm}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors"
                 >
                   Limpiar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                  className="px-6 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#1A7360] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? 'Guardando en SQLite…' : editingStudentId ? 'Actualizar Estudiante' : 'Guardar Estudiante'}
                 </button>
@@ -676,17 +676,17 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
       )}
 
       {/* 5. Toolbar de Búsqueda y Pestañas */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 space-y-5">
+      <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs p-6 space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Pestañas de estado */}
-          <div className="inline-flex p-1 bg-slate-100 rounded-2xl text-xs font-bold">
+          <div className="inline-flex p-1 bg-slate-100 dark:bg-[#131C1A] rounded-2xl text-xs font-bold">
             <button
               type="button"
               onClick={() => setStatusFilter('ACTIVOS')}
               className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
                 statusFilter === 'ACTIVOS'
-                  ? 'bg-white text-[#13594A] shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-[#182220] text-[#13594A] dark:text-[#5EEAD4] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
               }`}
             >
               Padrón Activo ({counts.activeCount})
@@ -696,8 +696,8 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
               onClick={() => setStatusFilter('ARCHIVADOS')}
               className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
                 statusFilter === 'ARCHIVADOS'
-                  ? 'bg-white text-[#13594A] shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-[#182220] text-[#13594A] dark:text-[#5EEAD4] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
               }`}
             >
               Archivados ({counts.archivedCount})
@@ -707,8 +707,8 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
               onClick={() => setStatusFilter('TODOS')}
               className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
                 statusFilter === 'TODOS'
-                  ? 'bg-white text-[#13594A] shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-[#182220] text-[#13594A] dark:text-[#5EEAD4] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
               }`}
             >
               Todos ({counts.totalCount})
@@ -717,13 +717,13 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
 
           {/* Campo de búsqueda */}
           <div className="relative flex-1 max-w-md">
-            <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <SearchIcon className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="search"
               placeholder="Buscar por DNI, nombres o apellidos…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-2xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+              className="w-full pl-10 pr-4 py-2 rounded-2xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
             />
           </div>
         </div>
@@ -732,7 +732,7 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <tr className="border-b border-slate-100 dark:border-[#263834] text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <th className="py-3 px-4">Estudiante</th>
                 <th className="py-3 px-4">Documento</th>
                 <th className="py-3 px-4">Matrículas</th>
@@ -740,19 +740,19 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                 {canEdit && <th className="py-3 px-4 text-right">Acciones</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#263834] text-xs">
               {isLoading ? (
                 <tr>
-                  <td colSpan={canEdit ? 5 : 4} className="py-12 text-center text-slate-500">
-                    <div className="w-8 h-8 border-3 border-[#13594A]/20 border-t-[#13594A] rounded-full animate-spin mx-auto mb-2" />
+                  <td colSpan={canEdit ? 5 : 4} className="py-12 text-center text-slate-500 dark:text-slate-400">
+                    <div className="w-8 h-8 border-3 border-[#13594A]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin mx-auto mb-2" />
                     Cargando padrón de estudiantes desde SQLite…
                   </td>
                 </tr>
               ) : filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={canEdit ? 5 : 4} className="py-12 text-center text-slate-500">
-                    <p className="font-bold text-slate-800 text-sm">No se encontraron estudiantes</p>
-                    <span className="text-xs text-slate-500 mt-1 block">
+                  <td colSpan={canEdit ? 5 : 4} className="py-12 text-center text-slate-500 dark:text-slate-400">
+                    <p className="font-bold text-slate-800 dark:text-[#F0FDF8] text-sm">No se encontraron estudiantes</p>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
                       {searchQuery
                         ? 'No existen coincidencias con el término buscado.'
                         : 'No hay estudiantes registrados en este estado.'}
@@ -765,16 +765,16 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                   const isArchived = Boolean(s.archived);
 
                   return (
-                    <tr key={s.id} className="hover:bg-slate-50/70 transition-colors">
+                    <tr key={s.id} className="hover:bg-slate-50/70 dark:hover:bg-[#131C1A]/50 transition-colors">
                       {/* Nombre y avatar */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
                           {renderAvatar(s.name)}
                           <div>
-                            <span className="font-bold text-slate-900 block leading-tight">
+                            <span className="font-bold text-slate-900 dark:text-[#F0FDF8] block leading-tight">
                               {s.name}
                             </span>
-                            <span className="text-[11px] text-slate-500">
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400">
                               {s.sex ? `Sexo: ${s.sex}` : 'Sexo sin registrar'}
                               {s.birthDate ? ` · F. Nac: ${s.birthDate}` : ''}
                             </span>
@@ -784,10 +784,10 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
 
                       {/* Documento */}
                       <td className="py-3.5 px-4">
-                        <span className="font-mono text-xs font-semibold text-slate-800">
+                        <span className="font-mono text-xs font-semibold text-slate-800 dark:text-slate-200">
                           {s.document}
                         </span>
-                        <span className="text-[10px] text-slate-500 block">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
                           {s.documentType || 'DNI'}
                         </span>
                       </td>
@@ -801,32 +801,32 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                               return (
                                 <span
                                   key={en.id}
-                                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium mr-1.5"
+                                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 text-[11px] font-medium mr-1.5"
                                 >
-                                  <strong>{group?.name || en.groupId}</strong>
-                                  <span className="text-slate-400">({en.code || 'MAT'})</span>
+                                  <strong className="text-slate-800 dark:text-slate-200">{group?.name || en.groupId}</strong>
+                                  <span className="text-slate-400 dark:text-slate-500">({en.code || 'MAT'})</span>
                                 </span>
                               );
                             })}
                           </div>
                         ) : (
-                          <span className="text-slate-400 text-[11px] italic">Sin matrícula activa</span>
+                          <span className="text-slate-400 dark:text-slate-500 text-[11px] italic">Sin matrícula activa</span>
                         )}
                       </td>
 
                       {/* Estado */}
                       <td className="py-3.5 px-4">
                         {isArchived ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-400 border border-slate-200 dark:border-[#263834]">
                             Archivado
                           </span>
                         ) : s.active ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                             Activo
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
                             Inactivo
                           </span>
                         )}
@@ -840,7 +840,7 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                               <button
                                 type="button"
                                 onClick={() => handleRestoreStudent(s)}
-                                className="px-3 py-1 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold text-xs transition-colors border border-slate-200"
+                                className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-[#131C1A] hover:bg-emerald-50 dark:hover:bg-[#132B25] text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-[#5EEAD4] font-bold text-xs transition-colors border border-slate-200 dark:border-[#263834]"
                               >
                                 Restaurar ficha
                               </button>
@@ -849,14 +849,14 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                                 <button
                                   type="button"
                                   onClick={() => handleEditClick(s)}
-                                  className="px-3 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
+                                  className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-[#131C1A] hover:bg-slate-200 dark:hover:bg-[#202E2B] text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors"
                                 >
                                   Editar
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleOpenArchiveModal(s)}
-                                  className="px-3 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition-colors border border-rose-200"
+                                  className="px-3 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-bold text-xs transition-colors border border-rose-200 dark:border-rose-800/60"
                                 >
                                   Archivar
                                 </button>
@@ -876,29 +876,29 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
 
       {/* 7. Modal de Archivado / Eliminación Lógica */}
       {studentToArchive && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200 dark:border-[#263834]">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
-                <AlertCircleIcon className="w-5 h-5 text-rose-700" />
+              <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <AlertCircleIcon className="w-5 h-5 text-rose-700 dark:text-rose-400" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
                   Archivar Ficha de Estudiante
                 </h3>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Está por archivar la ficha de <strong>{studentToArchive.name}</strong> (Doc: {studentToArchive.document}).
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                  Está por archivar la ficha de <strong className="text-slate-800 dark:text-slate-200">{studentToArchive.name}</strong> (Doc: {studentToArchive.document}).
                 </p>
               </div>
             </div>
 
-            <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-950 leading-relaxed">
+            <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-950 dark:text-amber-200 leading-relaxed">
               <strong>Garantía de Integridad:</strong> Las notas, asistencias y expedientes previos se conservan de forma permanente en SQLite. Las matrículas activas se retirarán formalmente.
             </div>
 
             <div>
-              <label htmlFor="archive-reason" className="block text-xs font-bold text-slate-700 mb-1.5">
-                Motivo del Archivado <span className="text-rose-600">*</span>
+              <label htmlFor="archive-reason" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                Motivo del Archivado <span className="text-rose-600 dark:text-rose-400">*</span>
               </label>
               <textarea
                 id="archive-reason"
@@ -907,16 +907,16 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                 placeholder="Indique el motivo administrativo o justificación del retiro del padrón activo…"
                 value={archiveReason}
                 onChange={(e) => setArchiveReason(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#263834]">
               <button
                 type="button"
                 onClick={() => setStudentToArchive(null)}
                 disabled={isArchiving}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors"
               >
                 Cancelar
               </button>
@@ -934,7 +934,7 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
       )}
 
       {/* 8. Pie de Página */}
-      <footer className="text-center py-4 text-xs text-slate-600 border-t border-slate-200">
+      <footer className="text-center py-4 text-xs text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-[#263834]">
         CEPRO_MICAELA 2.0 · Módulo de Padrón y Legajos de Estudiantes Fuera de Línea
       </footer>
     </div>

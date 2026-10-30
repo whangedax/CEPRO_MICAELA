@@ -218,20 +218,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className="fixed left-0 top-0 h-full w-64 bg-white z-50 flex flex-col justify-between border-r border-slate-200/90 shadow-[0_0_24px_rgba(0,0,0,0.02)] select-none"
+      className="fixed left-0 top-0 h-full w-64 bg-white dark:bg-[#131C1A] z-50 flex flex-col justify-between border-r border-slate-200/90 dark:border-[#263834] shadow-[0_0_24px_rgba(0,0,0,0.02)] select-none transition-colors duration-200"
       aria-label="Menú principal de navegación"
     >
       <div className="flex flex-col min-h-0 flex-1">
         {/* Brand Logo Section */}
-        <div className="h-20 px-6 flex items-center gap-3 border-b border-slate-100 shrink-0">
-          <div className="p-1 rounded-xl bg-[#13594A]/10 border border-[#13594A]/15 flex items-center justify-center shrink-0">
+        <div className="h-20 px-6 flex items-center gap-3 border-b border-slate-100 dark:border-[#263834] shrink-0">
+          <div className="p-1 rounded-xl bg-[#13594A]/10 dark:bg-[#132B25] border border-[#13594A]/15 dark:border-[#205C4E] flex items-center justify-center shrink-0">
             <InstitutionalBrandIcon className="w-7 h-7" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[15px] font-bold tracking-tight text-[#0D382F] leading-tight">
+            <span className="text-[15px] font-bold tracking-tight text-[#0D382F] dark:text-[#5EEAD4] leading-tight">
               CEPRO_MICAELA
             </span>
-            <span className="text-[10px] font-semibold tracking-wider text-slate-600 uppercase">
+            <span className="text-[10px] font-semibold tracking-wider text-slate-600 dark:text-slate-400 uppercase">
               Gestión Académica 2.0
             </span>
           </div>
@@ -252,7 +252,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             return (
               <div key={category.title} className="flex flex-col gap-1">
-                <span className="px-3 pb-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                <span className="px-3 pb-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                   {category.title}
                 </span>
                 {visibleItems.map((item) => {
@@ -265,18 +265,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       aria-current={isActive ? 'page' : undefined}
                       className={
                         isActive
-                          ? 'relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-[#e6f4f1]/80 text-[#004034] font-semibold text-[13px] shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] focus-visible:ring-offset-2'
-                          : 'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-700 hover:text-[#004034] hover:bg-slate-50 font-medium text-[13px] transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] focus-visible:ring-offset-2'
+                          ? 'relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-[#e6f4f1]/80 dark:bg-[#132B25] text-[#004034] dark:text-[#5EEAD4] font-semibold text-[13px] shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4] focus-visible:ring-offset-2'
+                          : 'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-400 hover:text-[#004034] dark:hover:text-[#5EEAD4] hover:bg-slate-50 dark:hover:bg-[#182220] font-medium text-[13px] transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4] focus-visible:ring-offset-2'
                       }
                     >
                       {isActive && (
-                        <span className="absolute left-0 top-2 bottom-2 w-1 bg-[#13594A] rounded-r-full" />
+                        <span className="absolute left-0 top-2 bottom-2 w-1 bg-[#13594A] dark:bg-[#5EEAD4] rounded-r-full" />
                       )}
                       <span
                         className={
                           isActive
-                            ? 'text-[#13594A]'
-                            : 'text-slate-500 group-hover:text-[#13594A] transition-colors'
+                            ? 'text-[#13594A] dark:text-[#5EEAD4]'
+                            : 'text-slate-500 dark:text-slate-400 group-hover:text-[#13594A] dark:group-hover:text-[#5EEAD4] transition-colors'
                         }
                         aria-hidden="true"
                       >
@@ -293,18 +293,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Bottom Institutional Badge Section */}
-      <div className="p-4 mx-3 mb-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col gap-2.5 shrink-0">
+      <div className="p-4 mx-3 mb-4 rounded-2xl bg-slate-50 dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] flex flex-col gap-2.5 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2" aria-hidden="true">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#13594A] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#13594A]" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#13594A] dark:bg-[#5EEAD4] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#13594A] dark:bg-[#5EEAD4]" />
             </span>
-            <span className="text-[11px] font-semibold text-slate-800">
+            <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">
               Modo Seguro Offline
             </span>
           </div>
-          <span className="text-[9px] font-bold text-[#004034] bg-[#c0ecde] px-1.5 py-0.5 rounded-md">
+          <span className="text-[9px] font-bold text-[#004034] dark:text-[#5EEAD4] bg-[#c0ecde] dark:bg-[#132B25] px-1.5 py-0.5 rounded-md">
             v2.0
           </span>
         </div>
