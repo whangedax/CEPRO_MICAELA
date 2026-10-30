@@ -42,20 +42,31 @@ html.dark :focus-visible {
 html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]):not([type="range"]),
 html.dark select,
 html.dark textarea {
-  background-color: #0F1715;
-  border-color: #263834;
-  color: #F1F5F9;
-  color-scheme: dark;
+  background-color: #0F1715 !important;
+  border-color: #263834 !important;
+  color: #F1F5F9 !important;
+  color-scheme: dark !important;
 }
 
 html.dark input::placeholder,
 html.dark textarea::placeholder {
-  color: #64748B;
+  color: #64748B !important;
 }
 
 html.dark select option {
-  background-color: #131C1A;
-  color: #F1F5F9;
+  background-color: #131C1A !important;
+  color: #F1F5F9 !important;
+}
+
+/* Red de seguridad para tablas en Modo Oscuro */
+html.dark table thead tr {
+  background-color: #131C1A !important;
+  color: #94A3B8 !important;
+  border-color: #263834 !important;
+}
+
+html.dark table tbody tr {
+  border-color: #263834 !important;
 }
 
 

@@ -23,6 +23,7 @@
     "test:watermarks": "node --test tests/document-watermark-security.test.cjs",
     "test:bundle:clean": "node tests/institutional-bundle-clean.test.cjs",
     "test:ux-darkmode": "node tests/verify-ux-darkmode.cjs",
+    "test:document-filter": "node --experimental-strip-types tests/document-template-filter.test.mjs",
     "build": "tsc && vite build",
     "build:institutional": "tsc && vite build --mode institutional",
     "preview": "vite preview",

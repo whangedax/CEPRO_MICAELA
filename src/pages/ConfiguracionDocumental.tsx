@@ -722,7 +722,7 @@ export const ConfiguracionDocumental: React.FC = () => {
             <button
               type="button"
               onClick={handleDiscard}
-              className="px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-900 font-semibold text-xs hover:bg-amber-100"
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#182220] border border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-300 font-semibold text-xs hover:bg-amber-100 dark:hover:bg-[#1F2D2A]"
             >
               Descartar mis cambios
             </button>

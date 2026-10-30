@@ -562,7 +562,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
             type="button"
             onClick={() => loadData(true)}
             disabled={isLoading || isRefreshing}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors shadow-2xs disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-[#1F2D2A] transition-colors shadow-2xs disabled:opacity-50"
             title="Recargar directorio de usuarios"
           >
             <RefreshIcon className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -726,8 +726,8 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
 
             {/* Aulas asignadas al docente */}
             <div className="mt-6">
-              <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                <GroupsIcon className="w-4 h-4 text-[#13594A]" />
+              <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] mb-3 flex items-center gap-2">
+                <GroupsIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
                 <span>Aulas y Unidades Didácticas Asignadas ({currentUser?.assignments?.length || 0})</span>
               </h3>
 
@@ -738,31 +738,31 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                     return (
                       <div
                         key={`${asg.groupId}-${idx}`}
-                        className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80"
+                        className="p-4 rounded-2xl bg-slate-50 dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834]"
                       >
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div>
-                            <span className="text-xs font-bold text-slate-900 block">
-                              {grp?.name || asg.groupId}
+                            <span className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8] block">
+                              {grp?.name || (asg.programId ? `${asg.programId} - ${asg.moduleId}` : `Aula ${asg.groupId.slice(0, 10)}...`)}
                             </span>
-                            <span className="text-[11px] text-slate-500 font-medium">
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                               Sección: {asg.section || grp?.section || 'Única'}
                             </span>
                           </div>
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white text-slate-600 border border-slate-200">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white dark:bg-[#131C1A] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
                             {asg.units.length} {asg.units.length === 1 ? 'unidad' : 'unidades'}
                           </span>
                         </div>
 
-                        <div className="mt-2 pt-2 border-t border-slate-200/60">
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
+                        <div className="mt-2 pt-2 border-t border-slate-200/60 dark:border-[#263834]">
+                          <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
                             Unidades autorizadas:
                           </span>
                           <div className="flex flex-wrap gap-1.5">
                             {asg.units.map((unitName) => (
                               <span
                                 key={unitName}
-                                className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-white text-slate-700 border border-slate-200 shadow-2xs"
+                                className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#263834] shadow-2xs"
                               >
                                 {unitName}
                               </span>
@@ -774,11 +774,11 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                   })}
                 </div>
               ) : (
-                <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 text-center">
-                  <p className="text-xs font-bold text-amber-900">
+                <div className="p-6 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-center">
+                  <p className="text-xs font-bold text-amber-900 dark:text-amber-300">
                     ⚠ Su cuenta no tiene aulas asignadas actualmente.
                   </p>
-                  <p className="text-xs text-amber-800 mt-1">
+                  <p className="text-xs text-amber-800 dark:text-amber-400 mt-1">
                     Comuníquese con Dirección o Secretaría para que asignen sus grupos y unidades didácticas.
                   </p>
                 </div>
@@ -818,7 +818,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
-                  className="text-xs rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]/20"
+                  className="text-xs rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] px-3 py-2 text-slate-700 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 dark:focus:ring-[#34D399]"
                 >
                   <option value="TODOS">Todos los roles</option>
                   <option value="DOCENTE">Docentes</option>
@@ -826,7 +826,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                   <option value="DIRECTOR">Dirección</option>
                 </select>
               ) : (
-                <span className="text-xs font-semibold px-3 py-2 rounded-xl bg-slate-100 text-slate-600 border border-slate-200">
+                <span className="text-xs font-semibold px-3 py-2 rounded-xl bg-slate-100 dark:bg-[#131C1A] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
                   Rol: DOCENTE
                 </span>
               )}
@@ -835,7 +835,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as 'TODOS' | 'ACTIVOS' | 'INACTIVOS')}
-                className="text-xs rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]/20"
+                className="text-xs rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] px-3 py-2 text-slate-700 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 dark:focus:ring-[#34D399]"
               >
                 <option value="TODOS">Todos los estados</option>
                 <option value="ACTIVOS">Solo Activos</option>
@@ -846,7 +846,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
               <select
                 value={assignmentFilter}
                 onChange={(e) => setAssignmentFilter(e.target.value as 'TODOS' | 'CON_AULA' | 'PENDIENTES')}
-                className="text-xs rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]/20"
+                className="text-xs rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] px-3 py-2 text-slate-700 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 dark:focus:ring-[#34D399]"
               >
                 <option value="TODOS">Todas las asignaciones</option>
                 <option value="CON_AULA">Con aula asignada</option>
@@ -859,7 +859,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <tr className="bg-slate-50/80 dark:bg-[#131C1A] border-b border-slate-200/80 dark:border-[#263834] text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   <th className="py-3 px-4">Usuario / Nombre</th>
                   <th className="py-3 px-4">Rol Institucional</th>
                   <th className="py-3 px-4">Estado</th>
@@ -868,12 +868,12 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                   <th className="py-3 px-4 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-[#263834]">
                 {isLoading ? (
                   <tr>
                     <td colSpan={6} className="py-12 text-center text-slate-400">
                       <div className="flex items-center justify-center gap-2">
-                        <RefreshIcon className="w-4 h-4 animate-spin text-[#13594A]" />
+                        <RefreshIcon className="w-4 h-4 animate-spin text-[#13594A] dark:text-[#5EEAD4]" />
                         <span>Cargando directorio institucional de cuentas...</span>
                       </div>
                     </td>
@@ -891,25 +891,25 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                     const canArchive = canEdit && !isSelf;
 
                     return (
-                      <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
+                      <tr key={u.id} className="hover:bg-slate-50/60 dark:hover:bg-[#1F2D2A] transition-colors">
                         {/* Usuario y Nombre */}
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0">
+                            <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-xs shrink-0">
                               {u.name ? u.name.charAt(0).toUpperCase() : 'U'}
                             </div>
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-slate-900">{u.name}</span>
+                                <span className="font-bold text-slate-900 dark:text-[#F0FDF8]">{u.name}</span>
                                 {isSelf && (
-                                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-200 text-slate-700">
+                                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-200 dark:bg-[#1F2D2A] text-slate-700 dark:text-slate-300">
                                     TÚ
                                   </span>
                                 )}
                               </div>
-                              <span className="font-mono text-[11px] text-slate-500">@{u.username}</span>
+                              <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">@{u.username}</span>
                               {u.description && (
-                                <p className="text-[11px] text-slate-400 line-clamp-1 max-w-xs">{u.description}</p>
+                                <p className="text-[11px] text-slate-400 dark:text-slate-400 line-clamp-1 max-w-xs">{u.description}</p>
                               )}
                             </div>
                           </div>
@@ -918,17 +918,17 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                         {/* Rol */}
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           {u.role === 'DIRECTOR' && (
-                            <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">
+                            <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                               DIRECTOR
                             </span>
                           )}
                           {u.role === 'SECRETARIA' && (
-                            <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                            <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                               SECRETARÍA
                             </span>
                           )}
                           {u.role === 'DOCENTE' && (
-                            <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#E6F4F1] text-[#13594A] border border-[#13594A]/20">
+                            <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#E6F4F1] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] border border-[#13594A]/20 dark:border-[#208B73]/50">
                               DOCENTE
                             </span>
                           )}
@@ -937,13 +937,13 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                         {/* Estado */}
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           {u.active ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                               Activo
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
-                              <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
                               Inactivo / Baja
                             </span>
                           )}
@@ -953,7 +953,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                         <td className="py-3.5 px-4">
                           {u.role === 'DOCENTE' ? (
                             u.assignmentPending ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 px-2.5 py-0.5 rounded-md border border-amber-200 dark:border-amber-800">
                                 ⚠ Asignación pendiente
                               </span>
                             ) : u.assignments && u.assignments.length > 0 ? (
@@ -961,7 +961,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                                 {u.assignments.map((asg, idx) => (
                                   <span
                                     key={`${asg.groupId}-${idx}`}
-                                    className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-medium border border-slate-200/80"
+                                    className="px-2 py-0.5 rounded bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-200 text-[10px] font-medium border border-slate-200/80 dark:border-[#263834]"
                                     title={`Unidades: ${asg.units.join(', ')}`}
                                   >
                                     {getGroupName(asg.groupId)} ({asg.units.length} un.)
@@ -969,15 +969,15 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                                 ))}
                               </div>
                             ) : (
-                              <span className="text-slate-400 text-[11px] italic">Sin aulas registradas</span>
+                              <span className="text-slate-400 dark:text-slate-500 text-[11px] italic">Sin aulas registradas</span>
                             )
                           ) : (
-                            <span className="text-slate-400 text-[11px]">Acceso institucional global</span>
+                            <span className="text-slate-400 dark:text-slate-500 text-[11px]">Acceso institucional global</span>
                           )}
                         </td>
 
                         {/* Versión */}
-                        <td className="py-3.5 px-4 text-center font-mono text-[11px] text-slate-500 whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-center font-mono text-[11px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           v{u.version}
                         </td>
 
@@ -988,7 +988,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                               <button
                                 type="button"
                                 onClick={() => handleOpenEdit(u)}
-                                className="px-2.5 py-1 rounded-lg text-xs font-semibold text-[#13594A] bg-[#E6F4F1] hover:bg-[#d1eae5] transition-colors"
+                                className="px-2.5 py-1 rounded-lg text-xs font-semibold text-[#13594A] dark:text-[#5EEAD4] bg-[#E6F4F1] dark:bg-[#132B25] hover:bg-[#d1eae5] dark:hover:bg-[#183B33] transition-colors"
                               >
                                 Editar / Asignar
                               </button>
@@ -998,7 +998,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                               <button
                                 type="button"
                                 onClick={() => handleOpenArchiveModal(u)}
-                                className="px-2 py-1 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                                className="px-2 py-1 rounded-lg text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                                 title="Archivar o dar de baja"
                               >
                                 Dar de baja
@@ -1019,21 +1019,21 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
       {/* 5. DRAWER / MODAL: Creación y Edición de Cuenta */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto">
+          <div className="w-full max-w-2xl bg-white dark:bg-[#182220] h-full shadow-2xl flex flex-col justify-between overflow-y-auto">
             {/* Header del Drawer */}
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+            <div className="p-6 border-b border-slate-100 dark:border-[#263834] flex items-center justify-between sticky top-0 bg-white dark:bg-[#182220] z-10">
               <div>
-                <span className="text-[10px] font-bold tracking-wider text-[#13594A] uppercase block">
+                <span className="text-[10px] font-bold tracking-wider text-[#13594A] dark:text-[#5EEAD4] uppercase block">
                   {isEditing ? 'Actualización Institucional' : 'Alta de Nuevo Personal'}
                 </span>
-                <h2 className="text-xl font-bold text-slate-900">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-[#F0FDF8]">
                   {isEditing ? `Editar Cuenta: @${formData.username}` : 'Registrar Nueva Cuenta'}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(false)}
-                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-sm font-bold transition-colors"
+                className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#131C1A] hover:bg-slate-200 dark:hover:bg-[#1F2D2A] text-slate-600 dark:text-slate-300 flex items-center justify-center text-sm font-bold transition-colors"
               >
                 ✕
               </button>
@@ -1042,7 +1042,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
             {/* Cuerpo del Formulario */}
             <form onSubmit={handleSubmitUser} className="p-6 space-y-5 flex-1">
               {formError && (
-                <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-900 text-xs font-medium flex items-center gap-2">
+                <div className="p-3.5 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 text-red-900 dark:text-rose-200 text-xs font-medium flex items-center gap-2">
                   <AlertCircleIcon className="w-4 h-4 text-red-600 shrink-0" />
                   <span>{formError}</span>
                 </div>
@@ -1050,14 +1050,14 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
 
               {/* Datos Generales */}
               <div className="space-y-4">
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider text-[#13594A]">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#13594A] dark:text-[#5EEAD4]">
                   1. Datos de Identidad
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Nombre Completo */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Nombre Completo <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1069,13 +1069,13 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                         setIsFormDirty(true);
                       }}
                       placeholder="Ej. Mg. Carlos Ramírez"
-                      className="w-full text-xs rounded-xl border border-slate-200 px-3.5 py-2.5 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 focus:border-[#13594A]"
+                      className="w-full text-xs rounded-xl border border-slate-200 dark:border-[#263834] px-3.5 py-2.5 bg-slate-50/50 dark:bg-[#131C1A] text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 dark:focus:ring-[#34D399]"
                     />
                   </div>
 
                   {/* Nombre de Usuario */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Usuario de Inicio de Sesión <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1088,7 +1088,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                         setIsFormDirty(true);
                       }}
                       placeholder="Ej. carlos.ramirez"
-                      className="w-full text-xs rounded-xl border border-slate-200 px-3.5 py-2.5 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 focus:border-[#13594A] disabled:opacity-60 disabled:cursor-not-allowed font-mono"
+                      className="w-full text-xs rounded-xl border border-slate-200 dark:border-[#263834] px-3.5 py-2.5 bg-slate-50/50 dark:bg-[#131C1A] text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 dark:focus:ring-[#34D399] disabled:opacity-60 disabled:cursor-not-allowed font-mono"
                     />
                   </div>
                 </div>
@@ -1096,11 +1096,11 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                 {/* Rol Institucional */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Rol Institucional <span className="text-red-500">*</span>
                     </label>
                     {isSecretaria ? (
-                      <div className="px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
+                      <div className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs font-semibold text-slate-700 dark:text-slate-300">
                         DOCENTE (Restringido por Secretaría)
                       </div>
                     ) : (
@@ -1110,7 +1110,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                           setFormData({ ...formData, role: e.target.value as UserRole });
                           setIsFormDirty(true);
                         }}
-                        className="w-full text-xs rounded-xl border border-slate-200 px-3.5 py-2.5 bg-white text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]/20"
+                        className="w-full text-xs rounded-xl border border-slate-200 dark:border-[#263834] px-3.5 py-2.5 bg-white dark:bg-[#131C1A] text-slate-800 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 dark:focus:ring-[#34D399]"
                       >
                         <option value="DOCENTE">DOCENTE</option>
                         <option value="SECRETARIA">SECRETARIA</option>
@@ -1131,7 +1131,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                         }}
                         className="rounded border-slate-300 text-[#13594A] focus:ring-[#13594A]"
                       />
-                      <span className="text-xs font-semibold text-slate-800">
+                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                         Cuenta habilitada para inicio de sesión
                       </span>
                     </label>
@@ -1140,7 +1140,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
 
                 {/* Descripción / Cargo */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Cargo o Especialidad Institucional
                   </label>
                   <textarea
@@ -1151,21 +1151,21 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                       setIsFormDirty(true);
                     }}
                     placeholder="Ej. Docente del Programa de Computación e Informática..."
-                    className="w-full text-xs rounded-xl border border-slate-200 px-3.5 py-2 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A]/20"
+                    className="w-full text-xs rounded-xl border border-slate-200 dark:border-[#263834] px-3.5 py-2 bg-slate-50/50 dark:bg-[#131C1A] text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 dark:focus:ring-[#34D399]"
                   />
                 </div>
 
                 {/* Contraseña */}
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200/80 dark:border-[#263834]">
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                    <label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                       <LockIcon className="w-3.5 h-3.5 text-slate-500" />
                       <span>{isEditing ? 'Nueva Contraseña (Opcional)' : 'Contraseña Inicial *'}</span>
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="text-[11px] font-semibold text-[#13594A] hover:underline flex items-center gap-1"
+                      className="text-[11px] font-semibold text-[#13594A] dark:text-[#5EEAD4] hover:underline flex items-center gap-1"
                     >
                       <EyeIcon className="w-3.5 h-3.5" />
                       <span>{showPassword ? 'Ocultar' : 'Mostrar'}</span>
@@ -1183,9 +1183,9 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                         ? 'Dejar en blanco para mantener la clave actual'
                         : 'Mínimo 6 caracteres'
                     }
-                    className="w-full text-xs rounded-xl border border-slate-200 px-3.5 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A]/20"
+                    className="w-full text-xs rounded-xl border border-slate-200 dark:border-[#263834] px-3.5 py-2.5 bg-white dark:bg-[#0F1715] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 dark:focus:ring-[#34D399]"
                   />
-                  <p className="text-[10px] text-slate-500 mt-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                     {isEditing
                       ? 'Ingrese una nueva clave únicamente si desea restablecer el acceso del usuario.'
                       : 'Esta clave será solicitada en el primer inicio de sesión del usuario en este nodo.'}
@@ -1195,9 +1195,9 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
 
               {/* 2. Sección de Asignaciones (Solo cuando el rol es DOCENTE) */}
               {formData.role === 'DOCENTE' && (
-                <div className="space-y-4 pt-4 border-t border-slate-200">
+                <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-[#263834]">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider text-[#13594A] flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#13594A] dark:text-[#5EEAD4] flex items-center gap-1.5">
                       <GroupsIcon className="w-4 h-4" />
                       <span>2. Asignación de Aulas y Unidades Didácticas</span>
                     </h3>
@@ -1213,27 +1213,27 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                         }}
                         className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
                       />
-                      <span className="text-[11px] font-semibold text-amber-900">
+                      <span className="text-[11px] font-semibold text-amber-900 dark:text-amber-300">
                         Marcar como asignación pendiente (Provisional)
                       </span>
                     </label>
                   </div>
 
                   {/* Panel de incorporación de nueva aula */}
-                  <div className="p-4 rounded-2xl bg-[#E6F4F1]/40 border border-[#13594A]/15 space-y-3">
-                    <span className="text-[11px] font-bold text-[#13594A] uppercase tracking-wider block">
+                  <div className="p-4 rounded-2xl bg-[#E6F4F1]/40 dark:bg-[#132B25]/40 border border-[#13594A]/15 dark:border-[#208B73]/40 space-y-3">
+                    <span className="text-[11px] font-bold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider block">
                       ＋ Incorporar Aula a la Ficha Docente
                     </span>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                           Seleccionar Grupo / Aula Institucional
                         </label>
                         <select
                           value={assignGroupId}
                           onChange={(e) => handleAssignGroupChange(e.target.value)}
-                          className="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-white text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]/20"
+                          className="w-full text-xs rounded-xl border border-slate-200 dark:border-[#263834] px-3 py-2 bg-white dark:bg-[#131C1A] text-slate-800 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 dark:focus:ring-[#34D399]"
                         >
                           <option value="">-- Elija un aula disponible --</option>
                           {groups.map((g) => (
@@ -1247,7 +1247,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                       {/* Unidades didácticas del grupo */}
                       {assignGroupId && (
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Unidades del Grupo a Asignar
                           </label>
                           {(() => {
@@ -1255,13 +1255,13 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                             const grpUnits = currentGrp?.units || [];
                             if (!grpUnits.length) {
                               return (
-                                <p className="text-[11px] text-amber-700 italic">
+                                <p className="text-[11px] text-amber-700 dark:text-amber-400 italic">
                                   Este grupo no tiene unidades didácticas configuradas.
                                 </p>
                               );
                             }
                             return (
-                              <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-1 bg-white rounded-lg border border-slate-200">
+                              <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-1 bg-white dark:bg-[#131C1A] rounded-lg border border-slate-200 dark:border-[#263834]">
                                 {grpUnits.map((unitName) => {
                                   const isChecked = assignUnits.includes(unitName);
                                   return (
@@ -1272,7 +1272,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                                       className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors ${
                                         isChecked
                                           ? 'bg-[#13594A] text-white'
-                                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                          : 'bg-slate-100 dark:bg-[#1F2D2A] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#263834]'
                                       }`}
                                     >
                                       {isChecked ? '✓ ' : '+ '}
@@ -1301,12 +1301,12 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
 
                   {/* Listado de asignaciones actuales en la ficha */}
                   <div>
-                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-2">
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
                       Aulas Asignadas a esta Ficha ({formData.assignments.length})
                     </span>
 
                     {formData.assignments.length === 0 ? (
-                      <p className="text-xs text-slate-400 italic py-2">
+                      <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2">
                         No hay aulas asignadas actualmente.
                       </p>
                     ) : (
@@ -1314,17 +1314,17 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                         {formData.assignments.map((asg) => (
                           <div
                             key={asg.groupId}
-                            className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                            className="p-3 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                           >
                             <div>
-                              <span className="font-bold text-xs text-slate-900 block">
+                              <span className="font-bold text-xs text-slate-900 dark:text-[#F0FDF8] block">
                                 {getGroupName(asg.groupId)}
                               </span>
                               <div className="flex flex-wrap gap-1 mt-1">
                                 {asg.units.map((unitName) => (
                                   <span
                                     key={unitName}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-white text-slate-700 border border-slate-200"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-white dark:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#263834]"
                                   >
                                     <span>{unitName}</span>
                                     <button
@@ -1343,7 +1343,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                             <button
                               type="button"
                               onClick={() => handleRemoveAssignment(asg.groupId)}
-                              className="text-xs font-semibold text-red-600 hover:text-red-800 self-end sm:self-center"
+                              className="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 self-end sm:self-center"
                             >
                               Quitar Aula
                             </button>
@@ -1356,12 +1356,12 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
               )}
 
               {/* Botones de acción del formulario */}
-              <div className="pt-6 border-t border-slate-100 flex items-center justify-end gap-2.5">
+              <div className="pt-6 border-t border-slate-100 dark:border-[#263834] flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsDrawerOpen(false)}
                   disabled={isSubmitting}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-[#1F2D2A] transition-colors"
                 >
                   Cancelar
                 </button>
@@ -1430,14 +1430,14 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-[#263834]">
               <button
                 type="button"
                 onClick={() =>
                   setArchiveModal({ isOpen: false, user: null, reason: '', isSubmitting: false, error: null })
                 }
                 disabled={archiveModal.isSubmitting}
-                className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-[#1F2D2A] transition-colors"
               >
                 Cancelar
               </button>

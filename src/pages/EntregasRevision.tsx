@@ -548,46 +548,51 @@ export const EntregasRevision: React.FC = () => {
               <div className="lg:col-span-5 space-y-4">
                 <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm">
                   <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] mb-3 flex items-center justify-between">
-                    <span>{activeWorkspace?.groupId ? 'Formatos Disponibles en Aula' : 'Formatos Autorizados'}</span>
+                    <span>{activeWorkspace?.groupId ? 'Formatos Disponibles en Aula' : 'Selección de Aula Requerida'}</span>
                     <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
-                      {authorizedTemplates.length} formatos pertinentes
+                      {activeWorkspace?.groupId ? `${authorizedTemplates.length} formatos pertinentes` : 'Espacio pendiente'}
                     </span>
                   </h3>
 
-                  {!activeWorkspace?.groupId && (
-                    <div className="mb-3 p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
-                      <AlertCircleIcon className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
-                      <p>
-                        Seleccione un aula para consultar y validar los formatos disponibles en su contexto académico.
+                  {!activeWorkspace?.groupId ? (
+                    <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-center space-y-3">
+                      <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 flex items-center justify-center mx-auto">
+                        <AlertCircleIcon className="w-5 h-5" />
+                      </div>
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-[#F0FDF8]">
+                        Aula no seleccionada
+                      </h4>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                        Para preparar y tramitar documentos oficiales, seleccione un aula y unidad didáctica activa desde la barra superior.
                       </p>
                     </div>
-                  )}
-
-                  <div className="space-y-2">
-                    {authorizedTemplates.map(tmpl => {
-                      const isSelected = selectedTemplateId === tmpl.id;
-                      return (
-                        <div
-                          key={tmpl.id}
-                          onClick={() => handleSelectTemplate(tmpl.id)}
-                          className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
-                            isSelected
-                              ? 'bg-emerald-50/60 dark:bg-[#132B25] border-[#13594A] dark:border-[#208B73] ring-1 ring-[#13594A] dark:ring-[#208B73] shadow-sm'
-                              : 'bg-slate-50/50 dark:bg-[#131C1A] border-slate-200/70 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] hover:border-slate-300 dark:hover:border-[#34524B]'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8]">{tmpl.id}</span>
-                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white dark:bg-[#182220] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
-                              {tmpl.kind}
-                            </span>
+                  ) : (
+                    <div className="space-y-2">
+                      {authorizedTemplates.map(tmpl => {
+                        const isSelected = selectedTemplateId === tmpl.id;
+                        return (
+                          <div
+                            key={tmpl.id}
+                            onClick={() => handleSelectTemplate(tmpl.id)}
+                            className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                              isSelected
+                                ? 'bg-emerald-50/60 dark:bg-[#132B25] border-[#13594A] dark:border-[#208B73] ring-1 ring-[#13594A] dark:ring-[#208B73] shadow-sm'
+                                : 'bg-slate-50/50 dark:bg-[#131C1A] border-slate-200/70 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] hover:border-slate-300 dark:hover:border-[#34524B]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8]">{tmpl.id}</span>
+                              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white dark:bg-[#182220] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
+                                {tmpl.kind}
+                              </span>
+                            </div>
+                            <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-1">{tmpl.title}</div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">{tmpl.desc}</div>
                           </div>
-                          <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-1">{tmpl.title}</div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">{tmpl.desc}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Tarjeta de ayuda a Configuración Documental */}
@@ -629,23 +634,23 @@ export const EntregasRevision: React.FC = () => {
                       {isLoadingPreflight ? (
                         <span className="text-xs text-slate-400">Validando...</span>
                       ) : !activeWorkspace?.groupId ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
-                          <AlertCircleIcon className="w-4 h-4 text-slate-500" />
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-[#1F2D2A] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
+                          <AlertCircleIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                           Preflight pendiente: seleccione un aula
                         </span>
                       ) : preflightData?.preflight.complete ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                          <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                          <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                           Preflight Completo
                         </span>
                       ) : preflightData ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                          <AlertCircleIcon className="w-4 h-4 text-amber-600" />
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                          <AlertCircleIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                           Incompleto ({preflightData.preflight.missing.length || 0} pendientes)
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
-                          <AlertCircleIcon className="w-4 h-4 text-slate-500" />
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-[#1F2D2A] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
+                          <AlertCircleIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                           Preflight pendiente: seleccione un aula
                         </span>
                       )}
@@ -662,14 +667,14 @@ export const EntregasRevision: React.FC = () => {
                     <div className="space-y-4">
                       {/* Progreso */}
                       <div>
-                        <div className="flex items-center justify-between text-xs text-slate-600 mb-1.5">
+                        <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 mb-1.5">
                           <span className="font-semibold">Requisitos Cumplidos</span>
                           <span className="font-bold">
                             {preflightData.preflight.filled} de {preflightData.preflight.total} campos (
                             {Math.round((preflightData.preflight.filled / (preflightData.preflight.total || 1)) * 100)}%)
                           </span>
                         </div>
-                        <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                        <div className="w-full bg-slate-100 dark:bg-[#131C1A] h-2.5 rounded-full overflow-hidden border border-slate-200/50 dark:border-[#263834]">
                           <div
                             className={`h-full transition-all duration-300 ${
                               preflightData.preflight.complete ? 'bg-emerald-500' : 'bg-amber-500'
@@ -681,26 +686,28 @@ export const EntregasRevision: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Huella Digital */}
-                      <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 text-xs flex items-center justify-between">
-                        <span className="text-slate-500 font-medium">Huella SHA-256 (Fingerprint):</span>
-                        <code className="font-mono text-[#13594A] font-bold text-[11px]">
-                          {preflightData.fingerprint.slice(0, 16)}...
-                        </code>
-                      </div>
+                      {/* Huella Digital (Exclusiva de Dirección) */}
+                      {user?.role === 'DIRECTOR' && (
+                        <div className="p-3 bg-slate-50 dark:bg-[#131C1A] rounded-2xl border border-slate-200/80 dark:border-[#263834] text-xs flex items-center justify-between">
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Huella SHA-256 (Fingerprint):</span>
+                          <code className="font-mono text-[#13594A] dark:text-[#5EEAD4] font-bold text-[11px]">
+                            {preflightData.fingerprint.slice(0, 16)}...
+                          </code>
+                        </div>
+                      )}
 
                       {/* Campos Faltantes si no está completo */}
                       {!preflightData.preflight.complete && (
-                        <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200 space-y-2">
-                          <div className="text-xs font-bold text-rose-800 flex items-center gap-1.5">
-                            <AlertCircleIcon className="w-4 h-4 text-rose-600" />
+                        <div className="p-4 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 space-y-2">
+                          <div className="text-xs font-bold text-rose-800 dark:text-rose-200 flex items-center gap-1.5">
+                            <AlertCircleIcon className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                             Campos Pendientes para Emisión Oficial ({preflightData.preflight.missing.length})
                           </div>
-                          <p className="text-[11px] text-rose-700 leading-relaxed">
+                          <p className="text-[11px] text-rose-700 dark:text-rose-300 leading-relaxed">
                             No es posible entregar oficialmente el documento mientras existan datos incompletos.
                             Complete la información requerida antes de presentarlo:
                           </p>
-                          <ul className="text-xs text-rose-900 space-y-1 list-disc pl-5 pt-1">
+                          <ul className="text-xs text-rose-900 dark:text-rose-200 space-y-1 list-disc pl-5 pt-1">
                             {preflightData.preflight.missing.map(m => (
                               <li key={m.key}>
                                 <strong className="font-semibold">{m.key}</strong> — {m.source}
@@ -710,7 +717,7 @@ export const EntregasRevision: React.FC = () => {
                           <div className="pt-2">
                             <a
                               href="#/configuracion-documental"
-                              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#13594A] bg-white px-3 py-1.5 rounded-xl border border-emerald-300 hover:bg-emerald-50 transition-all shadow-sm"
+                              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] bg-white dark:bg-[#132B25] px-3 py-1.5 rounded-xl border border-emerald-300 dark:border-[#208B73] hover:bg-emerald-50 dark:hover:bg-[#183B33] transition-all shadow-sm"
                             >
                               Ir a Configuración Documental
                             </a>
@@ -719,14 +726,14 @@ export const EntregasRevision: React.FC = () => {
                       )}
 
                       {/* Acciones del Docente */}
-                      <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                      <div className="pt-4 border-t border-slate-100 dark:border-[#263834] flex flex-wrap items-center justify-between gap-3">
                         <button
                           type="button"
                           onClick={handlePreviewOfficialPdf}
                           disabled={isLoadingPdf}
-                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-all shadow-sm active:scale-95 disabled:opacity-60"
+                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-[#1F2D2A] transition-all shadow-sm active:scale-95 disabled:opacity-60"
                         >
-                          <EyeIcon className="w-4 h-4 text-slate-500" />
+                          <EyeIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                           <span>{isLoadingPdf ? 'Generando PDF...' : 'Previsualizar PDF'}</span>
                         </button>
 
@@ -756,52 +763,52 @@ export const EntregasRevision: React.FC = () => {
             </div>
           ) : (
             /* Historial de Entregas del Docente */
-            <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
-              <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-slate-100 dark:border-[#263834] flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Mis Entregas Registradas</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">Mis Entregas Registradas</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Historial de documentos presentados formalmente ante Secretaría y Dirección.
                   </p>
                 </div>
-                <span className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] px-3 py-1 rounded-full">
                   {submissions.length} entregas
                 </span>
               </div>
 
               {submissions.length === 0 ? (
-                <div className="p-12 text-center text-slate-500 text-xs">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                <div className="p-12 text-center text-slate-500 dark:text-slate-400 text-xs">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#131C1A] flex items-center justify-center mx-auto mb-3">
                     <DeliveriesIcon className="w-6 h-6 text-slate-400" />
                   </div>
-                  <strong className="text-slate-800 text-sm block mb-1">Aún no tiene entregas registradas</strong>
+                  <strong className="text-slate-800 dark:text-slate-200 text-sm block mb-1">Aún no tiene entregas registradas</strong>
                   <span>Utilice la pestaña "Preparar y Entregar Documento" para presentar su primer formato.</span>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100 dark:divide-[#263834]">
                   {submissions.map(s => (
-                    <div key={s.id} className="p-5 hover:bg-slate-50/60 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div key={s.id} className="p-5 hover:bg-slate-50/60 dark:hover:bg-[#1F2D2A] transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-2.5">
-                          <span className="text-xs font-bold text-[#13594A] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          <span className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] bg-emerald-50 dark:bg-[#132B25] px-2 py-0.5 rounded border border-emerald-200 dark:border-[#208B73]/50">
                             {s.templateId}
                           </span>
-                          <span className="text-sm font-bold text-slate-900">
+                          <span className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">
                             {catalogTemplates.find(t => t.id === s.templateId)?.title || s.templateId}
                           </span>
                           {renderStatusBadge(s.status)}
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
                           <span>Fecha: {new Date(s.createdAt).toLocaleString('es-PE')}</span>
-                          {s.unit && <span>Unidad: <strong className="text-slate-700">{s.unit}</strong></span>}
+                          {s.unit && <span>Unidad: <strong className="text-slate-700 dark:text-slate-300">{s.unit}</strong></span>}
                           <span>ID: <code className="font-mono text-[11px]">{s.id.slice(0, 8)}</code></span>
                           <span>Hash PDF: <code className="font-mono text-[11px]">{s.pdfHash.slice(0, 10)}...</code></span>
                         </div>
 
                         {s.reviewReason && (
-                          <div className="mt-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-700">
-                            <strong className="text-slate-900">Dictamen institucional:</strong> {s.reviewReason}
+                          <div className="mt-2 p-2.5 bg-slate-50 dark:bg-[#131C1A] rounded-xl border border-slate-200/80 dark:border-[#263834] text-xs text-slate-700 dark:text-slate-300">
+                            <strong className="text-slate-900 dark:text-[#F0FDF8]">Dictamen institucional:</strong> {s.reviewReason}
                             {s.reviewedAt && (
                               <span className="text-[11px] text-slate-400 ml-2">
                                 ({new Date(s.reviewedAt).toLocaleString('es-PE')})
@@ -817,7 +824,7 @@ export const EntregasRevision: React.FC = () => {
                           disabled={isLoadingPdf}
                           className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#1F2D2A] active:scale-95 transition-all shadow-sm"
                         >
-                          <EyeIcon className="w-4 h-4 text-slate-500" />
+                          <EyeIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                           <span>Ver PDF Custodial</span>
                         </button>
                       </div>
@@ -841,8 +848,8 @@ export const EntregasRevision: React.FC = () => {
               onClick={() => setStatusFilter('TODOS')}
               className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                 statusFilter === 'TODOS'
-                  ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  ? 'bg-slate-900 dark:bg-[#132B25] text-white border-slate-900 dark:border-[#208B73] shadow-md'
+                  : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
               }`}
             >
               <div className="text-[11px] uppercase font-bold tracking-wider opacity-80">Total Entregas</div>
@@ -853,12 +860,12 @@ export const EntregasRevision: React.FC = () => {
               onClick={() => setStatusFilter('ENTREGADO')}
               className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                 statusFilter === 'ENTREGADO'
-                  ? 'bg-amber-600 text-white border-amber-600 shadow-md'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  ? 'bg-amber-600 dark:bg-amber-700 text-white border-amber-600 dark:border-amber-600 shadow-md'
+                  : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
               }`}
             >
               <div className="text-[11px] uppercase font-bold tracking-wider opacity-80">Por Revisar</div>
-              <div className="text-2xl font-black mt-1 text-amber-600 group-hover:text-amber-700">
+              <div className="text-2xl font-black mt-1 text-amber-600 dark:text-amber-400 group-hover:text-amber-700">
                 {metrics.entregado}
               </div>
             </div>
@@ -867,41 +874,41 @@ export const EntregasRevision: React.FC = () => {
               onClick={() => setStatusFilter('RECIBIDO')}
               className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                 statusFilter === 'RECIBIDO'
-                  ? 'bg-sky-600 text-white border-sky-600 shadow-md'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  ? 'bg-sky-600 dark:bg-sky-700 text-white border-sky-600 dark:border-sky-600 shadow-md'
+                  : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
               }`}
             >
               <div className="text-[11px] uppercase font-bold tracking-wider opacity-80">Recibidos</div>
-              <div className="text-2xl font-black mt-1 text-sky-600">{metrics.recibido}</div>
+              <div className="text-2xl font-black mt-1 text-sky-600 dark:text-sky-400">{metrics.recibido}</div>
             </div>
 
             <div
               onClick={() => setStatusFilter('OBSERVADO')}
               className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                 statusFilter === 'OBSERVADO'
-                  ? 'bg-rose-600 text-white border-rose-600 shadow-md'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  ? 'bg-rose-600 dark:bg-rose-700 text-white border-rose-600 dark:border-rose-600 shadow-md'
+                  : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
               }`}
             >
               <div className="text-[11px] uppercase font-bold tracking-wider opacity-80">Observados</div>
-              <div className="text-2xl font-black mt-1 text-rose-600">{metrics.observado}</div>
+              <div className="text-2xl font-black mt-1 text-rose-600 dark:text-rose-400">{metrics.observado}</div>
             </div>
 
             <div
               onClick={() => setStatusFilter('REVISADO')}
               className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                 statusFilter === 'REVISADO'
-                  ? 'bg-emerald-700 text-white border-emerald-700 shadow-md'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  ? 'bg-emerald-700 dark:bg-[#13594A] text-white border-emerald-700 dark:border-[#208B73] shadow-md'
+                  : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
               }`}
             >
               <div className="text-[11px] uppercase font-bold tracking-wider opacity-80">Aprobados</div>
-              <div className="text-2xl font-black mt-1 text-emerald-700">{metrics.revisado}</div>
+              <div className="text-2xl font-black mt-1 text-emerald-700 dark:text-emerald-400">{metrics.revisado}</div>
             </div>
           </div>
 
           {/* Filtros y Búsqueda */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
+          <div className="bg-white dark:bg-[#182220] p-4 rounded-2xl border border-slate-200 dark:border-[#263834] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
             <div className="relative w-full sm:w-96">
               <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
@@ -909,17 +916,17 @@ export const EntregasRevision: React.FC = () => {
                 placeholder="Buscar por docente, plantilla o código..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 focus:border-[#13594A]"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50/50 dark:bg-[#131C1A] text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 focus:border-[#13594A] dark:focus:border-[#5EEAD4]"
               />
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-slate-500 self-end sm:self-auto">
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 self-end sm:self-auto">
               <FilterIcon className="w-4 h-4 text-slate-400" />
-              <span>Filtro activo: <strong>{statusFilter}</strong></span>
+              <span>Filtro activo: <strong className="text-slate-700 dark:text-slate-200">{statusFilter}</strong></span>
               {statusFilter !== 'TODOS' && (
                 <button
                   onClick={() => setStatusFilter('TODOS')}
-                  className="text-[#13594A] font-bold underline ml-1"
+                  className="text-[#13594A] dark:text-[#5EEAD4] font-bold underline ml-1"
                 >
                   Limpiar
                 </button>
@@ -928,23 +935,23 @@ export const EntregasRevision: React.FC = () => {
           </div>
 
           {/* Tabla de Entregas */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-slate-100 dark:border-[#263834] flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">
                 Bandeja de Documentos Recibidos ({filteredSubmissions.length})
               </h3>
             </div>
 
             {filteredSubmissions.length === 0 ? (
-              <div className="p-12 text-center text-slate-500 text-xs">
-                <DeliveriesIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+              <div className="p-12 text-center text-slate-500 dark:text-slate-400 text-xs">
+                <DeliveriesIcon className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
                 <span>No se encontraron entregas que coincidan con los filtros aplicados.</span>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-[#263834]/60">
+                    <tr className="bg-slate-50 dark:bg-[#131C1A] text-[11px] font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-[#263834]">
                       <th className="py-3 px-4">Documento</th>
                       <th className="py-3 px-4">Docente Remitente</th>
                       <th className="py-3 px-4">Aula / Unidad</th>
@@ -953,27 +960,27 @@ export const EntregasRevision: React.FC = () => {
                       <th className="py-3 px-4 text-right">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
+                  <tbody className="divide-y divide-slate-100 dark:divide-[#263834] text-xs text-slate-700 dark:text-slate-200">
                     {filteredSubmissions.map(s => (
-                      <tr key={s.id} className="hover:bg-slate-50/70 transition-colors">
+                      <tr key={s.id} className="hover:bg-slate-50/70 dark:hover:bg-[#1F2D2A] transition-colors">
                         <td className="py-3.5 px-4">
-                          <div className="font-bold text-slate-900">{s.templateId}</div>
-                          <div className="text-[11px] text-slate-500 line-clamp-1">
+                          <div className="font-bold text-slate-900 dark:text-[#F0FDF8]">{s.templateId}</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
                             {catalogTemplates.find(t => t.id === s.templateId)?.title || 'Documento Académico'}
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 font-semibold text-slate-800">
+                        <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
                           {s.authorName}
                         </td>
                         <td className="py-3.5 px-4">
-                          <span className="font-mono text-[11px]">{s.groupId.slice(0, 10)}</span>
+                          <span className="font-mono text-[11px] text-slate-600 dark:text-slate-300">{s.groupId.slice(0, 10)}</span>
                           {s.unit && (
-                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 font-bold text-[10px]">
+                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 font-bold text-[10px]">
                               {s.unit}
                             </span>
                           )}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-500">
+                        <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400">
                           {new Date(s.createdAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })}
                         </td>
                         <td className="py-3.5 px-4">
@@ -982,15 +989,15 @@ export const EntregasRevision: React.FC = () => {
                         <td className="py-3.5 px-4 text-right space-x-1.5">
                           <button
                             onClick={() => handleViewSubmittedPdf(s)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all font-semibold text-xs"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-200 bg-white dark:bg-[#182220] hover:bg-slate-100 dark:hover:bg-[#1F2D2A] transition-all font-semibold text-xs shadow-xs"
                             title="Inspeccionar PDF custodial"
                           >
-                            <EyeIcon className="w-3.5 h-3.5 text-slate-500" />
+                            <EyeIcon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                             <span>PDF</span>
                           </button>
                           <button
                             onClick={() => handleOpenReviewModal(s)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#13594A] text-white hover:bg-[#0D3E34] transition-all font-semibold text-xs shadow-sm"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#13594A] dark:bg-[#107560] text-white hover:bg-[#0D3E34] dark:hover:bg-[#0B5C4B] transition-all font-semibold text-xs shadow-sm"
                             title="Emitir dictamen de revisión"
                           >
                             <span>Revisar</span>
@@ -1011,42 +1018,42 @@ export const EntregasRevision: React.FC = () => {
           ========================================================================= */}
       {showConfirmModal && preflightData && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-scaleUp">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-[#263834] space-y-5 animate-scaleUp">
             <div className="flex items-center gap-3 border-b border-slate-100 dark:border-[#263834] pb-4">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center text-[#13594A]">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center text-[#13594A] dark:text-[#5EEAD4]">
                 <SendIcon className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Confirmar Presentación de Entrega</h3>
-                <p className="text-xs text-slate-500">Trámite Documental Interno — CEPRO_MICAELA 2.0</p>
+                <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">Confirmar Presentación de Entrega</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Trámite Documental Interno — CEPRO_MICAELA 2.0</p>
               </div>
             </div>
 
-            <div className="text-xs text-slate-600 space-y-3">
+            <div className="text-xs text-slate-600 dark:text-slate-300 space-y-3">
               <p>
                 Está a punto de registrar la entrega formal del documento con los parámetros actuales.
                 El backend generará una <strong>copia custodial inmutable</strong> en el servidor SQLite local:
               </p>
 
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-[#131C1A] rounded-2xl border border-slate-200 dark:border-[#263834] space-y-1.5 text-xs text-slate-700 dark:text-slate-200">
                 <div><strong>Plantilla:</strong> {selectedTemplateId} · {catalogTemplates.find(t => t.id === selectedTemplateId)?.title}</div>
                 <div><strong>Aula:</strong> {activeWorkspace?.groupId}</div>
                 {activeWorkspace?.unit && <div><strong>Unidad Didáctica:</strong> {activeWorkspace.unit}</div>}
                 <div><strong>Docente Remitente:</strong> {user?.name}</div>
-                <div><strong>Huella SHA-256:</strong> <code className="font-mono text-[#13594A]">{preflightData.fingerprint.slice(0, 20)}...</code></div>
+                <div><strong>Huella SHA-256:</strong> <code className="font-mono text-[#13594A] dark:text-[#5EEAD4]">{preflightData.fingerprint.slice(0, 20)}...</code></div>
               </div>
 
-              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-[11px] leading-relaxed">
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-[11px] leading-relaxed">
                 <strong>Aviso de custodia:</strong> Una vez entregado, el PDF original no se modificará aunque los datos del aula cambien. Las decisiones posteriores (Recibido, Observado, Revisado) se registrarán sobre este documento.
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#263834]">
               <button
                 type="button"
                 onClick={() => setShowConfirmModal(false)}
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#1F2D2A] transition-colors"
               >
                 Cancelar
               </button>
@@ -1054,7 +1061,7 @@ export const EntregasRevision: React.FC = () => {
                 type="button"
                 onClick={handleConfirmSubmit}
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] transition-all shadow-md active:scale-95 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#13594A] dark:bg-[#107560] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#0B5C4B] transition-all shadow-md active:scale-95 disabled:opacity-60"
               >
                 <SendIcon className="w-4 h-4" />
                 <span>{isSubmitting ? 'Registrando Entrega...' : (isInstitutional() ? 'Confirmar Entrega Formal' : 'Confirmar entrega de prueba')}</span>
@@ -1069,16 +1076,16 @@ export const EntregasRevision: React.FC = () => {
           ========================================================================= */}
       {showReviewModal && selectedSubmission && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-scaleUp">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 dark:border-[#263834] space-y-5 animate-scaleUp">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#263834] pb-4">
               <div>
-                <span className="text-xs font-bold text-[#13594A] uppercase tracking-wider">
+                <span className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider">
                   Revisión Institucional
                 </span>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
                   Dictamen para {selectedSubmission.templateId}
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Docente: {selectedSubmission.authorName} | Presentado:{' '}
                   {new Date(selectedSubmission.createdAt).toLocaleString('es-PE')}
                 </p>
@@ -1091,15 +1098,15 @@ export const EntregasRevision: React.FC = () => {
                     setSelectedSubmission(null);
                   });
                 }}
-                className="text-slate-400 hover:text-slate-600 text-sm font-bold"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold"
               >
                 ✕
               </button>
             </div>
 
             {conflictError && (
-              <div className="p-3 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-start gap-2">
-                <AlertCircleIcon className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2">
+                <AlertCircleIcon className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold">Conflicto de Concurrencia (HTTP 409):</span>
                   <p className="mt-0.5">{conflictError}</p>
@@ -1109,7 +1116,7 @@ export const EntregasRevision: React.FC = () => {
                       setShowReviewModal(false);
                       setSelectedSubmission(null);
                     }}
-                    className="mt-2 text-xs font-bold text-[#13594A] underline"
+                    className="mt-2 text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] underline"
                   >
                     Recargar bandeja ahora
                   </button>
@@ -1120,7 +1127,7 @@ export const EntregasRevision: React.FC = () => {
             <div className="space-y-4">
               {/* Opciones de Estado */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
                   Decisión / Estado Documental:
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -1128,24 +1135,24 @@ export const EntregasRevision: React.FC = () => {
                     onClick={() => setReviewStatus('RECIBIDO')}
                     className={`p-3 rounded-2xl border cursor-pointer transition-all ${
                       reviewStatus === 'RECIBIDO'
-                        ? 'bg-sky-50 border-sky-500 ring-1 ring-sky-500 text-sky-950 font-bold'
-                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                        ? 'bg-sky-50 dark:bg-sky-950/60 border-sky-500 ring-1 ring-sky-500 text-sky-950 dark:text-sky-200 font-bold'
+                        : 'bg-slate-50 dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1F2D2A]'
                     }`}
                   >
                     <div className="text-xs">RECIBIDO</div>
-                    <div className="text-[10px] text-slate-500 font-normal mt-0.5">Mesa de partes / Conforme</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal mt-0.5">Mesa de partes / Conforme</div>
                   </div>
 
                   <div
                     onClick={() => setReviewStatus('OBSERVADO')}
                     className={`p-3 rounded-2xl border cursor-pointer transition-all ${
                       reviewStatus === 'OBSERVADO'
-                        ? 'bg-rose-50 border-rose-500 ring-1 ring-rose-500 text-rose-950 font-bold'
-                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                        ? 'bg-rose-50 dark:bg-rose-950/60 border-rose-500 ring-1 ring-rose-500 text-rose-950 dark:text-rose-200 font-bold'
+                        : 'bg-slate-50 dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1F2D2A]'
                     }`}
                   >
                     <div className="text-xs">OBSERVADO</div>
-                    <div className="text-[10px] text-slate-500 font-normal mt-0.5">Requiere correcciones</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal mt-0.5">Requiere correcciones</div>
                   </div>
 
                   <div
@@ -1154,10 +1161,10 @@ export const EntregasRevision: React.FC = () => {
                     }}
                     className={`p-3 rounded-2xl border transition-all ${
                       !isDirector
-                        ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                        ? 'bg-slate-100 dark:bg-[#131C1A]/50 border-slate-200 dark:border-[#263834] text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
                         : reviewStatus === 'REVISADO'
-                        ? 'bg-emerald-50 border-emerald-600 ring-1 ring-emerald-600 text-emerald-950 font-bold cursor-pointer'
-                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 cursor-pointer'
+                        ? 'bg-emerald-50 dark:bg-[#132B25] border-emerald-600 dark:border-[#208B73] ring-1 ring-emerald-600 dark:ring-[#208B73] text-emerald-950 dark:text-[#5EEAD4] font-bold cursor-pointer'
+                        : 'bg-slate-50 dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1F2D2A] cursor-pointer'
                     }`}
                     title={!isDirector ? 'Exclusivo del rol DIRECTOR' : 'Aprobación oficial'}
                   >
@@ -1165,14 +1172,14 @@ export const EntregasRevision: React.FC = () => {
                       <span>REVISADO</span>
                       {!isDirector && <LockIcon className="w-3.5 h-3.5 text-slate-400" />}
                     </div>
-                    <div className="text-[10px] text-slate-500 font-normal mt-0.5">Aprobado por Dirección</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal mt-0.5">Aprobado por Dirección</div>
                   </div>
                 </div>
               </div>
 
               {/* Motivo o Justificación */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Motivo o Fundamentación del Dictamen <span className="text-rose-500">*</span>:
                 </label>
                 <textarea
@@ -1180,15 +1187,15 @@ export const EntregasRevision: React.FC = () => {
                   value={reviewReason}
                   onChange={e => setReviewReason(e.target.value)}
                   placeholder="Describa el motivo de la recepción, observaciones técnicas o conformidad emitida..."
-                  className="w-full text-xs p-3 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 focus:border-[#13594A] bg-white resize-none"
+                  className="w-full text-xs p-3 rounded-2xl border border-slate-300 dark:border-[#263834] focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 focus:border-[#13594A] dark:focus:border-[#5EEAD4] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-white resize-none"
                 />
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-slate-400 dark:text-slate-500">
                   Campo obligatorio requerido por el contrato oficial POST /api/document/review.
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#263834]">
               <button
                 type="button"
                 onClick={() => {
@@ -1198,7 +1205,7 @@ export const EntregasRevision: React.FC = () => {
                   });
                 }}
                 disabled={isSubmittingReview}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#1F2D2A] transition-colors"
               >
                 Cancelar
               </button>
@@ -1206,7 +1213,7 @@ export const EntregasRevision: React.FC = () => {
                 type="button"
                 onClick={handleSubmitReview}
                 disabled={isSubmittingReview || !reviewReason.trim()}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] transition-all shadow-md active:scale-95 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#13594A] dark:bg-[#107560] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#0B5C4B] transition-all shadow-md active:scale-95 disabled:opacity-60"
               >
                 <span>{isSubmittingReview ? 'Guardando Decisión...' : 'Confirmar Decisión'}</span>
               </button>
@@ -1220,20 +1227,20 @@ export const EntregasRevision: React.FC = () => {
           ========================================================================= */}
       {showPdfViewer && (
         <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex flex-col p-4 md:p-8 animate-fadeIn">
-          <div className="bg-white rounded-3xl flex-1 flex flex-col overflow-hidden shadow-2xl border border-slate-300">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 dark:border-[#263834] flex items-center justify-between">
+          <div className="bg-white dark:bg-[#182220] rounded-3xl flex-1 flex flex-col overflow-hidden shadow-2xl border border-slate-300 dark:border-[#263834]">
+            <div className="p-4 bg-slate-50 dark:bg-[#131C1A] border-b border-slate-200 dark:border-[#263834] flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900">{pdfTitle}</h3>
-                <p className="text-[11px] text-slate-500">{pdfFilename}</p>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">{pdfTitle}</h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">{pdfFilename}</p>
               </div>
               <button
                 onClick={() => setShowPdfViewer(false)}
-                className="px-4 py-1.5 text-xs font-bold bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors text-slate-700"
+                className="px-4 py-1.5 text-xs font-bold bg-white dark:bg-[#1F2D2A] border border-slate-200 dark:border-[#263834] rounded-xl hover:bg-slate-100 dark:hover:bg-[#263834] transition-colors text-slate-700 dark:text-slate-200 shadow-xs"
               >
                 Cerrar Visor
               </button>
             </div>
-            <div className="flex-1 overflow-auto bg-slate-100">
+            <div className="flex-1 overflow-auto bg-slate-100 dark:bg-[#0B1210]">
               <PdfViewer
                 blob={pdfBlob}
                 title={pdfTitle}

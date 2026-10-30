@@ -198,12 +198,12 @@ export const CentroDocumental: React.FC = () => {
     return getVisibleTemplates({
       role: user?.role,
       groupId: activeWorkspace?.groupId,
-      unitCode: activeWorkspace?.unit,
+      unitCode: activeWorkspace?.unit || selectedUnit,
       availableUnits,
       mode: activeWorkspace?.mode,
-      onlyCurrentUnit: Boolean(activeWorkspace?.unit),
+      onlyCurrentUnit: Boolean(activeWorkspace?.unit || selectedUnit),
     });
-  }, [user?.role, activeWorkspace?.groupId, activeWorkspace?.unit, availableUnits, activeWorkspace?.mode]);
+  }, [user?.role, activeWorkspace?.groupId, activeWorkspace?.unit, selectedUnit, availableUnits, activeWorkspace?.mode]);
 
   // Categorías con al menos una plantilla visible para el usuario y contexto actual
   const availableCategories = useMemo(() => {
@@ -786,62 +786,68 @@ export const CentroDocumental: React.FC = () => {
 
             {/* Lista interactiva de plantillas */}
             <div className="space-y-1.5 max-h-[580px] overflow-y-auto pr-1">
-              {filteredCatalog.map((tmpl) => {
-                const isSelected = selectedTemplateId === tmpl.id;
-                const isAllowed = allowedTemplateIds.has(tmpl.id);
-                const isCompatible =
-                  !activeWorkspace.mode || activeWorkspace.mode === tmpl.requiredMode;
+              {filteredCatalog.length === 0 ? (
+                <div className="p-6 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-[#131C1A] rounded-2xl border border-slate-200 dark:border-[#263834]">
+                  No se encontraron formatos coincidentes con los filtros aplicados.
+                </div>
+              ) : (
+                filteredCatalog.map((tmpl) => {
+                  const isSelected = selectedTemplateId === tmpl.id;
+                  const isAllowed = allowedTemplateIds.has(tmpl.id);
+                  const isCompatible =
+                    !activeWorkspace.mode || activeWorkspace.mode === tmpl.requiredMode;
 
-                return (
-                  <button
-                    key={tmpl.id}
-                    type="button"
-                    onClick={() => handleSelectTemplate(tmpl)}
-                    className={`w-full text-left p-3 rounded-2xl border transition-all flex items-start gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] ${
-                      isSelected
-                        ? 'bg-[#13594A]/10 dark:bg-[#132B25] border-[#13594A] dark:border-[#208B73] shadow-xs ring-1 ring-[#13594A] dark:ring-[#208B73]'
-                        : 'bg-white dark:bg-[#131C1A] border-slate-200/80 dark:border-[#263834] hover:bg-slate-50/80 dark:hover:bg-[#1F2D2A] hover:border-slate-300 dark:hover:border-[#34524B]'
-                    }`}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-bold text-[10px] ${
+                  return (
+                    <button
+                      key={tmpl.id}
+                      type="button"
+                      onClick={() => handleSelectTemplate(tmpl)}
+                      className={`w-full text-left p-3 rounded-2xl border transition-all flex items-start gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] ${
                         isSelected
-                          ? 'bg-[#13594A] text-white'
-                          : 'bg-slate-100 text-slate-700'
+                          ? 'bg-[#13594A]/10 dark:bg-[#132B25] border-[#13594A] dark:border-[#208B73] shadow-xs ring-1 ring-[#13594A] dark:ring-[#208B73]'
+                          : 'bg-white dark:bg-[#131C1A] border-slate-200/80 dark:border-[#263834] hover:bg-slate-50/80 dark:hover:bg-[#1F2D2A] hover:border-slate-300 dark:hover:border-[#34524B]'
                       }`}
                     >
-                      {tmpl.number}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="font-bold text-xs text-slate-900 dark:text-[#F0FDF8] truncate block">
-                          {tmpl.name}
-                        </span>
-                        <span className="font-mono text-[9px] text-slate-500 font-bold shrink-0">
-                          {tmpl.id}
-                        </span>
+                      <div
+                        className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-bold text-[10px] ${
+                          isSelected
+                            ? 'bg-[#13594A] text-white'
+                            : 'bg-slate-100 dark:bg-[#1F2D2A] text-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        {tmpl.number}
                       </div>
 
-                      <div className="flex items-center gap-1.5 mt-0.5 text-[10px]">
-                        <span className="text-slate-500">{tmpl.category}</span>
-                        <span>·</span>
-                        <span
-                          className={`font-semibold ${
-                            isCompatible ? 'text-emerald-700' : 'text-amber-700'
-                          }`}
-                        >
-                          {tmpl.scope} ({tmpl.requiredMode})
-                        </span>
-                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="font-bold text-xs text-slate-900 dark:text-[#F0FDF8] truncate block">
+                            {tmpl.name}
+                          </span>
+                          <span className="font-mono text-[9px] text-slate-500 dark:text-slate-400 font-bold shrink-0">
+                            {tmpl.id}
+                          </span>
+                        </div>
 
-                      <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-1 mt-1">
-                        {tmpl.description}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
+                        <div className="flex items-center gap-1.5 mt-0.5 text-[10px]">
+                          <span className="text-slate-500 dark:text-slate-400">{tmpl.category}</span>
+                          <span className="text-slate-400 dark:text-slate-600">·</span>
+                          <span
+                            className={`font-semibold ${
+                              isCompatible ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'
+                            }`}
+                          >
+                            {tmpl.scope} ({tmpl.requiredMode})
+                          </span>
+                        </div>
+
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-1 mt-1">
+                          {tmpl.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

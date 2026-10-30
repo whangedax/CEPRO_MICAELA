@@ -807,18 +807,18 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
               {/* Resumen tras exportar con éxito */}
               {exportSuccess && (
-                <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-3">
+                <div className="p-5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-900 dark:text-emerald-200 space-y-3">
                   <div className="flex items-center gap-2">
-                    <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <h4 className="font-bold text-sm">¡Archivo preparado con éxito para llevar en USB!</h4>
                   </div>
-                  <p className="text-xs text-emerald-800">
+                  <p className="text-xs text-emerald-800 dark:text-emerald-300">
                     Busca el archivo descargado en tu carpeta de <strong>Descargas</strong>, cópialo a tu memoria USB y entrégalo
-                    junto con su clave: <code className="bg-emerald-100 px-1.5 py-0.5 rounded font-mono font-bold">{exportPassphrase}</code>.
+                    junto con su clave: <code className="bg-emerald-100 dark:bg-[#132B25] px-1.5 py-0.5 rounded font-mono font-bold text-emerald-900 dark:text-emerald-200">{exportPassphrase}</code>.
                   </p>
 
-                  <div className="bg-white/80 p-3 rounded-lg border border-emerald-200 text-xs text-slate-700 space-y-1">
-                    <div className="font-semibold text-slate-900">Resumen del paquete exportado:</div>
+                  <div className="bg-white/80 dark:bg-[#131C1A] p-3 rounded-lg border border-emerald-200 dark:border-emerald-800/60 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                    <div className="font-semibold text-slate-900 dark:text-[#F0FDF8]">Resumen del paquete exportado:</div>
                     <div>Emisor: <strong>{exportSuccess.summary.sender?.name}</strong> ({exportSuccess.summary.sender?.role})</div>
                     {exportSuccess.summary.recipient && (
                       <div>Destinatario: <strong>{exportSuccess.summary.recipient.name}</strong> ({exportSuccess.summary.recipient.role})</div>
@@ -826,7 +826,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                     <div>Aulas incluidas: <strong>{exportSuccess.summary.groups?.length || 0} aulas</strong></div>
                     <div className="pt-1">
                       <span className="font-semibold">Contenido:</span>
-                      <ul className="list-disc list-inside mt-0.5 space-y-0.5 text-slate-600">
+                      <ul className="list-disc list-inside mt-0.5 space-y-0.5 text-slate-600 dark:text-slate-400">
                         {Object.entries(exportSuccess.summary.counts || {}).map(([key, count]) => (
                           <li key={key}>
                             <strong>{count}</strong> {ENTITY_LABELS[key] || key}
@@ -979,29 +979,29 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                     <>
                       {/* Metadatos del emisor y contenido */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                        <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-1">
-                          <span className="font-semibold text-slate-800 block">Emisor del paquete:</span>
-                          <p className="text-slate-600">
+                        <div className="bg-white dark:bg-[#131C1A] p-3 rounded-xl border border-slate-200 dark:border-[#263834] space-y-1">
+                          <span className="font-semibold text-slate-800 dark:text-[#F0FDF8] block">Emisor del paquete:</span>
+                          <p className="text-slate-600 dark:text-slate-300">
                             <strong>{previewReport.description?.sender?.name || 'Personal institucional'}</strong>{' '}
                             ({previewReport.description?.sender?.role})
                           </p>
                           {previewReport.description?.recipient && (
-                            <p className="text-slate-500">
+                            <p className="text-slate-500 dark:text-slate-400">
                               Destinado a: {previewReport.description.recipient.name} ({previewReport.description.recipient.role})
                             </p>
                           )}
                         </div>
 
-                        <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-1">
-                          <span className="font-semibold text-slate-800 block">Impacto en tu computadora:</span>
-                          <p className="text-slate-600">
+                        <div className="bg-white dark:bg-[#131C1A] p-3 rounded-xl border border-slate-200 dark:border-[#263834] space-y-1">
+                          <span className="font-semibold text-slate-800 dark:text-[#F0FDF8] block">Impacto en tu computadora:</span>
+                          <p className="text-slate-600 dark:text-slate-300">
                             <strong>{previewReport.recordsToAdd ?? previewReport.newRecords ?? 0}</strong> registros nuevos por agregar.
                           </p>
-                          <p className="text-slate-600">
+                          <p className="text-slate-600 dark:text-slate-300">
                             <strong>{previewReport.recordsToUpdate ?? previewReport.updates ?? 0}</strong> registros por actualizar.
                           </p>
                           {previewReport.accountUpdate && (
-                            <p className="text-indigo-600 font-medium">
+                            <p className="text-indigo-600 dark:text-indigo-400 font-medium">
                               * Incluye actualización de credenciales o perfil de usuario.
                             </p>
                           )}
@@ -1010,9 +1010,9 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
                       {/* Desglose de aulas */}
                       {previewReport.description?.groups && previewReport.description.groups.length > 0 && (
-                        <div className="bg-white p-3 rounded-xl border border-slate-200 text-xs">
-                          <span className="font-semibold text-slate-800 block mb-1">Aulas incluidas:</span>
-                          <ul className="list-disc list-inside space-y-0.5 text-slate-600">
+                        <div className="bg-white dark:bg-[#131C1A] p-3 rounded-xl border border-slate-200 dark:border-[#263834] text-xs">
+                          <span className="font-semibold text-slate-800 dark:text-[#F0FDF8] block mb-1">Aulas incluidas:</span>
+                          <ul className="list-disc list-inside space-y-0.5 text-slate-600 dark:text-slate-300">
                             {previewReport.description.groups.map(g => (
                               <li key={g.id}>{g.name}</li>
                             ))}
@@ -1092,8 +1092,8 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       {activeTab === 'devices' && isAdmin && (
         <div className="space-y-6">
           <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-4">
-            <h2 className="text-base font-bold text-[#172B28]">Equipos Vinculados a la Institución</h2>
-            <p className="text-xs text-slate-500">
+            <h2 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Equipos Vinculados a la Institución</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {systemStatus?.authority
                 ? 'Como equipo central de Dirección, puedes autorizar laptops de docentes y secretaría para sincronizar mediante lotes cifrados asimétricos.'
                 : 'Esta computadora es un equipo cliente vinculado. Puedes exportar tu lote de sincronización asimétrica hacia el equipo institucional.'}
@@ -1101,8 +1101,8 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
             {/* Listado de equipos vinculados */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
-                <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+              <table className="w-full text-left text-xs border border-slate-200 dark:border-[#263834] rounded-xl overflow-hidden">
+                <thead className="bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-[#263834]">
                   <tr>
                     <th className="p-3">ID del Equipo</th>
                     <th className="p-3">Usuario Asignado</th>
@@ -1110,23 +1110,23 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                     <th className="p-3 text-right">Acción</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-slate-200 dark:divide-[#263834]">
                   {(dashboardData?.devices || []).length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="p-4 text-center text-slate-400">
+                      <td colSpan={4} className="p-4 text-center text-slate-400 dark:text-slate-500">
                         No hay equipos secundarios vinculados actualmente.
                       </td>
                     </tr>
                   ) : (
                     (dashboardData?.devices || []).map(device => (
-                      <tr key={device.id} className="hover:bg-slate-50/50">
-                        <td className="p-3 font-mono font-bold text-slate-800">
+                      <tr key={device.id} className="hover:bg-slate-50/50 dark:hover:bg-[#1F2D2A] transition-colors">
+                        <td className="p-3 font-mono font-bold text-slate-800 dark:text-[#F0FDF8]">
                           {device.id.slice(0, 12)}...
                         </td>
-                        <td className="p-3 text-slate-700">
-                          <strong>{device.name || 'Sin nombre'}</strong> ({device.userId})
+                        <td className="p-3 text-slate-700 dark:text-slate-300">
+                          <strong className="text-slate-900 dark:text-[#F0FDF8]">{device.name || 'Sin nombre'}</strong> ({device.userId})
                         </td>
-                        <td className="p-3 font-mono text-slate-500 text-[11px]">
+                        <td className="p-3 font-mono text-slate-500 dark:text-slate-400 text-[11px]">
                           {device.signingKey?.slice(0, 20)}...
                         </td>
                         <td className="p-3 text-right">
@@ -1134,7 +1134,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                             type="button"
                             onClick={() => handleExportSyncForDevice(device.id, device.name)}
                             disabled={isExportingSyncId === device.id}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#13594A] bg-[#13594A]/10 hover:bg-[#13594A]/20 rounded-lg transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#13594A] dark:text-[#5EEAD4] bg-[#13594A]/10 dark:bg-[#132B25] hover:bg-[#13594A]/20 dark:hover:bg-[#183B33] rounded-lg transition-colors disabled:opacity-50"
                           >
                             <DownloadIcon className="w-3.5 h-3.5" />
                             <span>{isExportingSyncId === device.id ? 'Exportando...' : 'Exportar lote SYNC'}</span>
@@ -1151,27 +1151,27 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
           {/* Sección de vinculación de nuevo equipo (Director) */}
           {isDirector && (
             <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-4">
-              <h3 className="text-sm font-bold text-[#172B28]">Autorizar nuevo equipo docente o secretaría</h3>
-              <p className="text-xs text-slate-500">
+              <h3 className="text-sm font-bold text-[#172B28] dark:text-[#F0FDF8]">Autorizar nuevo equipo docente o secretaría</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 El usuario del nuevo equipo debe generar su archivo <code>SOLICITUD_VINCULACION.json</code> y traértelo en USB.
                 Pega el contenido o selecciona el usuario correspondiente para emitir su credencial digital institucional.
               </p>
 
               {provisionError && (
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs">
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-rose-950/30 border border-red-200 dark:border-rose-900/50 text-red-700 dark:text-rose-200 text-xs">
                   {provisionError}
                 </div>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Cuenta de usuario a asignar:
                   </label>
                   <select
                     value={provisionUserId}
                     onChange={e => setProvisionUserId(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                   >
                     <option value="">-- Seleccionar usuario registrado --</option>
                     {usersList
@@ -1185,7 +1185,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Contenido de la solicitud (JSON):
                   </label>
                   <textarea
@@ -1193,7 +1193,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                     value={deviceRequestJson}
                     onChange={e => setDeviceRequestJson(e.target.value)}
                     placeholder='{"app":"CEPRO_MICAELA","type":"DEVICE_REQUEST",...}'
-                    className="w-full p-2 text-xs font-mono bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="w-full p-2 text-xs font-mono bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                   />
                 </div>
               </div>
@@ -1255,12 +1255,12 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
           </div>
 
           {conflictsList.length === 0 ? (
-            <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 shadow-sm space-y-3">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+            <div className="bg-white dark:bg-[#182220] p-12 text-center rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm space-y-3">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-[#5EEAD4] flex items-center justify-center mx-auto">
                 <CheckCircleIcon className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-800">No hay conflictos pendientes</h3>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-[#F0FDF8]">No hay conflictos pendientes</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                 Todas las notas, asistencias, matrículas y registros se encuentran plenamente conciliados y sincronizados.
               </p>
             </div>
@@ -1275,19 +1275,19 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                 return (
                   <div
                     key={conflict.id}
-                    className="bg-white p-6 rounded-2xl border border-amber-200 shadow-sm space-y-4"
+                    className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-amber-200 dark:border-amber-800/60 shadow-sm space-y-4"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 dark:border-[#263834] pb-3">
                       <div>
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 uppercase">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 uppercase">
                           Conflicto: {entityName}
                         </span>
-                        <h4 className="text-sm font-bold text-slate-900 mt-1">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] mt-1">
                           Registro ID: <code className="font-mono text-xs">{conflict.operation?.body?.recordId}</code>
                         </h4>
                       </div>
-                      <div className="text-xs text-slate-500">
-                        Propuesto por: <strong>{actorName}</strong> ({actorRole})
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Propuesto por: <strong className="text-slate-700 dark:text-slate-200">{actorName}</strong> ({actorRole})
                       </div>
                     </div>
 
@@ -1295,8 +1295,8 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                       <div
                         className={`p-3 rounded-xl text-xs ${
                           feedback.type === 'success'
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                            : 'bg-red-50 text-red-800 border border-red-200'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                            : 'bg-red-50 dark:bg-rose-950/40 text-red-800 dark:text-rose-200 border border-red-200 dark:border-rose-900/60'
                         }`}
                       >
                         {feedback.message}
@@ -1306,27 +1306,27 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                     {/* Comparativa Lado a Lado */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Valor local */}
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-2">
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                           <span>1. Valor Local Actual en este equipo:</span>
-                          <span className="text-[10px] text-slate-400 font-mono">
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
                             Rev: {conflict.current?.rev || 'Sin rev'}
                           </span>
                         </div>
-                        <pre className="p-2.5 bg-white rounded-lg border border-slate-200 text-[11px] font-mono text-slate-800 overflow-x-auto max-h-40">
+                        <pre className="p-2.5 bg-white dark:bg-[#0F1715] rounded-lg border border-slate-200 dark:border-[#263834] text-[11px] font-mono text-slate-800 dark:text-slate-200 overflow-x-auto max-h-40">
                           {JSON.stringify(conflict.current || {}, null, 2)}
                         </pre>
                       </div>
 
                       {/* Valor entrante */}
-                      <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200 space-y-2">
-                        <div className="flex items-center justify-between text-xs font-bold text-blue-900">
+                      <div className="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 space-y-2">
+                        <div className="flex items-center justify-between text-xs font-bold text-blue-900 dark:text-blue-300">
                           <span>2. Valor Recibido en el archivo:</span>
-                          <span className="text-[10px] text-blue-500 font-mono">
+                          <span className="text-[10px] text-blue-500 dark:text-blue-400 font-mono">
                             Rev: {conflict.operation?.body?.value?.rev || 'Sin rev'}
                           </span>
                         </div>
-                        <pre className="p-2.5 bg-white rounded-lg border border-blue-200 text-[11px] font-mono text-slate-800 overflow-x-auto max-h-40">
+                        <pre className="p-2.5 bg-white dark:bg-[#0F1715] rounded-lg border border-blue-200 dark:border-blue-900/50 text-[11px] font-mono text-slate-800 dark:text-slate-200 overflow-x-auto max-h-40">
                           {JSON.stringify(conflict.operation?.body?.value || {}, null, 2)}
                         </pre>
                       </div>
@@ -1334,7 +1334,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
                     {/* Motivo obligatorio para auditar la decisión */}
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                         Motivo obligatorio de la resolución (auditoría institucional):
                       </label>
                       <input
@@ -1347,7 +1347,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                           }))
                         }
                         placeholder="Ejemplo: Se conserva la nota firmada en físico tras revisión con el docente titular"
-                        className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                        className="w-full px-3 py-2 text-xs bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
                       />
                     </div>
 
@@ -1357,7 +1357,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                         type="button"
                         onClick={() => handleResolveConflict(conflict, 'KEEP_LOCAL')}
                         disabled={resolvingId === conflict.id}
-                        className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-xl transition-colors disabled:opacity-50"
+                        className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#1F2D2A] hover:bg-slate-100 dark:hover:bg-[#263834] border border-slate-300 dark:border-[#263834] rounded-xl transition-colors disabled:opacity-50"
                       >
                         {resolvingId === conflict.id ? 'Procesando...' : 'Conservar valor local (KEEP_LOCAL)'}
                       </button>
@@ -1366,7 +1366,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                         type="button"
                         onClick={() => handleResolveConflict(conflict, 'ACCEPT_INCOMING')}
                         disabled={resolvingId === conflict.id}
-                        className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D3E34] rounded-xl transition-colors disabled:opacity-50"
+                        className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-white bg-[#13594A] dark:bg-[#107560] hover:bg-[#0D3E34] dark:hover:bg-[#0B5C4B] rounded-xl transition-colors disabled:opacity-50"
                       >
                         {resolvingId === conflict.id ? 'Procesando...' : 'Aceptar cambio entrante (ACCEPT_INCOMING)'}
                       </button>
