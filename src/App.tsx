@@ -236,7 +236,7 @@ const AppContent: React.FC = () => {
         return <DashboardDocente />;
       }
       return (
-        <div className="p-8 text-center text-red-700 bg-red-50 rounded-2xl border border-red-200 m-6">
+        <div className="p-8 text-center text-red-700 dark:text-rose-300 bg-red-50 dark:bg-rose-950/40 rounded-2xl border border-red-200 dark:border-rose-800/60 m-6">
           <h2 className="text-lg font-bold">Rol no autorizado o desconocido</h2>
           <p className="text-sm mt-1">Su cuenta no cuenta con un rol válido asignado en el sistema.</p>
         </div>

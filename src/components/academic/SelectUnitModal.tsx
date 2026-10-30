@@ -124,7 +124,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
           {error && (
             <div
               role="alert"
-              className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-[12px] font-medium"
+              className="p-3.5 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-800/60 text-red-800 dark:text-rose-200 text-[12px] font-medium"
             >
               {error}
             </div>

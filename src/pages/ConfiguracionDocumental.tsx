@@ -612,20 +612,20 @@ export const ConfiguracionDocumental: React.FC = () => {
             </span>
 
             {activeWorkspace?.mode && (
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-[#132B25] text-slate-700 dark:text-[#5EEAD4]">
                 Modo {activeWorkspace.mode}
                 {activeWorkspace.unit ? ` (${activeWorkspace.unit})` : ''}
               </span>
             )}
 
             {!__IS_INSTITUTIONAL__ && dashboardData?.status?.demonstration && (
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300 uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800 uppercase tracking-wider">
                 Entorno de Pruebas · Sin Validez Oficial
               </span>
             )}
           </div>
 
-          <p className="text-xs text-slate-600 max-w-3xl">
+          <p className="text-xs text-slate-600 dark:text-slate-300 max-w-3xl">
             {user?.role === 'DOCENTE'
               ? 'Defina el nombre oficial, la capacidad terminal, la competencia y los cinco indicadores de logro (IL1..IL5) para la unidad didáctica activa. Estos datos alimentan automáticamente los formatos oficiales del MINEDU.'
               : 'Administre los datos institucionales, grupos, periodos y parámetros curriculares según los permisos autorizados para su rol.'}
@@ -660,7 +660,7 @@ export const ConfiguracionDocumental: React.FC = () => {
       {saveSuccess && (
         <div
           role="status"
-          className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3 text-emerald-950 text-xs shadow-sm animate-in fade-in duration-200"
+          className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl p-4 flex items-start gap-3 text-emerald-950 dark:text-emerald-200 text-xs shadow-sm animate-in fade-in duration-200"
         >
           <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -670,7 +670,7 @@ export const ConfiguracionDocumental: React.FC = () => {
           <button
             type="button"
             onClick={() => setSaveSuccess(null)}
-            className="text-emerald-700 hover:text-emerald-900 font-bold p-1 text-sm"
+            className="text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-emerald-100 font-bold p-1 text-sm"
             aria-label="Cerrar notificación de éxito"
           >
             ✕
@@ -681,7 +681,7 @@ export const ConfiguracionDocumental: React.FC = () => {
       {saveError && (
         <div
           role="alert"
-          className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-start gap-3 text-rose-950 text-xs shadow-sm animate-in fade-in duration-200"
+          className="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/60 rounded-2xl p-4 flex items-start gap-3 text-rose-950 dark:text-rose-200 text-xs shadow-sm animate-in fade-in duration-200"
         >
           <AlertCircleIcon className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -691,7 +691,7 @@ export const ConfiguracionDocumental: React.FC = () => {
           <button
             type="button"
             onClick={() => setSaveError(null)}
-            className="text-rose-700 hover:text-rose-900 font-bold p-1 text-sm"
+            className="text-rose-700 hover:text-rose-900 dark:text-rose-300 dark:hover:text-rose-100 font-bold p-1 text-sm"
             aria-label="Cerrar error"
           >
             ✕
@@ -702,7 +702,7 @@ export const ConfiguracionDocumental: React.FC = () => {
       {conflictError && (
         <div
           role="alert"
-          className="bg-amber-50 border border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 text-xs shadow-sm animate-in fade-in duration-200"
+          className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 dark:text-amber-200 text-xs shadow-sm animate-in fade-in duration-200"
         >
           <div className="flex items-start gap-3">
             <AlertCircleIcon className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />

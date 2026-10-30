@@ -245,8 +245,8 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
               isDemo
                 ? 'bg-amber-300 text-amber-950 hover:bg-amber-200 focus-visible:ring-amber-400'
                 : isDraft
-                ? 'bg-rose-100 text-rose-900 hover:bg-rose-200 focus-visible:ring-rose-400'
-                : 'bg-white text-[#13594A] hover:bg-emerald-50 focus-visible:ring-white'
+                ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200 hover:bg-rose-200 dark:hover:bg-rose-900/80 border border-transparent dark:border-rose-800 focus-visible:ring-rose-400'
+                : 'bg-white dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] hover:bg-emerald-50 dark:hover:bg-[#183B33] border border-transparent dark:border-[#208B73]/60 focus-visible:ring-white'
             }`}
             title="Descargar este archivo PDF a su equipo"
           >
@@ -292,35 +292,35 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
 
       {/* Banner de estado reglamentario según modo y preflight */}
       {isDemo ? (
-        <div className="bg-amber-500/10 border-b border-amber-300 px-4 py-2 flex items-center justify-between text-xs text-amber-950 font-medium select-none">
+        <div className="bg-amber-500/10 dark:bg-amber-950/40 border-b border-amber-300 dark:border-amber-800/60 px-4 py-2 flex items-center justify-between text-xs text-amber-950 dark:text-amber-200 font-medium select-none">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
             <strong className="font-bold">Datos simulados. Sin validez oficial.</strong>
-            <span className="hidden sm:inline text-amber-800">· Documento generado con marcas de agua de demostración</span>
+            <span className="hidden sm:inline text-amber-800 dark:text-amber-300">· Documento generado con marcas de agua de demostración</span>
           </div>
-          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-950 uppercase tracking-wider shrink-0">
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 dark:bg-amber-900/60 text-amber-950 dark:text-amber-200 uppercase tracking-wider shrink-0">
             Modo Demostración
           </span>
         </div>
       ) : isDraft ? (
-        <div className="bg-rose-50 border-b border-rose-200 px-4 py-2 flex items-center justify-between text-xs text-rose-950 font-medium select-none">
+        <div className="bg-rose-50 dark:bg-rose-950/40 border-b border-rose-200 dark:border-rose-900/60 px-4 py-2 flex items-center justify-between text-xs text-rose-950 dark:text-rose-200 font-medium select-none">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
             <strong className="font-bold">Documento incompleto. Sin validez oficial.</strong>
-            <span className="hidden sm:inline text-rose-800">· Parámetros académicos pendientes de registrar en preflight</span>
+            <span className="hidden sm:inline text-rose-800 dark:text-rose-300">· Parámetros académicos pendientes de registrar en preflight</span>
           </div>
-          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-200 text-rose-950 uppercase tracking-wider shrink-0">
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-200 dark:bg-rose-900/60 text-rose-950 dark:text-rose-200 uppercase tracking-wider shrink-0">
             Borrador de Trabajo
           </span>
         </div>
       ) : isComplete ? (
-        <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2 flex items-center justify-between text-xs text-emerald-950 font-medium select-none">
+        <div className="bg-emerald-50 dark:bg-emerald-950/40 border-b border-emerald-200 dark:border-emerald-900/60 px-4 py-2 flex items-center justify-between text-xs text-emerald-950 dark:text-emerald-200 font-medium select-none">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
             <strong className="font-bold">Datos completos confirmados por el backend.</strong>
-            <span className="hidden sm:inline text-emerald-800">· Documento preliminar preparado (entrega oficial formal pendiente)</span>
+            <span className="hidden sm:inline text-emerald-800 dark:text-emerald-300">· Documento preliminar preparado (entrega oficial formal pendiente)</span>
           </div>
-          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-200 text-emerald-950 uppercase tracking-wider shrink-0">
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-200 dark:bg-emerald-900/60 text-emerald-950 dark:text-emerald-200 uppercase tracking-wider shrink-0">
             Completo / No Entregado
           </span>
         </div>

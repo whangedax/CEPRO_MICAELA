@@ -308,11 +308,11 @@ export const LoginPage: React.FC = () => {
             {/* Mensaje de Error de Autenticación */}
             {error && (
               <div
-                className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-[13px] flex items-start gap-3 animate-fade-in"
+                className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-200 text-[13px] flex items-start gap-3 animate-fade-in"
                 role="alert"
               >
                 <svg
-                  className="w-5 h-5 text-rose-600 shrink-0 mt-0.5"
+                  className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

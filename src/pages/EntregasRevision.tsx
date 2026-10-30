@@ -391,34 +391,34 @@ export const EntregasRevision: React.FC = () => {
     switch (status) {
       case 'ENTREGADO':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-            <ClockIcon className="w-3.5 h-3.5 text-amber-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60">
+            <ClockIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             Entregado · Pendiente
           </span>
         );
       case 'RECIBIDO':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200">
-            <CheckCircleIcon className="w-3.5 h-3.5 text-sky-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/60">
+            <CheckCircleIcon className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
             Recibido Conforme
           </span>
         );
       case 'OBSERVADO':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200">
-            <AlertCircleIcon className="w-3.5 h-3.5 text-rose-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/60">
+            <AlertCircleIcon className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
             Observado
           </span>
         );
       case 'REVISADO':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-            <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60">
+            <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             Revisado Oficial
           </span>
         );
       default:
-        return <span className="text-xs text-slate-500">{status}</span>;
+        return <span className="text-xs text-slate-500 dark:text-slate-400">{status}</span>;
     }
   };
 
@@ -481,14 +481,14 @@ export const EntregasRevision: React.FC = () => {
 
       {/* Notificaciones */}
       {errorMsg && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-start justify-between gap-3 animate-fadeIn">
+        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-200 text-sm flex items-start justify-between gap-3 animate-fadeIn">
           <div className="flex items-center gap-2">
-            <AlertCircleIcon className="w-5 h-5 text-rose-600 shrink-0" />
+            <AlertCircleIcon className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
             <span>{errorMsg}</span>
           </div>
           <button
             onClick={() => setErrorMsg(null)}
-            className="text-rose-600 hover:text-rose-800 text-xs font-bold shrink-0"
+            className="text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-200 text-xs font-bold shrink-0"
           >
             Cerrar
           </button>
@@ -496,14 +496,14 @@ export const EntregasRevision: React.FC = () => {
       )}
 
       {successMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-start justify-between gap-3 animate-fadeIn">
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-200 text-sm flex items-start justify-between gap-3 animate-fadeIn">
           <div className="flex items-center gap-2">
-            <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0" />
+            <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{successMsg}</span>
           </div>
           <button
             onClick={() => setSuccessMsg(null)}
-            className="text-emerald-600 hover:text-emerald-800 text-xs font-bold shrink-0"
+            className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-200 text-xs font-bold shrink-0"
           >
             Cerrar
           </button>
@@ -744,7 +744,7 @@ export const EntregasRevision: React.FC = () => {
                           className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 ${
                             preflightData.preflight.complete
                               ? 'bg-[#13594A] text-white hover:bg-[#0D3E34]'
-                              : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                              : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none dark:bg-[#182220] dark:text-slate-600 dark:border dark:border-[#263834]'
                           }`}
                           title={
                             preflightData.preflight.complete

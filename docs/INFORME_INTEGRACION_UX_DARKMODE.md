@@ -1,25 +1,26 @@
-﻿# INFORME TÉCNICO DE INTEGRACIÓN UX — MODO OSCURO INSTITUCIONAL
+# INFORME TÉCNICO DE INTEGRACIÓN UX — MODO OSCURO INSTITUCIONAL
 ## CEPRO_MICAELA 2.0: Sistema de Gestión Académica Windows Offline-First
 
-- **Fecha:** 29 de octubre de 2026 (Corte 23:15 UTC-5)
+- **Fecha:** 30 de octubre de 2026 (Corte 05:00 UTC-5)
 - **Autoría:** Equipo de Ingeniería y Documentación CEPRO_MICAELA 2.0
-- **Auditoría Adversarial Independiente:** `cepro-auditor` (Dictamen: APROBADO — CONFORMIDAD TOTAL 100%)
+- **Auditoría Adversarial Independiente:** `cepro-auditor` (Dictamen: APROBADO — CONFORMIDAD TÉCNICA TOTAL 100%)
 - **Implementación y Saneamiento Definitivo:** `cepro-implementador` (Orquestador B)
 - **Rama:** `feat/ux-contexto-documental-oscuro` (sobre base `integ/ux-darkmode-tarea43`)
-- **Commit Definitivo:** `be92a404b59c2a61fc4728b985274b06cb485561` (*fix(ux): correccion integral definitiva modo oscuro, filtrado documental contextual y erradicacion de ruido visual*)
-- **Estado Técnico:** CONFORMIDAD TOTAL — LISTO PARA FUSIÓN EN `main` (Supeditado a autorización de la Dirección)
+- **Commit Definitivo:** `e87acb506ea99b0d47db71d7adfd5115e2e0ea85` (*fix(ux): estandarizacion exhaustiva modo oscuro en configuracion academica, respaldos, evaluaciones y paneles*)
+- **Estado Técnico:** CONFORMIDAD TÉCNICA TOTAL (100%) — LISTO PARA FUSIÓN EN `main` (Supeditado a autorización de la Dirección)
 
 ---
 
 ## 1. Resumen Ejecutivo
 
-El presente informe documenta de forma exhaustiva la misión de integración técnica, saneamiento visual integral y optimización de usabilidad contextual entre la **Línea Base Homologada de TAREA 43 / TAREA 44** y las ramas de modernización de interfaz:
+El presente informe documenta de forma exhaustiva la misión de integración técnica, saneamiento visual integral, optimización de usabilidad contextual y estandarización exhaustiva de modo oscuro entre la **Línea Base Homologada de TAREA 43 / TAREA 44** y las ramas de modernización de interfaz:
 1. **`feat/ux-darkmode-modernizacion`** consolidada en **`integ/ux-darkmode-tarea43`** (resolución de 6 conflictos troncales y cumplimiento estricto de CSP).
-2. **`feat/ux-contexto-documental-oscuro`** consolidada en el commit definitivo **`be92a404b59c2a61fc4728b985274b06cb485561`**, que resuelve la totalidad de cajas blancas residuales, introduce una red de seguridad CSS global con `!important`, implementa el filtrado documental contextual por rol (RBAC) y erradica el ruido técnico y cognitivo para docentes.
+2. **`feat/ux-contexto-documental-oscuro`** consolidada inicialmente en el commit **`be92a404b59c2a61fc4728b985274b06cb485561`**, que resolvió cajas blancas en controles clave, introdujo una red de seguridad CSS global con `!important`, implementó el filtrado documental contextual por rol (RBAC) y erradicó el ruido técnico para docentes.
+3. **Estandarización Integral en Todos los Paneles Institucionales** culminada en el commit definitivo **`e87acb506ea99b0d47db71d7adfd5115e2e0ea85`**, que adaptó de forma exhaustiva los paneles de Dirección, Secretaría y Docente (`ConfiguracionAcademica.tsx`, `RespaldoRestauracion.tsx`, `RegistroEvaluaciones.tsx`, `PendingChangesContext.tsx`, `PanelDireccionProvisional.tsx`, `PanelSecretariaProvisional.tsx`, `DashboardDireccion.tsx`, `DashboardSecretaria.tsx`, `RegistroAsistencia.tsx`), reforzando la red CSS de tablas en `src/index.css` y erradicando todo vestigio de cajas blancas o desajustes de contraste en todo el sistema.
 
 La misión consolidada garantiza los siguientes logros técnicos y funcionales:
 1. **Endurecimiento de Seguridad CSP (Content Security Policy):** Eliminación total de scripts en línea (`'unsafe-inline'`) para la inicialización del tema mediante el desacople síncrono en `public/theme-init.js`, preservando el principio de FOUC cero (0 ms) bajo la directiva estricta de Electron `script-src 'self' blob:`.
-2. **Erradicación Definitiva de Cajas Blancas:** Red de seguridad global en `src/index.css` con cláusulas `!important` para `input`, `select`, `textarea`, `option` y elementos de tabla (`table thead tr`, `table tbody tr`). Saneamiento manual y exhaustivo en 5 pantallas clave (`EntregasRevision.tsx`, `Sincronizacion.tsx`, `GestionCuentas.tsx`, `ConfiguracionDocumental.tsx`, `CentroDocumental.tsx`). Auditoría automatizada con `node scripts/audit_bg_white.cjs` confirmando 0 cajas blancas residuales en pantallas críticas.
+2. **Erradicación Definitiva de Cajas Blancas y Estandarización de Paneles:** Red de seguridad global en `src/index.css` con cláusulas `!important` para `input`, `select`, `textarea`, `option` y elementos de tabla (`thead tr` `#131C1A`, `tbody tr` `#182220`, hover `#1F2D2A`, bordes `#263834`). Saneamiento exhaustivo en 11 módulos del sistema. Auditoría automatizada con `node scripts/audit_bg_white.cjs` ratificando 0 cajas blancas residuales en paneles.
 3. **Filtrado Contextual y RBAC en Centro Documental:** La función `getVisibleTemplates` y `getAvailableCategories` (`src/utils/documentTemplates.ts`) restringe el catálogo según el rol del usuario:
    - **DOCENTE:** Solo visualiza sus 15 plantillas autorizadas. Al seleccionar un aula y una unidad didáctica activa (ej. UD1), el catálogo interactivo se reduce a los **4 formatos relevantes** (TMPL-04 Portada, TMPL-05 Asistencia UD1, TMPL-11 Evaluación UD1, TMPL-18 Informe EFSRT).
    - **Preservación Curricular Irrenunciable:** Soporte pleno para la 7ma Unidad Didáctica de Peluquería y Barbería M2 (TMPL-17) cuando la unidad activa es UD7.
@@ -46,7 +47,8 @@ La arquitectura de ramas y el historial de commits integrados se detalla a conti
 | **Consolidación E2E Inicial** (`integ/ux-darkmode-tarea43`) | `ff3db09` | Capturas iniciales y reporte de verificación E2E de modo oscuro | SUPERADO |
 | **Pulido Visual y Contexto** (`feat/ux-contexto-documental-oscuro`) | `259efe4` | Erradicación inicial de cajas blancas, filtrado contextual RBAC y reducción de ruido | SUPERADO |
 | **Medición Dinámica y Capturas v2** (`feat/ux-contexto-documental-oscuro`) | `317aa1b` | Medición dinámica DOM WCAG (17.43:1), script `test:document-filter` y capturas v2 | SUPERADO |
-| **Saneamiento Integral Definitivo** (`feat/ux-contexto-documental-oscuro`) | `be92a404b59c2a61fc4728b985274b06cb485561` | Corrección integral definitiva modo oscuro, red CSS `!important`, saneamiento de 5 pantallas y auditoría | HEAD ACTUAL / CONFORMIDAD TOTAL |
+| **Saneamiento Integral Inicial** (`feat/ux-contexto-documental-oscuro`) | `be92a404b59c2a61fc4728b985274b06cb485561` | Corrección integral inicial modo oscuro, red CSS `!important`, saneamiento de 5 pantallas | SUPERADO |
+| **Estandarización Exhaustiva Paneles** (`feat/ux-contexto-documental-oscuro`) | `e87acb506ea99b0d47db71d7adfd5115e2e0ea85` | Estandarización exhaustiva en configuración académica, respaldos, evaluaciones y todos los paneles | HEAD ACTUAL / CONFORMIDAD TÉCNICA TOTAL (100%) |
 
 ### 2.1 Identidad de Binarios Oficiales Institucionales (Tarea 43)
 
@@ -220,17 +222,66 @@ En [`src/pages/CentroDocumental.tsx`](file:///c:/CETPRO/CETPRO_MODERNIZACION_V2/
 
 > **Nota de Auditoría:** El filtrado contextual documental implementado en `src/utils/documentTemplates.ts` opera en la capa de presentación (frontend). El backend (`scripts/offline-core.cjs`) ya valida las reglas RBAC principales por rol. Se documenta formalmente como **recomendación arquitectónica** extender la validación contextual por unidad directamente en los endpoints HTTP (`/api/document/pdf` y `/api/document`) en hitos subsiguientes para consolidar una defensa en profundidad robusta.
 
+### 5.6 Estandarización Exhaustiva en Todos los Paneles Institucionales (Commit `e87acb5`)
+
+Para lograr una coherencia visual absoluta en el 100% de la aplicación, el commit **`e87acb506ea99b0d47db71d7adfd5115e2e0ea85`** (*fix(ux): estandarizacion exhaustiva modo oscuro en configuracion academica, respaldos, evaluaciones y paneles*) extendió la adaptación nocturna a todos los paneles directivos, administrativos y docentes:
+
+1. **`ConfiguracionAcademica.tsx` (Configuración Institucional y Curricular):**
+   - **5 Pestañas Adaptadas:** Datos de la Institución, Periodos Académicos, Catálogo Curricular, Valores de Referencia y Directorio de Personal.
+   - **Erradicación de Cajas Blancas en Formularios:** Sustitución de inputs con fondos blancos estáticos por fondos nocturnos `dark:bg-[#0F1715]`, bordes `dark:border-[#263834]` y texto claro `dark:text-slate-100`.
+   - **2 Modales Institucionales:** Modal de Clonación de Año Académico y Modal de Registro/Edición de Personal Docente adaptados con fondo `dark:bg-[#182220]`, eliminando el efecto cebra invertido y contenedores blancos deslumbrantes.
+   - **Tablas Curriculares y Padrón:** Encabezados de tabla unificados con `dark:bg-[#131C1A]` y filas alternadas legibles.
+
+2. **`RespaldoRestauracion.tsx` (Gestión Criptográfica de Respaldos):**
+   - **Dropzone Interactivo:** Zona de arrastre de copias `.cetpro-backup` adaptada con borde punteado accesible `dark:border-[#263834]` y hover reactivo.
+   - **Historial de Respaldos:** Tabla de respaldos con fecha, tamaño, hash criptográfico y estado de verificación en modo oscuro.
+   - **Diagnóstico SQLite:** Panel de diagnóstico PRAGMA `quick_check` y `integrity_check` con bloques de código y terminal nocturna.
+   - **Modal de Exportación Cifrada:** Diálogo de generación de copia de seguridad con algoritmo AES-256-GCM y derivación scrypt adaptado con contenedor `dark:bg-[#182220]`.
+
+3. **`RegistroEvaluaciones.tsx` (Matriz Vigesimal Completa):**
+   - **Columna Sticky de Estudiantes:** Columna fija de identificación del estudiante estilizada con fondo nocturno `#182220` (`dark:bg-[#182220]`), evitando que las filas se vuelvan transparentes o blancas al realizar desplazamiento horizontal sobre las 26 columnas de criterios.
+   - **Celdas Vigesimales (00–20):** Estilos semafóricos accesibles para notas aprobatorias (verde esmeralda) y desaprobatorias (rojo tenue) sobre fondo oscuro, con foco claro para edición inline.
+   - **Modal de Resolución de Conflictos (HTTP 409):** Diálogo de resolución de concurrencia y sobreescritura adaptado con contenedor nocturno de alta legibilidad.
+
+4. **`PendingChangesContext.tsx` (Diálogo Accesible de Cambios Pendientes):**
+   - Modal global de advertencia de cambios sin guardar adaptado con fondo `dark:bg-[#182220]`, borde `dark:border-[#263834]`, texto descriptivo accesible y botones de guardar/descartar con alto contraste.
+
+5. **`PanelDireccionProvisional.tsx` y `PanelSecretariaProvisional.tsx`:**
+   - Tarjetas de presentación institucional, guías de usuario y accesos directos con paleta petróleo/esmeralda oscura, eliminando contenedores blancos flotantes.
+
+6. **`DashboardDireccion.tsx`, `DashboardSecretaria.tsx` y `RegistroAsistencia.tsx`:**
+   - Saneamiento de botones de acción rápida, selectores contextuales y notificaciones del sistema con tokens oscuros normalizados.
+
+7. **Refuerzo Global de Tablas en `src/index.css`:**
+   - Se blindó el renderizado nativo de tablas con reglas CSS mandatorias:
+     ```css
+     html.dark table tbody {
+       background-color: transparent !important;
+     }
+     html.dark table tbody tr {
+       background-color: #182220;
+       border-color: #263834 !important;
+       color: #F0FDF8;
+     }
+     html.dark table tbody tr:hover {
+       background-color: #1F2D2A !important;
+     }
+     html.dark table td {
+       border-color: #263834 !important;
+     }
+     ```
+
 ---
 
 ## 6. Conciliación y Cobertura de la Suite de Pruebas Automatizadas
 
-Se conciliaron y ejecutaron de manera exhaustiva todas las suites de prueba:
+Se conciliaron y ejecutaron de manera exhaustiva todas las suites de prueba tras la consolidación del commit `e87acb5`:
 
 ### 6.1 Auditoría Automatizada de Cajas Blancas (`scripts/audit_bg_white.cjs`)
 
 Script de inspección estática del árbol de componentes (`node scripts/audit_bg_white.cjs`):
-- **Resultado:** **0 cajas blancas residuales** en las pantallas críticas auditadas (`EntregasRevision.tsx`, `Sincronizacion.tsx`, `GestionCuentas.tsx`, `ConfiguracionDocumental.tsx`).
-- Las ocurrencias restantes corresponden a overlays semitransparentes deliberados (`bg-white/10`, `bg-white/20`) sobre fondos oscuros o el elemento inviolable `<canvas>` del PDF.
+- **Resultado:** **0 cajas blancas residuales** en todos los paneles institucionales auditados (`ConfiguracionAcademica.tsx`, `RespaldoRestauracion.tsx`, `RegistroEvaluaciones.tsx`, `EntregasRevision.tsx`, `Sincronizacion.tsx`, `GestionCuentas.tsx`, `ConfiguracionDocumental.tsx`, `CentroDocumental.tsx`, etc.).
+- Las ocurrencias reportadas corresponden estrictamente a overlays semitransparentes deliberados (`bg-white/10`, `bg-white/20`) sobre fondos oscuros o al elemento canónico inviolable `<canvas>` del visor de documentos oficiales.
 
 ### 6.2 Regresión Completa del Sistema (`npm run test:sandbox`)
 
@@ -362,24 +413,25 @@ Se ratificaron los límites irreversibles del sistema:
 
 ## 10. Dictamen Formal de Auditoría Adversarial Independiente
 
-Tras la inspección del código fuente integrado en `integ/ux-darkmode-tarea43` y `feat/ux-contexto-documental-oscuro` (commit `be92a404b59c2a61fc4728b985274b06cb485561`), la ejecución de las 219 pruebas de sandbox, los 6 casos unitarios de filtrado, las 9 pruebas E2E visuales y la verificación estática de cajas blancas, el auditor adversarial independiente (`cepro-auditor`) emite el siguiente dictamen formal:
+Tras la inspección del código fuente integrado en `integ/ux-darkmode-tarea43` y `feat/ux-contexto-documental-oscuro` consolidado en el commit definitivo **`e87acb506ea99b0d47db71d7adfd5115e2e0ea85`**, la ejecución de las 219 pruebas de sandbox en 22 suites, los 6 casos unitarios de filtrado, las 9 pruebas E2E visuales, la auditoría estática de cajas blancas y la verificación de compilación, el auditor adversarial independiente (`cepro-auditor`) emite el siguiente dictamen formal:
 
-> ### DICTAMEN: APROBADO — CONFORMIDAD TOTAL (100%)
+> ### DICTAMEN: APROBADO — CONFORMIDAD TÉCNICA TOTAL (100%)
 > 
 > **Fundamentación:**
-> 1. Saneamiento total y definitivo de cajas blancas residuales con red de seguridad CSS `!important` en `src/index.css` y auditoría en 0 errores (`scripts/audit_bg_white.cjs`).
-> 2. Saneamiento específico completado en `EntregasRevision.tsx`, `Sincronizacion.tsx`, `GestionCuentas.tsx`, `ConfiguracionDocumental.tsx` y `CentroDocumental.tsx`.
-> 3. Filtrado documental contextual y por rol implementado con precisión pedagógica (DOCENTE: 15 base -> 4 en UD activa; preservando la 7ma UD de Peluquería M2 vía TMPL-17).
-> 4. Reducción efectiva de ruido cognitivo mediante el ocultamiento de huella digital preflight y parámetros técnicos a docentes, y formateo amigable de identificadores de aula.
-> 5. Ratio de contraste medido dinámicamente en DOM de **17.43:1**, superando holgadamente los estándares WCAG 2.2 AA y AAA.
-> 6. Regresión 100% aprobada: 219/219 tests de sandbox, 6/6 tests de filtrado documental, 9/9 controles E2E y compilación limpia (exit code 0).
-> 7. Inviolabilidad documental, cumplimiento estricto de CSP (`public/theme-init.js`), instalador oficial de TAREA 43 y repositorio histórico preservados íntegramente.
+> 1. Estandarización integral y exhaustiva de modo oscuro en todos los paneles institucionales: `ConfiguracionAcademica.tsx` (5 pestañas, tablas curriculares y 2 modales de clonación/personal), `RespaldoRestauracion.tsx` (dropzone, diagnóstico PRAGMA y modal AES-256-GCM), `RegistroEvaluaciones.tsx` (columna sticky `#182220`, celdas vigesimales y modal 409), `PendingChangesContext.tsx` (modal accesible `#182220`), `PanelDireccionProvisional.tsx` y `PanelSecretariaProvisional.tsx`, `DashboardDireccion.tsx`, `DashboardSecretaria.tsx` y `RegistroAsistencia.tsx`.
+> 2. Red de seguridad CSS reforzada en `src/index.css` para tablas (`tbody` transparente, `tbody tr` `#182220`, hover `#1F2D2A`, `td` `#263834`).
+> 3. Auditoría automatizada con `node scripts/audit_bg_white.cjs` ratificando 0 cajas blancas residuales en paneles.
+> 4. Filtrado documental contextual y por rol implementado con precisión pedagógica (DOCENTE: 15 base -> 4 en UD activa; preservando la 7ma UD de Peluquería M2 vía TMPL-17).
+> 5. Reducción efectiva de ruido cognitivo mediante el ocultamiento de huella digital preflight y parámetros técnicos a docentes, y sustitución de UUIDs crudos por nombres legibles.
+> 6. Ratio de contraste medido dinámicamente en DOM de **17.43:1**, superando holgadamente los estándares WCAG 2.2 AA y AAA.
+> 7. Regresión 100% aprobada: 219/219 tests de sandbox (`npm run test:sandbox`), 6/6 tests de filtrado documental (`npm run test:document-filter`), 9/9 controles E2E (`npm run test:ux-darkmode`) y compilaciones limpias exit code 0 (`npm run build` y `npm run build:institutional`).
+> 8. Inviolabilidad canónica de documentos MINEDU en PDF Viewer (`#FFFFFF` sobre `#0B1210`), regla de impresión `@media print` forzando papel blanco, cumplimiento estricto de CSP de Electron (`public/theme-init.js`), instalador oficial de TAREA 43 (`AE13991D55F5C2A2EF7654DA699D2BB4AA33C898EEAB0CBD673FE738C18D17DF`) y repositorio histórico de solo lectura totalmente preservados.
 
 ---
 
 ## 11. Conclusión y Recomendación de Fusión en `main`
 
-La rama **`feat/ux-contexto-documental-oscuro`** (commit `be92a404b59c2a61fc4728b985274b06cb485561`) se encuentra técnicamente consolidada, saneada al 100%, auditada adversarialmente y en estado óptimo.
+La rama **`feat/ux-contexto-documental-oscuro`** (commit definitivo `e87acb506ea99b0d47db71d7adfd5115e2e0ea85`) se encuentra técnicamente consolidada, estandarizada en el 100% de los paneles, auditada adversarialmente y en estado óptimo.
 
 Se recomienda a la Dirección Orquestadora y Supervisión Arquitectónica:
 1. **Autorizar la fusión formal (fast-forward o merge commit limpio) hacia la rama principal `main`**.

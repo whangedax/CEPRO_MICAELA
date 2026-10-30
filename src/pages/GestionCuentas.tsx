@@ -553,7 +553,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
         {/* Acciones de cabecera */}
         <div className="flex items-center gap-2.5">
           {lastUpdatedTime && (
-            <span className="text-[11px] font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">
+            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] px-2.5 py-1 rounded-lg">
               Actualizado: {lastUpdatedTime}
             </span>
           )}
@@ -586,16 +586,16 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
       {errorMsg && (
         <div
           role="alert"
-          className="mb-4 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 text-xs font-medium flex items-center justify-between"
+          className="mb-4 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-200 text-xs font-medium flex items-center justify-between"
         >
           <div className="flex items-center gap-2">
-            <AlertCircleIcon className="w-4 h-4 text-red-600 shrink-0" />
+            <AlertCircleIcon className="w-4 h-4 text-red-600 dark:text-rose-400 shrink-0" />
             <span>{errorMsg}</span>
           </div>
           <button
             type="button"
             onClick={() => setErrorMsg(null)}
-            className="text-red-700 hover:text-red-900 font-bold ml-2"
+            className="text-red-700 hover:text-red-900 dark:text-rose-400 dark:hover:text-rose-200 font-bold ml-2"
           >
             ✕
           </button>
@@ -605,10 +605,10 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
       {conflictMsg && (
         <div
           role="alert"
-          className="mb-4 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-950 text-xs font-medium flex items-center justify-between"
+          className="mb-4 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-950 dark:bg-amber-950/40 dark:border-amber-800/60 dark:text-amber-200 text-xs font-medium flex items-center justify-between"
         >
           <div className="flex items-center gap-2">
-            <AlertCircleIcon className="w-4 h-4 text-amber-700 shrink-0" />
+            <AlertCircleIcon className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
             <div>
               <p className="font-bold">Conflicto de concurrencia detectado (HTTP 409)</p>
               <p>{conflictMsg}</p>
@@ -617,7 +617,7 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
           <button
             type="button"
             onClick={() => loadData(true)}
-            className="px-3 py-1.5 rounded-lg bg-amber-600 text-white font-semibold hover:bg-amber-700 transition-colors shrink-0"
+            className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-600 text-white font-semibold transition-colors shrink-0"
           >
             Recargar Datos
           </button>
@@ -627,16 +627,16 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
       {successMsg && (
         <div
           role="status"
-          className="mb-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium flex items-center justify-between"
+          className="mb-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-200 text-xs font-medium flex items-center justify-between"
         >
           <div className="flex items-center gap-2">
-            <CheckCircleIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+            <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{successMsg}</span>
           </div>
           <button
             type="button"
             onClick={() => setSuccessMsg(null)}
-            className="text-emerald-700 hover:text-emerald-900 font-bold ml-2"
+            className="text-emerald-700 hover:text-emerald-900 dark:text-emerald-400 dark:hover:text-emerald-200 font-bold ml-2"
           >
             ✕
           </button>
@@ -705,20 +705,20 @@ export const GestionCuentas: React.FC<GestionCuentasProps> = ({ onNavigate }) =>
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E6F4F1] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] border border-[#13594A]/20 dark:border-[#208B73]">
                       DOCENTE
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60">
                       ACTIVO
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 font-mono mt-0.5">@{currentUser?.username}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">@{currentUser?.username}</p>
                   {currentUser?.description && (
-                    <p className="text-xs text-slate-600 mt-1 max-w-xl">{currentUser.description}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-xl">{currentUser.description}</p>
                   )}
                 </div>
               </div>
 
               <div className="text-right">
-                <span className="text-[11px] text-slate-400 block">Versión de cuenta</span>
-                <span className="font-mono text-xs font-semibold text-slate-700">
+                <span className="text-[11px] text-slate-400 dark:text-slate-500 block">Versión de cuenta</span>
+                <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
                   v{currentUser?.version || 1}
                 </span>
               </div>

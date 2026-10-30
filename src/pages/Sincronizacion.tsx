@@ -479,7 +479,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
               Intercambio seguro de datos entre computadoras institucionales sin necesidad de internet.
             </p>
             <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 {systemStatus?.authority ? 'Equipo Institucional (Dirección)' : 'Equipo de Trabajo Vinculado'}
               </span>
@@ -489,7 +489,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                 </span>
               )}
               {dashboardData?.pending !== undefined && dashboardData.pending > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                   {dashboardData.pending} {dashboardData.pending === 1 ? 'cambio pendiente' : 'cambios pendientes'} por entregar
                 </span>
               )}
@@ -500,7 +500,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
         <button
           onClick={loadData}
           disabled={loadingDashboard}
-          className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-[#131C1A] hover:bg-slate-100 dark:hover:bg-[#1F2D2A] border border-slate-200 dark:border-[#263834] rounded-lg transition-colors disabled:opacity-50"
           title="Actualizar estado"
         >
           <RefreshIcon className={`w-4 h-4 ${loadingDashboard ? 'animate-spin' : ''}`} />
@@ -514,8 +514,8 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
           onClick={() => setActiveTab('exchange')}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
             activeTab === 'exchange'
-              ? 'border-[#13594A] text-[#13594A]'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
+              ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
           }`}
         >
           <UsbIcon className="w-4 h-4" />
@@ -527,14 +527,14 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
             onClick={() => setActiveTab('devices')}
             className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
               activeTab === 'devices'
-                ? 'border-[#13594A] text-[#13594A]'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
             }`}
           >
             <LaptopIcon className="w-4 h-4" />
             <span>Equipos Vinculados</span>
             {dashboardData?.devices && dashboardData.devices.length > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-700">
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
                 {dashboardData.devices.length}
               </span>
             )}
@@ -546,8 +546,8 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
             onClick={() => setActiveTab('conflicts')}
             className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
               activeTab === 'conflicts'
-                ? 'border-[#13594A] text-[#13594A]'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
             }`}
           >
             <AlertCircleIcon className="w-4 h-4 text-amber-500" />
@@ -955,23 +955,23 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
               {/* Tarjeta de vista previa / verificación */}
               {previewReport && (
-                <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200 pb-3">
+                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200 dark:border-[#263834] pb-3">
                     <div className="flex items-center gap-2">
                       <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0" />
-                      <h4 className="font-bold text-sm text-slate-900">
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-[#F0FDF8]">
                         {previewReport.duplicatePackage
                           ? 'Esta actualización ya fue recibida anteriormente'
                           : 'Este archivo ha sido verificado con éxito'}
                       </h4>
                     </div>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
                       Fecha de exportación: <strong>{formatDate(previewReport.createdAt)}</strong>
                     </span>
                   </div>
 
                   {previewReport.duplicatePackage ? (
-                    <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs">
                       <strong>Aviso:</strong> Esta computadora ya tiene aplicada esta actualización exacta. No necesitas
                       recibirla nuevamente.
                     </div>
@@ -1022,7 +1022,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
                       {/* Diferencias o pendientes */}
                       {Boolean((previewReport.conflicts && previewReport.conflicts > 0) || (previewReport.pending && previewReport.pending > 0)) && (
-                        <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 space-y-1">
+                        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 space-y-1">
                           <div className="font-bold">
                             Atención: {previewReport.conflicts || 0} diferencias y {previewReport.pending || 0} datos pendientes.
                           </div>
@@ -1033,8 +1033,8 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                         </div>
                       )}
 
-                      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200">
-                        <span className="text-xs text-slate-500">
+                      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-[#263834]">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
                           * Hasta este momento <strong>no se ha modificado</strong> tu base de datos SQLite.
                         </span>
 
@@ -1064,12 +1064,12 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
               {/* Éxito tras aplicar */}
               {importSuccess && (
-                <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-2">
+                <div className="p-5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 space-y-2">
                   <div className="flex items-center gap-2">
                     <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0" />
                     <h4 className="font-bold text-sm">¡Actualización recibida con éxito en esta computadora!</h4>
                   </div>
-                  <p className="text-xs text-emerald-800">
+                  <p className="text-xs text-emerald-800 dark:text-emerald-300">
                     Se creó una copia de seguridad automática (<code>antes-sincronizar</code>) antes de modificar los datos.
                     Se incorporaron <strong>{importSuccess.recordsToAdd ?? importSuccess.newRecords ?? 0}</strong> datos nuevos y{' '}
                     <strong>{importSuccess.recordsToUpdate ?? importSuccess.updates ?? 0}</strong> actualizaciones.
@@ -1210,7 +1210,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
               </div>
 
               {provisionResult && (
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs space-y-1">
+                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs space-y-1">
                   <strong>¡Equipo autorizado con éxito!</strong>
                   <p>
                     Entrega el archivo <code>AUTORIZACION_VINCULACION.json</code> al usuario para que lo aplique en su computadora.
@@ -1223,14 +1223,14 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
           {/* Generar solicitud si este no es el hub */}
           {!systemStatus?.authority && (
             <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-4">
-              <h3 className="text-sm font-bold text-[#172B28]">Solicitar vinculación de este equipo</h3>
-              <p className="text-xs text-slate-500">
+              <h3 className="text-sm font-bold text-[#172B28] dark:text-[#F0FDF8]">Solicitar vinculación de este equipo</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Genera la clave pública de este equipo para entregarla a Dirección en un USB.
               </p>
               <button
                 type="button"
                 onClick={handleGenerateMyDeviceRequest}
-                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-[#131C1A] hover:bg-slate-200 dark:hover:bg-[#1F2D2A] border border-slate-300 dark:border-[#263834] rounded-lg transition-colors"
               >
                 <DownloadIcon className="w-4 h-4" />
                 <span>Generar y descargar solicitud de vinculación</span>

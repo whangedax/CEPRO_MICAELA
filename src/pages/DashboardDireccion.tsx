@@ -179,29 +179,29 @@ export const DashboardDireccion: React.FC<DashboardDireccionProps> = ({ onNaviga
     switch (status) {
       case 'ENTREGADO':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-            <ClockIcon className="w-3 h-3 text-amber-600" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+            <ClockIcon className="w-3 h-3 text-amber-600 dark:text-amber-400" />
             Entregado · Pendiente
           </span>
         );
       case 'RECIBIDO':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200">
-            <CheckCircleIcon className="w-3 h-3 text-sky-600" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60">
+            <CheckCircleIcon className="w-3 h-3 text-sky-600 dark:text-sky-400" />
             Recibido Conforme
           </span>
         );
       case 'OBSERVADO':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200">
-            <AlertCircleIcon className="w-3 h-3 text-rose-600" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60">
+            <AlertCircleIcon className="w-3 h-3 text-rose-600 dark:text-rose-400" />
             Observado
           </span>
         );
       case 'REVISADO':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-            <CheckCircleIcon className="w-3 h-3 text-emerald-600" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+            <CheckCircleIcon className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
             Revisado Oficial
           </span>
         );

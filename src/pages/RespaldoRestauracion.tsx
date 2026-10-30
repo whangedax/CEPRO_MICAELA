@@ -41,15 +41,15 @@ interface RespaldoRestauracionProps {
 type ActiveTab = 'list' | 'restore' | 'health';
 
 const LABEL_DESCRIPTIONS: Record<string, { title: string; color: string }> = {
-  'manual': { title: 'Respaldo Manual', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-  'automatico-diario': { title: 'Automático Diario', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  'antes-sincronizar': { title: 'Previo a Sincronización USB', color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
-  'antes-resolver-conflicto': { title: 'Previo a Resolver Conflicto', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  'antes-nuevo-a_o': { title: 'Previo a Clonar Año', color: 'bg-purple-50 text-purple-700 border-purple-200' },
-  'antes-nuevo-ano': { title: 'Previo a Clonar Año', color: 'bg-purple-50 text-purple-700 border-purple-200' },
-  'antes-restaurar': { title: 'Preventivo de Restauración', color: 'bg-rose-50 text-rose-700 border-rose-200' },
-  'antes-migrar': { title: 'Previo a Migración', color: 'bg-slate-50 text-slate-700 border-slate-200' },
-  'cifrado-export': { title: 'Cifrado Portátil (AES-256)', color: 'bg-emerald-50 text-emerald-800 border-emerald-300' },
+  'manual': { title: 'Respaldo Manual', color: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
+  'automatico-diario': { title: 'Automático Diario', color: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' },
+  'antes-sincronizar': { title: 'Previo a Sincronización USB', color: 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' },
+  'antes-resolver-conflicto': { title: 'Previo a Resolver Conflicto', color: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800' },
+  'antes-nuevo-a_o': { title: 'Previo a Clonar Año', color: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800' },
+  'antes-nuevo-ano': { title: 'Previo a Clonar Año', color: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800' },
+  'antes-restaurar': { title: 'Preventivo de Restauración', color: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800' },
+  'antes-migrar': { title: 'Previo a Migración', color: 'bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#263834]' },
+  'cifrado-export': { title: 'Cifrado Portátil (AES-256)', color: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800' },
 };
 
 function formatDate(isoString?: string | null): string {
@@ -388,7 +388,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
 
   if (!isDirector) {
     return (
-      <div className="p-8 text-center text-red-700 bg-red-50 rounded-2xl border border-red-200 m-6">
+      <div className="p-8 text-center text-red-700 dark:text-rose-300 bg-red-50 dark:bg-rose-950/40 rounded-2xl border border-red-200 dark:border-rose-800/60 m-6">
         <AlertCircleIcon className="w-8 h-8 mx-auto text-red-600 mb-2" />
         <h2 className="text-lg font-bold">Módulo Exclusivo de Dirección</h2>
         <p className="text-sm mt-1">
@@ -415,14 +415,14 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
               <span
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
                   healthLoading
-                    ? 'bg-slate-50 text-slate-600 border-slate-200'
+                    ? 'bg-slate-50 dark:bg-[#131C1A] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#263834]'
                     : healthError || !health
-                    ? 'bg-slate-100 text-slate-700 border-slate-300'
+                    ? 'bg-slate-100 dark:bg-[#182220] text-slate-700 dark:text-slate-300 border-slate-300 dark:border-[#263834]'
                     : health.healthy
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
                     : health.errors.length > 0
-                    ? 'bg-rose-50 text-rose-700 border-rose-200'
-                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                    ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                    : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
                 }`}
               >
                 <span
@@ -467,7 +467,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
         <button
           onClick={loadData}
           disabled={backupsLoading || healthLoading}
-          className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-[#131C1A] hover:bg-slate-100 dark:hover:bg-[#1F2D2A] border border-slate-200 dark:border-[#263834] rounded-lg transition-colors disabled:opacity-50"
           title="Actualizar datos"
         >
           <RefreshIcon className={`w-4 h-4 ${backupsLoading || healthLoading ? 'animate-spin' : ''}`} />
@@ -476,18 +476,18 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
       </div>
 
       {/* Selector de pestañas principales */}
-      <div className="flex border-b border-slate-200 gap-2">
+      <div className="flex border-b border-slate-200 dark:border-[#263834] gap-2">
         <button
           onClick={() => setActiveTab('list')}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
             activeTab === 'list'
-              ? 'border-[#13594A] text-[#13594A]'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
+              ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
           }`}
         >
           <BackupIcon className="w-4 h-4" />
           <span>Copias de Seguridad (Respaldos)</span>
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-700">
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
             {backupsLoading ? '...' : backups.length}
           </span>
         </button>
@@ -496,8 +496,8 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
           onClick={() => setActiveTab('restore')}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
             activeTab === 'restore'
-              ? 'border-[#13594A] text-[#13594A]'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
+              ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
           }`}
         >
           <UploadIcon className="w-4 h-4" />
@@ -508,8 +508,8 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
           onClick={() => setActiveTab('health')}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
             activeTab === 'health'
-              ? 'border-[#13594A] text-[#13594A]'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
+              ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
           }`}
         >
           <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
@@ -525,21 +525,21 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
           {/* Card: Generar Respaldo Inmediato */}
           <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm space-y-4 transition-colors">
             <h2 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Crear Respaldo Manual Inmediato</h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Genera una copia completa estructurada en formato JSON canónico con suma de verificación SHA-256 (checksum)
               en la carpeta privada del servicio. Incluye todos los registros académicos, configuraciones, usuarios y
               trazas de auditoría.
             </p>
 
             {createError && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+              <div className="p-3 rounded-lg bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-800 text-red-700 dark:text-rose-300 text-xs flex items-center gap-2">
                 <AlertCircleIcon className="w-4 h-4 shrink-0" />
                 <span>{createError}</span>
               </div>
             )}
 
             {createSuccess && (
-              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs space-y-1">
+              <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs space-y-1">
                 <div className="flex items-center gap-1.5 font-bold">
                   <CheckCircleIcon className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>¡Respaldo creado satisfactoriamente!</span>
@@ -890,12 +890,12 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
       {activeTab === 'restore' && (
         <div className="space-y-6">
           {/* Advertencia Crítica */}
-          <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 space-y-2">
+          <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 space-y-2">
             <div className="flex items-center gap-2">
               <AlertCircleIcon className="w-5 h-5 text-amber-600 shrink-0" />
               <h3 className="font-bold text-sm">Operación de Alto Impacto: Restauración de Base de Datos</h3>
             </div>
-            <p className="text-xs text-amber-800 leading-relaxed">
+            <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
               La restauración reemplaza el contenido actual de SQLite con los datos del respaldo seleccionado.
               Antes de aplicar cualquier modificación, el motor ejecuta automáticamente una copia de seguridad preventiva
               (<code>antes-restaurar</code>). Toda la operación se realiza dentro de una transacción atómica; si se detecta
@@ -904,7 +904,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
           </div>
 
           {restoreError && (
-            <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+            <div className="p-4 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-800 text-red-700 dark:text-rose-300 text-xs flex items-center gap-2">
               <AlertCircleIcon className="w-5 h-5 shrink-0 text-red-600" />
               <div>
                 <strong>Error en la restauración:</strong>
@@ -914,14 +914,14 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
           )}
 
           {restoreSuccess && (
-            <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs space-y-2">
+            <div className="p-5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs space-y-2">
               <div className="flex items-center gap-2 font-bold text-sm">
                 <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0" />
                 <span>¡Base de datos restaurada satisfactoriamente!</span>
               </div>
               <p>
                 Se creó una copia preventiva previa:{' '}
-                <code className="font-mono font-bold bg-emerald-100 px-1 py-0.5 rounded">
+                <code className="font-mono font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 px-1 py-0.5 rounded">
                   {restoreSuccess.previousCopy}
                 </code>
               </p>
@@ -1115,7 +1115,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h2 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Auditoría de Integridad SQLite</h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Evaluación en tiempo real de la consistencia física y lógica de la base de datos institucional.
                 </p>
               </div>
