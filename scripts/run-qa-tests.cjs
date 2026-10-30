@@ -38,6 +38,8 @@ const DEFAULT_TEST_SUITES = [
   'tests/synchronization-management.test.cjs',
   'tests/backup-restore-management.test.cjs',
   'tests/electron-and-encrypted-backup.test.cjs',
+  'tests/crit-41-01-security-interceptor.test.cjs',
+  'tests/institutional-bundle-clean.test.cjs',
 ];
 
 async function main() {

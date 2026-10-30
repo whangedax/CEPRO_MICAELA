@@ -21,6 +21,7 @@ import SelectUnitModal from '../components/academic/SelectUnitModal';
 import { CalendarIcon } from '../components/ui/Icons';
 import { NoticeModal } from '../components/ui/Modal/NoticeModal';
 import { WorkspaceGroupOption } from '../api/types';
+import { isInstitutional } from '../utils/appProfile';
 
 export const DashboardDocente: React.FC = () => {
   const { user } = useAuth();
@@ -49,6 +50,12 @@ export const DashboardDocente: React.FC = () => {
   const [isUnitModalOpen, setIsUnitModalOpen] = useState<boolean>(false);
 
   const handleActivityClick = (title: string, route: string, actionText: string) => {
+    if (isInstitutional()) {
+      if (route) {
+        window.location.hash = route;
+      }
+      return;
+    }
     setModalState({
       isOpen: true,
       title: `Actividad: ${title}`,
@@ -203,8 +210,8 @@ export const DashboardDocente: React.FC = () => {
             </span>
           </div>
 
-          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
-            DATOS DE PRUEBA · CONECTADO A SQLITE LOCAL
+          <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
+            {isInstitutional() ? 'SISTEMA ACADÉMICO INSTITUCIONAL · SQLITE LOCAL' : 'DATOS DE PRUEBA · CONECTADO A SQLITE LOCAL'}
           </span>
         </div>
 
@@ -290,7 +297,9 @@ export const DashboardDocente: React.FC = () => {
           </span>
           <span className="text-slate-400" aria-hidden="true">•</span>
           <span>
-            Terminal activa de uso exclusivo para docentes · Base de datos sintética local
+            {isInstitutional()
+              ? 'Terminal activa de uso exclusivo para docentes · Base de datos institucional local'
+              : 'Terminal activa de uso exclusivo para docentes · Base de datos sintética local'}
           </span>
         </div>
         <div className="inline-flex items-center gap-2 font-bold text-slate-700 uppercase tracking-wider text-[10px]">
@@ -300,14 +309,16 @@ export const DashboardDocente: React.FC = () => {
         </div>
       </footer>
 
-      {/* Modal demostrativo de actividades pedagógicas */}
-      <NoticeModal
-        isOpen={modalState.isOpen}
-        onClose={() => setModalState((prev) => ({ ...prev, isOpen: false }))}
-        title={modalState.title}
-        originalRoute={modalState.originalRoute}
-        actionName={modalState.actionName}
-      />
+      {/* Modal demostrativo de actividades pedagógicas (solo en modo desarrollo/QA) */}
+      {!__IS_INSTITUTIONAL__ && (
+        <NoticeModal
+          isOpen={modalState.isOpen}
+          onClose={() => setModalState((prev) => ({ ...prev, isOpen: false }))}
+          title={modalState.title}
+          originalRoute={modalState.originalRoute}
+          actionName={modalState.actionName}
+        />
+      )}
 
       {/* Modal oficial de selección de Unidad Didáctica para ingresar al aula */}
       <SelectUnitModal

@@ -1,10 +1,10 @@
 ; ==============================================================================
 ; CEPRO_MICAELA 2.0 — Script de Instalación Profesional Windows (Inno Setup 6)
-; Tarea 40 — Empaquetado, Seguridad, Actualización y Preservación de Datos
+; Tarea 41A — Eliminación de Fuga de Secreto (CRIT-41-01), CSP y Preservación de Datos
 ; ==============================================================================
 
 #define MyAppName "CEPRO_MICAELA 2.0"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.0.2"
 #define MyAppPublisher "CETPRO Micaela Bastidas"
 #define MyAppExeName "CEPRO_MICAELA_2.0.exe"
 #define MySourceDir "C:\CETPRO\CETPRO_MODERNIZACION_V2\release\CEPRO_MICAELA_2.0-win32-x64"
@@ -15,7 +15,7 @@
 AppId={{5E30B62E-CE91-4D82-BEBF-213E96A32011}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-AppVerName={#MyAppName} (Edición Institucional Windows Offline-First)
+AppVerName={#MyAppName} v{#MyAppVersion} (Edición Institucional Windows Offline-First — Seguridad Corregida)
 AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\CEPRO_MICAELA_2.0
 DefaultGroupName={#MyAppName}
@@ -34,7 +34,7 @@ CloseApplicationsFilter=CEPRO_MICAELA_2.0.exe
 RestartApplications=no
 ; Registro formal en Agregar o Quitar Programas de Windows
 UninstallDisplayIcon={app}\{#MyAppExeName}
-UninstallDisplayName={#MyAppName} — Sistema Académico Institucional
+UninstallDisplayName={#MyAppName} — Sistema Académico Institucional (v{#MyAppVersion})
 DisableProgramGroupPage=yes
 UsedUserAreasWarning=no
 WizardStyle=modern
@@ -58,11 +58,3 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
-
-; ==============================================================================
-; PRESERVACIÓN ESTRICTA DE DATOS INSTITUCIONALES (SECCIÓN 8 Y 17)
-; NOTA CRÍTICA: NO SE REGISTRA NINGUNA DIRECTIVA PARA ELIMINAR {userappdata}\CEPRO_MICAELA_2.0\data
-; Al desinstalar, Inno Setup retira exclusivamente los binarios de {app} y los accesos
-; directos, garantizando que SQLite, certificados, claves Ed25519 y respaldos queden
-; 100% INTACTOS para futuras reinstalaciones o auditorías.
-; ==============================================================================

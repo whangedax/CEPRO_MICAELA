@@ -585,7 +585,7 @@ export const CentroDocumental: React.FC = () => {
               Aula: {currentGroup?.name || 'Aula Asignada'} · Modo {activeWorkspace.mode}
               {activeWorkspace.unit ? ` (${activeWorkspace.unit})` : ''}
             </span>
-            {isDemoActive && (
+            {!__IS_INSTITUTIONAL__ && isDemoActive && (
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300 uppercase tracking-wider">
                 Entorno de Pruebas · Sin Validez Oficial
               </span>

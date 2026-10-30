@@ -15,6 +15,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/client';
 import { InstitutionalBrandIcon } from '../components/ui/Icons';
+import { isInstitutional } from '../utils/appProfile';
 
 export const LoginPage: React.FC = () => {
   const { login, error, clearError, systemStatus, isLoading, refreshStatus } = useAuth();
@@ -352,7 +353,7 @@ export const LoginPage: React.FC = () => {
                     clearError();
                     setUsername(e.target.value);
                   }}
-                  placeholder="e.g. director.dev o docente.dev"
+                  placeholder={__IS_INSTITUTIONAL__ ? 'Ingrese su usuario institucional' : 'e.g. director.dev o docente.dev'}
                   className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-[14px] font-medium placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#13594A] focus:border-transparent transition-all"
                 />
               </div>
@@ -428,50 +429,52 @@ export const LoginPage: React.FC = () => {
               </button>
             </form>
 
-            {/* Información de desarrollo sintético */}
-            <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-2">
-              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider text-center">
-                Cuentas del Sandbox de Desarrollo
-              </span>
-              <div className="grid grid-cols-3 gap-2 text-center text-[11px] text-slate-700">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('docente.dev');
-                    setPassword('DocenteDev2026!');
-                    clearError();
-                  }}
-                  className="p-2 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 cursor-pointer text-left transition-all"
-                >
-                  <span className="block font-bold text-[#13594A]">Docente</span>
-                  <span className="text-[10px] text-slate-600">docente.dev</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('director.dev');
-                    setPassword('DirectorDev2026!');
-                    clearError();
-                  }}
-                  className="p-2 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 cursor-pointer text-left transition-all"
-                >
-                  <span className="block font-bold text-[#13594A]">Director</span>
-                  <span className="text-[10px] text-slate-600">director.dev</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('secretaria.dev');
-                    setPassword('SecretariaDev2026!');
-                    clearError();
-                  }}
-                  className="p-2 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 cursor-pointer text-left transition-all"
-                >
-                  <span className="block font-bold text-[#13594A]">Secretaría</span>
-                  <span className="text-[10px] text-slate-600">secretaria.dev</span>
-                </button>
+            {/* Información de desarrollo sintético (solo en perfil de desarrollo/QA) */}
+            {!__IS_INSTITUTIONAL__ && (
+              <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-2">
+                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider text-center">
+                  Cuentas del Sandbox de Desarrollo
+                </span>
+                <div className="grid grid-cols-3 gap-2 text-center text-[11px] text-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUsername('docente.dev');
+                      setPassword('DocenteDev2026!');
+                      clearError();
+                    }}
+                    className="p-2 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 cursor-pointer text-left transition-all"
+                  >
+                    <span className="block font-bold text-[#13594A]">Docente</span>
+                    <span className="text-[10px] text-slate-600">docente.dev</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUsername('director.dev');
+                      setPassword('DirectorDev2026!');
+                      clearError();
+                    }}
+                    className="p-2 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 cursor-pointer text-left transition-all"
+                  >
+                    <span className="block font-bold text-[#13594A]">Director</span>
+                    <span className="text-[10px] text-slate-600">director.dev</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUsername('secretaria.dev');
+                      setPassword('SecretariaDev2026!');
+                      clearError();
+                    }}
+                    className="p-2 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 cursor-pointer text-left transition-all"
+                  >
+                    <span className="block font-bold text-[#13594A]">Secretaría</span>
+                    <span className="text-[10px] text-slate-600">secretaria.dev</span>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </main>

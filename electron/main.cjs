@@ -110,21 +110,11 @@ function checkBackendHealth(url, secret = '') {
  */
 async function ensureBackendRunning() {
   const desiredPort = Number(process.env.CETPRO_PORT || 8085);
-  const inUse = await isPortInUse(desiredPort);
 
-  if (inUse) {
-    const isHealthy = await checkBackendHealth(`http://127.0.0.1:${desiredPort}`, instanceSecret);
-    if (isHealthy) {
-      console.log(`[ELECTRON-MAIN] Backend ya activo y saludable en http://127.0.0.1:${desiredPort}`);
-      backendPort = desiredPort;
-      backendUrl = `http://127.0.0.1:${backendPort}`;
-      return;
-    }
-  }
-
-  // Buscar un puerto libre a partir de desiredPort
+  // Buscar un puerto libre a partir de desiredPort para garantizar proceso supervisado exclusivo
   let portToUse = desiredPort;
   while (await isPortInUse(portToUse)) {
+    console.log(`[ELECTRON-MAIN] Puerto ${portToUse} ocupado. Buscando puerto libre...`);
     portToUse++;
   }
 
@@ -237,12 +227,18 @@ function createMainWindow() {
     return { action: 'deny' };
   });
 
-  // SEGURIDAD: Bloqueo de navegación arbitraria fuera de la aplicación
+  // SEGURIDAD: Bloqueo estricto de navegación arbitraria fuera de la aplicación
   mainWindow.webContents.on('will-navigate', (event, url) => {
-    const isLocalApp = url.startsWith('file://') || url.startsWith('http://127.0.0.1:') || url.startsWith('http://localhost:');
-    if (!isLocalApp) {
+    const isFile = url.startsWith('file://');
+    const isViteDev = !app.isPackaged && (url.startsWith('http://127.0.0.1:5173') || url.startsWith('http://localhost:5173'));
+    if (!isFile && !isViteDev) {
       event.preventDefault();
-      shell.openExternal(url);
+      try {
+        const parsed = new URL(url);
+        if (['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
+          shell.openExternal(url);
+        }
+      } catch {}
     }
   });
 
@@ -336,40 +332,113 @@ app.on('second-instance', () => {
   }
 });
 
-// CICLO DE VIDA DE ELECTRON
-app.whenReady().then(async () => {
-  // Inyectar secreto efímero de instancia exclusivamente a peticiones originadas por ventanas autorizadas (MED-39B-01)
+/**
+ * Validador estricto y robusto de URLs de destino del backend institucional.
+ * Impide cualquier fuga de credenciales hacia puertos loopback ajenos (CRIT-41-01),
+ * hostnames similares, comodines o esquemas no autorizados.
+ */
+function isLegitimateBackendUrl(targetUrl, expectedPort) {
+  if (typeof targetUrl !== 'string' || !targetUrl) return false;
+  try {
+    const parsed = new URL(targetUrl);
+    // 1. Esquema estrictamente HTTP
+    if (parsed.protocol !== 'http:') return false;
+    // 2. Hostname estrictamente loopback IPv4 '127.0.0.1' (prohibido localhost u otros)
+    if (parsed.hostname !== '127.0.0.1') return false;
+    // 3. Puerto exacto verificado numéricamente
+    const parsedPort = parsed.port ? Number(parsed.port) : 80;
+    if (parsedPort !== Number(expectedPort)) return false;
+    // 4. Rechazar credenciales embebidas (ej. http://user:pass@127.0.0.1:8085)
+    if (parsed.username || parsed.password) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Configuración centralizada de interceptores de seguridad de red y Content-Security-Policy.
+ * Restringe la inyección de X-CETPRO-Instance-Secret y connect-src exclusivamente
+ * al backend legítimo creado y supervisado por esta instancia de Electron.
+ */
+function setupSecurityInterceptors(activePort, secret) {
+  const targetOrigin = `http://127.0.0.1:${activePort}`;
+
+  // 1. Interceptor de cabeceras de red salientes (Request Headers)
+  // Filtro estricto: únicamente la URL exacta del backend sin comodines de puerto (CRIT-41-01)
   session.defaultSession.webRequest.onBeforeSendHeaders(
-    { urls: ['http://127.0.0.1:*/*', 'http://localhost:*/*'] },
+    { urls: [`${targetOrigin}/*`] },
     (details, callback) => {
       const requestHeaders = Object.assign({}, details.requestHeaders);
-      if (details.webContentsId && authorizedWebContentsIds.has(details.webContentsId)) {
-        requestHeaders['X-CETPRO-Instance-Secret'] = instanceSecret;
+
+      // Verificación robusta en profundidad:
+      const isTargetValid = isLegitimateBackendUrl(details.url, activePort);
+      const isWebContentsValid = Boolean(
+        details.webContentsId && authorizedWebContentsIds.has(details.webContentsId)
+      );
+
+      // Verificación del iniciador / frame para prevenir frames maliciosos
+      let isInitiatorValid = true;
+      if (details.initiator) {
+        try {
+          const initUrl = new URL(details.initiator);
+          const isFile = initUrl.protocol === 'file:';
+          const isLocalVite = initUrl.protocol === 'http:' && initUrl.hostname === '127.0.0.1' && Number(initUrl.port) === 5173;
+          isInitiatorValid = isFile || isLocalVite;
+        } catch {
+          isInitiatorValid = false;
+        }
       }
+
+      if (isTargetValid && isWebContentsValid && isInitiatorValid) {
+        requestHeaders['X-CETPRO-Instance-Secret'] = secret;
+      } else {
+        // En caso de discrepancia o redirección no legítima, purgar cualquier secreto
+        delete requestHeaders['X-CETPRO-Instance-Secret'];
+        delete requestHeaders['x-cetpro-instance-secret'];
+      }
+
       callback({ requestHeaders });
     }
   );
 
-  // Configurar Content-Security-Policy restrictivo
+  // 2. Interceptor de redirecciones HTTP: impide transferencia de secretos en 301/302/307
+  session.defaultSession.webRequest.onBeforeRedirect((details) => {
+    if (!isLegitimateBackendUrl(details.redirectURL, activePort)) {
+      console.warn(`[ELECTRON-SECURITY] Redirección hacia destino externo o puerto ajeno detectada: ${details.redirectURL}`);
+    }
+  });
+
+  // 3. CSP Dinámica y Restrictiva aplicada en onHeadersReceived
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
+    const cspDirectives = [
+      "default-src 'self'",
+      "script-src 'self' blob:",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      `connect-src 'self' http://127.0.0.1:${activePort}${isDev ? ' ws://127.0.0.1:5173 http://127.0.0.1:5173' : ''}`,
+      "font-src 'self' data:",
+      "object-src 'none'",
+      "frame-ancestors 'none'"
+    ].join('; ');
+
     callback({
       responseHeaders: Object.assign({}, details.responseHeaders, {
-        'Content-Security-Policy': [
-          "default-src 'self'; " +
-          "script-src 'self' blob:; " +
-          "style-src 'self' 'unsafe-inline'; " +
-          "img-src 'self' data: blob:; " +
-          "connect-src 'self' http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:*; " +
-          "font-src 'self' data:; " +
-          "object-src 'none'; " +
-          "frame-ancestors 'none';"
-        ],
+        'Content-Security-Policy': [cspDirectives],
+        'X-Content-Type-Options': ['nosniff'],
+        'X-Frame-Options': ['DENY'],
       }),
     });
   });
+}
 
+// CICLO DE VIDA DE ELECTRON
+app.whenReady().then(async () => {
   try {
     await ensureBackendRunning();
+    // Vincular interceptores de seguridad estrictamente al puerto y secreto efectivos
+    setupSecurityInterceptors(backendPort, instanceSecret);
     createMainWindow();
   } catch (err) {
     console.error('[ELECTRON-MAIN] Error fatal durante inicialización:', err);

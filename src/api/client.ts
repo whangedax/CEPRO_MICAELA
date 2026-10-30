@@ -73,6 +73,7 @@ import {
   SetupInstitutionPayload,
   SetupInstitutionResponse,
 } from './types';
+import { isInstitutional } from '../utils/appProfile';
 
 const TOKEN_KEY = 'cetpro_session_token';
 
@@ -218,7 +219,9 @@ class ApiClient {
       let errorMsg = errData.error;
       if (!errorMsg) {
         if (response.status === 502 || response.status === 504) {
-          errorMsg = 'El servidor backend de desarrollo (127.0.0.1:8085) no está en ejecución. Inicie el servicio ejecutando: npm run dev:backend';
+          errorMsg = __IS_INSTITUTIONAL__
+            ? 'El servicio local de CEPRO_MICAELA no responde o se está iniciando. Por favor, espere unos segundos o reinicie la aplicación.'
+            : 'El servidor backend de desarrollo (127.0.0.1:8085) no está en ejecución. Inicie el servicio ejecutando: npm run dev:backend';
         } else {
           errorMsg = `Error del servidor local (HTTP ${response.status})`;
         }

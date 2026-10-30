@@ -2,6 +2,7 @@ import React from 'react';
 import { NavRoute } from '../types';
 import { useAuth } from '../context/AuthContext';
 import StatusBadge from '../components/ui/StatusBadge/StatusBadge';
+import { isInstitutional } from '../utils/appProfile';
 
 interface PlaceholderPageProps {
   route: NavRoute;
@@ -165,7 +166,9 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
 
         <div className="flex items-center justify-between pt-4 border-t border-slate-100">
           <span className="text-xs font-medium text-slate-600">
-            CEPRO_MICAELA 2.0 · Prototipo offline
+            {isInstitutional()
+              ? 'CEPRO_MICAELA 2.0 · Módulo en actualización institucional'
+              : 'CEPRO_MICAELA 2.0 · Prototipo offline'}
           </span>
           <button
             type="button"

@@ -24,6 +24,7 @@ import { useAuth } from '../context/AuthContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { usePendingChanges } from '../context/PendingChangesContext';
 import apiClient from '../api/client';
+import { isInstitutional } from '../utils/appProfile';
 import {
   DocumentSubmission,
   DocumentPreflightResponse,
@@ -399,27 +400,29 @@ export const EntregasRevision: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Banner de Entorno de Pruebas Institucional */}
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-950">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
-            <DeliveriesIcon className="w-5 h-5 text-amber-800" />
+      {/* Banner de Entorno de Pruebas Institucional (solo en desarrollo/QA) */}
+      {!__IS_INSTITUTIONAL__ && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-950">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
+              <DeliveriesIcon className="w-5 h-5 text-amber-800" />
+            </div>
+            <div>
+              <div className="text-xs font-bold tracking-wider uppercase text-amber-800">
+                ENTORNO DE PRUEBAS LOCAL · OPERACIÓN SIMULADA EN SQLITE
+              </div>
+              <div className="text-xs text-amber-900/80">
+                Las entregas y dictámenes operan sobre registros sintéticos en <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[11px]">dev-sandbox/data</code> sin validez institucional externa.
+              </div>
+            </div>
           </div>
-          <div>
-            <div className="text-xs font-bold tracking-wider uppercase text-amber-800">
-              ENTORNO DE PRUEBAS LOCAL · OPERACIÓN SIMULADA EN SQLITE
-            </div>
-            <div className="text-xs text-amber-900/80">
-              Las entregas y dictámenes operan sobre registros sintéticos en <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[11px]">dev-sandbox/data</code> sin validez institucional externa.
-            </div>
+          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/80 border border-amber-300 text-amber-900 shadow-sm">
+              Rol Activo: {role}
+            </span>
           </div>
         </div>
-        <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/80 border border-amber-300 text-amber-900 shadow-sm">
-            Rol Activo: {role}
-          </span>
-        </div>
-      </div>
+      )}
 
       {/* Encabezado Principal */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -714,12 +717,12 @@ export const EntregasRevision: React.FC = () => {
                           }`}
                           title={
                             preflightData.preflight.complete
-                              ? 'Registrar entrega de prueba en el entorno sandbox'
+                              ? (isInstitutional() ? 'Registrar entrega formal ante Secretaría y Dirección' : 'Registrar entrega de prueba en el entorno sandbox')
                               : 'Bloqueado: Existen campos pendientes en el Preflight'
                           }
                         >
                           <SendIcon className="w-4 h-4" />
-                          <span>{isSubmitting ? 'Registrando...' : 'Registrar entrega de prueba'}</span>
+                          <span>{isSubmitting ? 'Registrando...' : (isInstitutional() ? 'Registrar Entrega Formal' : 'Registrar entrega de prueba')}</span>
                         </button>
                       </div>
                     </div>
@@ -1030,7 +1033,7 @@ export const EntregasRevision: React.FC = () => {
                 className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] transition-all shadow-md active:scale-95 disabled:opacity-60"
               >
                 <SendIcon className="w-4 h-4" />
-                <span>{isSubmitting ? 'Registrando Entrega...' : 'Confirmar entrega de prueba'}</span>
+                <span>{isSubmitting ? 'Registrando Entrega...' : (isInstitutional() ? 'Confirmar Entrega Formal' : 'Confirmar entrega de prueba')}</span>
               </button>
             </div>
           </div>

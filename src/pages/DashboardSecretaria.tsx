@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../api/client';
 import { DashboardResponse, SubmissionStatus } from '../api/types';
 import StatusBadge from '../components/ui/StatusBadge/StatusBadge';
+import { isInstitutional } from '../utils/appProfile';
 import {
   AcademicConfigIcon,
   AccountsIcon,
@@ -262,16 +263,20 @@ export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavi
         </div>
       </header>
 
-      {/* 2. Banner de Entorno Sandbox */}
+      {/* 2. Banner de Estado Operativo */}
       <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-700">
         <div className="flex items-center gap-3">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
           <div>
             <strong className="text-slate-900 block font-semibold">
-              ENTORNO DE PRUEBAS LOCAL · OPERACIÓN SIMULADA EN SQLITE (127.0.0.1:8085)
+              {isInstitutional()
+                ? 'SISTEMA ACADÉMICO INSTITUCIONAL · SECRETARÍA'
+                : 'ENTORNO DE PRUEBAS LOCAL · OPERACIÓN SIMULADA EN SQLITE (127.0.0.1:8085)'}
             </strong>
             <span className="text-slate-600">
-              Servicio de secretaría académica operando 100% fuera de línea con base de datos local aislada.
+              {isInstitutional()
+                ? 'Servicio de secretaría académica operando 100% fuera de línea con base de datos institucional local.'
+                : 'Servicio de secretaría académica operando 100% fuera de línea con base de datos local aislada.'}
             </span>
           </div>
         </div>

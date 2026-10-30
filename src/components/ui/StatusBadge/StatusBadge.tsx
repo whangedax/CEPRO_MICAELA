@@ -1,4 +1,5 @@
 import React from 'react';
+import { isInstitutional } from '../../../utils/appProfile';
 
 interface StatusBadgeProps {
   className?: string;
@@ -9,6 +10,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   className = '',
   size = 'md',
 }) => {
+  if (__IS_INSTITUTIONAL__) {
+    return null;
+  }
+
   if (size === 'sm') {
     return (
       <span

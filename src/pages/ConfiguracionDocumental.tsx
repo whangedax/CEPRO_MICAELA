@@ -24,6 +24,7 @@ import { useAuth } from '../context/AuthContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { usePendingChanges } from '../context/PendingChangesContext';
 import { apiClient } from '../api/client';
+import { isInstitutional } from '../utils/appProfile';
 import {
   DocumentConfigurationResponse,
   DocumentFieldSchema,
@@ -447,7 +448,9 @@ export const ConfiguracionDocumental: React.FC = () => {
       lastSavedRevRef.current = savedRecord.rev || null;
       setInitialFormData(formData);
       setSaveSuccess(
-        `Parámetros guardados exitosamente en SQLite sintético (${savedRecord.id}). Los cambios se reflejarán en las validaciones preflight y en los formatos PDF del Centro Documental.`
+        __IS_INSTITUTIONAL__
+          ? `Parámetros guardados exitosamente en la base de datos local (${savedRecord.id}). Los cambios se reflejarán en las validaciones preflight y en los formatos PDF del Centro Documental.`
+          : `Parámetros guardados exitosamente en SQLite sintético (${savedRecord.id}). Los cambios se reflejarán en las validaciones preflight y en los formatos PDF del Centro Documental.`
       );
       return true;
     } catch (err: unknown) {
@@ -615,7 +618,7 @@ export const ConfiguracionDocumental: React.FC = () => {
               </span>
             )}
 
-            {dashboardData?.status?.demonstration && (
+            {!__IS_INSTITUTIONAL__ && dashboardData?.status?.demonstration && (
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300 uppercase tracking-wider">
                 Entorno de Pruebas · Sin Validez Oficial
               </span>
