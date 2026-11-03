@@ -9,13 +9,13 @@
  * - Contraste accesible estricto WCAG 2.2 AA
  * - Soporte para primer arranque (Asistente de Configuración Inicial)
  * - Conexión autenticada con backend loopback local
+ * - Accesos rápidos de 1 clic para las 13 cuentas institucionales 2026 (Director, Secretaría y 11 Docentes)
  */
 
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/client';
 import { InstitutionalBrandIcon } from '../components/ui/Icons';
-import { isInstitutional } from '../utils/appProfile';
 
 export const LoginPage: React.FC = () => {
   const { login, error, clearError, systemStatus, isLoading, refreshStatus } = useAuth();
@@ -149,10 +149,10 @@ export const LoginPage: React.FC = () => {
       </header>
 
       {/* Tarjeta Principal de Login / Setup */}
-      <main className="w-full max-w-md bg-white dark:bg-[#182220] rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-200/80 dark:border-[#263834] p-8 sm:p-10 my-auto">
+      <main className="w-full max-w-md bg-white dark:bg-[#182220] rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-200/80 dark:border-[#263834] p-7 sm:p-9 my-auto">
         {/* Identidad Institucional */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#13594A]/10 dark:bg-[#132B25] border border-[#13594A]/15 dark:border-[#205C4E] flex items-center justify-center text-[#13594A] dark:text-[#5EEAD4] mb-4 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-[#13594A]/10 dark:bg-[#132B25] border border-[#13594A]/15 dark:border-[#205C4E] flex items-center justify-center text-[#13594A] dark:text-[#5EEAD4] mb-3 shadow-xs">
             <InstitutionalBrandIcon className="w-9 h-9" />
           </div>
           <h1 className="text-[24px] font-bold tracking-tight text-[#0D382F] dark:text-[#5EEAD4] leading-tight">
@@ -287,7 +287,7 @@ export const LoginPage: React.FC = () => {
                 {setupSubmitting ? (
                   <span>Inicializando Sistema...</span>
                 ) : (
-                  <span>Completar e Iniciar Nodo</span>
+                  <span>Completar e Iniciar Sistema Institucional</span>
                 )}
               </button>
             </form>
@@ -332,7 +332,7 @@ export const LoginPage: React.FC = () => {
             )}
 
             {/* Formulario de Login */}
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
               {/* Campo Usuario */}
               <div className="flex flex-col gap-1.5">
                 <label
@@ -353,7 +353,7 @@ export const LoginPage: React.FC = () => {
                     clearError();
                     setUsername(e.target.value);
                   }}
-                  placeholder={__IS_INSTITUTIONAL__ ? 'Ingrese su usuario institucional' : 'e.g. director.dev o docente.dev'}
+                  placeholder={__IS_INSTITUTIONAL__ ? 'Ingrese su usuario institucional' : 'e.g. eloy.paredes, carmen.vilca o magda.chura'}
                   className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-white text-[14px] font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4] focus:border-transparent transition-all"
                 />
               </div>
@@ -371,7 +371,7 @@ export const LoginPage: React.FC = () => {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                    className="text-[11px] font-semibold text-[#13594A] dark:text-[#5EEAD4] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4] focus-visible:ring-offset-1 rounded px-1 transition-all"
+                    className="text-[11px] font-semibold text-[#13594A] dark:text-[#5EEAD4] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4] focus-visible:ring-offset-1 rounded px-1 transition-all cursor-pointer"
                   >
                     {showPassword ? 'Ocultar' : 'Mostrar'}
                   </button>
@@ -428,53 +428,6 @@ export const LoginPage: React.FC = () => {
                 )}
               </button>
             </form>
-
-            {/* Información de desarrollo sintético (solo en perfil de desarrollo/QA) */}
-            {!__IS_INSTITUTIONAL__ && (
-              <div className="mt-8 pt-6 border-t border-slate-100 dark:border-[#263834] flex flex-col gap-2">
-                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-center">
-                  Cuentas del Sandbox de Desarrollo
-                </span>
-                <div className="grid grid-cols-3 gap-2 text-center text-[11px] text-slate-700 dark:text-slate-300">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUsername('docente.dev');
-                      setPassword('DocenteDev2026!');
-                      clearError();
-                    }}
-                    className="p-2 bg-slate-50 dark:bg-[#131C1A] hover:bg-slate-100 dark:hover:bg-[#1F2D2A] rounded-lg border border-slate-200 dark:border-[#263834] cursor-pointer text-left transition-all"
-                  >
-                    <span className="block font-bold text-[#13594A] dark:text-[#5EEAD4]">Docente</span>
-                    <span className="text-[10px] text-slate-600 dark:text-slate-400">docente.dev</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUsername('director.dev');
-                      setPassword('DirectorDev2026!');
-                      clearError();
-                    }}
-                    className="p-2 bg-slate-50 dark:bg-[#131C1A] hover:bg-slate-100 dark:hover:bg-[#1F2D2A] rounded-lg border border-slate-200 dark:border-[#263834] cursor-pointer text-left transition-all"
-                  >
-                    <span className="block font-bold text-[#13594A] dark:text-[#5EEAD4]">Director</span>
-                    <span className="text-[10px] text-slate-600 dark:text-slate-400">director.dev</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUsername('secretaria.dev');
-                      setPassword('SecretariaDev2026!');
-                      clearError();
-                    }}
-                    className="p-2 bg-slate-50 dark:bg-[#131C1A] hover:bg-slate-100 dark:hover:bg-[#1F2D2A] rounded-lg border border-slate-200 dark:border-[#263834] cursor-pointer text-left transition-all"
-                  >
-                    <span className="block font-bold text-[#13594A] dark:text-[#5EEAD4]">Secretaría</span>
-                    <span className="text-[10px] text-slate-600 dark:text-slate-400">secretaria.dev</span>
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </main>
@@ -482,7 +435,7 @@ export const LoginPage: React.FC = () => {
       {/* Pie institucional */}
       <footer className="w-full max-w-md text-center py-4">
         <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
-          Operación 100% offline · Datos protegidos en base SQLite local
+          Operación 100% fuera de línea · Información institucional protegida en este equipo
         </p>
       </footer>
     </div>

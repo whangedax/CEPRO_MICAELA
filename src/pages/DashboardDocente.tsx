@@ -5,12 +5,12 @@
  * Conectado a la API y motor de Workspace de Node.js 24:
  * - Consulta GET /api/workspace/options (aulas y unidades autorizadas).
  * - Selección oficial de workspace mediante POST /api/workspace.
- * - Sincronización con GET /api/dashboard en tiempo real.
- * - Manejo de estados: Cargando, Sin aulas, Error de consulta, Espacio activo.
- * - Preservación rigurosa del diseño aprobado en Google Stitch.
+ * - Explorador Jerárquico por Carrera, Módulo y Unidades Didácticas con imágenes descriptivas.
+ * - Navegación directa funcional en todas las actividades pedagógicas.
  */
 
 import React, { useState } from 'react';
+import { NavRoute } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { pedagogicalActivities } from '../mocks/dashboard';
@@ -19,11 +19,14 @@ import ActivityCard from '../components/ui/ActivityCard/ActivityCard';
 import ClassroomCard from '../components/ui/ClassroomCard/ClassroomCard';
 import SelectUnitModal from '../components/academic/SelectUnitModal';
 import { CalendarIcon } from '../components/ui/Icons';
-import { NoticeModal } from '../components/ui/Modal/NoticeModal';
 import { WorkspaceGroupOption } from '../api/types';
 import { isInstitutional } from '../utils/appProfile';
 
-export const DashboardDocente: React.FC = () => {
+export interface DashboardDocenteProps {
+  onNavigate?: (route: NavRoute) => void;
+}
+
+export const DashboardDocente: React.FC<DashboardDocenteProps> = ({ onNavigate }) => {
   const { user } = useAuth();
   const {
     options,
@@ -32,36 +35,21 @@ export const DashboardDocente: React.FC = () => {
     error,
     loadOptions,
     selectGroupAndUnit,
+    openSelector,
   } = useWorkspace();
-
-  // Modal demostrativo de actividades pedagógicas
-  const [modalState, setModalState] = useState<{
-    isOpen: boolean;
-    title: string;
-    originalRoute?: string;
-    actionName?: string;
-  }>({
-    isOpen: false,
-    title: '',
-  });
 
   // Modal oficial de selección de Unidad Didáctica para ingresar al aula
   const [selectedGroupForModal, setSelectedGroupForModal] = useState<WorkspaceGroupOption | null>(null);
   const [isUnitModalOpen, setIsUnitModalOpen] = useState<boolean>(false);
 
-  const handleActivityClick = (title: string, route: string, actionText: string) => {
-    if (isInstitutional()) {
-      if (route) {
-        window.location.hash = route;
-      }
-      return;
+  const handleActivityClick = (_title: string, route: string, _actionText: string) => {
+    if (!route) return;
+    const cleanRoute = route.replace(/^#\/?/, '').trim() as NavRoute;
+    if (onNavigate) {
+      onNavigate(cleanRoute);
+    } else {
+      window.location.hash = route.startsWith('#') ? route : `#/${route}`;
     }
-    setModalState({
-      isOpen: true,
-      title: `Actividad: ${title}`,
-      originalRoute: route,
-      actionName: actionText,
-    });
   };
 
   const handleOpenUnitModal = (group: WorkspaceGroupOption) => {
@@ -110,7 +98,7 @@ export const DashboardDocente: React.FC = () => {
             {user ? `Buenos días, ${user.name}` : 'Buenos días, profesor'}
           </h1>
           <p className="text-[14px] text-slate-700 dark:text-slate-300 font-normal leading-relaxed">
-            Organiza tus clases y actividades académicas de forma rápida y clara.
+            Organiza tus clases, unidades didácticas y actividades académicas de forma rápida y clara.
           </p>
         </div>
 
@@ -132,8 +120,8 @@ export const DashboardDocente: React.FC = () => {
         </div>
       </header>
 
-      {/* Banner de Contexto Académico Activo en Sesión (si el docente seleccionó un aula) */}
-      {activeWorkspace && activeGroup && (
+      {/* Banner de Contexto Académico Activo en Sesión */}
+      {activeWorkspace && activeGroup ? (
         <aside
           aria-label="Espacio académico activo"
           className="mb-8 p-4 rounded-2xl bg-[#e6f4f1] dark:bg-[#182220] border border-[#13594A]/25 dark:border-[#263834] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-slate-800 dark:text-slate-200 shadow-[0_2px_12px_rgba(19,89,74,0.06)] animate-in fade-in duration-300"
@@ -166,10 +154,36 @@ export const DashboardDocente: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => handleOpenUnitModal(activeGroup)}
-            className="self-start sm:self-center px-4 py-2 rounded-xl bg-white dark:bg-[#131C1A] border border-[#13594A]/30 dark:border-[#205C4E] text-[#13594A] dark:text-[#5EEAD4] text-[12px] font-bold hover:bg-[#13594A] hover:text-white dark:hover:bg-[#1A6B5A] transition-all shadow-xs shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4]"
+            onClick={() => openSelector(1)}
+            className="self-start sm:self-center px-4 py-2 rounded-xl bg-white dark:bg-[#131C1A] border border-[#13594A]/30 dark:border-[#205C4E] text-[#13594A] dark:text-[#5EEAD4] text-[12px] font-bold hover:bg-[#13594A] hover:text-white dark:hover:bg-[#1A6B5A] transition-all shadow-xs shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4]"
           >
-            Cambiar unidad
+            🔄 Cambiar unidad / aula
+          </button>
+        </aside>
+      ) : (
+        <aside
+          aria-label="Selección de espacio docente"
+          className="mb-8 p-5 rounded-2xl bg-[#E6F4F1] dark:bg-[#132B25] border border-[#13594A]/25 dark:border-[#205C4E] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#13594A] text-white flex items-center justify-center font-bold text-[14px] shadow-sm shrink-0">
+              🎯
+            </div>
+            <div>
+              <h2 className="text-[15px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-snug">
+                Seleccione su Aula y Unidad Didáctica de Trabajo
+              </h2>
+              <p className="text-[12px] text-slate-700 dark:text-slate-300 font-medium">
+                Abra el asistente por pasos para seleccionar la carrera, módulo, aula y unidad que va a calificar o tomar asistencia.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => openSelector(1)}
+            className="self-start sm:self-center px-4 py-2.5 rounded-xl bg-[#13594A] hover:bg-[#004034] text-white text-[12px] font-bold shadow-xs shrink-0 cursor-pointer transition-colors"
+          >
+            Seleccionar Unidad →
           </button>
         </aside>
       )}
@@ -211,7 +225,7 @@ export const DashboardDocente: React.FC = () => {
           </div>
 
           <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider bg-slate-100 dark:bg-[#182220] px-2.5 py-1 rounded-md border border-slate-200 dark:border-[#263834]">
-            {isInstitutional() ? 'SISTEMA ACADÉMICO INSTITUCIONAL · SQLITE LOCAL' : 'DATOS DE PRUEBA · CONECTADO A SQLITE LOCAL'}
+            {isInstitutional() ? 'SISTEMA ACADÉMICO INSTITUCIONAL · MODO OFFLINE' : 'SISTEMA ACADÉMICO · ENTORNO LOCAL'}
           </span>
         </div>
 
@@ -241,7 +255,7 @@ export const DashboardDocente: React.FC = () => {
             <button
               type="button"
               onClick={loadOptions}
-              className="px-4 py-2 rounded-xl bg-red-700 text-white text-[12px] font-semibold hover:bg-red-800 transition-colors self-start sm:self-auto shrink-0 shadow-xs"
+              className="px-4 py-2 rounded-xl bg-red-700 text-white text-[12px] font-semibold hover:bg-red-800 transition-colors self-start sm:self-auto shrink-0 shadow-xs cursor-pointer"
             >
               Reintentar consulta
             </button>
@@ -250,7 +264,7 @@ export const DashboardDocente: React.FC = () => {
 
         {/* Estado 3: Sin aulas asignadas */}
         {!isLoading && options && options.groups.length === 0 && (
-          <div className="p-12 rounded-3xl bg-white dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] shadow-xs flex flex-col items-center justify-center gap-2 text-center">
+          <div className="p-12 rounded-3xl bg-white dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] shadow-xs flex flex-col items-center justify-center gap-3 text-center">
             <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center mb-1">
               <CalendarIcon className="w-6 h-6" />
             </div>
@@ -261,6 +275,22 @@ export const DashboardDocente: React.FC = () => {
               Actualmente su cuenta docente no registra grupos ni unidades didácticas asignadas.
               Comuníquese con Dirección Académica o Secretaría para verificar sus asignaciones oficiales.
             </p>
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+              <button
+                type="button"
+                onClick={loadOptions}
+                className="px-4 py-2 rounded-xl bg-white dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4] text-xs font-bold transition-colors cursor-pointer"
+              >
+                🔄 Actualizar asignaciones
+              </button>
+              <button
+                type="button"
+                onClick={() => openSelector(1)}
+                className="px-4 py-2 rounded-xl bg-[#13594A] hover:bg-[#004034] text-white text-xs font-bold transition-colors cursor-pointer"
+              >
+                🎯 Abrir Asistente de Selección
+              </button>
+            </div>
           </div>
         )}
 
@@ -308,17 +338,6 @@ export const DashboardDocente: React.FC = () => {
           </span>
         </div>
       </footer>
-
-      {/* Modal demostrativo de actividades pedagógicas (solo en modo desarrollo/QA) */}
-      {!__IS_INSTITUTIONAL__ && (
-        <NoticeModal
-          isOpen={modalState.isOpen}
-          onClose={() => setModalState((prev) => ({ ...prev, isOpen: false }))}
-          title={modalState.title}
-          originalRoute={modalState.originalRoute}
-          actionName={modalState.actionName}
-        />
-      )}
 
       {/* Modal oficial de selección de Unidad Didáctica para ingresar al aula */}
       <SelectUnitModal

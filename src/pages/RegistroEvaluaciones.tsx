@@ -983,7 +983,7 @@ export const RegistroEvaluaciones: React.FC = () => {
               }}
               className="px-5 py-2.5 rounded-xl bg-[#13594A] text-white font-bold text-xs hover:bg-[#0D382F] transition-all shadow-sm"
             >
-              Cambiar a Modo Unidad (UNIT)
+              Seleccionar Unidad Didáctica
             </button>
             <a
               href="#/inicio"
@@ -1593,8 +1593,8 @@ export const RegistroEvaluaciones: React.FC = () => {
                         <span className="font-bold text-emerald-900 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded text-[11px]">
                           {c.serverValue !== null ? `Nota: ${c.serverValue}` : 'Sin registrar'}
                         </span>
-                        <span className="block text-[9px] text-slate-600 dark:text-slate-400 font-mono mt-0.5">
-                          Rev: {c.serverRev || 'null'}
+                        <span className="block text-[9px] text-slate-600 dark:text-slate-400 font-medium mt-0.5">
+                          {c.serverRev ? 'Versión registrada' : 'Sin registrar'}
                         </span>
                       </td>
                     </tr>

@@ -32,6 +32,8 @@ import GestionCuentas from './pages/GestionCuentas';
 import ConfiguracionAcademica from './pages/ConfiguracionAcademica';
 import Sincronizacion from './pages/Sincronizacion';
 import RespaldoRestauracion from './pages/RespaldoRestauracion';
+import MiCuentaPerfil from './pages/MiCuentaPerfil';
+import ActualizarExportarDatos from './pages/ActualizarExportarDatos';
 import PlaceholderPage from './pages/PlaceholderPage';
 import LoginPage from './pages/LoginPage';
 
@@ -233,7 +235,7 @@ const AppContent: React.FC = () => {
         return <DashboardSecretaria onNavigate={handleRouteChange} />;
       }
       if (user?.role === 'DOCENTE') {
-        return <DashboardDocente />;
+        return <DashboardDocente onNavigate={handleRouteChange} />;
       }
       return (
         <div className="p-8 text-center text-red-700 dark:text-rose-300 bg-red-50 dark:bg-rose-950/40 rounded-2xl border border-red-200 dark:border-rose-800/60 m-6">
@@ -289,6 +291,14 @@ const AppContent: React.FC = () => {
 
     if (currentRoute === 'respaldo') {
       return <RespaldoRestauracion onNavigate={handleRouteChange} />;
+    }
+
+    if (currentRoute === 'datos') {
+      return <ActualizarExportarDatos onNavigate={handleRouteChange} />;
+    }
+
+    if (currentRoute === 'perfil') {
+      return <MiCuentaPerfil onNavigate={handleRouteChange} />;
     }
 
     return (

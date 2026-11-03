@@ -72,6 +72,7 @@ export const RegistroAsistencia: React.FC = () => {
     isLoading: isWorkspaceLoading,
     selectGroupAndUnit,
     loadOptions,
+    openSelector,
   } = useWorkspace();
 
   const { requestSafeTransition, registerPendingChanges, unregisterPendingChanges } =
@@ -697,13 +698,14 @@ export const RegistroAsistencia: React.FC = () => {
           <p className="text-sm text-slate-600 dark:text-slate-400 max-w-lg mx-auto mb-6 leading-relaxed">
             Para registrar asistencia, primero debe seleccionar una de sus aulas autorizadas desde el panel de inicio.
           </p>
-          <a
-            href="#/inicio"
+          <button
+            type="button"
+            onClick={() => openSelector(1)}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#13594A] text-white font-bold text-xs hover:bg-[#0D382F] dark:hover:bg-[#1A7360] transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
           >
-            <span>Ir a Mis Aulas Asignadas</span>
+            <span>🎯 Seleccionar Aula y Unidad Didáctica</span>
             <ArrowForwardIcon className="w-4 h-4" />
-          </a>
+          </button>
         </div>
       </div>
     );

@@ -75,6 +75,8 @@ export interface WorkspaceUnitOption {
 export interface WorkspaceGroupOption {
   id: string;
   name: string;
+  section?: string;
+  teacherName?: string;
   studentCount: number;
   programId: string;
   moduleId: string;
@@ -88,6 +90,9 @@ export interface WorkspaceGroupOption {
 export interface WorkspaceModuleOption {
   id: string;
   nombre: string;
+  programId?: string;
+  hours?: number;
+  credits?: number;
 }
 
 export interface WorkspaceProgramOption {

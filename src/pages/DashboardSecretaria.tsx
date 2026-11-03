@@ -9,9 +9,10 @@
  * - Exclusión estricta de funciones de respaldo (política oficial de seguridad institucional).
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { NavRoute } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useWorkspace } from '../context/WorkspaceContext';
 import { apiClient } from '../api/client';
 import { DashboardResponse, SubmissionStatus } from '../api/types';
 import StatusBadge from '../components/ui/StatusBadge/StatusBadge';
@@ -40,11 +41,44 @@ interface DashboardSecretariaProps {
 
 export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavigate }) => {
   const { user } = useAuth();
+  const { activeWorkspace, options, selectedGroup, openSelector } = useWorkspace();
+  const hasPromptedRef = useRef<boolean>(false);
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  // Auto-apertura del Asistente Guiado en primer ingreso si no hay espacio activo
+  useEffect(() => {
+    if (options && !activeWorkspace && !hasPromptedRef.current) {
+      hasPromptedRef.current = true;
+      openSelector(1);
+    }
+  }, [options, activeWorkspace, openSelector]);
+
+  const isGlobalOverview = !activeWorkspace || Boolean(activeWorkspace.overview);
+  const activeProgramName = useMemo(() => {
+    if (!activeWorkspace?.programId || !options?.programs) return '';
+    return options.programs.find((p) => p.id === activeWorkspace.programId)?.nombre || activeWorkspace.programId;
+  }, [activeWorkspace?.programId, options?.programs]);
+
+  const activeGroup = useMemo(() => {
+    if (selectedGroup) return selectedGroup;
+    if (!activeWorkspace?.groupId || !options?.groups) return null;
+    return options.groups.find((g) => g.id === activeWorkspace.groupId) || null;
+  }, [selectedGroup, activeWorkspace?.groupId, options?.groups]);
+
+  const activeUnitLabel = useMemo(() => {
+    if (!activeWorkspace || activeWorkspace.overview) return '';
+    if (activeWorkspace.mode === 'UNIT') {
+      return activeWorkspace.unitName
+        ? `${activeWorkspace.unit}: ${activeWorkspace.unitName}`
+        : `Unidad ${activeWorkspace.unit || ''}`;
+    }
+    if (activeWorkspace.mode === 'PRACTICE') return 'Prácticas EFSRT';
+    return 'Módulo Completo';
+  }, [activeWorkspace]);
 
   // Carga inicial y actualización de datos de secretaría (overview = true)
   const loadDashboardData = useCallback(async (isManualRefresh = false) => {
@@ -269,14 +303,10 @@ export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavi
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
           <div>
             <strong className="text-slate-900 dark:text-[#F0FDF8] block font-semibold">
-              {isInstitutional()
-                ? 'SISTEMA ACADÉMICO INSTITUCIONAL · SECRETARÍA'
-                : 'ENTORNO DE PRUEBAS LOCAL · OPERACIÓN SIMULADA EN SQLITE (127.0.0.1:8085)'}
+              SISTEMA ACADÉMICO INSTITUCIONAL · SECRETARÍA ACADÉMICA
             </strong>
             <span className="text-slate-600 dark:text-slate-400">
-              {isInstitutional()
-                ? 'Servicio de secretaría académica operando 100% fuera de línea con base de datos institucional local.'
-                : 'Servicio de secretaría académica operando 100% fuera de línea con base de datos local aislada.'}
+              Servicio de secretaría académica operando 100% fuera de línea con base de datos institucional local protegida.
             </span>
           </div>
         </div>
@@ -331,7 +361,66 @@ export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavi
         </div>
       )}
 
-      {/* 4. Grid de Métricas Principales (KPIs en tiempo real) */}
+      {/* 4. Banner Contextual de Espacio de Trabajo Activo */}
+      <section
+        aria-label="Espacio de Trabajo Activo"
+        className="p-5 rounded-3xl bg-white dark:bg-[#182220] border border-slate-200/90 dark:border-[#263834] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+      >
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-[#E6F4F1] dark:bg-[#132B25] border border-[#13594A]/20 dark:border-[#205C4E] flex items-center justify-center text-[#13594A] dark:text-[#5EEAD4] shrink-0">
+            <CheckCircleIcon className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#13594A] dark:text-[#5EEAD4] bg-[#13594A]/10 dark:bg-[#205C4E]/40 px-2 py-0.5 rounded-md">
+                {isGlobalOverview ? 'Ámbito Global' : 'Contexto de Unidad Activa'}
+              </span>
+              <span className="text-[12px] font-bold text-slate-700 dark:text-slate-300">
+                {activeProgramName || 'CETPRO Micaela Bastidas Puyucawa'}
+              </span>
+            </div>
+            <h2 className="text-[17px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-tight">
+              {activeGroup ? `${activeGroup.name} · ${activeUnitLabel}` : 'Vista Global Institucional (Todas las 7 carreras)'}
+            </h2>
+            <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
+              {activeGroup
+                ? `Docente: ${activeGroup.teacherName || 'Asignado'} · ${activeGroup.studentCount} participantes matriculados · Turno ${activeGroup.turno || 'Mañana'}`
+                : 'Supervisión central de 7 carreras y 16 aulas formativas. Seleccione una unidad para enfocar la gestión.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {activeGroup && (
+            <>
+              <button
+                type="button"
+                onClick={() => onNavigate('matriculas')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#13594A] text-white text-[12px] font-bold hover:bg-[#004034] transition-colors shadow-xs cursor-pointer"
+              >
+                <EnrollmentIcon className="w-4 h-4" />
+                <span>Matrículas del Aula</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigate('documentos')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#131C1A] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#263834] text-[12px] font-bold hover:border-[#13594A] transition-colors cursor-pointer"
+              >
+                <DocumentIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
+                <span>Formatos PDF</span>
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={() => openSelector(1)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-[#182220] hover:bg-[#F2FBF8] dark:hover:bg-[#193830] text-[#13594A] dark:text-[#5EEAD4] border border-[#13594A]/40 dark:border-[#205C4E] text-[12px] font-bold transition-all shadow-xs cursor-pointer"
+          >
+            <span>🔄 {activeGroup ? 'Cambiar Carrera / Unidad' : 'Seleccionar Carrera / Unidad'}</span>
+          </button>
+        </div>
+      </section>
+
       <section aria-labelledby="kpi-heading-sec">
         <h2 id="kpi-heading-sec" className="sr-only">Indicadores Académicos de Secretaría</h2>
         
@@ -472,35 +561,35 @@ export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavi
 
               <div className="mt-5 pt-4 border-t border-slate-100 dark:border-[#263834] flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
                 <span className="text-[#13594A] dark:text-[#5EEAD4] group-hover:underline">Iniciar gestión</span>
-                <span className="text-slate-400 dark:text-slate-500 font-mono">#{action.route}</span>
+                <span className="text-[#13594A] dark:text-[#5EEAD4] font-bold group-hover:translate-x-0.5 transition-transform">Acceder →</span>
               </div>
             </button>
           ))}
         </div>
       </section>
 
-      {/* 6. Entregas Recientes en Mesa de Partes (si existen) */}
-      {recentSubmissions.length > 0 && (
-        <section className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs overflow-hidden" aria-labelledby="sec-deliveries-heading">
-          <div className="p-6 border-b border-slate-100 dark:border-[#263834] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 id="sec-deliveries-heading" className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
-                Últimas Entregas Recibidas en Mesa de Partes
-              </h2>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-                Documentos presentados por los docentes pendientes de recepción o verificación.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onNavigate('entregas')}
-              className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] hover:text-[#0D382F] dark:hover:text-emerald-300 hover:underline inline-flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
-            >
-              <span>Atender en Mesa de Partes ({metrics.totalSubmissions})</span>
-              <ArrowForwardIcon className="w-3.5 h-3.5" />
-            </button>
+      {/* 6. Entregas Recientes en Mesa de Partes */}
+      <section className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs overflow-hidden" aria-labelledby="sec-deliveries-heading">
+        <div className="p-6 border-b border-slate-100 dark:border-[#263834] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 id="sec-deliveries-heading" className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
+              Últimas Entregas Recibidas en Mesa de Partes
+            </h2>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+              Documentos presentados por los docentes para recepción, verificación o visado.
+            </p>
           </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('entregas')}
+            className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] hover:text-[#0D382F] dark:hover:text-emerald-300 hover:underline inline-flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+          >
+            <span>Ir a Mesa de Partes ({metrics.totalSubmissions})</span>
+            <ArrowForwardIcon className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
+        {recentSubmissions.length > 0 ? (
           <div className="divide-y divide-slate-100 dark:divide-[#263834]">
             {recentSubmissions.map((s) => (
               <div
@@ -542,14 +631,34 @@ export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavi
               </div>
             ))}
           </div>
-        </section>
-      )}
+        ) : (
+          <div className="p-8 text-center flex flex-col items-center justify-center gap-2">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-[#132B25] text-emerald-700 dark:text-[#5EEAD4] flex items-center justify-center">
+              <CheckCircleIcon className="w-5 h-5" />
+            </div>
+            <p className="text-sm font-bold text-slate-800 dark:text-[#F0FDF8]">
+              Mesa de Partes al Día
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
+              No hay entregas pendientes de recepción por parte de los docentes en este momento. Los nuevos envíos se reflejarán aquí automáticamente.
+            </p>
+            <button
+              type="button"
+              onClick={() => onNavigate('entregas')}
+              className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4] text-xs font-bold transition-colors cursor-pointer"
+            >
+              <span>Consultar bandeja de Mesa de Partes</span>
+              <ArrowForwardIcon className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </section>
 
       {/* 7. Nota Institucional al Pie */}
       <footer className="text-center py-4 text-xs text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-[#263834]">
         CEPRO_MICAELA 2.0 · Plataforma de Gestión Académica Institucional Fuera de Línea
         <span className="mx-2">•</span>
-        Módulo de Secretaría Académica (Acceso Restringido a Respaldo)
+        Módulo de Secretaría Académica · Operación local confidencial y segura
       </footer>
     </div>
   );

@@ -2,8 +2,11 @@
  * components/ui/ClassroomCard/ClassroomCard.tsx
  * 
  * Tarjeta Académica Premium de Aula — CEPRO_MICAELA 2.0.
- * Conserva fielmente el diseño aprobado de Google Stitch:
- * - Iconografía vectorial y gradientes temáticos (Tecnológico / Artesanal).
+ * Conserva fielmente el diseño aprobado de Google Stitch e integra las
+ * ilustraciones vectoriales descriptivas de las 7 carreras oficiales:
+ * - Mecánica Automotriz, Mecánica de Motos, Carpintería Metálica,
+ *   Peluquería y Barbería, Computación e Informática, Corte y Ensamblaje,
+ *   y Mantenimiento de Sistemas Eléctricos.
  * - Badges de turno con contraste accesible WCAG 2.2 AA.
  * - Grilla de metadatos académicos oficiales (Grupo, Matriculados, Unidades).
  * - Conexión al mecanismo oficial de selección de workspace.
@@ -12,21 +15,16 @@
 import React from 'react';
 import { WorkspaceGroupOption } from '../../../api/types';
 import {
-  TerminalIcon,
-  StylerIcon,
   SunIcon,
   SunsetIcon,
-  LaptopIcon,
-  CodeIcon,
-  DataObjectIcon,
-  DeveloperBoardIcon,
-  ScissorsIcon,
-  CheckroomIcon,
-  StraightenIcon,
-  DesignServicesIcon,
   StudentsIcon,
   ArrowForwardIcon,
 } from '../Icons';
+import {
+  CareerVisualBanner,
+  CareerEmblemIcon,
+  resolveCareerVisualTheme,
+} from '../../academic/CareerVisualBanner';
 
 export interface ClassroomCardProps {
   group: WorkspaceGroupOption;
@@ -45,14 +43,7 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
   activeUnitCode,
   onEnterClassroom,
 }) => {
-  // Detección de especialidad técnica para selección de gráficos vectoriales
-  const normalizedProg = (programName || '').toUpperCase();
-  const isTech =
-    normalizedProg.includes('COMPUTAC') ||
-    normalizedProg.includes('INFORMÁT') ||
-    normalizedProg.includes('INFORMAT') ||
-    normalizedProg.includes('SISTEMA') ||
-    normalizedProg.includes('ELECTR');
+  const careerTheme = resolveCareerVisualTheme(group.programId, programName);
 
   // Determinar turno y estilo de badge
   const turno = (group.turno || '').trim().toLowerCase();
@@ -60,7 +51,7 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
 
   // Extraer nombre abreviado del grupo
   const groupLabel = group.name.includes('·')
-    ? group.name.split('·')[1]?.trim() || group.name
+    ? group.name.split('·').slice(1).join('·').trim() || group.name
     : group.name;
 
   return (
@@ -76,15 +67,13 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
         <div className="flex items-start justify-between gap-4 mb-5">
           <div className="flex items-start gap-3.5">
             <div
-              className={`w-12 h-12 rounded-2xl ${
-                isTech ? 'bg-[#004034] shadow-[#004034]/20' : 'bg-[#3e665b] shadow-[#3e665b]/20'
-              } text-white flex items-center justify-center shadow-md shrink-0`}
+              className={`w-12 h-12 rounded-2xl ${careerTheme.iconBgClass} text-white flex items-center justify-center shadow-md shrink-0`}
             >
-              {isTech ? (
-                <TerminalIcon className="w-6 h-6 text-white" />
-              ) : (
-                <StylerIcon className="w-6 h-6 text-white" />
-              )}
+              <CareerEmblemIcon
+                programId={group.programId}
+                programName={programName}
+                className="w-6 h-6 text-white"
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -121,98 +110,15 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
           )}
         </div>
 
-        {/* Visual Academic Vector Banner */}
-        <div
-          className={`relative w-full h-36 rounded-2xl overflow-hidden mb-5 ${
-            isTech
-              ? 'bg-gradient-to-br from-[#0c2e27] via-[#13594A] to-[#1c6e5d]'
-              : 'bg-gradient-to-br from-[#1c2c3e] via-[#2d4d5e] to-[#3e665b]'
-          } group flex flex-col justify-between p-4 shadow-inner`}
-        >
-          {/* Subtle vector grid overlay pattern */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none">
-            {isTech ? (
-              <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                  <pattern id={`tech-grid-${group.id}`} width="20" height="20" patternUnits="userSpaceOnUse">
-                    <circle cx="2" cy="2" r="1" fill="#ffffff" />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill={`url(#tech-grid-${group.id})`} />
-              </svg>
-            ) : (
-              <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                  <pattern
-                    id={`textile-pattern-${group.id}`}
-                    width="16"
-                    height="16"
-                    patternUnits="userSpaceOnUse"
-                    patternTransform="rotate(45)"
-                  >
-                    <line x1="0" y1="0" x2="16" y2="0" stroke="#ffffff" strokeWidth="1.5" strokeDasharray="3,3" />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill={`url(#textile-pattern-${group.id})`} />
-              </svg>
-            )}
-          </div>
-
-          {/* Top row of banner icons */}
-          <div className="relative flex items-center justify-between z-10">
-            <div className="flex items-center gap-2">
-              {isTech ? (
-                <>
-                  <span className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-teal-200">
-                    <LaptopIcon className="w-4 h-4" />
-                  </span>
-                  <span className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-teal-200">
-                    <CodeIcon className="w-4 h-4" />
-                  </span>
-                  <span className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-teal-200">
-                    <DataObjectIcon className="w-4 h-4" />
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-teal-200">
-                    <ScissorsIcon className="w-4 h-4" />
-                  </span>
-                  <span className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-teal-200">
-                    <CheckroomIcon className="w-4 h-4" />
-                  </span>
-                  <span className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-teal-200">
-                    <StraightenIcon className="w-4 h-4" />
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Bottom row of banner */}
-          <div className="relative z-10 flex items-end justify-between">
-            <div>
-              <div className="text-[11px] font-bold text-teal-200 uppercase tracking-widest leading-none mb-1">
-                Entorno Académico
-              </div>
-              <div className="text-[14px] font-bold text-white flex items-center gap-1.5">
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    isTech ? 'bg-emerald-400' : 'bg-indigo-300'
-                  }`}
-                  aria-hidden="true"
-                />
-                <span>Periodo {group.periodId} · {group.modalidad || 'Presencial'}</span>
-              </div>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-teal-200 group-hover:scale-110 transition-transform">
-              {isTech ? (
-                <DeveloperBoardIcon className="w-7 h-7" />
-              ) : (
-                <DesignServicesIcon className="w-7 h-7" />
-              )}
-            </div>
-          </div>
+        {/* Ilustración Descriptiva de la Carrera */}
+        <div className="mb-5">
+          <CareerVisualBanner
+            programId={group.programId}
+            programName={programName}
+            instanceId={group.id}
+            heightClass="h-36"
+            rightBadgeText={`Periodo ${group.periodId} · Sección ${group.section || 'A1'}`}
+          />
         </div>
 
         {/* Academic Metadata Grid (contrast >= 4.5:1 on labels) */}

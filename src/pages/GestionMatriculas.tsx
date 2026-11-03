@@ -673,7 +673,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                   disabled={isSubmitting}
                   className="px-6 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#1A7360] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? 'Registrando en SQLite…' : 'Registrar Matrícula'}
+                  {isSubmitting ? 'Registrando matrícula…' : 'Registrar Matrícula'}
                 </button>
               </div>
             </div>
@@ -774,7 +774,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                 <tr>
                   <td colSpan={canManage ? 4 : 3} className="py-12 text-center text-slate-500 dark:text-slate-400">
                     <div className="w-8 h-8 border-3 border-[#13594A]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin mx-auto mb-2" />
-                    Cargando padrón de matrículas desde SQLite…
+                    Cargando padrón de matrículas…
                   </td>
                 </tr>
               ) : filteredEnrollments.length === 0 ? (
@@ -784,6 +784,27 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                     <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
                       No existen registros que coincidan con los filtros seleccionados.
                     </span>
+                    {(searchQuery || selectedGroupFilter || selectedStateFilter) ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setSelectedGroupFilter('');
+                          setSelectedStateFilter('');
+                        }}
+                        className="mt-3 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-[#182220] transition-colors cursor-pointer"
+                      >
+                        Limpiar todos los filtros
+                      </button>
+                    ) : canManage ? (
+                      <button
+                        type="button"
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        className="mt-3 px-4 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] transition-colors shadow-xs cursor-pointer"
+                      >
+                        + Registrar nueva matrícula
+                      </button>
+                    ) : null}
                   </td>
                 </tr>
               ) : (

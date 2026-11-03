@@ -745,7 +745,7 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                 <tr>
                   <td colSpan={canEdit ? 5 : 4} className="py-12 text-center text-slate-500 dark:text-slate-400">
                     <div className="w-8 h-8 border-3 border-[#13594A]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin mx-auto mb-2" />
-                    Cargando padrón de estudiantes desde SQLite…
+                    Cargando padrón de estudiantes…
                   </td>
                 </tr>
               ) : filteredStudents.length === 0 ? (
@@ -757,6 +757,23 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                         ? 'No existen coincidencias con el término buscado.'
                         : 'No hay estudiantes registrados en este estado.'}
                     </span>
+                    {searchQuery ? (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="mt-3 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-[#182220] transition-colors cursor-pointer"
+                      >
+                        Limpiar búsqueda
+                      </button>
+                    ) : canEdit ? (
+                      <button
+                        type="button"
+                        onClick={() => formRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                        className="mt-3 px-4 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] transition-colors shadow-xs cursor-pointer"
+                      >
+                        + Registrar nuevo estudiante
+                      </button>
+                    ) : null}
                   </td>
                 </tr>
               ) : (

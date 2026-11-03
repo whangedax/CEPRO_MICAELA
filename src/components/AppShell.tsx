@@ -2,6 +2,7 @@ import React from 'react';
 import { NavRoute, UserProfile, UserRole } from '../types';
 import Sidebar from './ui/Sidebar/Sidebar';
 import Topbar from './ui/Topbar/Topbar';
+import AcademicWorkflowModal from './academic/AcademicWorkflowModal';
 
 export interface AppShellProps {
   currentRoute: NavRoute;
@@ -20,12 +21,6 @@ export const AppShell: React.FC<AppShellProps> = ({
   onLogout,
   children,
 }) => {
-  // NOTA AUDITORÍA AGENTE 04 / CALIDAD:
-  // Los atajos globales Ctrl+1, Ctrl+2, Ctrl+3 procedían del prototipo Stitch y no
-  // pertenecen al sistema original de CEPRO_MICAELA. Se desactivan de forma segura
-  // hasta recibir aprobación formal del equipo institucional para evitar colisiones
-  // con atajos nativos del navegador o reglas de accesibilidad.
-
   return (
     <div className="min-h-screen bg-[#F6F8FA] dark:bg-[#0F1715] text-[#172B28] dark:text-[#F0FDF8] antialiased transition-colors duration-200">
       {/* Sidebar fijo a la izquierda */}
@@ -34,6 +29,9 @@ export const AppShell: React.FC<AppShellProps> = ({
         onRouteChange={onRouteChange}
         role={role}
       />
+
+      {/* Selector modal de contexto académico guiado (Ventanas Paso a Paso) */}
+      <AcademicWorkflowModal onNavigate={onRouteChange} />
 
       {/* Área con desplazamiento y Topbar fijo */}
       <div className="pl-64">

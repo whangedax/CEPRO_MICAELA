@@ -6,6 +6,9 @@
  * la selección formal de aula y unidad didáctica (POST /api/workspace),
  * y la consulta del dashboard contextual (GET /api/dashboard).
  * 
+ * Incluye el control global del Asistente Guiado de Selección por Ventanas
+ * (isSelectorOpen, selectorStep, openSelector, closeSelector).
+ * 
  * Garantiza que al cambiar de usuario o cerrar sesión se limpie completamente
  * cualquier dato académico previo.
  */
@@ -37,6 +40,10 @@ interface WorkspaceContextType {
   ) => Promise<IWorkspaceContext>;
   clearWorkspace: () => void;
   selectedGroup: WorkspaceGroupOption | null;
+  isSelectorOpen: boolean;
+  selectorStep: 1 | 2 | 3;
+  openSelector: (step?: 1 | 2 | 3) => void;
+  closeSelector: () => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
@@ -48,6 +55,19 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSelectorOpen, setIsSelectorOpen] = useState<boolean>(false);
+  const [selectorStep, setSelectorStep] = useState<1 | 2 | 3>(1);
+
+  const openSelector = useCallback((step?: 1 | 2 | 3) => {
+    if (step) {
+      setSelectorStep(step);
+    }
+    setIsSelectorOpen(true);
+  }, []);
+
+  const closeSelector = useCallback(() => {
+    setIsSelectorOpen(false);
+  }, []);
 
   const clearWorkspace = useCallback(() => {
     setOptions(null);
@@ -55,6 +75,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setDashboardData(null);
     setError(null);
     setIsLoading(false);
+    setIsSelectorOpen(false);
   }, []);
 
   // Limpiar contexto cuando cambie el usuario o se cierre sesión
@@ -107,6 +128,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       // Inmediatamente consultar dashboard con el nuevo contexto
       const dash = await apiClient.getDashboard();
       setDashboardData(dash);
+      setIsSelectorOpen(false);
       return context;
     } catch (err: unknown) {
       const apiErr = err as ApiError;
@@ -132,7 +154,9 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         mode,
         unit: mode === 'UNIT' ? unitCode : mode === 'PRACTICE' ? 'EFSRT' : undefined,
       };
-      return selectWorkspace(payload);
+      const ctx = await selectWorkspace(payload);
+      setIsSelectorOpen(false);
+      return ctx;
     },
     [selectWorkspace]
   );
@@ -155,6 +179,10 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         selectGroupAndUnit,
         clearWorkspace,
         selectedGroup,
+        isSelectorOpen,
+        selectorStep,
+        openSelector,
+        closeSelector,
       }}
     >
       {children}
