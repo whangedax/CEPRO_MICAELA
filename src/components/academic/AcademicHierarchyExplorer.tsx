@@ -604,7 +604,9 @@ export const AcademicHierarchyExplorer: React.FC<AcademicHierarchyExplorerProps>
                   </span>
                 </div>
                 <h3 className="text-[17px] font-bold text-[#172B28] dark:text-[#F0FDF8] mt-1">
-                  {currentProgram?.nombre} — {currentGroup.name}
+                  {currentGroup.name.toLowerCase().includes((currentProgram?.nombre || '').toLowerCase()) || (currentProgram?.nombre || '').toLowerCase().includes(currentGroup.name.toLowerCase())
+                    ? currentGroup.name
+                    : `${currentProgram?.nombre} — ${currentGroup.name}`}
                 </h3>
                 <p className="text-[12px] text-slate-600 dark:text-slate-300">
                   Módulo: <span className="font-semibold">{ getModuleNameFromList(modules, currentGroup.moduleId) }</span>

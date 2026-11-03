@@ -200,7 +200,7 @@ export const MiCuentaPerfil: React.FC<MiCuentaPerfilProps> = ({ onNavigate }) =>
               Actualizar Contraseña
             </h2>
             <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 mb-5">
-              Su contraseña se almacena cifrada con derivación criptográfica scrypt en la base de datos SQLite local.
+              Su contraseña se almacena de forma segura y cifrada en el equipo institucional.
             </p>
 
             {errorMsg && (

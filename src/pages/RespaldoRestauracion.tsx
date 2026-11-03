@@ -664,8 +664,33 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     </tr>
                   ) : filteredBackups.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-6 text-center text-slate-400 dark:text-slate-500">
-                        {searchTerm ? 'No se encontraron respaldos coincidentes.' : 'No hay respaldos generados aún.'}
+                      <td colSpan={5} className="p-8 text-center text-slate-500 dark:text-slate-400">
+                        <p className="font-bold text-slate-800 dark:text-[#F0FDF8] text-sm">
+                          {searchTerm ? 'No se encontraron respaldos coincidentes' : 'No hay respaldos generados aún'}
+                        </p>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
+                          {searchTerm
+                            ? 'Pruebe modificando el término de búsqueda.'
+                            : 'Genere su primera copia de seguridad institucional para proteger los datos de la institución.'}
+                        </span>
+                        {searchTerm ? (
+                          <button
+                            type="button"
+                            onClick={() => setSearchTerm('')}
+                            className="mt-3 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-[#182220] transition-colors cursor-pointer"
+                          >
+                            Limpiar búsqueda
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleCreateBackup}
+                            disabled={isCreatingBackup}
+                            className="mt-3 px-4 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] transition-colors shadow-xs cursor-pointer"
+                          >
+                            + Generar primer respaldo institucional
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ) : (

@@ -714,7 +714,7 @@ export const GestionGrupos: React.FC<GestionGruposProps> = ({ onNavigate }) => {
                   disabled={isCreatingGroup}
                   className="px-6 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#1A7360] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
                 >
-                  {isCreatingGroup ? 'Creando grupo en SQLite…' : 'Crear Aula / Grupo'}
+                  {isCreatingGroup ? 'Creando aula institucional…' : 'Crear Aula / Grupo'}
                 </button>
               </div>
             </div>
@@ -801,7 +801,7 @@ export const GestionGrupos: React.FC<GestionGruposProps> = ({ onNavigate }) => {
         {isLoading ? (
           <div className="py-12 text-center text-slate-500 dark:text-slate-400 text-xs">
             <div className="w-8 h-8 border-3 border-[#13594A]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin mx-auto mb-2" />
-            Cargando configuración de grupos desde SQLite…
+            Cargando configuración de aulas y grupos…
           </div>
         ) : filteredGroups.length === 0 ? (
           <div className="py-12 text-center text-slate-500 dark:text-slate-400">
@@ -809,6 +809,27 @@ export const GestionGrupos: React.FC<GestionGruposProps> = ({ onNavigate }) => {
             <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
               No existen aulas que coincidan con los filtros seleccionados.
             </span>
+            {(searchQuery || selectedProgramFilter || statusFilter !== 'TODOS') ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedProgramFilter('');
+                  setStatusFilter('TODOS');
+                }}
+                className="mt-3 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-[#182220] transition-colors cursor-pointer"
+              >
+                Limpiar filtros
+              </button>
+            ) : isDirector ? (
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="mt-3 px-4 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] transition-colors shadow-xs cursor-pointer"
+              >
+                + Crear primera aula
+              </button>
+            ) : null}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-3">
