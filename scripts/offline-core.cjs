@@ -60,7 +60,28 @@ class OfflineCore {
   constructor(directory, backupFile = null) {
     this.directory = path.resolve(directory);
     fs.mkdirSync(this.directory, { recursive: true });
-    this.db = new DatabaseSync(path.join(this.directory, 'cetpro.sqlite'));
+    const targetDb = path.join(this.directory, 'cetpro.sqlite');
+    if (!fs.existsSync(targetDb)) {
+      const isRunningTest = process.argv.some(a => a.includes('test')) || !!process.env.NODE_TEST_CONTEXT || !!process.env.CETPRO_QA_PORT || process.env.CETPRO_SKIP_BASELINE_SEED === '1';
+      const baseRoot = process.env.CETPRO_ROOT || this.root || path.resolve(__dirname, '..');
+      const packagedBaseline = path.join(baseRoot, 'baseline', 'production-2026.sqlite');
+      const sourcesBaseline = path.join(baseRoot, 'sources', 'baseline', 'production-2026.sqlite');
+      const fallbackBaseline = path.resolve(__dirname, '..', 'baseline', 'production-2026.sqlite');
+      let foundBaseline = null;
+      if (fs.existsSync(packagedBaseline)) {
+        foundBaseline = packagedBaseline;
+      } else if (fs.existsSync(fallbackBaseline)) {
+        foundBaseline = fallbackBaseline;
+      } else if (!isRunningTest && fs.existsSync(sourcesBaseline)) {
+        foundBaseline = sourcesBaseline;
+      }
+      if (foundBaseline) {
+        const tempCopy = `${targetDb}.tmp_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+        fs.copyFileSync(foundBaseline, tempCopy);
+        fs.renameSync(tempCopy, targetDb);
+      }
+    }
+    this.db = new DatabaseSync(targetDb);
     this.db.exec(`PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;
       CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT UNIQUE, value TEXT NOT NULL);

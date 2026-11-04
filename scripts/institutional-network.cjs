@@ -569,7 +569,7 @@ function prepareBatchExport(core, actor, input) {
   const d = new Date();
   const dateStamp = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 
-  const isSatellite = !core.setting('authorityPrivate');
+  const isSatellite = !core.setting('authorityPrivate') || actor.role === 'DOCENTE';
 
   if (isSatellite) {
     // NODO SATÉLITE (DOCENTE o SECRETARIA) exporta hacia Dirección
