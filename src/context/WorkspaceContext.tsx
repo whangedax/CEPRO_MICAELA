@@ -146,13 +146,14 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       mode: 'UNIT' | 'MODULE' | 'PRACTICE',
       unitCode?: string
     ): Promise<IWorkspaceContext> => {
+      const effectiveMode = unitCode === 'EFSRT' ? 'PRACTICE' : mode;
       const payload: SelectWorkspacePayload = {
-        year: group.year,
+        year: group.year || (group.periodId ? String(group.periodId).slice(0, 4) : '2026'),
         programId: group.programId,
         moduleId: group.moduleId,
         groupId: group.id,
-        mode,
-        unit: mode === 'UNIT' ? unitCode : mode === 'PRACTICE' ? 'EFSRT' : undefined,
+        mode: effectiveMode,
+        unit: effectiveMode === 'UNIT' ? unitCode : effectiveMode === 'PRACTICE' ? 'EFSRT' : undefined,
       };
       const ctx = await selectWorkspace(payload);
       setIsSelectorOpen(false);

@@ -205,15 +205,18 @@ function createMainWindow() {
     },
   });
 
-  // Registrar webContents como autorizado para peticiones autenticadas
-  authorizedWebContentsIds.add(mainWindow.webContents.id);
+  // Registrar webContents como autorizado para peticiones autenticadas (guardar ID primitivo antes de cierre)
+  const webContentsId = mainWindow.webContents.id;
+  authorizedWebContentsIds.add(webContentsId);
 
   // Maximizar por defecto en pantallas grandes para confort de trabajo
   mainWindow.maximize();
 
   // Mostrar la ventana solo cuando esté lista para evitar parpadeos
   mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+    }
   });
 
   // SEGURIDAD: Bloqueo estricto de apertura de nuevas ventanas (window.open)
@@ -258,9 +261,7 @@ function createMainWindow() {
   }
 
   mainWindow.on('closed', () => {
-    if (mainWindow) {
-      authorizedWebContentsIds.delete(mainWindow.webContents.id);
-    }
+    authorizedWebContentsIds.delete(webContentsId);
     mainWindow = null;
   });
 }
@@ -289,7 +290,7 @@ ipcMain.handle('app:getInfo', () => {
 });
 
 ipcMain.handle('dialog:openFile', async (event, options = {}) => {
-  if (!mainWindow) return { canceled: true, filePaths: [] };
+  if (!mainWindow || mainWindow.isDestroyed()) return { canceled: true, filePaths: [] };
   return dialog.showOpenDialog(mainWindow, {
     title: options.title || 'Seleccionar Archivo',
     filters: options.filters || [{ name: 'Todos los archivos', extensions: ['*'] }],
@@ -298,7 +299,7 @@ ipcMain.handle('dialog:openFile', async (event, options = {}) => {
 });
 
 ipcMain.handle('dialog:saveFile', async (event, options = {}) => {
-  if (!mainWindow) return { canceled: true, filePath: '' };
+  if (!mainWindow || mainWindow.isDestroyed()) return { canceled: true, filePath: '' };
   return dialog.showSaveDialog(mainWindow, {
     title: options.title || 'Guardar Archivo',
     defaultPath: options.defaultPath || 'respaldo.cetpro-backup',
@@ -307,7 +308,7 @@ ipcMain.handle('dialog:saveFile', async (event, options = {}) => {
 });
 
 ipcMain.handle('dialog:showMessageBox', async (event, options = {}) => {
-  if (!mainWindow) return { response: 0 };
+  if (!mainWindow || mainWindow.isDestroyed()) return { response: 0 };
   return dialog.showMessageBox(mainWindow, options);
 });
 
@@ -326,7 +327,7 @@ ipcMain.handle('shell:openExternal', async (event, url) => {
 
 // GESTIÓN DE SEGUNDA INSTANCIA
 app.on('second-instance', () => {
-  if (mainWindow) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.focus();
   }

@@ -93,18 +93,18 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
     return 'M1';
   };
 
-  // Inicializar selección basada en el espacio activo
+  // Inicializar selección basada en el espacio activo únicamente al abrir el modal
   useEffect(() => {
-    if (!programs.length) return;
+    if (!isOpen || !programs.length) return;
     if (activeWorkspace && !activeWorkspace.overview && activeWorkspace.programId) {
       setSelectedProgramId(activeWorkspace.programId);
       if (activeWorkspace.groupId) {
         setSelectedGroupId(activeWorkspace.groupId);
       }
-    } else if (!selectedProgramId) {
-      setSelectedProgramId(programs[0].id);
+    } else {
+      setSelectedProgramId((prev) => prev || programs[0].id);
     }
-  }, [programs, activeWorkspace, selectedProgramId]);
+  }, [isOpen, programs]);
 
   // Aulas de la carrera seleccionada
   const careerGroups = useMemo(() => {
@@ -163,13 +163,15 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
     setIsApplying(true);
     setFeedbackMsg(null);
     try {
-      await selectGroupAndUnit(group, mode, unitCode);
+      const effectiveMode = unitCode === 'EFSRT' ? 'PRACTICE' : mode;
+      await selectGroupAndUnit(group, effectiveMode, unitCode);
       handleClose();
       if (targetRoute) {
         navigateTo(targetRoute);
       }
-    } catch {
-      // Error manejado en WorkspaceContext
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'error' in err ? String((err as { error: unknown }).error) : 'No se pudo seleccionar la unidad.';
+      setFeedbackMsg(msg);
     } finally {
       setIsApplying(false);
     }
@@ -428,6 +430,9 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                       type="button"
                       onClick={() => {
                         setSelectedProgramId(prog.id);
+                        if (progGroups.length > 0) {
+                          setSelectedGroupId(progGroups[0].id);
+                        }
                         setStep(3);
                       }}
                       className={`text-left rounded-3xl p-3.5 transition-all duration-200 border flex flex-col justify-between group cursor-pointer ${
@@ -679,7 +684,7 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                           <button
                             type="button"
                             disabled={isApplying}
-                            onClick={() => handleSelectUnit(currentGroup, 'PRACTICE', 'EFSRT', 'evaluacion')}
+                            onClick={() => handleSelectUnit(currentGroup, 'PRACTICE', 'EFSRT', 'documentos')}
                             className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-[12px] tracking-wide flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
                           >
                             <span>Gestionar Prácticas EFSRT →</span>

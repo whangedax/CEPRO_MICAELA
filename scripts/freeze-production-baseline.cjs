@@ -46,14 +46,12 @@ function freezeProductionBaseline() {
     const cert = core.certificate(eloyUser, device);
     core.setting('certificate', cert);
 
-    const devices = core.setting('devices') || [];
-    const updatedDevices = devices.filter(d => d.id !== device.id);
-    updatedDevices.push({
+    const updatedDevices = [{
       id: device.id,
       userId: eloyUser.id,
       signingKey: device.signing.public,
       encryptionKey: device.encryption.public
-    });
+    }];
     core.setting('devices', updatedDevices);
 
     const institution = core.setting('institution');

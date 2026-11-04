@@ -152,13 +152,35 @@ export const DashboardDocente: React.FC<DashboardDocenteProps> = ({ onNavigate }
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => openSelector(1)}
-            className="self-start sm:self-center px-4 py-2 rounded-xl bg-white dark:bg-[#131C1A] border border-[#13594A]/30 dark:border-[#205C4E] text-[#13594A] dark:text-[#5EEAD4] text-[12px] font-bold hover:bg-[#13594A] hover:text-white dark:hover:bg-[#1A6B5A] transition-all shadow-xs shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4]"
-          >
-            🔄 Cambiar unidad / aula
-          </button>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {(activeGroup.units || []).map((u) => {
+              const isCurrentUnit =
+                (activeWorkspace.mode === 'UNIT' && activeWorkspace.unit === u.code) ||
+                (activeWorkspace.mode === 'PRACTICE' && u.code === 'EFSRT');
+              return (
+                <button
+                  key={u.code}
+                  type="button"
+                  onClick={() => selectGroupAndUnit(activeGroup, u.code === 'EFSRT' ? 'PRACTICE' : 'UNIT', u.code)}
+                  title={u.name ? `${u.code}: ${u.name}` : `Activar ${u.code}`}
+                  className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                    isCurrentUnit
+                      ? 'bg-[#13594A] text-white border-[#13594A] shadow-xs'
+                      : 'bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#263834] hover:border-[#13594A] hover:text-[#13594A] dark:hover:text-[#5EEAD4]'
+                  }`}
+                >
+                  {u.code}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => openSelector(1)}
+              className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-[#131C1A] border border-[#13594A]/30 dark:border-[#205C4E] text-[#13594A] dark:text-[#5EEAD4] text-[12px] font-bold hover:bg-[#13594A] hover:text-white dark:hover:bg-[#1A6B5A] transition-all shadow-xs shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4]"
+            >
+              🔄 Cambiar aula
+            </button>
+          </div>
         </aside>
       ) : (
         <aside
@@ -311,6 +333,9 @@ export const DashboardDocente: React.FC<DashboardDocenteProps> = ({ onNavigate }
                   isActiveWorkspace={isActive}
                   activeUnitCode={isActive ? activeWorkspace?.unit : undefined}
                   onEnterClassroom={handleOpenUnitModal}
+                  onSelectUnit={async (grp, unitCode) => {
+                    await selectGroupAndUnit(grp, unitCode === 'EFSRT' ? 'PRACTICE' : 'UNIT', unitCode);
+                  }}
                 />
               );
             })}

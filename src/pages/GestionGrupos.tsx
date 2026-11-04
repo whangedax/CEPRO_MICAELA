@@ -42,7 +42,34 @@ interface GestionGruposProps {
 
 export const GestionGrupos: React.FC<GestionGruposProps> = ({ onNavigate }) => {
   const { user } = useAuth();
-  const { activeWorkspace } = useWorkspace();
+  const { activeWorkspace, options, selectGroupAndUnit } = useWorkspace();
+
+  const handleSelectUnitFromCard = async (g: DashboardGroup, unitCode: string) => {
+    try {
+      const optGroup = options?.groups.find((og) => og.id === g.id) || {
+        id: g.id,
+        name: g.name,
+        section: g.section || 'A1',
+        studentCount: enrollments.filter((e) => e.groupId === g.id && e.active).length,
+        programId: g.programId,
+        moduleId: g.moduleId,
+        periodId: g.periodId || '2026-I',
+        year: (g.periodId || '2026').slice(0, 4),
+        turno: g.turno || 'Mañana',
+        modalidad: String((g as unknown as { modalidad?: string }).modalidad || 'Presencial'),
+        units: (g.units || []).map((code) => ({ code, name: code })),
+      };
+      await selectGroupAndUnit(
+        optGroup,
+        unitCode === 'EFSRT' ? 'PRACTICE' : 'UNIT',
+        unitCode
+      );
+      setSuccessMsg(`Unidad activa seleccionada: ${g.name} · Unidad ${unitCode}. Ya puede gestionar matrículas, asistencia, notas o formatos PDF de esta unidad.`);
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
+      setErrorMsg(apiErr?.error || 'No se pudo seleccionar la unidad didáctica.');
+    }
+  };
   const { registerPendingChanges, unregisterPendingChanges } = usePendingChanges();
 
   const isDirector = user?.role === 'DIRECTOR';
@@ -124,16 +151,20 @@ export const GestionGrupos: React.FC<GestionGruposProps> = ({ onNavigate }) => {
       setStudents(res.students || []);
 
       // Preseleccionar primer programa en nuevo grupo si aún no está seleccionado
-      if (res.programs?.length && !newGroupForm.programId) {
+      if (res.programs?.length) {
         const firstProgId = res.programs[0].id;
         const matchingModule = (res.modules as unknown as Array<{ id: string; programaId?: string }>)?.find(
           (m) => m.programaId === firstProgId
         );
-        setNewGroupForm((prev) => ({
-          ...prev,
-          programId: firstProgId,
-          moduleId: matchingModule?.id || '',
-        }));
+        setNewGroupForm((prev) =>
+          prev.programId
+            ? prev
+            : {
+                ...prev,
+                programId: firstProgId,
+                moduleId: matchingModule?.id || '',
+              }
+        );
       }
     } catch (err: unknown) {
       const apiErr = err as ApiError;
@@ -142,7 +173,7 @@ export const GestionGrupos: React.FC<GestionGruposProps> = ({ onNavigate }) => {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [isTeacher, newGroupForm.programId]);
+  }, [isTeacher]);
 
   useEffect(() => {
     loadData();
@@ -884,20 +915,33 @@ export const GestionGrupos: React.FC<GestionGruposProps> = ({ onNavigate }) => {
                       )}
                     </div>
 
-                    {/* Unidades didácticas */}
+                    {/* Unidades didácticas interactivas */}
                     <div className="mt-3 pt-3 border-t border-slate-100 dark:border-[#263834]">
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block mb-1">
-                        Unidades Didácticas
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
+                        Unidades Didácticas (clic para seleccionar):
                       </span>
-                      <div className="flex flex-wrap gap-1">
-                        {(g.units || []).map((u) => (
-                          <span
-                            key={u}
-                            className="px-2 py-0.5 rounded bg-slate-50 dark:bg-[#182220] text-slate-700 dark:text-slate-300 text-[10px] font-mono border border-slate-200/80 dark:border-[#263834]"
-                          >
-                            {u}
-                          </span>
-                        ))}
+                      <div className="flex flex-wrap gap-1.5">
+                        {(g.units || []).map((u) => {
+                          const isUnitActive =
+                            activeWorkspace?.groupId === g.id &&
+                            ((activeWorkspace?.mode === 'UNIT' && activeWorkspace?.unit === u) ||
+                              (activeWorkspace?.mode === 'PRACTICE' && u === 'EFSRT'));
+                          return (
+                            <button
+                              key={u}
+                              type="button"
+                              onClick={() => handleSelectUnitFromCard(g, u)}
+                              title={`Activar ${g.name} · Unidad ${u}`}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                                isUnitActive
+                                  ? 'bg-[#13594A] text-white border-[#13594A] shadow-xs ring-2 ring-[#13594A]/25'
+                                  : 'bg-slate-50 dark:bg-[#182220] text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-[#263834] hover:border-[#13594A] hover:text-[#13594A] dark:hover:text-[#5EEAD4]'
+                              }`}
+                            >
+                              {u}{isUnitActive ? ' ✓' : ''}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

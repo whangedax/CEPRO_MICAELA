@@ -61,21 +61,44 @@ class OfflineCore {
     this.directory = path.resolve(directory);
     fs.mkdirSync(this.directory, { recursive: true });
     const targetDb = path.join(this.directory, 'cetpro.sqlite');
-    if (!fs.existsSync(targetDb)) {
-      const isRunningTest = process.argv.some(a => a.includes('test')) || !!process.env.NODE_TEST_CONTEXT || !!process.env.CETPRO_QA_PORT || process.env.CETPRO_SKIP_BASELINE_SEED === '1';
-      const baseRoot = process.env.CETPRO_ROOT || this.root || path.resolve(__dirname, '..');
-      const packagedBaseline = path.join(baseRoot, 'baseline', 'production-2026.sqlite');
-      const sourcesBaseline = path.join(baseRoot, 'sources', 'baseline', 'production-2026.sqlite');
-      const fallbackBaseline = path.resolve(__dirname, '..', 'baseline', 'production-2026.sqlite');
-      let foundBaseline = null;
-      if (fs.existsSync(packagedBaseline)) {
-        foundBaseline = packagedBaseline;
-      } else if (fs.existsSync(fallbackBaseline)) {
-        foundBaseline = fallbackBaseline;
-      } else if (!isRunningTest && fs.existsSync(sourcesBaseline)) {
-        foundBaseline = sourcesBaseline;
+    const isRunningTest = process.argv.some(a => a.includes('test')) || !!process.env.NODE_TEST_CONTEXT || !!process.env.CETPRO_QA_PORT || process.env.CETPRO_SKIP_BASELINE_SEED === '1';
+    const baseRoot = process.env.CETPRO_ROOT || this.root || path.resolve(__dirname, '..');
+    const packagedBaseline = path.join(baseRoot, 'baseline', 'production-2026.sqlite');
+    const sourcesBaseline = path.join(baseRoot, 'sources', 'baseline', 'production-2026.sqlite');
+    const fallbackBaseline = path.resolve(__dirname, '..', 'baseline', 'production-2026.sqlite');
+    let foundBaseline = null;
+    if (fs.existsSync(packagedBaseline)) {
+      foundBaseline = packagedBaseline;
+    } else if (fs.existsSync(fallbackBaseline)) {
+      foundBaseline = fallbackBaseline;
+    } else if (!isRunningTest && fs.existsSync(sourcesBaseline)) {
+      foundBaseline = sourcesBaseline;
+    }
+    if (foundBaseline) {
+      let shouldSeedBaseline = !fs.existsSync(targetDb);
+      if (!shouldSeedBaseline && !isRunningTest) {
+        try {
+          const checkDb = new DatabaseSync(targetDb);
+          try {
+            const devUser = checkDb.prepare("SELECT 1 FROM users WHERE username IN ('director.dev', 'docente.dev', 'secretaria.dev') LIMIT 1").get();
+            const officialDirector = checkDb.prepare("SELECT 1 FROM users WHERE username = 'eloy.paredes' LIMIT 1").get();
+            const instRow = checkDb.prepare("SELECT value FROM settings WHERE key = 'institution'").get();
+            const isLegacyPackaged = instRow && typeof instRow.value === 'string' && instRow.value.includes('Electron Packaged');
+            if ((devUser || isLegacyPackaged) && !officialDirector) {
+              shouldSeedBaseline = true;
+            }
+          } finally {
+            checkDb.close();
+          }
+          if (shouldSeedBaseline) {
+            try { fs.copyFileSync(targetDb, `${targetDb}.legacy-dev.bak`); } catch {}
+            for (const ext of ['', '-wal', '-shm']) {
+              try { if (fs.existsSync(`${targetDb}${ext}`)) fs.unlinkSync(`${targetDb}${ext}`); } catch {}
+            }
+          }
+        } catch {}
       }
-      if (foundBaseline) {
+      if (shouldSeedBaseline) {
         const tempCopy = `${targetDb}.tmp_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
         fs.copyFileSync(foundBaseline, tempCopy);
         fs.renameSync(tempCopy, targetDb);
@@ -248,13 +271,40 @@ class OfflineCore {
       submissions:this.scoped(user,'documentSubmissions').map(({pdf,...r})=>r),
       devices: ADMIN.includes(user.role) ? (this.setting('devices') || []).map(d => ({ ...d, name: this.user(d.userId)?.name })) : [] };
   }
+  buildVisibilityCache() {
+    const groups = this.records('groups');
+    const groupsMap = new Map(groups.map(g => [g.id, g]));
+    const sectionByGroup = new Map();
+    for (const g of groups) sectionByGroup.set(g.id, this.groupSection(g));
+    const enrollments = this.records('enrollments');
+    const enrollmentsMap = new Map(enrollments.map(e => [e.id, e]));
+    return { groupsMap, sectionByGroup, enrollments, enrollmentsMap, userCache: new Map() };
+  }
+  getUserScopeCache(user, vCache) {
+    if (!vCache || user.role !== 'DOCENTE') return null;
+    if (vCache.userCache.has(user.id)) return vCache.userCache.get(user.id);
+    const hasAssignment = (groupId, unit = null) => {
+      const g = vCache.groupsMap.get(groupId);
+      const sec = vCache.sectionByGroup.get(groupId) || '';
+      return (user.assignments || []).some(a => a.groupId === groupId && (!a.section || a.section === sec) && (!a.periodId || a.periodId === g?.periodId) && (!unit || (a.units || []).includes(unit)));
+    };
+    const allowedStudentIds = new Set(vCache.enrollments.filter(e => hasAssignment(e.groupId)).map(e => e.studentId));
+    const entry = { groupsMap: vCache.groupsMap, sectionByGroup: vCache.sectionByGroup, enrollmentsMap: vCache.enrollmentsMap, allowedStudentIds, hasAssignment };
+    vCache.userCache.set(user.id, entry);
+    return entry;
+  }
   pendingCount(user) {
     if (!this.setting('authorityPrivate')) return this.db.prepare('SELECT value FROM operations WHERE acknowledged=0').all().map(r => JSON.parse(r.value)).filter(op => op.body.actor.id === user.id).length;
+    const devices = (this.setting('devices') || []).filter(d => d.id !== this.status().deviceId);
+    if (!devices.length) return 0;
     const delivered = new Set(this.db.prepare('SELECT deviceId,operationId FROM deliveries WHERE acknowledged=1').all().map(d => `${d.deviceId}:${d.operationId}`));
+    const ops = this.operations();
+    const vCache = this.buildVisibilityCache();
     let count = 0;
-    for (const device of (this.setting('devices') || []).filter(d => d.id !== this.status().deviceId)) {
+    for (const device of devices) {
       const target = this.user(device.userId); if (!target?.active) continue;
-      count += this.operations().filter(op => this.operationVisible(target, op.body) && (user.role!=='DOCENTE'||op.body.actor.id===user.id) && !delivered.has(`${device.id}:${op.body.id}`)).length;
+      const scopeCache = this.getUserScopeCache(target, vCache);
+      count += ops.filter(op => this.operationVisible(target, op.body, scopeCache) && (user.role!=='DOCENTE'||op.body.actor.id===user.id) && !delivered.has(`${device.id}:${op.body.id}`)).length;
     }
     return count;
   }
@@ -504,7 +554,9 @@ class OfflineCore {
     const rejected = new Set(resolved.filter(c => c.resolution?.action === 'KEEP_LOCAL').map(c => c.id));
     const confirmed = hub ? new Set(this.db.prepare('SELECT operationId FROM deliveries WHERE deviceId=? AND acknowledged=1').all(target.id).map(d => d.operationId))
       : new Set(this.db.prepare('SELECT id FROM operations WHERE acknowledged=1').all().map(o => o.id));
-    const candidates = this.operations().filter(op => !confirmed.has(op.body.id) && !rejected.has(op.body.id) && (hub ? targetUser.active && this.operationVisible(targetUser, op.body) : op.body.actor.id === actor.id && this.operationVisible(actor, op.body)));
+    const vCache = this.buildVisibilityCache();
+    const targetScopeCache = this.getUserScopeCache(hub ? targetUser : actor, vCache);
+    const candidates = this.operations().filter(op => !confirmed.has(op.body.id) && !rejected.has(op.body.id) && (hub ? targetUser.active && this.operationVisible(targetUser, op.body, targetScopeCache) : op.body.actor.id === actor.id && this.operationVisible(actor, op.body, targetScopeCache)));
     const operations=[];let packageBytes=0;
     for(const op of candidates){const bytes=Buffer.byteLength(canonical(op));if(bytes>16*1024*1024)fail('Una operación supera el tamaño del lote de sincronización.');if(packageBytes+bytes>16*1024*1024)break;operations.push(op);packageBytes+=bytes;}
     const acknowledgements = hub ? this.operations().map(op => op.body.id) : this.operations().filter(op => op.body.actor.id !== actor.id).map(op => op.body.id);
@@ -515,17 +567,36 @@ class OfflineCore {
     if (hub) for (const op of operations) this.db.prepare('INSERT OR IGNORE INTO deliveries (deviceId,operationId) VALUES (?,?)').run(target.id, op.body.id);
     return { body, signature: sign(body, d.signing.private) };
   }
-  operationVisible(user, body) {
+  operationVisible(user, body, scopeCache = null) {
     if(body.entity==='userDirectory')return user.role==='DIRECTOR'||(user.role==='SECRETARIA'&&body.value.role==='DOCENTE');
     if(body.entity==='accountRequests'&&body.value.action==='PASSWORD'&&body.value.userId===user.id)return true;
     if(body.entity==='accountRequests')return ADMIN.includes(user.role)&&(user.role==='DIRECTOR'||body.value.requestedBy===user.id);
     if(body.entity==='studentRequests')return user.role!=='DOCENTE'||(body.value.requestedBy===user.id&&user.assignments.some(a=>a.groupId===body.value.groupId));
-    if(body.entity==='documentSettings')return DocumentSettings.visible(this,user,body.value);
+    if(body.entity==='documentSettings'){
+      if(scopeCache&&user.role==='DOCENTE'){
+        const s=body.value?.scope;if(!s||!DocumentSettings.SETTINGS_FIELDS[s.kind])return false;
+        if(s.kind==='institution')return true;
+        if(s.kind==='academicYear')return user.assignments.some(a=>a.periodId?.slice(0,4)===s.target);
+        if(s.kind==='academicPeriod')return user.assignments.some(a=>a.periodId===s.target);
+        if(s.kind==='curriculum'||s.kind==='moduleDefaults'||s.kind==='module')return user.assignments.some(a=>a.moduleId===s.target);
+        if(s.kind==='program')return user.assignments.some(a=>a.programId===s.target);
+        if(s.kind==='group'||s.kind==='unit'||s.kind==='unitCurriculum'){
+          const g=scopeCache.groupsMap.get(s.target);
+          return g?scopeCache.hasAssignment(s.target,['unit','unitCurriculum'].includes(s.kind)?s.unit:null):user.assignments.some(a=>a.groupId===s.target&&(!['unit','unitCurriculum'].includes(s.kind)||a.units.includes(s.unit)));
+        }
+        if(['enrollment','registry','practice','closure'].includes(s.kind)){
+          const e=scopeCache.enrollmentsMap.get(s.target);
+          return !!e&&user.assignments.some(a=>a.groupId===e.groupId&&(!a.periodId||!e.periodId||a.periodId===e.periodId)&&(s.kind!=='practice'||a.units.includes('EFSRT')));
+        }
+        return false;
+      }
+      return DocumentSettings.visible(this,user,body.value);
+    }
     if(body.entity==='documentSubmissions')return user.role!=='DOCENTE'||(body.value.authorId===user.id&&user.assignments.some(a=>a.groupId===body.value.groupId&&(!body.value.unit||a.units.includes(body.value.unit))));
     if (user.role !== 'DOCENTE') return !['grades', 'attendance'].includes(body.entity) || ADMIN.includes(user.role);
     const v = body.value;
-    if (body.entity === 'students') return this.scoped(user, 'enrollments').some(e => e.studentId === v.id);
-    if (['enrollments', 'grades', 'attendance'].includes(body.entity)) return this.assignment(user, v.groupId, v.unit);
+    if (body.entity === 'students') return scopeCache ? scopeCache.allowedStudentIds.has(v.id) : this.scoped(user, 'enrollments').some(e => e.studentId === v.id);
+    if (['enrollments', 'grades', 'attendance'].includes(body.entity)) return scopeCache ? scopeCache.hasAssignment(v.groupId, v.unit) : this.assignment(user, v.groupId, v.unit);
     if (body.entity === 'groups') return user.assignments.some(a => a.groupId === v.id);
     if (body.entity === 'programs') return user.assignments.some(a => a.programId === v.id);
     if (body.entity === 'modules') return user.assignments.some(a => a.moduleId === v.id);

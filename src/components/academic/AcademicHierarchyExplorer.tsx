@@ -84,7 +84,7 @@ export const AcademicHierarchyExplorer: React.FC<AcademicHierarchyExplorerProps>
     return 'M1';
   };
 
-  // Sincronizar selección inicial cuando cargan las opciones o el workspace activo
+  // Sincronizar selección inicial cuando cargan las opciones o cambia el workspace activo externamente
   useEffect(() => {
     if (!programs.length) return;
 
@@ -99,11 +99,8 @@ export const AcademicHierarchyExplorer: React.FC<AcademicHierarchyExplorerProps>
       return;
     }
 
-    if (!selectedProgramId || !programs.some((p) => p.id === selectedProgramId)) {
-      const firstProg = programs[0];
-      setSelectedProgramId(firstProg.id);
-    }
-  }, [programs, activeWorkspace, selectedProgramId]);
+    setSelectedProgramId((prev) => (prev && programs.some((p) => p.id === prev) ? prev : programs[0].id));
+  }, [programs, activeWorkspace]);
 
   // Módulos disponibles para la carrera seleccionada y el filtro de etapa
   const careerModules = useMemo(() => {

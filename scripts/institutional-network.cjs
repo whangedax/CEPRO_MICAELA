@@ -404,7 +404,9 @@ function getNetworkStatus(core, actor) {
     }
   }
 
-  const allOps = core.operations();
+  const hasExternalLinkedDevices = isHub && devicesList.some((d) => d.id !== currentDeviceId);
+  const allOps = hasExternalLinkedDevices ? core.operations() : [];
+  const vCache = hasExternalLinkedDevices && typeof core.buildVisibilityCache === 'function' ? core.buildVisibilityCache() : null;
 
   let upToDateCount = 0;
   let pendingCount = 0;
@@ -421,8 +423,9 @@ function getNetworkStatus(core, actor) {
       ? confirmedByDevice.get(linkedDevice.id)
       : new Set();
 
-    const pendingChangesCount = isHub && linkedDevice && !isRevoked
-      ? allOps.filter((op) => !confirmed.has(op.body.id) && core.operationVisible(u, op.body)).length
+    const uScopeCache = vCache && typeof core.getUserScopeCache === 'function' ? core.getUserScopeCache(u, vCache) : null;
+    const pendingChangesCount = isHub && linkedDevice && linkedDevice.id !== currentDeviceId && !isRevoked
+      ? allOps.filter((op) => !confirmed.has(op.body.id) && core.operationVisible(u, op.body, uScopeCache)).length
       : 0;
 
     const unackCount = linkedDevice

@@ -33,6 +33,7 @@ export interface ClassroomCardProps {
   isActiveWorkspace?: boolean;
   activeUnitCode?: string;
   onEnterClassroom: (group: WorkspaceGroupOption) => void;
+  onSelectUnit?: (group: WorkspaceGroupOption, unitCode: string) => void;
 }
 
 export const ClassroomCard: React.FC<ClassroomCardProps> = ({
@@ -42,6 +43,7 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
   isActiveWorkspace = false,
   activeUnitCode,
   onEnterClassroom,
+  onSelectUnit,
 }) => {
   const careerTheme = resolveCareerVisualTheme(group.programId, programName);
 
@@ -141,12 +143,35 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
             </span>
           </div>
           <div className="flex flex-col col-span-2 sm:col-span-1">
-            <span className="text-[10px] text-slate-600 dark:text-slate-400 uppercase tracking-wider font-bold">
-              Unidades Didácticas
+            <span className="text-[10px] text-slate-600 dark:text-slate-400 uppercase tracking-wider font-bold mb-1">
+              Unidades ({group.units.length} U.D.)
             </span>
-            <span className="text-[12px] text-slate-800 dark:text-slate-200 font-bold mt-0.5">
-              {group.units.length} U.D. ({group.units.map(u => u.code).join(', ')})
-            </span>
+            <div className="flex flex-wrap gap-1">
+              {group.units.map((u) => {
+                const isUnitSelected = isActiveWorkspace && activeUnitCode === u.code;
+                return (
+                  <button
+                    key={u.code}
+                    type="button"
+                    onClick={() => {
+                      if (onSelectUnit) {
+                        onSelectUnit(group, u.code);
+                      } else {
+                        onEnterClassroom(group);
+                      }
+                    }}
+                    title={u.name ? `Seleccionar ${u.code}: ${u.name}` : `Seleccionar unidad ${u.code}`}
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all cursor-pointer border ${
+                      isUnitSelected
+                        ? 'bg-[#13594A] text-white border-[#13594A] shadow-xs'
+                        : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:border-[#13594A] hover:text-[#13594A] dark:hover:text-[#5EEAD4]'
+                    }`}
+                  >
+                    {u.code}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-﻿; ==============================================================================
+; ==============================================================================
 ; CEPRO_MICAELA 2.0 — Script de Instalación Oficial Producción 2026 Windows
 ; Edición Oficial de Producción 2026 con Base de Datos Pre-cargada
 ; Arquitectura x64 Offline-First · Seguridad Validada · Preservación de Base de Datos
@@ -26,9 +26,10 @@ Compression=lzma2/ultra64
 SolidCompression=yes
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-; Instalación estándar por usuario sin requerir elevación innecesaria
+; Instalación directa sin diálogo confuso de selección de modo (un único flujo estándar)
 PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog commandline
+PrivilegesRequiredOverridesAllowed=commandline
+UsePreviousPrivileges=no
 ; Detección y cierre seguro de procesos activos antes de instalar o actualizar
 CloseApplications=yes
 CloseApplicationsFilter=CEPRO_MICAELA_2.0.exe

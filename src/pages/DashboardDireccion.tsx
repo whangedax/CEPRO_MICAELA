@@ -41,7 +41,7 @@ interface DashboardDireccionProps {
 
 export const DashboardDireccion: React.FC<DashboardDireccionProps> = ({ onNavigate }) => {
   const { user } = useAuth();
-  const { activeWorkspace, options, selectedGroup, openSelector } = useWorkspace();
+  const { activeWorkspace, options, selectedGroup, selectGroupAndUnit, openSelector } = useWorkspace();
   const hasPromptedRef = useRef<boolean>(false);
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -387,6 +387,33 @@ export const DashboardDireccion: React.FC<DashboardDireccionProps> = ({ onNaviga
                 ? `Docente titular: ${activeGroup.teacherName || 'Asignado'} · ${activeGroup.studentCount} participantes matriculados · Turno ${activeGroup.turno || 'Mañana'}`
                 : 'Supervisión integral de las 7 carreras técnicas y 16 aulas formativas activas.'}
             </p>
+            {activeGroup && activeGroup.units && activeGroup.units.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mr-1">
+                  Unidades del Aula:
+                </span>
+                {activeGroup.units.map((u) => {
+                  const isUnitSelected =
+                    (activeWorkspace?.mode === 'UNIT' && activeWorkspace?.unit === u.code) ||
+                    (activeWorkspace?.mode === 'PRACTICE' && u.code === 'EFSRT');
+                  return (
+                    <button
+                      key={u.code}
+                      type="button"
+                      onClick={() => selectGroupAndUnit(activeGroup, u.code === 'EFSRT' ? 'PRACTICE' : 'UNIT', u.code)}
+                      title={u.name ? `${u.code}: ${u.name}` : `Seleccionar ${u.code}`}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                        isUnitSelected
+                          ? 'bg-[#13594A] text-white border-[#13594A] shadow-xs'
+                          : 'bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#263834] hover:border-[#13594A] hover:text-[#13594A] dark:hover:text-[#5EEAD4]'
+                      }`}
+                    >
+                      {u.code}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
