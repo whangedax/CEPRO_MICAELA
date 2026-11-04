@@ -891,4 +891,218 @@ export interface SetupInstitutionResponse {
   fingerprint: string;
 }
 
+// ==========================================
+// CONTRATOS DE RED INSTITUCIONAL OFFLINE (TAREA 45)
+// ==========================================
+
+export interface NetworkAccountStatus {
+  id: string;
+  username: string;
+  name: string;
+  role: UserRole;
+  active: boolean;
+  version: number;
+  assignmentsCount: number;
+  isLinked: boolean;
+  deviceId: string | null;
+  certificateStatus: 'ACTIVE' | 'EXPIRED' | 'UNLINKED';
+  validUntil: string | null;
+  isExpired: boolean;
+  statusTrafficLight: 'GREEN' | 'YELLOW' | 'RED';
+}
+
+export interface NetworkDeviceSummary {
+  id: string;
+  name: string;
+  userId?: string;
+  signingKey?: string;
+}
+
+export interface NetworkStatusResponse {
+  isHub: boolean;
+  authorityPresent: boolean;
+  deviceId: string;
+  institution: {
+    id: string;
+    name: string;
+    publicKey: string;
+  } | null;
+  accounts: NetworkAccountStatus[];
+  devices: NetworkDeviceSummary[];
+  revokedDevices: Array<{ deviceId: string; reason: string; revokedAt: string }>;
+  metrics: {
+    totalAccounts: number;
+    linkedAccounts: number;
+    activeAccounts: number;
+    pendingKits: number;
+  };
+}
+
+export interface CreateKitInput {
+  userId: string;
+  expiryDays?: number;
+  targetPath?: string;
+}
+
+export interface CreateKitResponse {
+  success: boolean;
+  kitDirectory: string;
+  invitationFile: string;
+  instructionsFile: string;
+  installerCopied: boolean;
+  expiresAt: string;
+}
+
+export interface ValidateInvitationInput {
+  invitation: unknown;
+}
+
+export interface ValidateInvitationResponse {
+  valid: boolean;
+  institution: {
+    id: string;
+    name: string;
+  };
+  recipient: {
+    id: string;
+    username: string;
+    name: string;
+    role: UserRole;
+  };
+  issuedAt: string;
+  expiresAt: string;
+  isExpired: boolean;
+  installerSha256: string;
+}
+
+export interface AcceptInvitationInput {
+  invitation: unknown;
+}
+
+export interface AcceptInvitationResponse {
+  success: boolean;
+  linkedUser: {
+    id: string;
+    username: string;
+    name: string;
+    role: UserRole;
+  };
+  deviceId: string;
+}
+
+export interface PrepareBatchExportInput {
+  usbDrivePath?: string;
+  passphrase?: string;
+  recipientUserIds?: string[];
+}
+
+export interface ExportedPackageSummary {
+  recipientUserId: string;
+  recipientName: string;
+  recipientRole: string;
+  targetFolder: string;
+  fileName: string;
+  filePath: string;
+  operationsCount: number;
+  packageId: string;
+  sha256: string;
+}
+
+export interface BatchExportResponse {
+  success: boolean;
+  usbPath: string;
+  exchangeRoot: string;
+  packagesCount: number;
+  totalOperations: number;
+  packages: ExportedPackageSummary[];
+}
+
+export interface ScanUsbInput {
+  usbDrivePath?: string;
+  passphrase?: string;
+}
+
+export interface ScannedPackageSummary {
+  fileName: string;
+  filePath: string;
+  subFolder: string;
+  packageType: string;
+  fromDeviceId: string;
+  senderName: string;
+  senderRole: string;
+  packageCreatedAt: string;
+  operationsCount: number;
+  alreadyImported: boolean;
+  hasWork: boolean;
+  previewReport: {
+    total?: number;
+    newRecords?: number;
+    updates?: number;
+    duplicates?: number;
+    conflicts?: number;
+    pending?: number;
+    error?: string;
+    status?: number;
+    changeCounts?: Record<string, number>;
+  };
+}
+
+export interface UsbScanResponse {
+  usbPath: string;
+  exchangeRoot: string;
+  scannedFilesCount: number;
+  pendingToImportCount: number;
+  packages: ScannedPackageSummary[];
+}
+
+export interface ImportBatchInput {
+  usbDrivePath?: string;
+  passphrase?: string;
+  filePathsToImport?: string[];
+}
+
+export interface ImportResultItem {
+  filePath: string;
+  fileName: string;
+  packageId: string;
+  success: boolean;
+  applied: boolean;
+  archivedTo: string;
+  report?: unknown;
+  error?: string;
+}
+
+export interface BatchImportResponse {
+  success: boolean;
+  backupCreated: string;
+  totalFiles: number;
+  importedFilesCount: number;
+  failedFilesCount: number;
+  results: ImportResultItem[];
+}
+
+export interface RevokeDeviceInput {
+  deviceId: string;
+  reason: string;
+}
+
+export interface RevokeDeviceResponse {
+  success: boolean;
+  revokedDeviceId: string;
+  revokedAt: string;
+}
+
+export interface ReplaceDeviceInput {
+  oldDeviceId: string;
+  newUserId: string;
+  reason: string;
+  expiryDays?: number;
+}
+
+export interface ReplaceDeviceResponse {
+  success: boolean;
+  revokedDeviceId: string;
+  newKit: CreateKitResponse;
+}
+
 

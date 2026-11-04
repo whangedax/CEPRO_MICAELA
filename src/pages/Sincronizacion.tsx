@@ -49,11 +49,15 @@ import {
   AccountsIcon,
 } from '../components/ui/Icons';
 
+import { DirectorNetworkPanel } from '../components/network/DirectorNetworkPanel';
+import { DocenteSyncPanel } from '../components/network/DocenteSyncPanel';
+import { SecretariaSyncPanel } from '../components/network/SecretariaSyncPanel';
+
 interface SincronizacionProps {
   onNavigate?: (route: NavRoute) => void;
 }
 
-type MainTab = 'exchange' | 'devices' | 'conflicts';
+type MainTab = 'network' | 'exchange' | 'devices' | 'conflicts';
 type ExchangeSubTab = 'send' | 'receive';
 
 const ENTITY_LABELS: Record<string, string> = {
@@ -107,7 +111,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
   const isAdmin = isDirector || isSecretary;
 
   // Estado general
-  const [activeTab, setActiveTab] = useState<MainTab>('exchange');
+  const [activeTab, setActiveTab] = useState<MainTab>('network');
   const [exchangeSubTab, setExchangeSubTab] = useState<ExchangeSubTab>('send');
   const [loadingDashboard, setLoadingDashboard] = useState<boolean>(true);
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
@@ -511,6 +515,21 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       {/* Selector de pestañas principales */}
       <div className="flex border-b border-slate-200 dark:border-[#263834] gap-2">
         <button
+          onClick={() => setActiveTab('network')}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === 'network'
+              ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+          }`}
+        >
+          <UsbIcon className="w-4 h-4" />
+          <span>Red Institucional Offline</span>
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-300 dark:border-emerald-700">
+            2026
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('exchange')}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
             activeTab === 'exchange'
@@ -518,7 +537,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
               : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
           }`}
         >
-          <UsbIcon className="w-4 h-4" />
+          <SyncIcon className="w-4 h-4" />
           <span>Intercambio de Aulas (USB)</span>
         </button>
 
@@ -562,7 +581,22 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       </div>
 
       {/* ========================================================================= */}
-      {/* PESTAÑA 1: INTERCAMBIO DE AULAS (USB)                                     */}
+      {/* PESTAÑA PRINCIPAL: RED INSTITUCIONAL OFFLINE (TAREA 45)                  */}
+      {/* ========================================================================= */}
+      {activeTab === 'network' && user && (
+        <div>
+          {isDirector ? (
+            <DirectorNetworkPanel currentUser={user} />
+          ) : isSecretary ? (
+            <SecretariaSyncPanel currentUser={user} />
+          ) : (
+            <DocenteSyncPanel currentUser={user} />
+          )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* PESTAÑA 2: INTERCAMBIO DE AULAS (USB)                                     */}
       {/* ========================================================================= */}
       {activeTab === 'exchange' && (
         <div className="space-y-6">

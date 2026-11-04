@@ -7,6 +7,7 @@ const DocumentSettings = require('./offline-documents.cjs');
 const Workspace=require('./workspace.cjs');
 const AccountContext=require('./account-context.cjs');
 const {DataUpdateService}=require('./data-update-service.cjs');
+const InstitutionalNetwork = require('./institutional-network.cjs');
 function createService({ root, directory, backupFile }) {
   const core = new OfflineCore(directory, backupFile);
   const updates=new DataUpdateService(core,root);
@@ -49,6 +50,8 @@ function createService({ root, directory, backupFile }) {
         if (route === '/api/provision/accept' && req.method === 'POST') return json(res, 200, core.acceptProvision(body));
         if(route==='/api/exchange/recover'&&req.method==='POST')return json(res,200,core.recoverExchange(body));
         if (route === '/api/login' && req.method === 'POST') return json(res, 200, core.login(body, req.socket.remoteAddress));
+        if (route === '/api/network/invitation/validate' && req.method === 'POST') return json(res, 200, InstitutionalNetwork.validateInvitation(core, body));
+        if (route === '/api/network/invitation/accept' && req.method === 'POST') return json(res, 200, InstitutionalNetwork.acceptInvitationAndLink(core, body));
         const token = (req.headers.authorization || '').replace(/^Bearer /, ''), user = core.authenticate(token);
         const session=core.sessions.get(token),context=session.workspace||null;
         if(route==='/api/workspace/options'&&req.method==='GET')return json(res,200,Workspace.options(core,user));
@@ -64,6 +67,7 @@ function createService({ root, directory, backupFile }) {
         if(route==='/api/document/configuration'&&req.method==='GET')return json(res,200,Workspace.filterConfiguration(core,user,context,DocumentSettings.configuration(core,user)));
         if (route === '/api/users' && req.method === 'GET') return json(res,200,url.searchParams.get('context')==='1'?AccountContext.list(core,user,context):core.listUsers(user));
         if((route==='/api/database/health'||route==='/api/system/health')&&req.method==='GET')return json(res,200,core.databaseHealth(user));
+        if (route === '/api/network/status' && req.method === 'GET') return json(res, 200, InstitutionalNetwork.getNetworkStatus(core, user));
         if (route === '/api/audit' && req.method === 'GET') { core.requireRole(user, ['DIRECTOR']); return json(res, 200, core.db.prepare('SELECT value FROM audit ORDER BY rowid DESC LIMIT 100').all().map(r => JSON.parse(r.value))); }
         if (route === '/api/backups' && req.method === 'GET') { core.requireRole(user, ['DIRECTOR']); return json(res, 200, core.listBackups(user)); }
         if (route === '/api/backup/download' && req.method === 'GET') {
@@ -130,6 +134,12 @@ function createService({ root, directory, backupFile }) {
           case '/api/document': result = Workspace.document(core,user,context,body); break;
           case '/api/document/configuration': result=DocumentSettings.saveSettings(core,user,body);break;
           case '/api/document/review':result=core.reviewDocument(user,body);break;
+          case '/api/network/kit': result = InstitutionalNetwork.createKit(core, user, body, root); break;
+          case '/api/network/export-batch': result = InstitutionalNetwork.prepareBatchExport(core, user, body); break;
+          case '/api/network/scan': result = InstitutionalNetwork.scanUsb(core, user, body); break;
+          case '/api/network/import-batch': result = InstitutionalNetwork.importBatch(core, user, body); break;
+          case '/api/network/revoke': result = InstitutionalNetwork.revokeDevice(core, user, body); break;
+          case '/api/network/replace': result = InstitutionalNetwork.replaceDevice(core, user, body, root); break;
           default: fail('Ruta no encontrada.', 404);
         }
         return json(res, 200, result);

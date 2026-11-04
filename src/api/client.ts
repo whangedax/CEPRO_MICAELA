@@ -72,6 +72,23 @@ import {
   DatabaseHealthResponse,
   SetupInstitutionPayload,
   SetupInstitutionResponse,
+  NetworkStatusResponse,
+  CreateKitInput,
+  CreateKitResponse,
+  ValidateInvitationInput,
+  ValidateInvitationResponse,
+  AcceptInvitationInput,
+  AcceptInvitationResponse,
+  PrepareBatchExportInput,
+  BatchExportResponse,
+  ScanUsbInput,
+  UsbScanResponse,
+  ImportBatchInput,
+  BatchImportResponse,
+  RevokeDeviceInput,
+  RevokeDeviceResponse,
+  ReplaceDeviceInput,
+  ReplaceDeviceResponse,
 } from './types';
 import { isInstitutional } from '../utils/appProfile';
 
@@ -714,6 +731,73 @@ class ApiClient {
       throw new Error(msg);
     }
     return res.blob();
+  }
+
+  // ==========================================
+  // RED INSTITUCIONAL OFFLINE (TAREA 45)
+  // ==========================================
+
+  /**
+   * Consulta el censo de cuentas, métricas y semáforos de la red (GET /api/network/status).
+   */
+  public async getNetworkStatus(): Promise<NetworkStatusResponse> {
+    return this.request<NetworkStatusResponse>('GET', '/api/network/status', undefined, true);
+  }
+
+  /**
+   * Emite un kit institucional de instalación offline para un usuario (POST /api/network/kit).
+   */
+  public async createNetworkKit(input: CreateKitInput): Promise<CreateKitResponse> {
+    return this.request<CreateKitResponse>('POST', '/api/network/kit', input, true);
+  }
+
+  /**
+   * Valida un paquete de invitación .cetpro-invitacion sin requerir sesión (POST /api/network/invitation/validate).
+   */
+  public async validateNetworkInvitation(input: ValidateInvitationInput): Promise<ValidateInvitationResponse> {
+    return this.request<ValidateInvitationResponse>('POST', '/api/network/invitation/validate', input, false);
+  }
+
+  /**
+   * Acepta y vincula un equipo satélite a partir de una invitación (POST /api/network/invitation/accept).
+   */
+  public async acceptNetworkInvitation(input: AcceptInvitationInput): Promise<AcceptInvitationResponse> {
+    return this.request<AcceptInvitationResponse>('POST', '/api/network/invitation/accept', input, false);
+  }
+
+  /**
+   * Prepara y exporta un lote de paquetes cifrados a un USB (POST /api/network/export-batch).
+   */
+  public async prepareNetworkBatchExport(input: PrepareBatchExportInput): Promise<BatchExportResponse> {
+    return this.request<BatchExportResponse>('POST', '/api/network/export-batch', input, true);
+  }
+
+  /**
+   * Escanea una memoria USB en búsqueda de paquetes pendientes (POST /api/network/scan).
+   */
+  public async scanNetworkUsb(input: ScanUsbInput): Promise<UsbScanResponse> {
+    return this.request<UsbScanResponse>('POST', '/api/network/scan', input, true);
+  }
+
+  /**
+   * Importa y aplica por lotes los paquetes del USB con respaldo automático (POST /api/network/import-batch).
+   */
+  public async importNetworkBatch(input: ImportBatchInput): Promise<BatchImportResponse> {
+    return this.request<BatchImportResponse>('POST', '/api/network/import-batch', input, true);
+  }
+
+  /**
+   * Revoca el acceso de un equipo institucional (POST /api/network/revoke).
+   */
+  public async revokeNetworkDevice(input: RevokeDeviceInput): Promise<RevokeDeviceResponse> {
+    return this.request<RevokeDeviceResponse>('POST', '/api/network/revoke', input, true);
+  }
+
+  /**
+   * Reemplaza un equipo revocado emitiendo un nuevo kit (POST /api/network/replace).
+   */
+  public async replaceNetworkDevice(input: ReplaceDeviceInput): Promise<ReplaceDeviceResponse> {
+    return this.request<ReplaceDeviceResponse>('POST', '/api/network/replace', input, true);
   }
 }
 

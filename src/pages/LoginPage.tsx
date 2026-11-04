@@ -15,7 +15,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/client';
-import { InstitutionalBrandIcon } from '../components/ui/Icons';
+import { InstitutionalBrandIcon, UsbIcon, CheckCircleIcon, AlertCircleIcon, LaptopIcon } from '../components/ui/Icons';
+import { ValidateInvitationResponse } from '../api/types';
 
 export const LoginPage: React.FC = () => {
   const { login, error, clearError, systemStatus, isLoading, refreshStatus } = useAuth();
@@ -25,6 +26,14 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Estados para vinculación por kit de invitación (.cetpro-invitacion)
+  const [invitationModalOpen, setInvitationModalOpen] = useState(false);
+  const [invitationValidation, setInvitationValidation] = useState<ValidateInvitationResponse | null>(null);
+  const [rawInvitation, setRawInvitation] = useState<unknown | null>(null);
+  const [invitationError, setInvitationError] = useState<string | null>(null);
+  const [isLinkingInvitation, setIsLinkingInvitation] = useState(false);
+  const [linkSuccessMessage, setLinkSuccessMessage] = useState<string | null>(null);
 
   // Estados para Asistente de Configuración Inicial (Primer Arranque)
   const isConnected = !!systemStatus;
@@ -40,6 +49,39 @@ export const LoginPage: React.FC = () => {
   const [setupSubmitting, setSetupSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
   const [setupSuccess, setSetupSuccess] = useState<string | null>(null);
+
+  const handleInvitationFile = async (file: File) => {
+    setInvitationError(null);
+    setLinkSuccessMessage(null);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      setRawInvitation(parsed);
+      const validation = await apiClient.validateNetworkInvitation({ invitation: parsed });
+      setInvitationValidation(validation);
+      setInvitationModalOpen(true);
+    } catch (err: any) {
+      setInvitationError(err?.message || 'El archivo seleccionado no es una invitación institucional válida.');
+      setInvitationValidation(null);
+      setInvitationModalOpen(true);
+    }
+  };
+
+  const handleConfirmLink = async () => {
+    if (!rawInvitation) return;
+    setIsLinkingInvitation(true);
+    try {
+      const res = await apiClient.acceptNetworkInvitation({ invitation: rawInvitation });
+      setInvitationModalOpen(false);
+      setUsername(res.linkedUser.username);
+      setLinkSuccessMessage(`¡Equipo vinculado con éxito a ${res.linkedUser.name}! Ingrese su contraseña institucional para acceder.`);
+      await refreshStatus();
+    } catch (err: any) {
+      setInvitationError(err?.message || 'Error al vincular el equipo con la invitación.');
+    } finally {
+      setIsLinkingInvitation(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -305,6 +347,19 @@ export const LoginPage: React.FC = () => {
         ) : (
           /* MODO INICIO DE SESIÓN REGULAR */
           <div>
+            {/* Mensaje de Éxito de Vinculación Institucional */}
+            {linkSuccessMessage && (
+              <div
+                className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-200 text-[13px] flex items-start gap-3 animate-fade-in"
+                role="status"
+              >
+                <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span className="font-semibold block">{linkSuccessMessage}</span>
+                </div>
+              </div>
+            )}
+
             {/* Mensaje de Error de Autenticación */}
             {error && (
               <div
@@ -428,9 +483,109 @@ export const LoginPage: React.FC = () => {
                 )}
               </button>
             </form>
+
+            {/* Sección de Vinculación Institucional de Red Offline */}
+            <div className="mt-5 pt-4 border-t border-slate-200/80 dark:border-[#263834] text-center">
+              <label
+                htmlFor="invitation-upload"
+                className="inline-flex items-center gap-2 text-[12px] font-semibold text-[#13594A] dark:text-[#5EEAD4] hover:underline cursor-pointer"
+              >
+                <UsbIcon className="w-4 h-4" />
+                <span>¿Recibió un Kit de Instalación? Vincular este equipo</span>
+              </label>
+              <input
+                id="invitation-upload"
+                type="file"
+                accept=".cetpro-invitacion,application/json"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleInvitationFile(f);
+                }}
+              />
+            </div>
           </div>
         )}
       </main>
+
+      {/* Modal de Validación y Vinculación por Invitación Institucional */}
+      {invitationModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8] flex items-center gap-2">
+                <LaptopIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                Vinculación Institucional de Equipo
+              </h3>
+              <button
+                onClick={() => setInvitationModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {invitationError ? (
+              <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-900 dark:text-red-200 text-xs flex items-start gap-2">
+                <AlertCircleIcon className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <span>{invitationError}</span>
+              </div>
+            ) : invitationValidation ? (
+              <div className="space-y-3 text-xs">
+                <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200">
+                  <p className="font-bold text-sm mb-1 text-[#0D382F] dark:text-emerald-300">
+                    Invitación Institucional Verificada
+                  </p>
+                  <p className="text-slate-600 dark:text-slate-300">
+                    La Dirección del CETPRO ha emitido una autorización criptográfica para este equipo.
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] rounded-xl p-3 space-y-1.5 font-mono text-[11px]">
+                  <div>
+                    <span className="text-slate-500">Institución:</span>{' '}
+                    <strong className="text-slate-800 dark:text-white">{invitationValidation.institution.name}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Destinatario:</span>{' '}
+                    <strong className="text-slate-800 dark:text-white">{invitationValidation.recipient.name}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Usuario oficial:</span>{' '}
+                    <strong className="text-emerald-600 dark:text-emerald-400">{invitationValidation.recipient.username}</strong> ({invitationValidation.recipient.role})
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Vigencia hasta:</span>{' '}
+                    <span className="text-slate-700 dark:text-slate-300">{invitationValidation.expiresAt.slice(0, 10)}</span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-500 leading-normal">
+                  Al confirmar, este equipo adoptará el certificado institucional y quedará formalmente autorizado para exportar e importar datos académicos hacia la Dirección.
+                </p>
+              </div>
+            ) : null}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setInvitationModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              >
+                Cerrar
+              </button>
+              {invitationValidation && !invitationError && (
+                <button
+                  onClick={handleConfirmLink}
+                  disabled={isLinkingInvitation}
+                  className="bg-[#13594A] hover:bg-[#0E4438] active:bg-[#0B372D] disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition-all"
+                >
+                  {isLinkingInvitation ? 'Vinculando Equipo...' : 'Aceptar y Vincular este Equipo →'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Pie institucional */}
       <footer className="w-full max-w-md text-center py-4">
