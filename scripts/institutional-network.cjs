@@ -478,12 +478,15 @@ function getNetworkStatus(core, actor) {
     }).filter(Boolean);
 
     return {
+      id: u.id,
       userId: u.id,
       username: u.username,
       name: u.name,
       role: u.role,
       active: u.active,
+      version: u.version || 1,
       assignments: u.assignments || [],
+      assignmentsCount: (u.assignments || []).length,
       carreras: [...new Set(carreras)],
       device: {
         linked: !!linkedDevice,
@@ -494,6 +497,12 @@ function getNetworkStatus(core, actor) {
         revokedAt: revocation ? revocation.revokedAt : null,
         revocationReason: revocation ? revocation.reason : null
       },
+      isLinked: !!linkedDevice,
+      deviceId: linkedDevice ? linkedDevice.id : null,
+      certificateStatus: isRevoked ? 'EXPIRED' : (linkedDevice ? 'ACTIVE' : 'UNLINKED'),
+      validUntil: linkedDevice ? linkedDevice.linkedAt : null,
+      isExpired: isRevoked,
+      statusTrafficLight: statusColor,
       syncMetrics: {
         lastSyncSentAt: null,
         lastSyncReceivedAt,
@@ -516,9 +525,18 @@ function getNetworkStatus(core, actor) {
     revokedCount
   };
 
+  const metrics = {
+    totalAccounts: allUsers.length,
+    linkedAccounts: devicesList.length,
+    activeAccounts: allUsers.filter((u) => u.active).length,
+    pendingKits: unlinkedCount
+  };
+
   return {
     appName: APP_NAME,
     isHub,
+    authorityPresent: isHub,
+    deviceId: currentDeviceId,
     hubDeviceId: isHub ? currentDeviceId : (inst.hub?.id || ''),
     currentDeviceId,
     nodeRole,
@@ -529,6 +547,9 @@ function getNetworkStatus(core, actor) {
       publicKey: inst.publicKey
     },
     summary,
+    metrics,
+    devices: devicesList.map((d) => ({ id: d.id, name: d.id.slice(0, 8), userId: d.userId, signingKey: d.signingKey })),
+    revokedDevices: revokedList,
     accounts
   };
 }
@@ -654,6 +675,9 @@ function prepareBatchExport(core, actor, input) {
     success: true,
     targetRoot: usbRoot,
     totalPackages: packages.length,
+    packagesCount: packages.length,
+    usbPath: usbRoot,
+    exchangeRoot: usbRoot,
     totalOperations,
     packages
   };

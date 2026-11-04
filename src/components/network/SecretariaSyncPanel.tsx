@@ -142,7 +142,7 @@ export const SecretariaSyncPanel: React.FC<SecretariaSyncPanelProps> = ({ curren
                 <div>
                   <p className="font-semibold text-emerald-300">¡Lote de Secretaría exportado!</p>
                   <p className="text-[11px] text-gray-300 mt-1">
-                    Operaciones: {exportResult.totalOperations} | Archivos: {exportResult.packagesCount}
+                    Operaciones: {exportResult.totalOperations} | Archivos: {exportResult.totalPackages ?? (exportResult as any).packagesCount ?? exportResult.packages?.length ?? 0}
                   </p>
                 </div>
               </div>

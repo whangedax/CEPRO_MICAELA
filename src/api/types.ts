@@ -1013,6 +1013,8 @@ export interface BatchExportResponse {
   usbPath: string;
   exchangeRoot: string;
   packagesCount: number;
+  totalPackages?: number;
+  targetRoot?: string;
   totalOperations: number;
   packages: ExportedPackageSummary[];
 }

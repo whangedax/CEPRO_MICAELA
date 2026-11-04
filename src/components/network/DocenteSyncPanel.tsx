@@ -146,7 +146,7 @@ export const DocenteSyncPanel: React.FC<DocenteSyncPanelProps> = ({ currentUser 
                 <div>
                   <p className="font-semibold text-emerald-300">¡Lote exportado con éxito!</p>
                   <p className="text-[11px] text-gray-300 mt-1">
-                    Se generó {exportResult.packagesCount} paquete(s) con {exportResult.totalOperations} operaciones registradas.
+                    Se generó {exportResult.totalPackages ?? (exportResult as any).packagesCount ?? exportResult.packages?.length ?? 0} paquete(s) con {exportResult.totalOperations} operaciones registradas.
                   </p>
                 </div>
               </div>

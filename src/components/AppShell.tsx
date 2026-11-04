@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavRoute, UserProfile, UserRole } from '../types';
 import Sidebar from './ui/Sidebar/Sidebar';
 import Topbar from './ui/Topbar/Topbar';
 import AcademicWorkflowModal from './academic/AcademicWorkflowModal';
+import { useWorkspace } from '../context/WorkspaceContext';
 
 export interface AppShellProps {
   currentRoute: NavRoute;
@@ -21,6 +22,13 @@ export const AppShell: React.FC<AppShellProps> = ({
   onLogout,
   children,
 }) => {
+  const { closeSelector } = useWorkspace();
+
+  useEffect(() => {
+    if (currentRoute !== 'inicio') {
+      closeSelector();
+    }
+  }, [currentRoute, closeSelector]);
   return (
     <div className="min-h-screen bg-[#F6F8FA] dark:bg-[#0F1715] text-[#172B28] dark:text-[#F0FDF8] antialiased transition-colors duration-200">
       {/* Sidebar fijo a la izquierda */}

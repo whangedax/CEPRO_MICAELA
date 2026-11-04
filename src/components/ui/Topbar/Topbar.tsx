@@ -159,6 +159,7 @@ export const Topbar: React.FC<TopbarProps> = ({ user, onProfileClick, onLogout }
           <>
             <div className="h-6 w-px bg-slate-200/80 dark:bg-[#263834]" />
             <button
+              id="btn-logout"
               type="button"
               onClick={onLogout}
               title="Cerrar sesión institucional"
@@ -166,7 +167,7 @@ export const Topbar: React.FC<TopbarProps> = ({ user, onProfileClick, onLogout }
               className="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200/60 dark:border-[#263834] hover:border-rose-100 dark:hover:border-rose-900/60 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
             >
               <svg
-                className="w-4 h-4"
+                className="w-4 h-4 pointer-events-none"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

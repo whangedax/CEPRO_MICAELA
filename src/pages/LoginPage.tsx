@@ -37,8 +37,14 @@ export const LoginPage: React.FC = () => {
 
   // Estados para Asistente de Configuración Inicial (Primer Arranque)
   const isConnected = !!systemStatus;
-  const isInitialized = systemStatus?.initialized ?? false;
-  const [setupMode, setSetupMode] = useState<boolean>(!isInitialized);
+  const isInitialized = systemStatus ? systemStatus.initialized : true;
+  const [setupMode, setSetupMode] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (systemStatus && systemStatus.initialized === false) {
+      setSetupMode(true);
+    }
+  }, [systemStatus]);
   
   const [instName, setInstName] = useState('CETPRO MICAELA BASTIDAS');
   const [directorFullName, setDirectorFullName] = useState('DIRECTOR GENERAL');
@@ -162,7 +168,7 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const activeInSetup = !isInitialized || setupMode;
+  const activeInSetup = (systemStatus ? !systemStatus.initialized : false) || setupMode;
 
   return (
     <div className="min-h-screen bg-[#F6F8FA] dark:bg-[#0F1715] text-[#172B28] dark:text-[#F0FDF8] flex flex-col justify-between items-center px-4 py-8 select-none antialiased">

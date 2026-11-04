@@ -112,7 +112,7 @@ export const DirectorNetworkPanel: React.FC<DirectorNetworkPanelProps> = ({ curr
     setKitResult(null);
     try {
       const res = await apiClient.createNetworkKit({
-        userId: selectedUserForKit.id,
+        userId: selectedUserForKit.id || (selectedUserForKit as any).userId,
         expiryDays: kitExpiryDays,
         targetPath: kitTargetPath.trim() || undefined,
       });
@@ -126,11 +126,12 @@ export const DirectorNetworkPanel: React.FC<DirectorNetworkPanelProps> = ({ curr
   };
 
   const handleRevoke = async () => {
-    if (!revokingAccount || !revokingAccount.deviceId) return;
+    const targetDeviceId = revokingAccount?.deviceId || (revokingAccount as any)?.device?.deviceId;
+    if (!revokingAccount || !targetDeviceId) return;
     setIsRevoking(true);
     try {
       await apiClient.revokeNetworkDevice({
-        deviceId: revokingAccount.deviceId,
+        deviceId: targetDeviceId,
         reason: revokeReason.trim() || 'Revocación por Dirección',
       });
       setRevokingAccount(null);
@@ -173,22 +174,22 @@ export const DirectorNetworkPanel: React.FC<DirectorNetworkPanelProps> = ({ curr
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-[#101A17] border border-[#1C2B27] rounded-xl p-4">
             <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Cuentas Oficiales</span>
-            <span className="text-2xl font-bold text-white font-mono">{networkStatus.metrics.totalAccounts}</span>
+            <span className="text-2xl font-bold text-white font-mono">{networkStatus?.metrics?.totalAccounts ?? (networkStatus as any)?.summary?.totalAccounts ?? 0}</span>
             <span className="text-[10px] text-gray-400 block mt-0.5">Padrón Institucional 2026</span>
           </div>
           <div className="bg-[#101A17] border border-[#1C2B27] rounded-xl p-4">
             <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Equipos Vinculados</span>
-            <span className="text-2xl font-bold text-emerald-400 font-mono">{networkStatus.metrics.linkedAccounts}</span>
+            <span className="text-2xl font-bold text-emerald-400 font-mono">{networkStatus?.metrics?.linkedAccounts ?? (networkStatus as any)?.summary?.linkedDevicesCount ?? 0}</span>
             <span className="text-[10px] text-emerald-300/80 block mt-0.5">Con certificado activo</span>
           </div>
           <div className="bg-[#101A17] border border-[#1C2B27] rounded-xl p-4">
             <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Kits Pendientes</span>
-            <span className="text-2xl font-bold text-amber-400 font-mono">{networkStatus.metrics.pendingKits}</span>
+            <span className="text-2xl font-bold text-amber-400 font-mono">{networkStatus?.metrics?.pendingKits ?? (networkStatus as any)?.summary?.pendingCount ?? (networkStatus as any)?.summary?.unlinkedCount ?? 0}</span>
             <span className="text-[10px] text-amber-300/80 block mt-0.5">Por enlazar o renovar</span>
           </div>
           <div className="bg-[#101A17] border border-[#1C2B27] rounded-xl p-4">
             <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Equipos Revocados</span>
-            <span className="text-2xl font-bold text-red-400 font-mono">{networkStatus.revokedDevices?.length || 0}</span>
+            <span className="text-2xl font-bold text-red-400 font-mono">{networkStatus?.revokedDevices?.length ?? (networkStatus as any)?.summary?.revokedCount ?? 0}</span>
             <span className="text-[10px] text-red-300/80 block mt-0.5">Por extravío o seguridad</span>
           </div>
         </div>
@@ -354,14 +355,20 @@ export const DirectorNetworkPanel: React.FC<DirectorNetworkPanelProps> = ({ curr
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1C2B27]">
-                {networkStatus?.accounts.map((acc) => (
-                  <tr key={acc.id} className="hover:bg-[#142320]/40 transition-colors">
+                {networkStatus?.accounts?.map((acc: any) => {
+                  const accId = acc.id || acc.userId;
+                  const isLinked = acc.isLinked ?? acc.device?.linked ?? false;
+                  const trafficLight = acc.statusTrafficLight || acc.statusColor || 'GRAY';
+                  const assignmentsCount = acc.assignmentsCount ?? acc.assignments?.length ?? 0;
+                  const validUntil = acc.validUntil ?? acc.device?.linkedAt ?? null;
+                  return (
+                  <tr key={accId} className="hover:bg-[#142320]/40 transition-colors">
                     <td className="p-3">
                       <span
                         className={`inline-block w-3 h-3 rounded-full ${
-                          acc.statusTrafficLight === 'GREEN'
+                          trafficLight === 'GREEN'
                             ? 'bg-emerald-400 shadow-sm shadow-emerald-400/50'
-                            : acc.statusTrafficLight === 'YELLOW'
+                            : trafficLight === 'YELLOW'
                             ? 'bg-amber-400 shadow-sm shadow-amber-400/50'
                             : 'bg-gray-500'
                         }`}
@@ -389,9 +396,9 @@ export const DirectorNetworkPanel: React.FC<DirectorNetworkPanelProps> = ({ curr
                         {acc.role}
                       </span>
                     </td>
-                    <td className="p-3 text-gray-300 font-mono">{acc.assignmentsCount}</td>
+                    <td className="p-3 text-gray-300 font-mono">{assignmentsCount}</td>
                     <td className="p-3 text-gray-400 font-mono text-[11px]">
-                      {acc.validUntil ? acc.validUntil.slice(0, 10) : <span className="text-gray-500">Sin vincular</span>}
+                      {validUntil ? String(validUntil).slice(0, 10) : <span className="text-gray-500">Sin vincular</span>}
                     </td>
                     <td className="p-3 text-right space-x-2">
                       {acc.role !== 'DIRECTOR' && (
@@ -406,7 +413,7 @@ export const DirectorNetworkPanel: React.FC<DirectorNetworkPanelProps> = ({ curr
                           >
                             Emitir Kit
                           </button>
-                          {acc.isLinked && (
+                          {isLinked && (
                             <button
                               onClick={() => {
                                 setRevokingAccount(acc);
@@ -420,7 +427,8 @@ export const DirectorNetworkPanel: React.FC<DirectorNetworkPanelProps> = ({ curr
                       )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
