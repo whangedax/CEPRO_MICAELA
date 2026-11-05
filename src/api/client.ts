@@ -89,6 +89,8 @@ import {
   RevokeDeviceResponse,
   ReplaceDeviceInput,
   ReplaceDeviceResponse,
+  DocumentaryCatalogResponse,
+  DocumentaryProgram,
 } from './types';
 import { isInstitutional } from '../utils/appProfile';
 
@@ -798,6 +800,52 @@ class ApiClient {
    */
   public async replaceNetworkDevice(input: ReplaceDeviceInput): Promise<ReplaceDeviceResponse> {
     return this.request<ReplaceDeviceResponse>('POST', '/api/network/replace', input, true);
+  }
+
+  // ==========================================
+  // CATÁLOGO DOCUMENTAL Y SANEAMIENTO CURRICULAR (CEPRO_BD)
+  // ==========================================
+
+  /**
+   * Consulta el catálogo documental curricular completo (GET /api/academic/documentary-catalog).
+   */
+  public async getDocumentaryCatalog(year?: string): Promise<DocumentaryCatalogResponse> {
+    const query = year ? `?year=${encodeURIComponent(year)}` : '';
+    return this.request<DocumentaryCatalogResponse>('GET', `/api/academic/documentary-catalog${query}`, undefined, true);
+  }
+
+  /**
+   * Guarda o actualiza un programa curricular documental (POST /api/academic/documentary-catalog/save-program).
+   */
+  public async saveDocumentaryProgram(payload: { program: DocumentaryProgram; syncCurriculum?: boolean }): Promise<{ success: boolean; program: DocumentaryProgram }> {
+    return this.request<{ success: boolean; program: DocumentaryProgram }>('POST', '/api/academic/documentary-catalog/save-program', payload, true);
+  }
+
+  /**
+   * Resuelve una incidencia u observación de fuente (POST /api/academic/documentary-catalog/resolve-issue).
+   */
+  public async resolveDocumentaryIssue(payload: {
+    issueId: string;
+    newActiveValue: string;
+    status: string;
+    resolutionNote: string;
+    propagateToCurriculum?: boolean;
+  }): Promise<{ success: boolean; issue: unknown }> {
+    return this.request<{ success: boolean; issue: unknown }>('POST', '/api/academic/documentary-catalog/resolve-issue', payload, true);
+  }
+
+  /**
+   * Guarda o actualiza un parámetro normativo del sistema (POST /api/academic/documentary-catalog/save-parameter).
+   */
+  public async saveDocumentaryParameter(payload: { id: string; value: string; description?: string }): Promise<{ success: boolean; parameter: unknown }> {
+    return this.request<{ success: boolean; parameter: unknown }>('POST', '/api/academic/documentary-catalog/save-parameter', payload, true);
+  }
+
+  /**
+   * Sincroniza el catálogo curricular con los planes curriculares activos (POST /api/academic/documentary-catalog/sync-to-curriculum).
+   */
+  public async syncDocumentaryCatalogToCurriculum(payload: { programId?: string }): Promise<{ success: boolean; message: string; syncedModulesCount?: number }> {
+    return this.request<{ success: boolean; message: string; syncedModulesCount?: number }>('POST', '/api/academic/documentary-catalog/sync-to-curriculum', payload, true);
   }
 }
 

@@ -63,7 +63,9 @@
     "test:demo-safety": "node --test --test-isolation=none tests/demo-safety.test.cjs",
     "audit:production": "node scripts/production-readiness.cjs",
     "test:production-package": "node tests/production-package.cjs",
-    "test:document-filter": "node --experimental-strip-types tests/document-template-filter.test.mjs"
+    "test:document-filter": "node --experimental-strip-types tests/document-template-filter.test.mjs",
+    "test:cepro-bd-catalog": "node --test tests/cepro-bd-catalog.test.cjs",
+    "seed:cepro-bd": "node scripts/seed-cepro-bd-2026.cjs"
   },
   "engines": {
     "node": ">=24"

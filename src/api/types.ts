@@ -1107,4 +1107,165 @@ export interface ReplaceDeviceResponse {
   newKit: CreateKitResponse;
 }
 
+// ==========================================
+// CATÁLOGO DOCUMENTAL CURRICULAR 2026 (CEPRO_BD)
+// ==========================================
+
+export interface DocumentaryCompetencyIndicator {
+  id: string;
+  code: string;
+  text: string;
+  page: number;
+}
+
+export interface DocumentaryCompetency {
+  id: string;
+  type: 'UC' | 'CE' | 'TRANSVERSAL';
+  code: string;
+  title: string;
+  description: string;
+  page: number;
+  indicators: DocumentaryCompetencyIndicator[];
+}
+
+export interface DocumentaryCapacityIndicator {
+  id: string;
+  code: string;
+  text: string;
+  page: number;
+}
+
+export interface DocumentaryCapacity {
+  id: string;
+  code: string;
+  type: 'TECNICA' | 'EMPLEABILIDAD';
+  competencyCode: string;
+  title: string;
+  page: number;
+  indicators: DocumentaryCapacityIndicator[];
+}
+
+export interface DocumentaryUnit {
+  id: string;
+  code: string;
+  name: string;
+  type: 'UD' | 'EFSRT';
+  capacityCodes: string[];
+  creditsTheory: number;
+  creditsPractice: number;
+  creditsTotal: number;
+  hoursTheory: number;
+  hoursPractice: number;
+  hoursTotal: number;
+  startDate: string;
+  endDate: string;
+  observedStartDate?: string;
+  observedEndDate?: string;
+  page: number;
+}
+
+export interface DocumentaryModule {
+  id: string;
+  sourceId: string;
+  code: string;
+  number: string;
+  name: string;
+  periodId: string;
+  hours: number;
+  credits: number;
+  efsrtHours: number;
+  startDate: string;
+  endDate: string;
+  observedEndDate?: string;
+  competenceSummary: string;
+  capacities: DocumentaryCapacity[];
+  units: DocumentaryUnit[];
+}
+
+export interface DocumentaryProgram {
+  id: string;
+  sourceCode: string;
+  careerKey: string;
+  name: string;
+  sector: string;
+  family: string;
+  economicActivity: string;
+  codigoProgramaFuente: string;
+  codigoModularObservado: string;
+  codigoModularActivo: string;
+  nivelFormativo: string;
+  modalidad: string;
+  totalHoursDeclared: number;
+  totalHoursItinerary: number;
+  totalCreditsDeclared: number;
+  efsrtHoursTotal: number;
+  statusCompleteness: 'COMPLETO' | 'CON_OBSERVACIONES' | 'PARCIAL';
+  pageRange: string;
+  graduateProfile: string;
+  performanceAreas: string[];
+  teachersDocumented: string[];
+  observations: string[];
+  competencies: DocumentaryCompetency[];
+  modules: DocumentaryModule[];
+}
+
+export interface DocumentaryIssue {
+  id: string;
+  code: string;
+  programId: string;
+  programCode: string;
+  moduleId?: string;
+  severity: 'ALTA' | 'MEDIA' | 'BAJA' | 'CUARENTENA' | 'BLOQUE_PARCIAL';
+  category: string;
+  title: string;
+  description: string;
+  pagePdf: string;
+  fieldPath: string;
+  observedPdfValue: string;
+  activeOperationalValue: string;
+  status: 'CORREGIDO_OPERATIVO' | 'PENDIENTE_REVISION' | 'EN_CUARENTENA' | 'BLOQUE_PARCIAL';
+  canApplyObserved?: boolean;
+  resolutionNote?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export interface DocumentaryParameter {
+  id: string;
+  category: string;
+  name: string;
+  value: string;
+  sourceStatus: 'DOCUMENTADO' | 'POR_DEFECTO_NORMATIVO' | 'PENDIENTE_DEFINICION';
+  description: string;
+}
+
+export interface DocumentaryQuarantineItem {
+  id: string;
+  programId: string;
+  pagePdf: string;
+  title: string;
+  detectedContent: string;
+  reason: string;
+  enabledForImport: boolean;
+}
+
+export interface DocumentaryCatalogResponse {
+  year: string;
+  stats: {
+    programsCount: number;
+    modulesCount: number;
+    capacitiesCount: number;
+    capacityIndicatorsCount: number;
+    competencyIndicatorsCount: number;
+    pdfPagesEvaluated: number;
+    pendingIssuesCount: number;
+    resolvedIssuesCount: number;
+  };
+  programs: DocumentaryProgram[];
+  issues: DocumentaryIssue[];
+  parameters: DocumentaryParameter[];
+  quarantine: DocumentaryQuarantineItem[];
+}
+
+
 

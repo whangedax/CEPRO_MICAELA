@@ -8,6 +8,7 @@ const Workspace=require('./workspace.cjs');
 const AccountContext=require('./account-context.cjs');
 const {DataUpdateService}=require('./data-update-service.cjs');
 const InstitutionalNetwork = require('./institutional-network.cjs');
+const CeproBdCatalog = require('./cepro-bd-catalog.cjs');
 function createService({ root, directory, backupFile }) {
   const core = new OfflineCore(directory, backupFile);
   const updates=new DataUpdateService(core,root);
@@ -63,6 +64,7 @@ function createService({ root, directory, backupFile }) {
         if (route === '/api/me' && req.method === 'GET') return json(res, 200, publicUser(user));
         if (route === '/api/dashboard' && req.method === 'GET') return json(res, 200, Workspace.dashboard(core,user,user.role!=='DOCENTE'&&url.searchParams.get('overview')==='1'?{overview:true}:context));
         if(route==='/api/academic/configuration'&&req.method==='GET')return json(res,200,require('./academic-config.cjs').configuration(core,user));
+        if (route === '/api/academic/documentary-catalog' && req.method === 'GET') return json(res, 200, CeproBdCatalog.getCatalog(core, user, url.searchParams));
         if(route==='/api/data/catalog'&&req.method==='GET'){const catalog=updates.catalog(user);if(context?.mode&&context.mode!=='UNIT')catalog.kinds=catalog.kinds.map(k=>({...k,canImport:['notas','asistencias'].includes(k.kind)?false:k.canImport}));return json(res,200,catalog);}
         if(route==='/api/document/configuration'&&req.method==='GET')return json(res,200,Workspace.filterConfiguration(core,user,context,DocumentSettings.configuration(core,user)));
         if (route === '/api/users' && req.method === 'GET') return json(res,200,url.searchParams.get('context')==='1'?AccountContext.list(core,user,context):core.listUsers(user));
@@ -96,6 +98,10 @@ function createService({ root, directory, backupFile }) {
         }
         let result;
         switch (route) {
+          case '/api/academic/documentary-catalog/save-program': result = CeproBdCatalog.saveProgramCatalog(core, user, body); break;
+          case '/api/academic/documentary-catalog/resolve-issue': result = CeproBdCatalog.resolveIssue(core, user, body); break;
+          case '/api/academic/documentary-catalog/save-parameter': result = CeproBdCatalog.saveParameter(core, user, body); break;
+          case '/api/academic/documentary-catalog/sync-to-curriculum': result = CeproBdCatalog.syncToCurriculum(core, user, body); break;
           case '/api/academic/reference/apply':result=require('./reference-defaults.cjs').apply(core,user,body);break;
           case '/api/academic/year': result=require('./academic-config.cjs').cloneYear(core,user,body);break;
           case '/api/logout': result = core.logout(token); break;

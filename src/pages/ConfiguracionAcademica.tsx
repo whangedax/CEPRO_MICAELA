@@ -42,8 +42,9 @@ import {
   SearchIcon,
   DocConfigIcon,
 } from '../components/ui/Icons';
+import { DocumentaryCatalogManager } from '../components/academic/DocumentaryCatalogManager';
 
-type TabType = 'institucion' | 'periodos' | 'curriculo' | 'valores' | 'personal';
+type TabType = 'institucion' | 'periodos' | 'curriculo' | 'valores' | 'personal' | 'catalogo_bd' | 'saneamiento_bd';
 
 interface CalendarBlock {
   name: string;
@@ -969,6 +970,35 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
           >
             <SearchIcon className="w-4 h-4" />
             5. Directorio del personal
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('catalogo_bd')}
+            className={`px-4 py-2.5 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+              activeTab === 'catalogo_bd'
+                ? 'border-emerald-800 dark:border-[#5EEAD4] text-emerald-900 dark:text-[#5EEAD4] bg-white dark:bg-[#182220] rounded-t-xl shadow-xs'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-[#F0FDF8]'
+            }`}
+          >
+            <AcademicConfigIcon className="w-4 h-4" />
+            6. Catálogo Curricular 2026 (UC, Capacidades e Indicadores)
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('saneamiento_bd')}
+            className={`px-4 py-2.5 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+              activeTab === 'saneamiento_bd'
+                ? 'border-emerald-800 dark:border-[#5EEAD4] text-emerald-900 dark:text-[#5EEAD4] bg-white dark:bg-[#182220] rounded-t-xl shadow-xs'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-[#F0FDF8]'
+            }`}
+          >
+            <AlertCircleIcon className="w-4 h-4 text-amber-500" />
+            7. Corrección de Datos Observados / PDF
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white">
+              16
+            </span>
           </button>
         </div>
 
@@ -2206,6 +2236,30 @@ export const ConfiguracionAcademica: React.FC<ConfiguracionAcademicaProps> = ({ 
                 </table>
               </div>
             </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* TAB 6: CATÁLOGO CURRICULAR 2026 (UC, CAPACIDADES, IND.)  */}
+          {/* ======================================================== */}
+          {activeTab === 'catalogo_bd' && (
+            <DocumentaryCatalogManager
+              initialViewMode="catalogo_bd"
+              selectedYear={selectedYear}
+              isEditable={isEditable}
+              onRefreshParent={() => loadConfiguration(selectedYear)}
+            />
+          )}
+
+          {/* ======================================================== */}
+          {/* TAB 7: CORRECCIÓN DE DATOS OBSERVADOS / PDF              */}
+          {/* ======================================================== */}
+          {activeTab === 'saneamiento_bd' && (
+            <DocumentaryCatalogManager
+              initialViewMode="saneamiento_bd"
+              selectedYear={selectedYear}
+              isEditable={isEditable}
+              onRefreshParent={() => loadConfiguration(selectedYear)}
+            />
           )}
         </div>
       </div>
