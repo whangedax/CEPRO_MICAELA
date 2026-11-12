@@ -224,22 +224,21 @@ class AcademicCalendarEngine {
     }
 
     // Integrar sesiones históricas ya registradas en la BD para que NUNCA se pierdan ni se omitan
-    const dateMap = new Map(generatedDates.map(item => [item.sessionId, item]));
+    const dateMap = new Map(generatedDates.map(item => [item.fecha, item]));
 
     if (Array.isArray(recordedSessions)) {
       for (const rec of recordedSessions) {
         const rawDate = rec.fecha || rec.date;
-        const sessionKey = `${rawDate}|${rec.session || '1'}`;
         if (rawDate && isValidIsoDate(rawDate)) {
           if (fechaInicio && rawDate < fechaInicio) continue;
           if (hasEndDate && rawDate > fechaFin) continue;
-          if (!dateMap.has(sessionKey)) {
+          if (!dateMap.has(rawDate)) {
             const [y, m, d] = rawDate.split('-').map(Number);
             const dow = getDayOfWeekIso(rawDate);
-            dateMap.set(sessionKey, {
+            dateMap.set(rawDate, {
               fecha: rawDate,
-              session: String(rec.session || '1'),
-              sessionId: sessionKey,
+              session: '1',
+              sessionId: `${rawDate}|1`,
               dayOfWeek: dow,
               dayAbbr: DAY_NAMES_ABBR[dow] || 'Lu',
               dayNum: String(d).padStart(2, '0'),
@@ -250,7 +249,7 @@ class AcademicCalendarEngine {
               isRecorded: true
             });
           } else {
-            const existing = dateMap.get(sessionKey);
+            const existing = dateMap.get(rawDate);
             existing.isRecorded = true;
           }
         }
@@ -258,7 +257,7 @@ class AcademicCalendarEngine {
     }
 
     // Ordenar cronológicamente todas las fechas resultantes
-    const finalDates = Array.from(dateMap.values()).sort((a, b) => a.sessionId.localeCompare(b.sessionId));
+    const finalDates = Array.from(dateMap.values()).sort((a, b) => a.fecha.localeCompare(b.fecha));
 
     // Si después de calcular no hay fechas válidas
     if (finalDates.length === 0) {
@@ -326,14 +325,13 @@ class AcademicCalendarEngine {
     for (const rec of recordedSessions) {
       const rawDate = rec.fecha || rec.date;
       if (rawDate && isValidIsoDate(rawDate)) {
-        const key = `${rawDate}|${rec.session || '1'}`;
-        if (!datesMap.has(key)) {
+        if (!datesMap.has(rawDate)) {
           const [y, m, d] = rawDate.split('-').map(Number);
           const dow = getDayOfWeekIso(rawDate);
-          datesMap.set(key, {
+          datesMap.set(rawDate, {
             fecha: rawDate,
-            session: String(rec.session || '1'),
-            sessionId: key,
+            session: '1',
+            sessionId: `${rawDate}|1`,
             dayOfWeek: dow,
             dayAbbr: DAY_NAMES_ABBR[dow] || 'Lu',
             dayNum: String(d).padStart(2, '0'),
@@ -346,7 +344,7 @@ class AcademicCalendarEngine {
         }
       }
     }
-    const dates = Array.from(datesMap.values()).sort((a, b) => a.sessionId.localeCompare(b.sessionId));
+    const dates = Array.from(datesMap.values()).sort((a, b) => a.fecha.localeCompare(b.fecha));
     return {
       success: dates.length > 0,
       dates,
@@ -378,18 +376,37 @@ class AcademicCalendarEngine {
     let totalEligibleSessions = 0;
     let countP = 0, countT = 0, countF = 0, countJ = 0;
 
-    const studentMarksMap = new Map(
-      (attendanceMarks || [])
-        .filter(m => m.enrollmentId === enrollmentId)
-        .map(m => [`${m.date}|${m.session || '1'}`, String(m.value || '').toUpperCase()])
-    );
+    const studentMarksByDate = new Map();
+    const sortedMarks = (attendanceMarks || [])
+      .filter(m => m && m.enrollmentId === enrollmentId && (m.date || m.fecha))
+      .sort((a, b) => {
+        const timeA = a.updatedAt || a.createdAt || '';
+        const timeB = b.updatedAt || b.createdAt || '';
+        if (timeA && timeB && timeA !== timeB) return timeB.localeCompare(timeA);
+        const revA = Number(a.rev) || 0;
+        const revB = Number(b.rev) || 0;
+        if (revA !== revB) return revB - revA;
+        if (a.session === '1' && b.session !== '1') return -1;
+        if (b.session === '1' && a.session !== '1') return 1;
+        return 0;
+      });
+
+    for (const m of sortedMarks) {
+      const d = m.date || m.fecha;
+      if (!studentMarksByDate.has(d)) {
+        const val = m.value ? String(m.value).toUpperCase() : '';
+        if (['P', 'T', 'F', 'J'].includes(val)) {
+          studentMarksByDate.set(d, val);
+        }
+      }
+    }
 
     for (const session of academicDates) {
       if (enrollmentStart && session.fecha < enrollmentStart) continue;
       if (enrollmentEnd && session.fecha > enrollmentEnd) continue;
 
       totalEligibleSessions++;
-      const mark = studentMarksMap.get(session.sessionId);
+      const mark = studentMarksByDate.get(session.fecha);
 
       if (mark) {
         registeredCount++;

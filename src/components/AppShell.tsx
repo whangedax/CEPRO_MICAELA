@@ -51,7 +51,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             window.location.hash = '#/perfil';
           }}
         />
-        <main className="relative pt-20 w-full min-h-screen bg-[#F6F8FA] dark:bg-[#0F1715] px-4 py-5 md:px-6 md:py-6 xl:px-10 xl:py-8 transition-colors duration-200" id="main-content">
+        <main className="relative pt-24 pb-8 px-4 md:pt-28 md:pb-10 md:px-6 xl:pt-28 xl:pb-12 xl:px-10 w-full min-h-screen bg-[#F6F8FA] dark:bg-[#0F1715] transition-colors duration-200" id="main-content">
           {children}
         </main>
       </div>

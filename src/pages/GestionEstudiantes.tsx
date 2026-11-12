@@ -27,6 +27,7 @@ import {
   ApiError,
 } from '../api/types';
 import StatusBadge from '../components/ui/StatusBadge/StatusBadge';
+import { ActiveUnitContextBanner } from '../components/academic/ActiveUnitContextBanner';
 import {
   StudentsIcon,
   SearchIcon,
@@ -60,6 +61,17 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
   // Filtros y búsqueda
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'ACTIVOS' | 'TODOS' | 'ARCHIVADOS'>('ACTIVOS');
+  const [scopeFilter, setScopeFilter] = useState<'CAREER' | 'ALL'>('ALL');
+
+  // Contexto de carrera activa
+  const activeProgramId = activeWorkspace?.programId;
+  const activeProgramName = activeWorkspace?.programName || 'Carrera Seleccionada';
+
+  useEffect(() => {
+    if (activeProgramId) {
+      setScopeFilter('CAREER');
+    }
+  }, [activeProgramId]);
 
   // Formulario de Estudiante
   const initialFormState: SaveStudentPayload = {
@@ -316,10 +328,34 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
     }
   };
 
-  // Estudiantes filtrados según búsqueda y pestaña
+  // Grupos y estudiantes de la carrera activa
+  const careerGroupIds = useMemo(() => {
+    if (!activeProgramId) return new Set<string>();
+    return new Set(groups.filter((g) => g.programId === activeProgramId).map((g) => g.id));
+  }, [groups, activeProgramId]);
+
+  const careerStudentIds = useMemo(() => {
+    if (!activeProgramId) return new Set<string>();
+    const set = new Set<string>();
+    for (const en of enrollments) {
+      if (en.active && careerGroupIds.has(en.groupId)) {
+        set.add(en.studentId);
+      }
+    }
+    return set;
+  }, [enrollments, careerGroupIds, activeProgramId]);
+
+  const isSearching = searchQuery.trim().length > 0;
+
+  // Estudiantes filtrados según búsqueda, carrera y pestaña
   const filteredStudents = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return students.filter((s) => {
+      // Si no hay búsqueda escrita y está activo el filtro de carrera, limitamos a la carrera
+      if (!q && scopeFilter === 'CAREER' && activeProgramId) {
+        if (!careerStudentIds.has(s.id)) return false;
+      }
+
       const matchesQuery =
         !q ||
         s.name.toLowerCase().includes(q) ||
@@ -336,15 +372,16 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
       }
       return matchesQuery;
     });
-  }, [students, searchQuery, statusFilter]);
+  }, [students, searchQuery, statusFilter, scopeFilter, activeProgramId, careerStudentIds]);
 
   // Métricas rápidas
   const counts = useMemo(() => {
     const activeCount = students.filter((s) => s.active && !s.archived).length;
     const archivedCount = students.filter((s) => s.archived).length;
     const totalCount = students.length;
-    return { activeCount, archivedCount, totalCount };
-  }, [students]);
+    const careerCount = students.filter((s) => careerStudentIds.has(s.id) && s.active && !s.archived).length;
+    return { activeCount, archivedCount, totalCount, careerCount };
+  }, [students, careerStudentIds]);
 
   // Helper para avatar con iniciales
   const renderAvatar = (name: string) => {
@@ -398,6 +435,9 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
         </div>
       </header>
 
+      {/* Contexto Académico de Unidad Activa y Conmutador Rápido */}
+      <ActiveUnitContextBanner variant="compact" onNavigate={onNavigate} />
+
       {/* 2. Mensajes de Notificación */}
       {errorMsg && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-sm flex items-start justify-between gap-3 animate-fadeIn">
@@ -436,11 +476,18 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
         <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
           <div>
             <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-              Padrón Activo
+              {activeProgramId && scopeFilter === 'CAREER' ? `Padrón Activo (${activeProgramName})` : 'Padrón Activo'}
             </span>
-            <span className="text-2xl font-extrabold text-[#0D382F] dark:text-[#F0FDF8] mt-1 block">
-              {counts.activeCount}
-            </span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className="text-2xl font-extrabold text-[#0D382F] dark:text-[#F0FDF8] block">
+                {activeProgramId && scopeFilter === 'CAREER' ? counts.careerCount : counts.activeCount}
+              </span>
+              {activeProgramId && scopeFilter === 'CAREER' && (
+                <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                  de {counts.activeCount} total
+                </span>
+              )}
+            </div>
           </div>
           <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-[#132B25] text-emerald-700 dark:text-[#5EEAD4] flex items-center justify-center font-bold">
             <StudentsIcon className="w-5 h-5" />
@@ -677,6 +724,48 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
 
       {/* 5. Toolbar de Búsqueda y Pestañas */}
       <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs p-6 space-y-5">
+        {/* Banner contextual de carrera */}
+        {activeProgramId && (
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#E6F4F1]/70 dark:bg-[#132B25]/70 border border-[#13594A]/20 dark:border-[#5EEAD4]/20">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-[#0D382F] dark:text-[#F0FDF8]">
+                {scopeFilter === 'CAREER'
+                  ? `🎯 Viendo Alumnos de: ${activeProgramName}`
+                  : '🌐 Viendo Todo el Padrón General'}
+              </span>
+              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-[#13594A]/10 dark:bg-[#5EEAD4]/20 text-[#13594A] dark:text-[#5EEAD4] font-bold">
+                {scopeFilter === 'CAREER' ? `${careerStudentIds.size} matriculados` : `${counts.totalCount} estudiantes`}
+              </span>
+              {isSearching && (
+                <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-800/60">
+                  ⚡ Búsqueda activa en todo el padrón ({filteredStudents.length} resultados)
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setScopeFilter(scopeFilter === 'CAREER' ? 'ALL' : 'CAREER')}
+                className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-200 hover:text-[#13594A] dark:hover:text-[#5EEAD4] cursor-pointer shadow-xs transition-colors"
+              >
+                {scopeFilter === 'CAREER' ? '🌐 Ver Todo el Padrón' : `🎯 Filtrar por ${activeProgramName}`}
+              </button>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.hash = '#/matriculas';
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#13594A] text-white hover:bg-[#0D382F] transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
+                >
+                  <span>➕ Matricular en {activeProgramName}</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Pestañas de estado */}
           <div className="inline-flex p-1 bg-slate-100 dark:bg-[#131C1A] rounded-2xl text-xs font-bold">
@@ -863,6 +952,16 @@ export const GestionEstudiantes: React.FC<GestionEstudiantesProps> = ({ onNaviga
                               </button>
                             ) : (
                               <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    window.location.hash = `#/matriculas?studentId=${s.id}`;
+                                  }}
+                                  title={`Matricular a ${s.name} en ${activeProgramName || 'un aula'}`}
+                                  className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-[#5EEAD4] font-bold text-xs transition-colors border border-emerald-300 dark:border-emerald-800/60 inline-flex items-center gap-1 cursor-pointer"
+                                >
+                                  <span>➕ Matricular</span>
+                                </button>
                                 <button
                                   type="button"
                                   onClick={() => handleEditClick(s)}

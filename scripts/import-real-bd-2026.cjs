@@ -898,15 +898,16 @@ function importRealBd2026(options = {}) {
 
       for (const ds of core.records('documentSettings')) {
         const k = ds.scope?.kind;
-        if (k === 'academicYear' && ds.scope.target !== '2026') {
+        const t = ds.scope?.target;
+        if (k === 'academicYear' && t !== '2026') {
           core.db.prepare("DELETE FROM records WHERE entity='documentSettings' AND id=?").run(ds.id);
-        } else if (k === 'academicPeriod' && !['2026-I', '2026-II'].includes(ds.scope.target)) {
+        } else if (k === 'academicPeriod' && !['2026-I', '2026-II'].includes(t)) {
           core.db.prepare("DELETE FROM records WHERE entity='documentSettings' AND id=?").run(ds.id);
         } else if (k === 'personnel' && !officialPersonnelIds.has(ds.id)) {
           core.db.prepare("DELETE FROM records WHERE entity='documentSettings' AND id=?").run(ds.id);
-        } else if ((k === 'curriculum' || k === 'moduleDefaults' || k === 'module') && !officialModuleIds.has(ds.scope.target)) {
+        } else if ((k === 'curriculum' || k === 'moduleDefaults' || k === 'module') && !officialModuleIds.has(t)) {
           core.db.prepare("DELETE FROM records WHERE entity='documentSettings' AND id=?").run(ds.id);
-        } else if (k === 'program' && !officialProgramIds.has(ds.scope.target)) {
+        } else if (k === 'program' && !officialProgramIds.has(t)) {
           core.db.prepare("DELETE FROM records WHERE entity='documentSettings' AND id=?").run(ds.id);
         }
       }

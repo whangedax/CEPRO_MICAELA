@@ -36,12 +36,16 @@ import MiCuentaPerfil from './pages/MiCuentaPerfil';
 import ActualizarExportarDatos from './pages/ActualizarExportarDatos';
 import PlaceholderPage from './pages/PlaceholderPage';
 import LoginPage from './pages/LoginPage';
+import ModuloFichaRegistro2026 from './pages/ModuloFichaRegistro2026';
+import FormularioAdmisionPublico from './pages/FormularioAdmisionPublico';
 
 // Rutas globales reconocidas por el sistema
 const validRoutes: Record<string, NavRoute> = {
   'inicio': 'inicio',
   'estudiantes': 'estudiantes',
   'matriculas': 'matriculas',
+  'ficha-registro-2026': 'ficha-registro-2026',
+  'admision-qr': 'admision-qr',
   'grupos': 'grupos',
   'asistencia': 'asistencia',
   'evaluacion': 'evaluacion',
@@ -62,6 +66,7 @@ const ROLE_POLICIES: Record<UserRole, NavRoute[]> = {
     'inicio',
     'estudiantes',
     'matriculas',
+    'ficha-registro-2026',
     'grupos',
     'evaluacion',
     'asistencia',
@@ -79,6 +84,7 @@ const ROLE_POLICIES: Record<UserRole, NavRoute[]> = {
     'inicio',
     'estudiantes',
     'matriculas',
+    'ficha-registro-2026',
     'grupos',
     'evaluacion',
     'asistencia',
@@ -111,6 +117,9 @@ function parseHash(hash: string): NavRoute {
   const clean = hash.replace(/^#\/?/, '').split('?')[0].trim().toLowerCase();
   if (!clean || clean === 'inicio' || clean === 'mis-aulas') {
     return 'inicio';
+  }
+  if (clean.startsWith('admision-qr')) {
+    return 'admision-qr';
   }
   return validRoutes[clean] || 'inicio';
 }
@@ -208,6 +217,11 @@ const AppContent: React.FC = () => {
     };
   }, [user, systemStatus]);
 
+  // Ruta pública móvil para postulantes y estudiantes vía QR / WhatsApp (sin requerir login)
+  if (currentRoute === 'admision-qr' || (typeof window !== 'undefined' && window.location.hash.includes('admision-qr'))) {
+    return <FormularioAdmisionPublico />;
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#F6F8FA] flex flex-col items-center justify-center text-[#172B28] antialiased">
@@ -251,6 +265,10 @@ const AppContent: React.FC = () => {
 
     if (currentRoute === 'matriculas') {
       return <GestionMatriculas onNavigate={handleRouteChange} />;
+    }
+
+    if (currentRoute === 'ficha-registro-2026') {
+      return <ModuloFichaRegistro2026 onNavigate={handleRouteChange} />;
     }
 
     if (currentRoute === 'grupos') {

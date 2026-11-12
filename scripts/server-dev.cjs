@@ -14,6 +14,7 @@
 
 const path = require('node:path');
 const fs = require('node:fs');
+const os = require('node:os');
 const { validateDevSandbox, DEFAULT_DEV_PORT } = require('./dev-sandbox-guard.cjs');
 const { createService } = require('./offline-http.cjs');
 
@@ -67,14 +68,18 @@ const service = createService({
 // Registrar PID en el lock del sandbox
 fs.writeFileSync(lockFile, JSON.stringify({ pid: process.pid, port: devPort, startedAt: new Date().toISOString() }));
 
-// 5. Configuración de servidor HTTP en loopback
+// 5. Configuración de servidor HTTP en loopback + interfaz LAN para admisión QR
 const server = service.server();
+const lanServers = [];
 let stopping = false;
 
 function stop(code = 0) {
   if (stopping) return;
   stopping = true;
   process.exitCode = code;
+  for (const ls of lanServers) {
+    try { ls.close(); } catch {}
+  }
   server.close(() => {
     try {
       service.core.close();
@@ -99,13 +104,28 @@ server.on('error', (err) => {
   stop(1);
 });
 
-server.listen(devPort, devHost, () => {
+server.listen(devPort, '0.0.0.0', () => {
+  const lanIps = [];
+  try {
+    const nets = os.networkInterfaces();
+    for (const name of Object.keys(nets)) {
+      for (const iface of nets[name] || []) {
+        if (iface.family === 'IPv4' && !iface.internal && iface.address !== devHost) {
+          lanIps.push(iface.address);
+          console.log(`  Admisión QR:   http://${iface.address}:${devPort}/admision-qr`);
+        }
+      }
+    }
+  } catch {}
   console.log('========================================================================');
   console.log('          CEPRO_MICAELA 2.0 — SERVIDOR DE DESARROLLO AISLADO           ');
   console.log('========================================================================');
   console.log(`  Estado:        SANDBOX DE DATOS SINTÉTICOS VERIFICADO`);
   console.log(`  Sandbox Dir:   ${directory}`);
   console.log(`  Escuchando:    http://${devHost}:${devPort}/`);
+  if (lanIps.length > 0) {
+    console.log(`  Red Local QR:  http://${lanIps[0]}:${devPort}/admision-qr`);
+  }
   console.log(`  API Status:    http://${devHost}:${devPort}/api/status`);
   console.log(`  Modo:          DESARROLLO (Bases institucionales protegidas)`);
   console.log('========================================================================');

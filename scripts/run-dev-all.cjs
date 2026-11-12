@@ -23,7 +23,7 @@ const backend = spawn('node', [path.join(__dirname, 'run-dev-backend.cjs')], {
 
 // 2. Iniciar Vite
 const isWin = process.platform === 'win32';
-const vite = spawn(isWin ? 'npx.cmd' : 'npx', ['vite', '--host', '127.0.0.1', '--port', '5173'], {
+const vite = spawn(isWin ? 'npx.cmd' : 'npx', ['vite', '--host', '0.0.0.0', '--port', '5173'], {
   cwd: root,
   stdio: 'inherit',
   shell: true

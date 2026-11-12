@@ -6,9 +6,32 @@ const err=(message,status=400)=>{const e=new Error(message);e.status=status;thro
 const digest=v=>crypto.createHash('sha256').update(JSON.stringify(v)).digest('hex');
 const present=v=>v!==undefined&&v!==null&&v!==''&&v!=='PENDIENTE';
 const validDate=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(`${v}T00:00:00Z`))&&new Date(`${v}T00:00:00Z`).toISOString().slice(0,10)===v;
-function idFor(scope){return `${scope.kind}:${scope.target||'institution'}${scope.unit?':'+scope.unit:''}`;}
+const SPANISH_MONTH_NAMES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SETIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+function computeMonthsLabel(spans, fInicio, fFin) {
+ if (Array.isArray(spans) && spans.length > 0) {
+  const names = [...new Set(spans.map(s => String(s.monthName || '').toUpperCase()))].filter(Boolean);
+  if (names.length > 0) return names.join(' - ');
+ }
+ if (fInicio && typeof fInicio === 'string') {
+  const parts1 = fInicio.split('-');
+  const m1 = parseInt(parts1[1], 10) - 1;
+  let m2 = m1;
+  if (fFin && typeof fFin === 'string') {
+   const parts2 = fFin.split('-');
+   m2 = parseInt(parts2[1], 10) - 1;
+  }
+  if (m1 >= 0 && m1 < 12) {
+   if (m2 >= 0 && m2 < 12 && m1 !== m2) {
+    return `${SPANISH_MONTH_NAMES[m1]} - ${SPANISH_MONTH_NAMES[m2]}`;
+   }
+   return SPANISH_MONTH_NAMES[m1];
+  }
+ }
+ return '';
+}
+function idFor(scope){if(!scope?.kind)return '';return `${scope.kind}:${scope.target||'institution'}${scope.unit?':'+scope.unit:''}`;}
 function visible(core,user,value,incomingEnrollments=new Map()){
- const s=value.scope;if(!s||!SETTINGS_FIELDS[s.kind])return false;if(user.role!=='DOCENTE')return true;
+ const s=value?.scope;if(!s?.kind||!SETTINGS_FIELDS[s.kind])return false;if(user.role!=='DOCENTE')return true;
  if(s.kind==='institution')return true;
  if(s.kind==='academicYear')return user.assignments.some(a=>a.periodId?.slice(0,4)===s.target);
  if(s.kind==='academicPeriod')return user.assignments.some(a=>a.periodId===s.target);
@@ -21,7 +44,7 @@ function visible(core,user,value,incomingEnrollments=new Map()){
  return false;
 }
 function authorize(core,actor,scope){
- if(!scope||!SETTINGS_FIELDS[scope.kind])err('Ámbito documental inválido.');
+ if(!scope?.kind||!SETTINGS_FIELDS[scope.kind])err('Ámbito documental inválido.');
  if(['group','unit','unitCurriculum'].includes(scope.kind)){core.requireGroup(actor,scope.target,scope.unit);if(['unit','unitCurriculum'].includes(scope.kind)&&!(core.record('groups',scope.target).units||[]).includes(scope.unit))err('Unidad desconocida.');}
  if(scope.kind==='institution'&&scope.target)err('El perfil institucional es único.');
  if(scope.kind==='program'&&!core.scoped(actor,'programs').some(p=>p.id===scope.target))err('Programa no permitido.',403);
@@ -66,7 +89,7 @@ function configuration(core,actor){
  const templates=core.dashboard(actor).templates,allowed=policyFor(actor).settings;
  const schema=Object.fromEntries(Object.entries(SETTINGS_FIELDS).filter(([kind])=>allowed.includes(kind)).map(([kind,fields])=>[kind,fields.filter(f=>f.roles.includes(actor.role))]));
  const filteredDefaults=Object.fromEntries(Object.entries(defaults).filter(([key])=>allowed.includes(key.split(':')[0])));
- return {schema,defaults:filteredDefaults,settings:core.records('documentSettings').filter(r=>allowed.includes(r.scope.kind)&&visible(core,actor,r)),catalog:catalog(path.join(__dirname,'..')).filter(t=>templates.includes(t.id))};
+ return {schema,defaults:filteredDefaults,settings:core.records('documentSettings').filter(r=>r.scope?.kind&&allowed.includes(r.scope.kind)&&visible(core,actor,r)),catalog:catalog(path.join(__dirname,'..')).filter(t=>templates.includes(t.id))};
 }
 const DEMO_STUDENT_NAMES = [
  { name: 'ALVAREZ QUISPE, Carmen Rosa', doc: '45812903', sex: 'M', birth: '2004-03-12' },
@@ -211,6 +234,7 @@ function enrich(core,actor,base){
  const calendarEngine=new AcademicCalendarEngine();
  let academicDates=[],academicMonthSpans=[];
  const docNum=Number(base.templateId.slice(5));
+ let unitFilteredAttendance=(base.attendance||[]);
  if(docNum>=5&&docNum<=10){
   let unitDates=selected?.fechaInicio?selected:(base.attendance?.length?null:selected);
   const isSem1 = g.periodId === '2026-I' || (!String(g.periodId||'').includes('II') && !String(g.id||'').includes('-M2'));
@@ -236,11 +260,40 @@ function enrich(core,actor,base){
    const sched = (isSem1 ? demoSchedulesSem1 : demoSchedulesSem2)[base.unit || 'UD1'] || (isSem1 ? demoSchedulesSem1.UD1 : demoSchedulesSem2.UD1);
    unitDates={...unitDates,fechaInicio:unitDates?.fechaInicio||sched.fechaInicio,fechaFin:unitDates?.fechaFin||sched.fechaFin};
   }
+  if (unitDates?.fechaInicio || unitDates?.fechaFin || base.unit) {
+   unitFilteredAttendance = (base.attendance || []).filter(a => {
+     const d = a.date || a.fecha;
+     if (base.unit && a.unit && a.unit !== base.unit) return false;
+     if (unitDates?.fechaInicio && d && d < unitDates.fechaInicio) return false;
+     if (unitDates?.fechaFin && d && d > unitDates.fechaFin) return false;
+     return true;
+   });
+  }
+  const consolidatedMap = new Map();
+  const sortedAtt = [...unitFilteredAttendance].sort((a, b) => {
+    const timeA = a.updatedAt || a.createdAt || '';
+    const timeB = b.updatedAt || b.createdAt || '';
+    if (timeA && timeB && timeA !== timeB) return timeA.localeCompare(timeB);
+    const revA = Number(a.rev) || 0;
+    const revB = Number(b.rev) || 0;
+    if (revA !== revB) return revB - revA;
+    if (a.session !== '1' && b.session === '1') return 1;
+    return 0;
+  });
+  for (const item of sortedAtt) {
+    const d = item.date || item.fecha;
+    if (!d || !item.enrollmentId) continue;
+    const key = `${item.enrollmentId}|${d}`;
+    const prev = consolidatedMap.get(key);
+    if (prev && prev.value && (!item.value || item.pending)) continue;
+    consolidatedMap.set(key, { ...item, date: d, fecha: d, session: '1' });
+  }
+  unitFilteredAttendance = Array.from(consolidatedMap.values());
   if(unitDates?.fechaInicio){
-   const res=calendarEngine.resolveAcademicDates({fechaInicio:unitDates.fechaInicio,fechaFin:unitDates.fechaFin||undefined,diasClase:g.diasClase||[1,2,3,4,5],targetDays:unitDates.days||undefined,recordedSessions:isDemo?[]:base.attendance});
+   const res=calendarEngine.resolveAcademicDates({fechaInicio:unitDates.fechaInicio,fechaFin:unitDates.fechaFin||undefined,diasClase:g.diasClase||[1,2,3,4,5],targetDays:unitDates.days||undefined,recordedSessions:isDemo?[]:unitFilteredAttendance});
    if(res.success){academicDates=res.dates;academicMonthSpans=res.monthSpans;}
-  }else if(base.attendance?.length){
-   const res=calendarEngine.resolveAcademicDates({recordedSessions:base.attendance});
+  }else if(unitFilteredAttendance.length){
+   const res=calendarEngine.resolveAcademicDates({recordedSessions:unitFilteredAttendance});
    if(res.success){academicDates=res.dates;academicMonthSpans=res.monthSpans;}
   }
   if(isDemo&&academicDates.length===0){
@@ -249,7 +302,7 @@ function enrich(core,actor,base){
    if(res.success){academicDates=res.dates;academicMonthSpans=res.monthSpans;}
   }
  }
- let attendance=base.attendance;
+ let attendance=(docNum>=5&&docNum<=10)?unitFilteredAttendance:base.attendance;
  if(isDemo&&(docNum>=5&&docNum<=10)&&academicDates.length>0){
   attendance=[];
   for(let sIdx=0;sIdx<students.length;sIdx++){
@@ -307,19 +360,32 @@ function enrich(core,actor,base){
   const unitInd3 = selected?.indicator3 || (isDemo ? `Verifica el control de calidad, acabado final y buenas prácticas ambientales en el taller.` : '');
   const unitInd4 = selected?.indicator4 || (isDemo ? `Resuelve situaciones operativas y aplica criterios técnicos de mantenimiento en ${cleanDemoUnitName.toLowerCase()}.` : '');
   const unitInd5 = selected?.indicator5 || (isDemo ? `Presenta el producto o servicio terminado cumpliendo estándares técnicos y tiempos establecidos.` : '');
+  const resolvedUnitFechaInicio = (docNum>=5&&docNum<=10&&academicDates.length)?academicDates[0].fecha:(selected?.fechaInicio||'');
+  const resolvedUnitFechaFin = (docNum>=5&&docNum<=10&&academicDates.length)?academicDates[academicDates.length-1].fecha:(selected?.fechaFin||'');
+  const unitMonthsLabel = computeMonthsLabel(academicMonthSpans, resolvedUnitFechaInicio, resolvedUnitFechaFin);
   const unitData = isDemo ? {
    ...selected,
    code: base.unit || selected?.code || 'UD1',
    name: demoUnitName,
-   fechaInicio: (docNum>=5&&docNum<=10&&academicDates.length)?academicDates[0].fecha:(selected?.fechaInicio||''),
-   fechaFin: (docNum>=5&&docNum<=10&&academicDates.length)?academicDates[academicDates.length-1].fecha:(selected?.fechaFin||''),
+   fechaInicio: resolvedUnitFechaInicio,
+   fechaFin: resolvedUnitFechaFin,
+   unitFechaInicio: resolvedUnitFechaInicio,
+   unitFechaFin: resolvedUnitFechaFin,
+   unitMonthsLabel,
    capacity: unitCapacity,
    indicator1: unitInd1,
    indicator2: unitInd2,
    indicator3: unitInd3,
    indicator4: unitInd4,
    indicator5: unitInd5
-  } : selected;
+  } : (selected ? {
+   ...selected,
+   fechaInicio: selected.fechaInicio || resolvedUnitFechaInicio,
+   fechaFin: selected.fechaFin || resolvedUnitFechaFin,
+   unitFechaInicio: selected.fechaInicio || resolvedUnitFechaInicio,
+   unitFechaFin: selected.fechaFin || resolvedUnitFechaFin,
+   unitMonthsLabel
+  } : null);
   const enrichedUnits = units.map(u => {
    if (!isDemo) return u;
    const uName = getDemoUnitName(g.programId, g.moduleId, u.code, u.name);
@@ -336,7 +402,7 @@ function enrich(core,actor,base){
   const progName = curriculum.programName || base.program?.nombre || '';
   const programObj = {...base.program,...(curriculum.programName?{nombre:curriculum.programName}:{}),...(curriculum.nivelFormativo?{nivelFormativo:curriculum.nivelFormativo}:{}),...prog,...(isDemo?{nivelFormativo:prog.nivelFormativo||curriculum.nivelFormativo||'Auxiliar Técnico',tipoPlan:prog.tipoPlan||'Modular',resolucionPrograma:prog.resolucionPrograma||institution.resolucionAutorizacion||'RD N° 0125-1988-ED',officialTitleText:prog.officialTitleText||`AUXILIAR TÉCNICO EN ${(progName||'COMPUTACIÓN E INFORMÁTICA').toUpperCase()}`}:{})};
   const groupObj = {...g,fechaInicio:period.fechaInicio||'',fechaFin:period.fechaFin||'',ciclo:curriculum.nivelFormativo||'',turno:curriculum.turno||g.turno||'',periodClase:g.periodId,efsrtInicio:efsrt.fechaInicio||'',efsrtFin:efsrt.fechaFin||'',...group,seccion:core.groupSection(g)||group.seccion||'',...(isDemo?{fechaInicio:group.fechaInicio||period.fechaInicio||'2026-03-16',fechaFin:group.fechaFin||period.fechaFin||'2026-07-24',ciclo:group.ciclo||curriculum.nivelFormativo||'Auxiliar Técnico',turno:group.turno||curriculum.turno||g.turno||'MAÑANA',seccion:core.groupSection(g)||group.seccion||'A',modalidad:group.modalidad||g.modalidad||'PRESENCIAL',periodClase:group.periodClase||g.periodId||'2026-I',efsrtInicio:group.efsrtInicio||efsrt.fechaInicio||'2026-06-15',efsrtFin:group.efsrtFin||efsrt.fechaFin||'2026-07-24'}:{})};
-  const doc={...base,attendance,grades,demoFill:isDemo,demoMode:isDemo,institution:{...institution,name:institution.nombre},program:programObj,module:modObj,group:groupObj,units:enrichedUnits,efsrtUnit,unitCode:base.unit,unitData,teacher,students,academicDates,academicMonthSpans,parameters:students.length===1?students[0].parameters:{}};
+  const doc={...base,attendance,grades,demoFill:isDemo,demoMode:isDemo,institution:{...institution,name:institution.nombre},program:programObj,module:modObj,group:groupObj,units:enrichedUnits,efsrtUnit,unitCode:base.unit,unitData,teacher,students,academicDates,academicMonthSpans,unitFechaInicio:resolvedUnitFechaInicio,unitFechaFin:resolvedUnitFechaFin,unitMonthsLabel,parameters:students.length===1?students[0].parameters:{}};
  doc.preflight=preflight(doc);
  if(isDemo){
   doc.preflight.complete=true;
@@ -368,4 +434,4 @@ function preflight(doc){
  if(doc.templateId==='TMPL-02'&&doc.parameters.subsanacionUnit)for(const key of ['subsanacionCredits','subsanacionHours','subsanacionCondition'])add('document.'+key,doc.parameters[key],'Parámetros de subsanación de matrícula');
  return {fields,missing,complete:missing.length===0,filled:fields.length-missing.length,total:fields.length};
 }
-module.exports={curriculumFor,SETTINGS_FIELDS,idFor,visible,validateSettings,saveSettings,configuration,enrich,preflight};
+module.exports={curriculumFor,SETTINGS_FIELDS,idFor,visible,validateSettings,saveSettings,configuration,enrich,preflight,computeMonthsLabel};

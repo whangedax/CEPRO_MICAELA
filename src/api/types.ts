@@ -69,6 +69,8 @@ export interface WorkspaceUnitOption {
   name?: string;
   hours?: number;
   credits?: number;
+  fechaInicio?: string;
+  fechaFin?: string;
   [key: string]: unknown;
 }
 
@@ -84,6 +86,8 @@ export interface WorkspaceGroupOption {
   year: string;
   turno: string;
   modalidad: string;
+  fechaInicio?: string;
+  fechaFin?: string;
   units: WorkspaceUnitOption[];
 }
 
@@ -130,6 +134,7 @@ export interface WorkspaceContext {
   overview?: boolean;
   year?: string;
   programId?: string;
+  programName?: string;
   moduleId?: string;
   groupId?: string;
   mode?: 'UNIT' | 'MODULE' | 'PRACTICE';
@@ -149,6 +154,8 @@ export interface DashboardGroup {
   closed?: boolean;
   closureReason?: string;
   units?: string[];
+  fechaInicio?: string;
+  fechaFin?: string;
   rev?: string;
   [key: string]: unknown;
 }
@@ -473,6 +480,7 @@ export interface EnrollPayload {
   studentId: string;
   groupId: string;
   startDate: string;
+  autoAdjustDate?: boolean;
 }
 
 export interface RetireEnrollmentPayload {
@@ -587,7 +595,7 @@ export interface DashboardResponse {
   enrollments: StudentEnrollmentItem[];
   groups: DashboardGroup[];
   programs: Array<{ id: string; name?: string; nombre?: string }>;
-  modules: Array<{ id: string; name?: string; nombre?: string }>;
+  modules: Array<{ id: string; name?: string; nombre?: string; programId?: string }>;
   grades: GradeRecord[];
   attendance: AttendanceRecord[];
   user: PublicUser;

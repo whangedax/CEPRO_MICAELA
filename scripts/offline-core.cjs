@@ -5,6 +5,8 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const DocumentSettings = require('./offline-documents.cjs');
+const { unitDateRange } = require('./unit-date-range.cjs');
+const { AcademicCalendarEngine, getDayOfWeekIso } = require('./academic-calendar-engine.cjs');
 const {policyFor,groupName,enrollmentCode}=require('./role-policy.cjs');
 const APP = 'CETPRO_OFFLINE', VERSION = 1;
 const canonical = value => JSON.stringify(value ?? null);
@@ -12,6 +14,7 @@ const hash = value => crypto.createHash('sha256').update(typeof value === 'strin
 const id = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
 const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(`${value}T00:00:00Z`)) && new Date(`${value}T00:00:00Z`).toISOString().slice(0,10) === value;
+const formatDmy = iso => (typeof iso === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(iso)) ? iso.split('-').reverse().join('/') : iso;
 const fail = (message, status = 400) => { const e = new Error(message); e.status = status; throw e; };
 const pem = (key, type) => key.export({ type, format: 'pem' });
 const pair = algorithm => { const k = crypto.generateKeyPairSync(algorithm); return { public: pem(k.publicKey, 'spki'), private: pem(k.privateKey, 'pkcs8') }; };
@@ -118,6 +121,29 @@ class OfflineCore {
     this.backupFile = backupFile;
     this.sessions = new Map(); this.attempts = new Map();
     if (!this.setting('device')) this.setting('device', { id: id(), signing: pair('ed25519'), encryption: pair('x25519') });
+    this.ensureDocumentSettingsScoped();
+  }
+  ensureDocumentSettingsScoped() {
+    try {
+      for (const r of this.records('documentSettings')) {
+        if (!r || (r.scope && r.scope.kind)) continue;
+        const recId = String(r.id || '');
+        let scope = null;
+        if (recId === 'admissionConfig2026') {
+          scope = { kind: 'admissionConfig', target: '2026' };
+        } else if (recId.startsWith('admissionSubmission:')) {
+          scope = { kind: 'admissionSubmission', target: recId.slice('admissionSubmission:'.length) };
+        } else if (recId.startsWith('profile2026:')) {
+          scope = { kind: 'profile2026', target: recId.slice('profile2026:'.length) };
+        } else if (recId.includes(':')) {
+          const [kind, target, unit] = recId.split(':');
+          if (kind) scope = { kind, target: target || 'institution', ...(unit ? { unit } : {}) };
+        }
+        if (scope) {
+          this.putRecord('documentSettings', { ...r, scope });
+        }
+      }
+    } catch {}
   }
   close() { this.db.close(); }
   pruneMemory() { const t = Date.now(); for (const [k, s] of this.sessions) if (s.expires < t) this.sessions.delete(k); for (const [k, a] of this.attempts) if (a.until && a.until < t && a.count === 0) this.attempts.delete(k); }
@@ -324,6 +350,7 @@ class OfflineCore {
     const current = input.id ? this.record('students', input.id) : null;if(input.id&&!current)fail('Estudiante no encontrado.',404);
     const value = { ...current,archived:input.archived===undefined?!!current?.archived:!!input.archived, id: current?.id || id(), document: String(input.document || '').trim(), name: String(input.name || '').trim(), active: input.active !== false };
     for(const key of ['lastName1','lastName2','firstNames','sex','birthDate','documentType'])if(input[key]!==undefined)value[key]=String(input[key]).trim();
+    if(input.profile2026!==undefined)value.profile2026=input.profile2026;
     if(value.sex&&!['H','M'].includes(value.sex))fail('Seleccione sexo H o M, según la plantilla.');
     if(value.birthDate&&(!validDate(value.birthDate)||value.birthDate>new Date().toISOString().slice(0,10)))fail('Fecha de nacimiento inválida.');
     if(value.archived)value.active=false;
@@ -355,9 +382,18 @@ class OfflineCore {
     this.requireRole(actor, ADMIN);
     const group = this.record('groups', input.groupId), student = this.record('students', input.studentId);
     if (!group?.periodId || !group.moduleId || !student?.active) fail('Seleccione un estudiante activo y un grupo con periodo/módulo configurados.');
-    if (!validDate(input.startDate)) fail('Fecha de ingreso inválida.');this.validateEnrollmentWindow(group,input.startDate);
+    let startDate = input.startDate;
+    const start = this.record('documentSettings','group:'+group.id)?.fields?.fechaInicio||group.fechaInicio||this.record('documentSettings','academicPeriod:'+group.periodId)?.fields?.fechaInicio||'2026-03-16';
+    const end = this.record('documentSettings','group:'+group.id)?.fields?.fechaFin||group.fechaFin||this.record('documentSettings','academicPeriod:'+group.periodId)?.fields?.fechaFin;
+    const today = new Date().toISOString().slice(0, 10);
+    const isToday = startDate === today;
+    const outOfPeriod = (validDate(end) && startDate > end) || (validDate(start) && startDate < start);
+    if (input.autoAdjustDate === true || (isToday && outOfPeriod)) {
+      startDate = start || '2026-03-16';
+    }
+    if (!validDate(startDate)) fail('Fecha de ingreso inválida.');this.validateEnrollmentWindow(group,startDate);
     if (this.records('enrollments').some(e => e.studentId === student.id && e.groupId === group.id && e.active)) fail('El estudiante ya está matriculado en este grupo.', 409);
-    const value = { id: id(),createdAt:now(), studentId: student.id, groupId: group.id, periodId: group.periodId, moduleId: group.moduleId, startDate: input.startDate, active: true };
+    const value = { id: id(),createdAt:now(), studentId: student.id, groupId: group.id, periodId: group.periodId, moduleId: group.moduleId, startDate, active: true };
     value.code=enrollmentCode(this,student.id,value.id);
     return this.transaction(() => this.write(actor, 'enrollments', value));
   }
@@ -383,20 +419,55 @@ class OfflineCore {
     if (!group.periodId || !group.moduleId || !(group.units || []).includes(input.unit)) fail('Configure periodo, módulo y unidad antes de registrar.');
     if (group.closed) fail('Registro cerrado. Solicite reapertura a dirección.', 409);
     if (!Array.isArray(input.rows) || !input.rows.length || input.rows.length > 12000) fail('Seleccione registros para guardar.');
-    if (entity === 'attendance' && (!validDate(input.date) || !String(input.session || '').trim())) fail('Fecha y sesión obligatorias.');
+    if (entity === 'attendance' && (!validDate(input.date) || !String(input.session || '1').trim())) fail('Fecha y sesión obligatorias.');
     if (entity === 'grades' && !String(input.indicator || '').trim() && input.rows.some(r=>!String(r.indicator||'').trim())) fail('Indicador obligatorio.');
+    let unitDates = null, dow = null, holiday = null, isRecovery = false, diasClase = [1, 2, 3, 4, 5];
+    if (entity === 'attendance') {
+      unitDates = unitDateRange(this, group, input.unit);
+      const ucSettings = this.record('documentSettings', `unitCurriculum:${group.id}:${input.unit}`)?.fields || {};
+      const gSettings = this.record('documentSettings', 'group:' + group.id)?.fields || {};
+      const pSettings = this.record('documentSettings', 'academicPeriod:' + group.periodId)?.fields || {};
+      const recuperaciones = new Set([
+        ...(Array.isArray(ucSettings.recuperaciones) ? ucSettings.recuperaciones : []),
+        ...(Array.isArray(gSettings.recuperaciones) ? gSettings.recuperaciones : []),
+        ...(Array.isArray(pSettings.recuperaciones) ? pSettings.recuperaciones : []),
+        ...(Array.isArray(group.recuperaciones) ? group.recuperaciones : []),
+        ...(input.recuperacion || input.isRecovery ? [input.date] : [])
+      ]);
+      isRecovery = recuperaciones.has(input.date);
+      diasClase = ucSettings.diasClase || gSettings.diasClase || pSettings.diasClase || group.diasClase || [1, 2, 3, 4, 5];
+      dow = getDayOfWeekIso(input.date);
+      const calEng = new AcademicCalendarEngine({
+        holidays: {
+          ...(pSettings.holidays || {}),
+          ...(gSettings.holidays || {}),
+          ...(ucSettings.holidays || {})
+        }
+      });
+      holiday = calEng.isHoliday(input.date);
+    }
     return this.transaction(() => input.rows.map(row => {
       const enrollment = this.record('enrollments', row.enrollmentId);
       if (!enrollment?.active || enrollment.groupId !== group.id) fail('La matrícula no pertenece al aula.');
-      if (entity === 'attendance' && enrollment.startDate && input.date < enrollment.startDate) fail('La sesión es anterior al ingreso del estudiante.');
+      if (entity === 'attendance') {
+        if (enrollment.startDate && input.date < enrollment.startDate) fail('La sesión es anterior al ingreso del estudiante.');
+        if (unitDates?.fechaInicio && unitDates?.fechaFin && (input.date < unitDates.fechaInicio || input.date > unitDates.fechaFin)) {
+          fail(`La fecha ${formatDmy(input.date)} está fuera de la ${input.unit} (${formatDmy(unitDates.fechaInicio)} \u2013 ${formatDmy(unitDates.fechaFin)}).`);
+        }
+        if (dow === 0 && !isRecovery) fail(`La fecha ${formatDmy(input.date)} no es día lectivo (domingo).`);
+        if (dow === 6 && !diasClase.includes(6) && !isRecovery) fail(`La fecha ${formatDmy(input.date)} no es día lectivo (sábado).`);
+        if (holiday && !isRecovery) fail(`La fecha ${formatDmy(input.date)} es feriado (${holiday}).`);
+      }
       const pending = row.value === null && row.clear === true;
       if (entity === 'grades' && !pending && (row.value === '' || row.value === null || typeof row.value !== 'number' || !Number.isFinite(row.value) || row.value < 0 || row.value > 20)) fail('La nota debe estar entre 0 y 20. Una nota pendiente se deja sin guardar.');
       if (entity === 'attendance' && !pending && !['P', 'F', 'J', 'T'].includes(row.value)) fail('Estado de asistencia inválido.');
-      const indicator=String(row.indicator||input.indicator||'').trim();
-      const recordId = hash([entity, enrollment.id, input.unit, entity === 'grades' ? indicator : [input.date, input.session.trim()]]);
+      const indicator = String(row.indicator || input.indicator || '').trim();
+      const recordId = hash([entity, enrollment.id, input.unit, entity === 'grades' ? indicator : [input.date, '1']]);
       const value = { id: recordId, enrollmentId: enrollment.id, groupId: group.id, periodId: group.periodId, moduleId: group.moduleId, unit: input.unit, value: row.value,
-        ...(entity === 'grades' ? { indicator } : { date: input.date, session: input.session.trim() }), pending, observation: String(row.observation || '').slice(0, 2000) };
-      return this.write(actor, entity, value, row.rev);
+        ...(entity === 'grades' ? { indicator } : { date: input.date, session: '1' }), pending, observation: String(row.observation || '').slice(0, 2000) };
+      const current = this.record(entity, recordId);
+      const expectedRev = (row.rev !== undefined && row.rev !== null) ? row.rev : (current ? current.rev : null);
+      return this.write(actor, entity, value, expectedRev);
     }));
   }
   simulateUnitAttendance(actor, input) {
@@ -534,7 +605,7 @@ class OfflineCore {
     const recipient=input.recipientUserId?(this.user(input.recipientUserId)||this.record('userDirectory',input.recipientUserId)):null;if(input.recipientUserId){this.requireRole(actor,ADMIN);if(!recipient)fail('Seleccione una cuenta destinataria registrada.');}
     if(!actor.active)fail('Cuenta inactiva.',403);const groups=this.scoped(actor,'groups').filter(g=>(!input.groupId||g.id===input.groupId)&&(!input.moduleId||g.moduleId===input.moduleId)&&(!recipient||this.assignment(recipient,g.id)));if(!groups.length&&(!recipient||recipient.active))fail('Seleccione un grupo permitido para esa cuenta.');
     const groupIds=new Set(groups.map(g=>g.id)),programs=new Set(groups.map(g=>g.programId)),modules=new Set(groups.map(g=>g.moduleId)),enrollments=this.scoped(actor,'enrollments').filter(e=>groupIds.has(e.groupId)),studentIds=new Set(enrollments.map(e=>e.studentId)),enrollmentIds=new Set(enrollments.map(e=>e.id));
-    const rawOperations=this.operations().filter(op=>{const b=op.body,v=b.value;if(!this.operationVisible(actor,b)||(recipient&&!this.operationVisible(recipient,b)))return false;if(b.entity==='groups')return groupIds.has(v.id);if(b.entity==='programs')return programs.has(v.id);if(b.entity==='modules')return modules.has(v.id);if(b.entity==='students')return studentIds.has(v.id);if(['enrollments','grades','attendance'].includes(b.entity))return groupIds.has(v.groupId)&&(!input.unit||b.entity==='enrollments'||v.unit===input.unit);if(b.entity==='documentSubmissions')return groupIds.has(v.groupId)&&(!input.unit||v.unit===input.unit);if(b.entity==='studentRequests')return groupIds.has(v.groupId)&&(actor.role==='DOCENTE'||input.includeAccounts===true);if(b.entity==='documentSettings'){const scope=v.scope;if(input.unit&&['unit','unitCurriculum'].includes(scope.kind)&&scope.unit!==input.unit)return false;if(input.unit&&scope.kind==='practice'&&input.unit!=='EFSRT')return false;return scope.kind==='institution'||(['academicYear','academicPeriod'].includes(scope.kind)&&groups.some(g=>scope.target===(scope.kind==='academicYear'?String(g.periodId||'').slice(0,4):g.periodId)))||(scope.kind==='personnel'&&ADMIN.includes(actor.role)&&input.includeAccounts===true&&(!recipient||ADMIN.includes(recipient.role)))||groupIds.has(scope.target)||enrollmentIds.has(scope.target)||programs.has(scope.target)||modules.has(scope.target);}if(b.entity==='accountRequests'&&v.action==='PASSWORD'&&v.userId===actor.id)return true;return ['accountRequests','userDirectory'].includes(b.entity)&&ADMIN.includes(actor.role)&&input.includeAccounts===true;});
+    const rawOperations=this.operations().filter(op=>{const b=op.body,v=b.value;if(!this.operationVisible(actor,b)||(recipient&&!this.operationVisible(recipient,b)))return false;if(b.entity==='groups')return groupIds.has(v.id);if(b.entity==='programs')return programs.has(v.id);if(b.entity==='modules')return modules.has(v.id);if(b.entity==='students')return studentIds.has(v.id);if(['enrollments','grades','attendance'].includes(b.entity))return groupIds.has(v.groupId)&&(!input.unit||b.entity==='enrollments'||v.unit===input.unit);if(b.entity==='documentSubmissions')return groupIds.has(v.groupId)&&(!input.unit||v.unit===input.unit);if(b.entity==='studentRequests')return groupIds.has(v.groupId)&&(actor.role==='DOCENTE'||input.includeAccounts===true);if(b.entity==='documentSettings'){const scope=v?.scope;if(!scope?.kind)return false;if(input.unit&&['unit','unitCurriculum'].includes(scope.kind)&&scope.unit!==input.unit)return false;if(input.unit&&scope.kind==='practice'&&input.unit!=='EFSRT')return false;return scope.kind==='institution'||(['academicYear','academicPeriod'].includes(scope.kind)&&groups.some(g=>scope.target===(scope.kind==='academicYear'?String(g.periodId||'').slice(0,4):g.periodId)))||(scope.kind==='personnel'&&ADMIN.includes(actor.role)&&input.includeAccounts===true&&(!recipient||ADMIN.includes(recipient.role)))||groupIds.has(scope.target)||enrollmentIds.has(scope.target)||programs.has(scope.target)||modules.has(scope.target);}if(b.entity==='accountRequests'&&v.action==='PASSWORD'&&v.userId===actor.id)return true;return ['accountRequests','userDirectory'].includes(b.entity)&&ADMIN.includes(actor.role)&&input.includeAccounts===true;});
     const latestByRecord=new Map();for(const op of rawOperations)latestByRecord.set(op.body.entity+':'+op.body.recordId,op);const operations=[...latestByRecord.values()];
     const device=this.setting('device'),encryptedAccounts=this.setting('authorityPrivate')&&ADMIN.includes(actor.role)?(this.setting('devices')||[]).filter(d=>d.id!==device.id&&this.user(d.userId)).map(d=>({to:d.id,envelope:seal({user:this.user(d.userId),certificate:this.certificate(this.user(d.userId),d),directoryOperations:ADMIN.includes(this.user(d.userId).role)?this.operations().filter(op=>op.body.entity==='userDirectory'&&this.operationVisible(this.user(d.userId),op.body)):[]},d.encryptionKey)})):[],body={app:APP,type:'GROUP_EXCHANGE',audience:recipient?.role==='DOCENTE'?'SCOPED':ADMIN.includes(actor.role)?'ADMIN':'SCOPED',recipientUserId:recipient?.id||null,version:VERSION,id:id(),institutionId:this.setting('institution').id,from:device.id,at:now(),certificate:this.setting('authorityPrivate')?this.certificate(actor,device):this.setting('certificate'),envelope:tableEnvelope({operations,encryptedAccounts,acknowledgements:ADMIN.includes(actor.role)?this.operations().map(op=>op.body.id):[],resolutions:this.setting('authorityPrivate')?this.db.prepare('SELECT value FROM conflicts').all().map(r=>JSON.parse(r.value)).filter(c=>c.resolved&&groupIds.has(c.operation.body.value.groupId)).map(c=>({operationId:c.id,entity:c.operation.body.entity,proposedRev:c.operation.body.value.rev,value:c.retained,decision:c.resolution})):[],groups:groups.map(g=>({id:g.id,name:groupName(this,g)}))},input.passphrase)};
     const summary=this.exchangeDescription(actor,operations,groups,recipient);this.audit('EXCHANGE_EXPORTED',actor,{groups:[...groupIds],operations:operations.length});return {body,signature:sign(body,device.signing.private),summary};
@@ -574,7 +645,7 @@ class OfflineCore {
     if(body.entity==='studentRequests')return user.role!=='DOCENTE'||(body.value.requestedBy===user.id&&user.assignments.some(a=>a.groupId===body.value.groupId));
     if(body.entity==='documentSettings'){
       if(scopeCache&&user.role==='DOCENTE'){
-        const s=body.value?.scope;if(!s||!DocumentSettings.SETTINGS_FIELDS[s.kind])return false;
+        const s=body.value?.scope;if(!s?.kind||!DocumentSettings.SETTINGS_FIELDS[s.kind])return false;
         if(s.kind==='institution')return true;
         if(s.kind==='academicYear')return user.assignments.some(a=>a.periodId?.slice(0,4)===s.target);
         if(s.kind==='academicPeriod')return user.assignments.some(a=>a.periodId===s.target);
@@ -623,7 +694,7 @@ class OfflineCore {
       if(!b.baseRev){if(v.authorId!==actor.id||!TEMPLATES[actor.role]?.includes(v.templateId))fail('Entrega fuera de su función.',403);if(hub)this.requireGroup(actor,v.groupId,v.unit);}
       else if(!ADMIN.includes(actor.role)||!['RECIBIDO','OBSERVADO','REVISADO'].includes(v.status))fail('Revisión documental no autorizada.',403);
     }else if(b.entity==='documentSettings'){
-      if(b.value.id!==DocumentSettings.idFor(b.value.scope))fail('Identificador de configuración documental inválido.');
+      if(!b.value?.scope?.kind||b.value.id!==DocumentSettings.idFor(b.value.scope))fail('Identificador de configuración documental inválido.');
       const legacyCode=b.value.scope?.kind==='enrollment'&&Object.hasOwn(b.value.fields||{},'code')&&ADMIN.includes(actor.role);const config=legacyCode?{...b.value,fields:Object.fromEntries(Object.entries(b.value.fields).filter(([key])=>key!=='code'))}:b.value;if(hub){const validationCore=Object.create(this);validationCore.record=(entity,recordId)=>this.record(entity,recordId)||(entity==='enrollments'?incomingEnrollments.get(recordId):null);DocumentSettings.validateSettings(validationCore,actor,config,false);}
       else for(const key of Object.keys(config.fields||{}))if(!DocumentSettings.SETTINGS_FIELDS[b.value.scope?.kind]?.some(f=>f.key===key&&f.roles.includes(actor.role)))fail('Parámetro documental no autorizado.',403);
     }else if (['grades', 'attendance'].includes(b.entity)) {
@@ -708,7 +779,7 @@ class OfflineCore {
       for (const decision of decisions) {
         const c = decision.body;
         if (decision.state === 'apply') {
-          this.putRecord(c.entity, c.value);if(c.entity==='documentSettings'&&c.value.scope.kind==='institution'&&c.value.fields.nombre)this.setting('institution',{...this.setting('institution'),name:c.value.fields.nombre});this.db.prepare('INSERT OR IGNORE INTO operations (id,value,acknowledged) VALUES (?,?,?)').run(c.id, canonical(decision.op), hub || c.actor.id !== actor.id ? 1 : 0);
+          this.putRecord(c.entity, c.value);if(c.entity==='documentSettings'&&c.value?.scope?.kind==='institution'&&c.value.fields?.nombre)this.setting('institution',{...this.setting('institution'),name:c.value.fields.nombre});this.db.prepare('INSERT OR IGNORE INTO operations (id,value,acknowledged) VALUES (?,?,?)').run(c.id, canonical(decision.op), hub || c.actor.id !== actor.id ? 1 : 0);
           this.db.prepare('DELETE FROM conflicts WHERE id=?').run(c.id);
           this.audit('SYNC_APPLY', actor, { operationId: c.id, before: decision.current, after: c.value });
         } else this.db.prepare('INSERT OR REPLACE INTO conflicts VALUES (?,?)').run(c.id, canonical({ id: c.id, kind: decision.state, operation: decision.op, current: decision.current, resolved: false }));
@@ -1080,13 +1151,13 @@ class OfflineCore {
         const group = this.record('groups', enrollment.groupId);
         if (group && !group.units.includes(unit)) this.write(actor, 'groups', { ...group, units: [...group.units, unit] }, group.rev);
         const periodId = enrollment.periodId || group?.periodId || null;
-        const academicId = hash([entity, enrollment.id, unit, entity === 'grades' ? dimension.indicator : [dimension.date, dimension.session]]);
+        const academicId = hash([entity, enrollment.id, unit, entity === 'grades' ? dimension.indicator : [dimension.date, '1']]);
         ingest(entity, { id: academicId, enrollmentId: enrollment.id, groupId: enrollment.groupId, periodId, moduleId: enrollment.moduleId || group?.moduleId || null, unit,
-          value: entity === 'grades' ? Number(value) : value, ...dimension, observation: source.observacion || source.observaciones || '', legacy: source });
+          value: entity === 'grades' ? Number(value) : value, ...(entity === 'attendance' ? { ...dimension, session: '1' } : dimension), observation: source.observacion || source.observaciones || '', legacy: source });
       };
       for (const grade of stores.evaluacion || []) importAcademic('grades', grade.matriculaId, canonicalGroup(grade.grupoCode || grade.groupId || grade.grupoId), grade.unidadId, { indicator: grade.indicadorId || 'RESULTADO_UD' }, grade.nota, grade);
       const attendanceCode = value => ({ PRESENTE: 'P', ASISTIO: 'P', AUSENTE: 'F', FALTA: 'F', FALTA_INJUSTIFICADA: 'F', JUSTIFICADA: 'J', JUSTIFICADO: 'J', FALTA_JUSTIFICADA: 'J', TARDANZA: 'T', TARDE: 'T' }[value] || value);
-      for (const mark of stores.asistencia || []) importAcademic('attendance', mark.matriculaId, canonicalGroup(mark.grupoCode || mark.groupId || mark.grupoId), mark.unidadId, { date: mark.fecha, session: String(mark.sesionId || '1') }, attendanceCode(mark.estadoRegistro || mark.estado), mark);
+      for (const mark of stores.asistencia || []) importAcademic('attendance', mark.matriculaId, canonicalGroup(mark.grupoCode || mark.groupId || mark.grupoId), mark.unidadId, { date: mark.fecha, session: '1' }, attendanceCode(mark.estadoRegistro || mark.estado), mark);
       for (const [key, payload] of Object.entries(pkg.etapa2 || {})) {
         const match = /^CETPRO_ETAPA2_(ATT|EVAL)_(.+)_UD(\d+)$/.exec(key);
         if (!match) continue;
@@ -1099,7 +1170,7 @@ class OfflineCore {
         }
         else for (const [reference, attendance] of Object.entries(payload.marksByEnrollment || {})) for (const [index, mark] of (attendance.marks || []).entries()) {
           const session = (payload.sessions || []).find(s => s.sessionId === mark.sessionId) || payload.sessions?.[index];
-          importAcademic('attendance', reference, groupId, unit, { date: session?.fecha, session: String(session?.sessionId || mark.sessionId || index + 1) }, attendanceCode(mark.estadoRegistro || mark.state), { ...mark, session });
+          importAcademic('attendance', reference, groupId, unit, { date: session?.fecha, session: '1' }, attendanceCode(mark.estadoRegistro || mark.state), { ...mark, session });
         }
       }
       // Mantener todas las fuentes originales, incluso aquellas que requieren normalización posterior.

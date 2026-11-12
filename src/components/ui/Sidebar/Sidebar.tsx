@@ -44,6 +44,7 @@ const ROLE_POLICY_ROUTES: Record<UserRole, NavRoute[]> = {
     'inicio',
     'estudiantes',
     'matriculas',
+    'ficha-registro-2026',
     'grupos',
     'evaluacion',
     'asistencia',
@@ -61,6 +62,7 @@ const ROLE_POLICY_ROUTES: Record<UserRole, NavRoute[]> = {
     'inicio',
     'estudiantes',
     'matriculas',
+    'ficha-registro-2026',
     'grupos',
     'evaluacion',
     'asistencia',
@@ -120,6 +122,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: 'Matrículas',
           originalRoute: '#/matriculas',
           icon: <EnrollmentIcon className="w-5 h-5 shrink-0" />,
+        },
+        {
+          id: 'ficha-registro-2026',
+          label: 'Ficha Registro 2026 (QR)',
+          originalRoute: '#/ficha-registro-2026',
+          icon: <DocumentIcon className="w-5 h-5 shrink-0" />,
         },
         {
           id: 'grupos',

@@ -795,19 +795,25 @@ const SEED_PROGRAMS: DocumentaryProgram[] = [
 
 export interface DocumentaryCatalogManagerProps {
   initialViewMode?: 'catalogo_bd' | 'saneamiento_bd';
+  initialMode?: 'catalogo_bd' | 'saneamiento_bd';
   selectedYear?: string;
   isEditable?: boolean;
   onRefreshParent?: () => void;
 }
 
 export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps> = ({
-  initialViewMode = 'catalogo_bd',
+  initialViewMode,
+  initialMode,
   selectedYear = '2026',
   isEditable = true,
   onRefreshParent,
 }) => {
+  const effectiveInitialMode = initialMode || initialViewMode || 'catalogo_bd';
+  const isEmbeddedModeLocked = Boolean(initialMode || initialViewMode);
+
   // Estado principal
-  const [viewMode, setViewMode] = useState<'catalogo_bd' | 'saneamiento_bd'>(initialViewMode);
+  const [viewMode, setViewMode] = useState<'catalogo_bd' | 'saneamiento_bd'>(effectiveInitialMode);
+  const [saneamientoSubTab, setSaneamientoSubTab] = useState<'7A' | '7B' | '7C' | 'ALL'>('7A');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [serverCatalog, setServerCatalog] = useState<DocumentaryCatalogResponse | null>(null);
 
@@ -833,6 +839,10 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
   const [editIssueNote, setEditIssueNote] = useState<string>('');
   const [editIssueStatus, setEditIssueStatus] = useState<string>('CORREGIDO_OPERATIVO');
   const [propagateIssue, setPropagateIssue] = useState<boolean>(true);
+
+  // Edición en línea de parámetros normativos (7.B)
+  const [editingParamId, setEditingParamId] = useState<string | null>(null);
+  const [editParamValue, setEditParamValue] = useState<string>('');
 
   // Notificaciones y feedback
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -879,8 +889,8 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
   }, [loadDocumentaryCatalog]);
 
   useEffect(() => {
-    setViewMode(initialViewMode);
-  }, [initialViewMode]);
+    setViewMode(effectiveInitialMode);
+  }, [effectiveInitialMode]);
 
   // Manejo de actualización de campos del programa
   const handleUpdateProgramField = (field: keyof DocumentaryProgram, value: any) => {
@@ -1055,8 +1065,8 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
             <span>Carreras</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
-          <p className="text-xl font-black text-slate-900 dark:text-[#F0FDF8] mt-1">7</p>
-          <span className="text-[11px] text-slate-600 dark:text-slate-400">Planes Oficiales</span>
+          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">7</p>
+          <span className="text-xs text-slate-600 dark:text-slate-400">Planes Oficiales</span>
         </div>
 
         <div className="p-3.5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs">
@@ -1064,8 +1074,8 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
             <span>Módulos</span>
             <span className="w-2 h-2 rounded-full bg-teal-500" />
           </div>
-          <p className="text-xl font-black text-slate-900 dark:text-[#F0FDF8] mt-1">14</p>
-          <span className="text-[11px] text-slate-600 dark:text-slate-400">Ciclos Anuales</span>
+          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">14</p>
+          <span className="text-xs text-slate-600 dark:text-slate-400">Ciclos Anuales</span>
         </div>
 
         <div className="p-3.5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs">
@@ -1073,8 +1083,8 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
             <span>Capacidades</span>
             <span className="w-2 h-2 rounded-full bg-cyan-500" />
           </div>
-          <p className="text-xl font-black text-slate-900 dark:text-[#F0FDF8] mt-1">129</p>
-          <span className="text-[11px] text-slate-600 dark:text-slate-400">Técnicas / Empleabilidad</span>
+          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">129</p>
+          <span className="text-xs text-slate-600 dark:text-slate-400">Técnicas / Empleabilidad</span>
         </div>
 
         <div className="p-3.5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs">
@@ -1082,8 +1092,8 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
             <span>Indicadores Cap.</span>
             <span className="w-2 h-2 rounded-full bg-blue-500" />
           </div>
-          <p className="text-xl font-black text-slate-900 dark:text-[#F0FDF8] mt-1">378</p>
-          <span className="text-[11px] text-slate-600 dark:text-slate-400">Logro Pedagógico</span>
+          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">378</p>
+          <span className="text-xs text-slate-600 dark:text-slate-400">Logro Pedagógico</span>
         </div>
 
         <div className="p-3.5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs">
@@ -1091,8 +1101,8 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
             <span>Indicadores UC</span>
             <span className="w-2 h-2 rounded-full bg-indigo-500" />
           </div>
-          <p className="text-xl font-black text-slate-900 dark:text-[#F0FDF8] mt-1">258</p>
-          <span className="text-[11px] text-slate-600 dark:text-slate-400">Anexo 8 MINEDU</span>
+          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">258</p>
+          <span className="text-xs text-slate-600 dark:text-slate-400">Anexo 8 MINEDU</span>
         </div>
 
         <div className="p-3.5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs">
@@ -1100,8 +1110,8 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
             <span>Expediente PDF</span>
             <span className="w-2 h-2 rounded-full bg-amber-500" />
           </div>
-          <p className="text-xl font-black text-slate-900 dark:text-[#F0FDF8] mt-1">150</p>
-          <span className="text-[11px] text-slate-600 dark:text-slate-400">Páginas Auditadas</span>
+          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">150</p>
+          <span className="text-xs text-slate-600 dark:text-slate-400">Páginas Auditadas</span>
         </div>
       </div>
 
@@ -1135,54 +1145,81 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
       )}
 
       {/* ======================================================== */}
-      {/* 3. CONMUTADOR DE MODOS (CATÁLOGO vs SANEAMIENTO PDF)     */}
+      {/* 3. BANNER INFORMATIVO O CONMUTADOR DE MODOS               */}
       {/* ======================================================== */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-2 bg-slate-100 dark:bg-[#131C1A] rounded-2xl border border-slate-200 dark:border-[#263834]">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setViewMode('catalogo_bd')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
-              viewMode === 'catalogo_bd'
-                ? 'bg-white dark:bg-[#182220] text-emerald-900 dark:text-[#5EEAD4] shadow-sm border border-slate-200 dark:border-[#263834]'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
-            }`}
-          >
-            <AcademicConfigIcon className="w-4 h-4" />
-            6. Catálogo Curricular 2026 (UC, Capacidades e Indicadores)
-          </button>
+      {!isEmbeddedModeLocked ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 p-2 bg-slate-100 dark:bg-[#131C1A] rounded-2xl border border-slate-200 dark:border-[#263834]">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setViewMode('catalogo_bd')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                viewMode === 'catalogo_bd'
+                  ? 'bg-white dark:bg-[#182220] text-emerald-900 dark:text-[#5EEAD4] shadow-sm border border-slate-200 dark:border-[#263834]'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+              }`}
+            >
+              <AcademicConfigIcon className="w-4 h-4" />
+              6. Competencias, Capacidades e Indicadores
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setViewMode('saneamiento_bd')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
-              viewMode === 'saneamiento_bd'
-                ? 'bg-white dark:bg-[#182220] text-emerald-900 dark:text-[#5EEAD4] shadow-sm border border-slate-200 dark:border-[#263834]'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
-            }`}
-          >
-            <AlertCircleIcon className="w-4 h-4 text-amber-500" />
-            7. Corrección de Datos Observados / PDF
-            {pendingIssuesCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white">
-                {pendingIssuesCount}
+            <button
+              type="button"
+              onClick={() => setViewMode('saneamiento_bd')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                viewMode === 'saneamiento_bd'
+                  ? 'bg-white dark:bg-[#182220] text-emerald-900 dark:text-[#5EEAD4] shadow-sm border border-slate-200 dark:border-[#263834]'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+              }`}
+            >
+              <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              7. Auditoría y Subsanación del Expediente
+              <span className="px-2 py-0.5 rounded-full text-xs font-black bg-emerald-600 text-white">
+                ✓ 16 verificadas
               </span>
-            )}
-          </button>
-        </div>
+            </button>
+          </div>
 
-        <div className="flex items-center gap-2 pr-2">
+          <div className="flex items-center gap-2 pr-2">
+            <button
+              type="button"
+              onClick={loadDocumentaryCatalog}
+              disabled={isLoading}
+              className="p-2 text-slate-600 dark:text-slate-300 bg-transparent dark:bg-transparent hover:bg-slate-200 dark:hover:bg-[#182220] rounded-xl transition-colors cursor-pointer"
+              title="Recargar catálogo curricular"
+            >
+              <RefreshIcon className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-[#E6F4F1]/70 dark:bg-[#132B25]/80 border border-[#13594A]/30 dark:border-[#205C4E] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="space-y-1">
+            <p className="text-sm font-bold text-[#0D3E34] dark:text-[#5EEAD4] flex items-center gap-2">
+              <span>ⓘ ¿Para qué sirve esta sección?</span>
+            </p>
+            {viewMode === 'catalogo_bd' ? (
+              <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
+                Administra las <strong>Unidades de Competencia (UC/CE), las 129 Capacidades Técnicas/Empleabilidad y los 636 Indicadores de Logro</strong> de las 7 carreras oficiales. Alimenta directamente el Plan de Estudios, el Itinerario Formativo, las Sílabos/Programaciones Curriculares y las matrices de evaluación de los <strong>21 formatos oficiales MINEDU</strong>.
+              </p>
+            ) : (
+              <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
+                Presenta la <strong>trazabilidad de las 16 observaciones del expediente fuente PDF ya subsanadas y verificadas</strong>, junto con los parámetros normativos institucionales y el aislamiento preventivo de registros en cuarentena. Garantiza que ningún error tipográfico del documento original afecte los <strong>21 formatos oficiales MINEDU</strong>.
+              </p>
+            )}
+          </div>
           <button
             type="button"
             onClick={loadDocumentaryCatalog}
             disabled={isLoading}
-            className="p-2 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#182220] rounded-xl transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] bg-white dark:bg-[#182220] border border-[#13594A]/30 dark:border-[#263834] rounded-xl hover:bg-emerald-50 dark:hover:bg-[#1F2D2A] transition-colors shrink-0 cursor-pointer"
             title="Recargar catálogo curricular"
           >
-            <RefreshIcon className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshIcon className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            Actualizar catálogo
           </button>
         </div>
-      </div>
+      )}
 
       {/* ======================================================== */}
       {/* MODO A: CATÁLOGO CURRICULAR 2026                         */}
@@ -1217,7 +1254,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                         <CareerEmblemIcon programId={prog.id} programName={prog.name} className="w-4 h-4" />
                       </div>
                       <span
-                        className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${
+                        className={`text-xs font-black px-1.5 py-0.5 rounded-md ${
                           prog.statusCompleteness === 'COMPLETO'
                             ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
                             : prog.statusCompleteness === 'CON_OBSERVACIONES'
@@ -1232,7 +1269,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                       <h4 className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8] line-clamp-2 leading-tight">
                         {prog.name}
                       </h4>
-                      <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1">
+                      <p className="text-xs tabular-nums text-slate-600 dark:text-slate-400 mt-1">
                         {prog.totalHoursDeclared}h · {prog.totalCreditsDeclared} cr.
                       </p>
                     </div>
@@ -1358,7 +1395,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                         value={currentProgram.codigoProgramaFuente}
                         onChange={(e) => handleUpdateProgramField('codigoProgramaFuente', e.target.value)}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] focus:ring-2 focus:ring-emerald-600 outline-none"
+                        className="w-full px-3 py-2 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] focus:ring-2 focus:ring-emerald-600 outline-none"
                       />
                     </div>
                     <div>
@@ -1374,7 +1411,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                           handleUpdateProgramField('family', parts[1]?.trim() || '');
                         }}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] focus:ring-2 focus:ring-emerald-600 outline-none"
+                        className="w-full px-3 py-2 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] focus:ring-2 focus:ring-emerald-600 outline-none"
                       />
                     </div>
                     <div>
@@ -1388,7 +1425,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                           onChange={(e) => handleUpdateProgramField('codigoModularActivo', e.target.value)}
                           disabled={!isEditable}
                           title="Código modular activo"
-                          className="w-1/2 px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
+                          className="w-1/2 px-3 py-2 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
                         />
                         <span className="text-xs text-slate-400 self-center">vs</span>
                         <input
@@ -1396,7 +1433,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                           value={currentProgram.codigoModularObservado}
                           disabled
                           title="Código modular observado en PDF"
-                          className="w-1/2 px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-[#1c2925] border border-slate-200 dark:border-[#263834] text-slate-500"
+                          className="w-1/2 px-3 py-2 text-sm font-semibold rounded-xl bg-slate-100 dark:bg-[#1c2925] border border-slate-200 dark:border-[#263834] text-slate-500"
                         />
                       </div>
                     </div>
@@ -1412,7 +1449,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                         value={currentProgram.nivelFormativo}
                         onChange={(e) => handleUpdateProgramField('nivelFormativo', e.target.value)}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
+                        className="w-full px-3 py-2 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
                       />
                     </div>
                     <div>
@@ -1424,7 +1461,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                         value={currentProgram.modalidad}
                         onChange={(e) => handleUpdateProgramField('modalidad', e.target.value)}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
+                        className="w-full px-3 py-2 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
                       />
                     </div>
                     <div>
@@ -1436,7 +1473,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                         value={currentProgram.totalHoursDeclared}
                         onChange={(e) => handleUpdateProgramField('totalHoursDeclared', Number(e.target.value))}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
+                        className="w-full px-3 py-2 text-sm tabular-nums font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
                       />
                     </div>
                     <div>
@@ -1448,7 +1485,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                         value={currentProgram.totalCreditsDeclared}
                         onChange={(e) => handleUpdateProgramField('totalCreditsDeclared', Number(e.target.value))}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
+                        className="w-full px-3 py-2 text-sm tabular-nums font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
                       />
                     </div>
                   </div>
@@ -1462,7 +1499,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                       value={currentProgram.graduateProfile}
                       onChange={(e) => handleUpdateProgramField('graduateProfile', e.target.value)}
                       disabled={!isEditable}
-                      className="w-full p-3 text-xs font-medium rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] focus:ring-2 focus:ring-emerald-600 outline-none leading-relaxed"
+                      className="w-full p-3 text-sm font-medium rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] focus:ring-2 focus:ring-emerald-600 outline-none leading-relaxed"
                     />
                   </div>
 
@@ -1513,14 +1550,14 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-[#13594A] text-white">
+                              <span className="px-2 py-0.5 rounded-md text-xs font-black uppercase bg-[#13594A] text-white">
                                 {comp.type} · {comp.code}
                               </span>
                               <h4 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">
                                 {comp.title}
                               </h4>
                             </div>
-                            <span className="text-[11px] text-slate-600 dark:text-slate-400">
+                            <span className="text-xs text-slate-600 dark:text-slate-400">
                               PDF pág. {comp.page}
                             </span>
                           </div>
@@ -1530,7 +1567,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
 
                           {comp.indicators.length > 0 && (
                             <div className="pt-2 border-t border-slate-200 dark:border-[#263834]">
-                              <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                              <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                                 Indicadores de Logro de Competencia ({comp.indicators.length})
                               </p>
                               <div className="space-y-1.5 pl-2">
@@ -1543,7 +1580,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                                       • {ind.code}:
                                     </span>
                                     <span>{ind.text}</span>
-                                    <span className="text-[10px] text-slate-600 dark:text-slate-400 shrink-0 ml-auto">
+                                    <span className="text-xs text-slate-600 dark:text-slate-400 shrink-0 ml-auto">
                                       (p. {ind.page})
                                     </span>
                                   </div>
@@ -1610,14 +1647,14 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-teal-700 text-white">
+                              <span className="px-2 py-0.5 rounded-md text-xs font-black uppercase bg-teal-700 text-white">
                                 {cap.type} · {cap.code}
                               </span>
                               <h5 className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8]">
                                 {cap.title}
                               </h5>
                             </div>
-                            <span className="text-[11px] text-slate-600 dark:text-slate-400">
+                            <span className="text-xs text-slate-600 dark:text-slate-400">
                               Pág. {cap.page}
                             </span>
                           </div>
@@ -1634,7 +1671,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                                     {ind.code}:
                                   </span>
                                   <span>{ind.text}</span>
-                                  <span className="text-[10px] text-slate-600 dark:text-slate-400 ml-auto shrink-0">
+                                  <span className="text-xs text-slate-600 dark:text-slate-400 ml-auto shrink-0">
                                     (p. {ind.page})
                                   </span>
                                 </div>
@@ -1682,7 +1719,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                             </td>
                             <td className="py-2.5 px-2 text-center">
                               <span
-                                className={`px-2 py-0.5 rounded-md text-[10px] font-black ${
+                                className={`px-2 py-0.5 rounded-md text-xs font-black ${
                                   unit.type === 'EFSRT'
                                     ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
                                     : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
@@ -1691,28 +1728,28 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                                 {unit.type}
                               </span>
                             </td>
-                            <td className="py-2.5 px-2 text-center text-slate-600 dark:text-slate-400">
+                            <td className="py-2.5 px-2 text-center tabular-nums text-slate-600 dark:text-slate-400">
                               {unit.creditsTheory}
                             </td>
-                            <td className="py-2.5 px-2 text-center text-slate-600 dark:text-slate-400">
+                            <td className="py-2.5 px-2 text-center tabular-nums text-slate-600 dark:text-slate-400">
                               {unit.creditsPractice}
                             </td>
-                            <td className="py-2.5 px-2 text-center font-bold text-slate-900 dark:text-[#F0FDF8]">
+                            <td className="py-2.5 px-2 text-center tabular-nums font-bold text-slate-900 dark:text-[#F0FDF8]">
                               {unit.creditsTotal}
                             </td>
-                            <td className="py-2.5 px-2 text-center text-slate-600 dark:text-slate-400">
+                            <td className="py-2.5 px-2 text-center tabular-nums text-slate-600 dark:text-slate-400">
                               {unit.hoursTheory}
                             </td>
-                            <td className="py-2.5 px-2 text-center text-slate-600 dark:text-slate-400">
+                            <td className="py-2.5 px-2 text-center tabular-nums text-slate-600 dark:text-slate-400">
                               {unit.hoursPractice}
                             </td>
-                            <td className="py-2.5 px-2 text-center font-black text-emerald-700 dark:text-[#5EEAD4]">
+                            <td className="py-2.5 px-2 text-center tabular-nums font-black text-emerald-700 dark:text-[#5EEAD4]">
                               {unit.hoursTotal}h
                             </td>
-                            <td className="py-2.5 px-3 text-center text-[11px] text-slate-600 dark:text-slate-300">
+                            <td className="py-2.5 px-3 text-center tabular-nums text-xs text-slate-600 dark:text-slate-300">
                               {unit.startDate} → {unit.endDate}
                             </td>
-                            <td className="py-2.5 px-2 text-center text-slate-600 dark:text-slate-400">
+                            <td className="py-2.5 px-2 text-center tabular-nums text-slate-600 dark:text-slate-400">
                               {unit.page}
                             </td>
                           </tr>
@@ -1732,330 +1769,427 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
       {/* ======================================================== */}
       {viewMode === 'saneamiento_bd' && (
         <div className="space-y-6">
-          {/* Barra de Filtros de Saneamiento */}
-          <div className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] p-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Severidad:
-                </label>
-                <select
-                  value={issueSeverityFilter}
-                  onChange={(e) => setIssueSeverityFilter(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8] outline-none"
-                >
-                  <option value="TODAS">Todas las severidades</option>
-                  <option value="ALTA">Alta</option>
-                  <option value="MEDIA">Media</option>
-                  <option value="BAJA">Baja</option>
-                  <option value="CUARENTENA">En Cuarentena</option>
-                  <option value="BLOQUE_PARCIAL">Bloque Parcial</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Carrera:
-                </label>
-                <select
-                  value={issueProgramFilter}
-                  onChange={(e) => setIssueProgramFilter(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8] outline-none"
-                >
-                  <option value="TODOS">Todas las carreras</option>
-                  {programs.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="relative w-full sm:w-64">
-              <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                value={issueSearchQuery}
-                onChange={(e) => setIssueSearchQuery(e.target.value)}
-                placeholder="Buscar por código o campo..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] outline-none"
-              />
-            </div>
+          {/* Sub-pestañas 7.A, 7.B y 7.C del modo Saneamiento */}
+          <div className="border-b border-slate-200 dark:border-[#263834] flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setSaneamientoSubTab('7A')}
+              className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                saneamientoSubTab === '7A'
+                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+              }`}
+            >
+              7.A Observaciones Subsanadas del Expediente (16)
+            </button>
+            <button
+              type="button"
+              onClick={() => setSaneamientoSubTab('7B')}
+              className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                saneamientoSubTab === '7B'
+                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+              }`}
+            >
+              7.B Parámetros Institucionales ({parameters.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSaneamientoSubTab('7C')}
+              className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                saneamientoSubTab === '7C'
+                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+              }`}
+            >
+              7.C Repositorio en Cuarentena ({quarantine.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSaneamientoSubTab('ALL')}
+              className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                saneamientoSubTab === 'ALL'
+                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+              }`}
+            >
+              Vista Completa (7.A + 7.B + 7.C)
+            </button>
           </div>
 
-          {/* Lista de Tarjetas de Incidencias */}
-          <div className="space-y-4">
-            {filteredIssues.map((issue) => {
-              const isEditing = editingIssueId === issue.id;
-              return (
-                <div
-                  key={issue.id}
-                  className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] p-5 space-y-4"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-slate-100 dark:bg-[#131C1A] text-slate-800 dark:text-[#5EEAD4] border border-slate-200 dark:border-[#263834]">
-                        {issue.code}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                          issue.severity === 'ALTA'
-                            ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300'
-                            : issue.severity === 'CUARENTENA'
-                            ? 'bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-300'
-                            : issue.severity === 'BLOQUE_PARCIAL'
-                            ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-300'
-                            : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300'
-                        }`}
-                      >
-                        {issue.severity}
-                      </span>
-                      <span className="text-xs text-slate-600 dark:text-slate-400">
-                        {issue.category} · PDF pág. {issue.pagePdf}
-                      </span>
-                    </div>
-
-                    <span
-                      className={`text-xs font-bold px-2.5 py-0.5 rounded-full self-start sm:self-auto ${
-                        issue.status === 'CORREGIDO_OPERATIVO'
-                          ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
-                          : issue.status === 'EN_CUARENTENA'
-                          ? 'bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300'
-                          : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
-                      }`}
+          {/* SECCIÓN 7.A: OBSERVACIONES SUBSANADAS DEL EXPEDIENTE */}
+          {(saneamientoSubTab === '7A' || saneamientoSubTab === 'ALL') && (
+            <div className="space-y-6">
+              {/* Barra de Filtros de Saneamiento */}
+              <div className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] p-4 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Severidad:
+                    </label>
+                    <select
+                      value={issueSeverityFilter}
+                      onChange={(e) => setIssueSeverityFilter(e.target.value)}
+                      className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8] outline-none"
                     >
-                      {issue.status.replace(/_/g, ' ')}
-                    </span>
+                      <option value="TODAS">Todas las severidades</option>
+                      <option value="ALTA">Alta</option>
+                      <option value="MEDIA">Media</option>
+                      <option value="BAJA">Baja</option>
+                      <option value="CUARENTENA">En Cuarentena</option>
+                      <option value="BLOQUE_PARCIAL">Bloque Parcial</option>
+                    </select>
                   </div>
 
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">
-                      {issue.title}
-                    </h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      {issue.description}
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Carrera:
+                    </label>
+                    <select
+                      value={issueProgramFilter}
+                      onChange={(e) => setIssueProgramFilter(e.target.value)}
+                      className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8] outline-none"
+                    >
+                      <option value="TODOS">Todas las carreras</option>
+                      {programs.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+                </div>
 
-                  {/* Comparativa Literal vs Operativa */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834]">
-                      <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider block mb-1">
-                        📄 Valor Literal en PDF (Pág. {issue.pagePdf})
-                      </span>
-                      <p className="text-xs font-mono font-semibold text-rose-700 dark:text-rose-400 break-words">
-                        {issue.observedPdfValue}
-                      </p>
-                    </div>
+                <div className="relative w-full sm:w-64">
+                  <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <input
+                    type="text"
+                    value={issueSearchQuery}
+                    onChange={(e) => setIssueSearchQuery(e.target.value)}
+                    placeholder="Buscar por código o campo..."
+                    className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] outline-none"
+                  />
+                </div>
+              </div>
 
-                    <div className="p-3 rounded-xl bg-emerald-50/50 dark:bg-[#132B25] border border-emerald-200 dark:border-[#208B73]/40">
-                      <span className="text-[10px] font-bold text-emerald-800 dark:text-[#5EEAD4] uppercase tracking-wider block mb-1">
-                        ⚙️ Valor Operativo Actual en el Sistema
-                      </span>
-                      <p className="text-xs font-semibold text-emerald-900 dark:text-[#F0FDF8] break-words">
-                        {issue.activeOperationalValue}
-                      </p>
-                    </div>
-                  </div>
+              {/* Lista de Tarjetas de Incidencias */}
+              <div className="space-y-4">
+                {filteredIssues.map((issue) => {
+                  const isEditing = editingIssueId === issue.id;
+                  return (
+                    <div
+                      key={issue.id}
+                      className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] p-5 space-y-4"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-slate-100 dark:bg-[#131C1A] text-slate-800 dark:text-[#5EEAD4] border border-slate-200 dark:border-[#263834]">
+                            {issue.code}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs font-black uppercase ${
+                              issue.severity === 'ALTA'
+                                ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300'
+                                : issue.severity === 'CUARENTENA'
+                                ? 'bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-300'
+                                : issue.severity === 'BLOQUE_PARCIAL'
+                                ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-300'
+                                : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300'
+                            }`}
+                          >
+                            {issue.severity}
+                          </span>
+                          <span className="text-xs text-slate-600 dark:text-slate-400">
+                            {issue.category} · PDF pág. {issue.pagePdf}
+                          </span>
+                        </div>
 
-                  {issue.resolutionNote && (
-                    <div className="text-xs text-slate-600 dark:text-slate-400 italic">
-                      <span className="font-bold text-slate-700 dark:text-slate-300">Nota de resolución:</span>{' '}
-                      {issue.resolutionNote}
-                    </div>
-                  )}
-
-                  {/* Botón y Formulario de Resolución en Línea */}
-                  {isEditable && (
-                    <div className="pt-2 border-t border-slate-100 dark:border-[#263834]">
-                      {!isEditing ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingIssueId(issue.id);
-                            setEditIssueValue(issue.activeOperationalValue);
-                            setEditIssueNote(issue.resolutionNote || '');
-                            setEditIssueStatus(issue.status);
-                          }}
-                          className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] hover:underline cursor-pointer"
+                        <span
+                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full self-start sm:self-auto ${
+                            issue.status === 'CORREGIDO_OPERATIVO'
+                              ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                              : issue.status === 'EN_CUARENTENA'
+                              ? 'bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300'
+                              : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
+                          }`}
                         >
-                          ✎ Editar / Corregir Valor Operativo
-                        </button>
-                      ) : (
-                        <div className="space-y-3 p-3.5 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] mt-2">
-                          <h4 className="text-xs font-bold text-slate-800 dark:text-[#F0FDF8]">
-                            Actualizar Resolución Directiva
-                          </h4>
-                          <div>
-                            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                              Nuevo Valor Operativo:
-                            </label>
-                            <input
-                              type="text"
-                              value={editIssueValue}
-                              onChange={(e) => setEditIssueValue(e.target.value)}
-                              className="w-full px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] outline-none"
-                            />
-                          </div>
+                          {issue.status.replace(/_/g, ' ')}
+                        </span>
+                      </div>
 
-                          <div>
-                            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                              Motivo / Nota de Resolución:
-                            </label>
-                            <input
-                              type="text"
-                              value={editIssueNote}
-                              onChange={(e) => setEditIssueNote(e.target.value)}
-                              placeholder="Resolución directiva o justificación institucional..."
-                              className="w-full px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] outline-none"
-                            />
-                          </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">
+                          {issue.title}
+                        </h3>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                          {issue.description}
+                        </p>
+                      </div>
 
-                          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                            <div className="flex items-center gap-3">
-                              <select
-                                value={editIssueStatus}
-                                onChange={(e) => setEditIssueStatus(e.target.value)}
-                                className="px-2.5 py-1 text-xs rounded-lg bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8]"
-                              >
-                                <option value="CORREGIDO_OPERATIVO">CORREGIDO OPERATIVO</option>
-                                <option value="PENDIENTE_REVISION">PENDIENTE REVISIÓN</option>
-                                <option value="EN_CUARENTENA">EN CUARENTENA</option>
-                                <option value="BLOQUE_PARCIAL">BLOQUE PARCIAL</option>
-                              </select>
+                      {/* Comparativa Literal vs Operativa */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834]">
+                          <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider block mb-1">
+                            📄 Valor Literal en PDF (Pág. {issue.pagePdf})
+                          </span>
+                          <p className="text-xs font-mono font-semibold text-rose-700 dark:text-rose-400 break-words">
+                            {issue.observedPdfValue}
+                          </p>
+                        </div>
 
-                              <label className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                        <div className="p-3 rounded-xl bg-emerald-50/50 dark:bg-[#132B25] border border-emerald-200 dark:border-[#208B73]/40">
+                          <span className="text-xs font-bold text-emerald-800 dark:text-[#5EEAD4] uppercase tracking-wider block mb-1">
+                            ⚙️ Valor Operativo Actual en el Sistema
+                          </span>
+                          <p className="text-xs font-semibold text-emerald-900 dark:text-[#F0FDF8] break-words">
+                            {issue.activeOperationalValue}
+                          </p>
+                        </div>
+                      </div>
+
+                      {issue.resolutionNote && (
+                        <div className="text-xs text-slate-600 dark:text-slate-400 italic">
+                          <span className="font-bold text-slate-700 dark:text-slate-300">Nota de resolución:</span>{' '}
+                          {issue.resolutionNote}
+                        </div>
+                      )}
+
+                      {/* Botón y Formulario de Resolución en Línea */}
+                      {isEditable && (
+                        <div className="pt-2 border-t border-slate-100 dark:border-[#263834]">
+                          {!isEditing ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingIssueId(issue.id);
+                                setEditIssueValue(issue.activeOperationalValue);
+                                setEditIssueNote(issue.resolutionNote || '');
+                                setEditIssueStatus(issue.status);
+                              }}
+                              className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] hover:underline cursor-pointer"
+                            >
+                              ✎ Editar / Corregir Valor Operativo
+                            </button>
+                          ) : (
+                            <div className="space-y-3 p-3.5 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] mt-2">
+                              <h4 className="text-xs font-bold text-slate-800 dark:text-[#F0FDF8]">
+                                Actualizar Resolución Directiva
+                              </h4>
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                  Nuevo Valor Operativo:
+                                </label>
                                 <input
-                                  type="checkbox"
-                                  checked={propagateIssue}
-                                  onChange={(e) => setPropagateIssue(e.target.checked)}
-                                  className="rounded text-emerald-700"
+                                  type="text"
+                                  value={editIssueValue}
+                                  onChange={(e) => setEditIssueValue(e.target.value)}
+                                  className="w-full px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] outline-none"
                                 />
-                                <span>Propagar al plan curricular activo</span>
-                              </label>
-                            </div>
+                              </div>
 
-                            <div className="flex items-center gap-2">
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                  Motivo / Nota de Resolución:
+                                </label>
+                                <input
+                                  type="text"
+                                  value={editIssueNote}
+                                  onChange={(e) => setEditIssueNote(e.target.value)}
+                                  placeholder="Resolución directiva o justificación institucional..."
+                                  className="w-full px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] outline-none"
+                                />
+                              </div>
+
+                              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                                <div className="flex items-center gap-3">
+                                  <select
+                                    value={editIssueStatus}
+                                    onChange={(e) => setEditIssueStatus(e.target.value)}
+                                    className="px-2.5 py-1 text-xs rounded-lg bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8]"
+                                  >
+                                    <option value="CORREGIDO_OPERATIVO">CORREGIDO OPERATIVO</option>
+                                    <option value="PENDIENTE_REVISION">PENDIENTE REVISIÓN</option>
+                                    <option value="EN_CUARENTENA">EN CUARENTENA</option>
+                                    <option value="BLOQUE_PARCIAL">BLOQUE PARCIAL</option>
+                                  </select>
+
+                                  <label className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={propagateIssue}
+                                      onChange={(e) => setPropagateIssue(e.target.checked)}
+                                      className="rounded text-emerald-700"
+                                    />
+                                    <span>Propagar al plan curricular activo</span>
+                                  </label>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingIssueId(null)}
+                                    className="px-3 py-1 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-800 cursor-pointer"
+                                  >
+                                    Cancelar
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleResolveIssue(issue.id)}
+                                    disabled={isSaving}
+                                    className="px-4 py-1.5 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D382F] rounded-lg cursor-pointer"
+                                  >
+                                    Aplicar Corrección y Actualizar Sistema
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* SECCIÓN 7.B: PARÁMETROS NORMATIVOS DEL SISTEMA           */}
+          {/* ======================================================== */}
+          {(saneamientoSubTab === '7B' || saneamientoSubTab === 'ALL') && (
+            <div className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] p-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <DocConfigIcon className="w-5 h-5 text-emerald-700 dark:text-[#5EEAD4]" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
+                  7.B Parámetros Normativos del Sistema Institucional
+                </h3>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                Criterios normativos de evaluación, asistencia y carga horaria definidos en los documentos de arquitectura 2026.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                {parameters.map((param) => {
+                  const isEditingParam = editingParamId === param.id;
+                  return (
+                    <div
+                      key={param.id}
+                      className="p-4 rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50/50 dark:bg-[#131C1A] space-y-3 flex flex-col justify-between"
+                    >
+                      <div>
+                        <span className="text-xs font-bold text-emerald-700 dark:text-[#5EEAD4] uppercase tracking-wider block">
+                          {param.category}
+                        </span>
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8] mt-1">
+                          {param.name}
+                        </h4>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                          {param.description}
+                        </p>
+                      </div>
+                      <div className="pt-2 border-t border-slate-200 dark:border-[#263834]">
+                        {!isEditingParam ? (
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold text-slate-900 dark:text-[#5EEAD4] font-mono tabular-nums">
+                              {param.value}
+                            </span>
+                            {isEditable && (
                               <button
                                 type="button"
-                                onClick={() => setEditingIssueId(null)}
-                                className="px-3 py-1 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-800 cursor-pointer"
+                                onClick={() => {
+                                  setEditingParamId(param.id);
+                                  setEditParamValue(param.value);
+                                }}
+                                className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] hover:underline cursor-pointer"
+                              >
+                                Modificar
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <input
+                              type="text"
+                              value={editParamValue}
+                              onChange={(e) => setEditParamValue(e.target.value)}
+                              className="w-full px-2.5 py-1.5 text-sm font-mono font-semibold rounded-lg bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] focus:ring-2 focus:ring-emerald-600 outline-none"
+                              placeholder="Nuevo valor..."
+                            />
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingParamId(null);
+                                  setEditParamValue('');
+                                }}
+                                className="px-2.5 py-1 text-xs font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] rounded-lg hover:bg-slate-100 dark:hover:bg-[#1F2D2A] cursor-pointer"
                               >
                                 Cancelar
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleResolveIssue(issue.id)}
+                                onClick={() => {
+                                  if (editParamValue.trim()) {
+                                    handleSaveParameter(param.id, editParamValue.trim());
+                                    setEditingParamId(null);
+                                  }
+                                }}
                                 disabled={isSaving}
-                                className="px-4 py-1.5 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D382F] rounded-lg cursor-pointer"
+                                className="px-3 py-1 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D382F] rounded-lg cursor-pointer disabled:opacity-50"
                               >
-                                Aplicar Corrección y Actualizar Sistema
+                                Guardar
                               </button>
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ======================================================== */}
-          {/* SECCIÓN 7.B: PARÁMETROS NORMATIVOS DEL SISTEMA           */}
-          {/* ======================================================== */}
-          <div className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] p-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <DocConfigIcon className="w-5 h-5 text-emerald-700 dark:text-[#5EEAD4]" />
-              <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
-                Parámetros Normativos del Sistema Institucional
-              </h3>
+                  );
+                })}
+              </div>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              Criterios normativos de evaluación, asistencia y carga horaria definidos en los documentos de arquitectura 2026.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-              {parameters.map((param) => (
-                <div
-                  key={param.id}
-                  className="p-4 rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50/50 dark:bg-[#131C1A] space-y-2 flex flex-col justify-between"
-                >
-                  <div>
-                    <span className="text-[10px] font-bold text-emerald-700 dark:text-[#5EEAD4] uppercase tracking-wider block">
-                      {param.category}
-                    </span>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8] mt-1">
-                      {param.name}
-                    </h4>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">
-                      {param.description}
-                    </p>
-                  </div>
-                  <div className="pt-2 flex items-center justify-between border-t border-slate-200 dark:border-[#263834]">
-                    <span className="text-xs font-bold text-slate-900 dark:text-[#5EEAD4] font-mono">
-                      {param.value}
-                    </span>
-                    {isEditable && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const val = window.prompt(`Nuevo valor para ${param.name}:`, param.value);
-                          if (val !== null && val.trim()) {
-                            handleSaveParameter(param.id, val.trim());
-                          }
-                        }}
-                        className="text-[11px] font-bold text-[#13594A] dark:text-[#5EEAD4] hover:underline cursor-pointer"
-                      >
-                        Modificar
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
 
           {/* ======================================================== */}
           {/* SECCIÓN 7.C: REPOSITORIO DE CUARENTENA DOCUMENTAL        */}
           {/* ======================================================== */}
-          <div className="bg-white dark:bg-[#182220] rounded-2xl border border-purple-200 dark:border-purple-900/60 p-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-purple-700 text-white">
-                Cuarentena
-              </span>
-              <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
-                Contenido Documental Aislado en Cuarentena
-              </h3>
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              Registros detectados en el PDF que contienen elementos incompatibles con la carrera de origen. Se conservan como evidencia pero permanecen estrictamente deshabilitados para no generar expedientes inválidos.
-            </p>
-
-            {quarantine.map((item) => (
-              <div
-                key={item.id}
-                className="p-4 rounded-xl border border-purple-200 dark:border-purple-900/50 bg-purple-50/40 dark:bg-purple-950/20 space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-purple-900 dark:text-purple-200">
-                    {item.title} (PDF pág. {item.pagePdf})
-                  </h4>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-200">
-                    Aislado de Producción
-                  </span>
-                </div>
-                <div className="p-2.5 rounded-lg bg-white dark:bg-[#182220] border border-purple-100 dark:border-purple-900/40 text-xs font-mono text-purple-800 dark:text-purple-300">
-                  {item.detectedContent}
-                </div>
-                <p className="text-xs text-purple-700 dark:text-purple-300 italic">
-                  Motivo de aislamiento: {item.reason}
-                </p>
+          {(saneamientoSubTab === '7C' || saneamientoSubTab === 'ALL') && (
+            <div className="bg-white dark:bg-[#182220] rounded-2xl border border-purple-200 dark:border-purple-900/60 p-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md text-xs font-black uppercase bg-purple-700 text-white">
+                  Cuarentena
+                </span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
+                  7.C Contenido Documental Aislado en Cuarentena
+                </h3>
               </div>
-            ))}
-          </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                Registros detectados en el PDF que contienen elementos incompatibles con la carrera de origen. Se conservan como evidencia pero permanecen estrictamente deshabilitados para no generar expedientes inválidos.
+              </p>
+
+              {quarantine.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-4 rounded-xl border border-purple-200 dark:border-purple-900/50 bg-purple-50/40 dark:bg-purple-950/20 space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-purple-900 dark:text-purple-200">
+                      {item.title} (PDF pág. {item.pagePdf})
+                    </h4>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-black bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-200">
+                      Aislado de Producción
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-white dark:bg-[#182220] border border-purple-100 dark:border-purple-900/40 text-xs font-mono text-purple-800 dark:text-purple-300">
+                    {item.detectedContent}
+                  </div>
+                  <p className="text-xs text-purple-700 dark:text-purple-300 italic">
+                    Motivo de aislamiento: {item.reason}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

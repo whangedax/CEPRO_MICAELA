@@ -9,18 +9,36 @@ const AccountContext=require('./account-context.cjs');
 const {DataUpdateService}=require('./data-update-service.cjs');
 const InstitutionalNetwork = require('./institutional-network.cjs');
 const CeproBdCatalog = require('./cepro-bd-catalog.cjs');
+const FichaRegistro2026 = require('./ficha-registro-2026.cjs');
+const isPublicAdmissionRoute = (pathname) => {
+  return pathname === '/admision-qr' ||
+         pathname === '/ficha-2026' ||
+         pathname === '/admision-2026' ||
+         pathname === '/api/admission-ficha/standalone-html' ||
+         pathname === '/api/public/admission-ficha/standalone-html' ||
+         pathname.startsWith('/api/public/admission-ficha/') ||
+         pathname === '/api/public/ficha-registro-2026';
+};
 function createService({ root, directory, backupFile }) {
   const core = new OfflineCore(directory, backupFile);
   const updates=new DataUpdateService(core,root);
   const json = (res, status, value) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(JSON.stringify(value)); };
   async function handler(req, res) {
     try {
-      // El servicio es local: no confía en Host arbitrario ni peticiones desde otros sitios.
-      if (!/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(req.headers.host || '')) fail('Host no permitido.', 403);
-      const isAllowedOrigin = !req.headers.origin ||
+      const rawRoute = ((req.url || '/').split('?')[0].replace(/\/+$/, '') || '/');
+      if (rawRoute === '/favicon.ico') { res.writeHead(204); res.end(); return; }
+      const isPrivateLanHost = /^(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(req.headers.host || '');
+      const isPublicAdmission = isPublicAdmissionRoute(rawRoute) || (isPrivateLanHost && (rawRoute === '/' || rawRoute === '/index.html'));
+      // El servicio es local: no confía en Host arbitrario, pero permite acceso a admisión desde la LAN privada.
+      if (isPublicAdmission) {
+        if (!/^(127\.0\.0\.1|localhost|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|\[::1\])(:\d+)?$/.test(req.headers.host || '')) fail('Host no permitido.', 403);
+      } else {
+        if (!/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(req.headers.host || '')) fail('Host no permitido.', 403);
+      }
+      const isAllowedOrigin = isPublicAdmission || !req.headers.origin ||
         req.headers.origin === 'null' ||
         req.headers.origin === `http://${req.headers.host}` ||
-        /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(req.headers.origin);
+        /^http:\/\/(127\.0\.0\.1|localhost|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(req.headers.origin);
       if (!isAllowedOrigin) fail('Origen no permitido.', 403);
       if (req.headers.origin && isAllowedOrigin) {
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
@@ -30,8 +48,15 @@ function createService({ root, directory, backupFile }) {
         if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
       }
       const url = new URL(req.url, `http://${req.headers.host}`), route = url.pathname;
+      if (rawRoute === '/admision-qr' || rawRoute === '/ficha-2026' || rawRoute === '/admision-2026' || (isPrivateLanHost && (rawRoute === '/' || rawRoute === '/index.html'))) {
+        const config = FichaRegistro2026.getConfig(core, null);
+        const html = FichaRegistro2026.generateStandaloneAdmissionHtml(config);
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+        res.end(html);
+        return;
+      }
       if (route.startsWith('/api/')) {
-        if (process.env.CETPRO_INSTANCE_SECRET) {
+        if (!isPublicAdmission && process.env.CETPRO_INSTANCE_SECRET) {
           const reqSecret = req.headers['x-cetpro-instance-secret'];
           if (reqSecret !== process.env.CETPRO_INSTANCE_SECRET) {
             fail('Acceso no autorizado: Secreto de instancia inválido o ausente.', 401);
@@ -53,6 +78,37 @@ function createService({ root, directory, backupFile }) {
         if (route === '/api/login' && req.method === 'POST') return json(res, 200, core.login(body, req.socket.remoteAddress));
         if (route === '/api/network/invitation/validate' && req.method === 'POST') return json(res, 200, InstitutionalNetwork.validateInvitation(core, body));
         if (route === '/api/network/invitation/accept' && req.method === 'POST') return json(res, 200, InstitutionalNetwork.acceptInvitationAndLink(core, body));
+        if (route === '/api/public/admission-ficha/info' && req.method === 'GET') return json(res, 200, FichaRegistro2026.getPublicInfo(core, url.searchParams));
+        if (route === '/api/public/admission-ficha/config' && req.method === 'GET') return json(res, 200, FichaRegistro2026.getConfig(core, null));
+        if ((route === '/api/admission-ficha/standalone-html' || route === '/api/public/admission-ficha/standalone-html') && req.method === 'GET') {
+          const config = FichaRegistro2026.getConfig(core, null);
+          const html = FichaRegistro2026.generateStandaloneAdmissionHtml(config);
+          res.writeHead(200, {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Content-Disposition': 'attachment; filename="ficha_admision_2026.html"',
+            'Cache-Control': 'no-store'
+          });
+          res.end(html);
+          return;
+        }
+        if (route === '/api/public/admission-ficha/qr' && req.method === 'POST') {
+          const textToEncode = String(body.text || body.url || FichaRegistro2026.getConfig(core, null).admissionUrl);
+          return json(res, 200, { ok: true, qrSvg: FichaRegistro2026.generateQrSvg(textToEncode) });
+        }
+        if ((route === '/api/public/admission-ficha/submit' || route === '/api/public/ficha-registro-2026') && req.method === 'POST') {
+          return json(res, 201, FichaRegistro2026.submitPublicFicha(core, body, req.socket?.remoteAddress));
+        }
+        if (route === '/api/public/admission-ficha/pdf' && req.method === 'POST') {
+          const pdfBuffer = await FichaRegistro2026.renderFichaRegistro2026PDF(root, body, core);
+          const docNum = body.documentoIdentidad || body.profile?.documentoIdentidad || '2026';
+          res.writeHead(200, {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `inline; filename="FICHA_REGISTRO_2026_${docNum}.pdf"`,
+            'Cache-Control': 'no-store'
+          });
+          res.end(pdfBuffer);
+          return;
+        }
         const token = (req.headers.authorization || '').replace(/^Bearer /, ''), user = core.authenticate(token);
         const session=core.sessions.get(token),context=session.workspace||null;
         if(route==='/api/workspace/options'&&req.method==='GET')return json(res,200,Workspace.options(core,user));
@@ -81,6 +137,33 @@ function createService({ root, directory, backupFile }) {
           res.end(bytes);
           return;
         }
+        if (route === '/api/admission-ficha/config' && req.method === 'GET') return json(res, 200, FichaRegistro2026.getConfig(core, user));
+        if (route === '/api/admission-ficha/submissions' && req.method === 'GET') return json(res, 200, FichaRegistro2026.listSubmissionsAndStudents(core, user));
+        if (route === '/api/admission-ficha/generate-sample-whatsapp' && req.method === 'GET') return json(res, 200, FichaRegistro2026.generateSampleWhatsApp(core, user, {}));
+        if (route === '/api/admission-ficha/standalone-html' && req.method === 'GET') {
+          core.requireRole(user, ['DIRECTOR', 'SECRETARIA']);
+          const config = FichaRegistro2026.getConfig(core, user);
+          const html = FichaRegistro2026.generateStandaloneAdmissionHtml(config);
+          res.writeHead(200, {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Content-Disposition': 'attachment; filename="ficha_admision_2026.html"',
+            'Cache-Control': 'no-store'
+          });
+          res.end(html);
+          return;
+        }
+        if (route.startsWith('/api/secretaria/fichas-registro/pdf/') && req.method === 'GET') {
+          core.requireRole(user, ['DIRECTOR', 'SECRETARIA']);
+          const docId = route.split('/').pop();
+          const pdfBuffer = await FichaRegistro2026.renderFichaRegistro2026PDF(root, { documentoIdentidad: docId }, core);
+          res.writeHead(200, {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `inline; filename="FICHA_2026_${docId}.pdf"`,
+            'Cache-Control': 'no-store'
+          });
+          res.end(pdfBuffer);
+          return;
+        }
         if (req.method !== 'POST') fail('Ruta no encontrada.', 404);
         if(route==='/api/data/export'||route==='/api/data/template'){const file=scopedUpdates.export(user,body.kind,body.format,body.options||{},route.endsWith('/template'));res.writeHead(200,{'Content-Type':file.type,'Content-Disposition':`attachment; filename="CETPRO_${body.kind}.${body.format||'csv'}"`,'Cache-Control':'no-store'});res.end(file.bytes);return;}
         if (route === '/api/document/pdf') {
@@ -95,6 +178,18 @@ function createService({ root, directory, backupFile }) {
         }
         if(route==='/api/document/submission-pdf'){
           const bytes=core.submissionPDF(user,body.id);res.writeHead(200,{'Content-Type':'application/pdf','Cache-Control':'no-store'});res.end(bytes);return;
+        }
+        if (route === '/api/admission-ficha/pdf' && req.method === 'POST') {
+          core.requireRole(user, ['DIRECTOR', 'SECRETARIA']);
+          const pdfBuffer = await FichaRegistro2026.renderFichaRegistro2026PDF(root, body, core);
+          const docNum = body.documentoIdentidad || body.profile?.documentoIdentidad || '2026';
+          res.writeHead(200, {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `inline; filename="FICHA_2026_${docNum}.pdf"`,
+            'Cache-Control': 'no-store'
+          });
+          res.end(pdfBuffer);
+          return;
         }
         let result;
         switch (route) {
@@ -146,6 +241,15 @@ function createService({ root, directory, backupFile }) {
           case '/api/network/import-batch': result = InstitutionalNetwork.importBatch(core, user, body); break;
           case '/api/network/revoke': result = InstitutionalNetwork.revokeDevice(core, user, body); break;
           case '/api/network/replace': result = InstitutionalNetwork.replaceDevice(core, user, body, root); break;
+          case '/api/admission-ficha/config': result = FichaRegistro2026.updateConfig(core, user, body); break;
+          case '/api/admission-ficha/import-whatsapp':
+          case '/api/secretaria/fichas-registro/importar-texto':
+            result = FichaRegistro2026.importWhatsAppFicha(core, user, body); break;
+          case '/api/admission-ficha/generate-sample-whatsapp':
+            result = FichaRegistro2026.generateSampleWhatsApp(core, user, body); break;
+          case '/api/admission-ficha/save-and-enroll':
+          case '/api/secretaria/fichas-registro/confirmar-guardar':
+            result = FichaRegistro2026.saveAndEnrollFicha(core, user, body); break;
           default: fail('Ruta no encontrada.', 404);
         }
         return json(res, 200, result);

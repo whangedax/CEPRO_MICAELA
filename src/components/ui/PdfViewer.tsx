@@ -47,6 +47,68 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
 
+  // Estados para desplazamiento fluido mediante clic y arrastre (mouse panning)
+  const [isPanning, setIsPanning] = useState<boolean>(false);
+  const panStartRef = useRef<{ x: number; y: number; scrollLeft: number; scrollTop: number }>({
+    x: 0,
+    y: 0,
+    scrollLeft: 0,
+    scrollTop: 0,
+  });
+
+  // Manejador de inicio de arrastre con el botón primario del ratón
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return; // Solo clic izquierdo principal
+    if (!containerRef.current) return;
+    setIsPanning(true);
+    panStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      scrollLeft: containerRef.current.scrollLeft,
+      scrollTop: containerRef.current.scrollTop,
+    };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isPanning || !containerRef.current) return;
+    e.preventDefault();
+    const dx = e.clientX - panStartRef.current.x;
+    const dy = e.clientY - panStartRef.current.y;
+    containerRef.current.scrollLeft = panStartRef.current.scrollLeft - dx;
+    containerRef.current.scrollTop = panStartRef.current.scrollTop - dy;
+  };
+
+  const handleMouseUp = () => {
+    setIsPanning(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsPanning(false);
+  };
+
+  // Zoom interactivo con Ctrl + Rueda del ratón
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const step = e.deltaY < 0 ? 0.2 : -0.2;
+        setZoomMode((prev) => {
+          const current = typeof prev === 'number' ? prev : 1.0;
+          const next = Math.min(3.0, Math.max(0.4, Number((current + step).toFixed(2))));
+          return next;
+        });
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
   // Referencia a la tarea de renderizado en curso para poder cancelarla si cambia la página/zoom
   const currentRenderTaskRef = useRef<pdfjsLib.RenderTask | null>(null);
 
@@ -405,17 +467,23 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
       {/* 3. Escenario de visualización con canvas */}
       <div
         ref={containerRef}
-        className="relative bg-slate-200/70 dark:bg-[#0B1210] p-4 sm:p-6 overflow-auto max-h-[750px] min-h-[380px] flex items-center justify-center"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        className={`relative bg-slate-200/70 dark:bg-[#0B1210] p-4 sm:p-6 overflow-auto max-h-[750px] min-h-[380px] flex ${
+          isPanning ? 'cursor-grabbing select-none' : 'cursor-grab'
+        }`}
       >
         {isLoading && (
-          <div className="absolute inset-0 z-10 bg-white/70 dark:bg-[#0B1210]/80 backdrop-blur-[1px] flex flex-col items-center justify-center">
+          <div className="absolute inset-0 z-10 bg-white/70 dark:bg-[#0B1210]/80 backdrop-blur-[1px] flex flex-col items-center justify-center pointer-events-none">
             <div className="w-8 h-8 border-4 border-[#13594A]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin mb-2" />
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Procesando páginas del PDF…</span>
           </div>
         )}
 
         {error && (
-          <div className="p-6 text-center max-w-md bg-white dark:bg-[#182220] rounded-2xl border border-rose-200 dark:border-rose-900/60 shadow-sm">
+          <div className="p-6 text-center max-w-md bg-white dark:bg-[#182220] rounded-2xl border border-rose-200 dark:border-rose-900/60 shadow-sm m-auto">
             <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto mb-2">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -426,11 +494,104 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           </div>
         )}
 
-        <canvas
-          ref={canvasRef}
-          aria-label="Vista previa del documento institucional oficial"
-          className="bg-white shadow-2xl rounded-sm mx-auto transition-all"
-        />
+        {/* Contenedor con m-auto min-w-fit min-h-fit para evitar recorte superior/izquierdo en zoom elevado */}
+        <div className="m-auto min-w-fit min-h-fit p-4 sm:p-6 flex items-center justify-center">
+          <canvas
+            ref={canvasRef}
+            aria-label="Vista previa del documento institucional oficial"
+            className="bg-white shadow-2xl rounded-sm transition-all max-w-none pointer-events-none"
+          />
+        </div>
+
+        {/* Widget flotante de acción rápida e información de zoom */}
+        <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-900/85 dark:bg-[#182220]/95 backdrop-blur-md text-white border border-white/10 shadow-xl select-none text-xs">
+          {numPages > 1 && (
+            <div className="flex items-center gap-1 pr-2 border-r border-white/20">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage <= 1 || isLoading}
+                className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center disabled:opacity-40 cursor-pointer"
+                title="Página anterior"
+              >
+                ‹
+              </button>
+              <span className="font-mono text-[11px] px-1 font-semibold">
+                {currentPage}/{numPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(numPages, p + 1))}
+                disabled={currentPage >= numPages || isLoading}
+                className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center disabled:opacity-40 cursor-pointer"
+                title="Página siguiente"
+              >
+                ›
+              </button>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              if (zoomMode === 'fit') setZoomMode(0.75);
+              else setZoomMode((z) => Math.max(0.4, Number(((typeof z === 'number' ? z : 1) - 0.2).toFixed(2))));
+            }}
+            className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center font-bold text-sm cursor-pointer"
+            title="Reducir zoom (-)"
+          >
+            -
+          </button>
+
+          <span className="font-mono text-[11px] font-bold px-1.5 min-w-[42px] text-center">
+            {zoomMode === 'fit' ? 'Auto' : `${Math.round(zoomMode * 100)}%`}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (zoomMode === 'fit') setZoomMode(1.2);
+              else setZoomMode((z) => Math.min(3.0, Number(((typeof z === 'number' ? z : 1) + 0.2).toFixed(2))));
+            }}
+            className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center font-bold text-sm cursor-pointer"
+            title="Aumentar zoom (+)"
+          >
+            +
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setZoomMode(1)}
+            className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 font-bold text-[11px] cursor-pointer"
+            title="Zoom al 100%"
+          >
+            100%
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setZoomMode('fit')}
+            className={`px-2 py-1 rounded-lg font-bold text-[11px] transition-colors cursor-pointer ${
+              zoomMode === 'fit' ? 'bg-[#13594A] text-emerald-100' : 'bg-white/10 hover:bg-white/20'
+            }`}
+            title="Ajustar al ancho de la pantalla"
+          >
+            Ajustar
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (containerRef.current) {
+                containerRef.current.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+              }
+            }}
+            className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 font-bold text-[11px] cursor-pointer"
+            title="Centrar y volver al inicio del documento"
+          >
+            Centrar
+          </button>
+        </div>
       </div>
 
       {/* 4. Pie con aviso institucional */}

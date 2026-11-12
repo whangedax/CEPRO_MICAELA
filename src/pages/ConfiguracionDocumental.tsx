@@ -45,6 +45,7 @@ import {
   CheckCircleIcon,
   FolderOpenIcon,
 } from '../components/ui/Icons';
+import { ActiveUnitContextBanner } from '../components/academic/ActiveUnitContextBanner';
 
 // Denominación institucional y legible de los ámbitos documentales
 const SCOPE_NAMES: Record<string, string> = {
@@ -613,8 +614,11 @@ export const ConfiguracionDocumental: React.FC = () => {
 
             {activeWorkspace?.mode && (
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-[#132B25] text-slate-700 dark:text-[#5EEAD4]">
-                Modo {activeWorkspace.mode}
-                {activeWorkspace.unit ? ` (${activeWorkspace.unit})` : ''}
+                {activeWorkspace.mode === 'UNIT'
+                  ? `Alcance: Por Unidad Didáctica${activeWorkspace.unit ? ` (${activeWorkspace.unit})` : ''}`
+                  : activeWorkspace.mode === 'PRACTICE'
+                  ? 'Alcance: Prácticas EFSRT'
+                  : 'Alcance: Por Módulo Formativo'}
               </span>
             )}
 
@@ -655,6 +659,9 @@ export const ConfiguracionDocumental: React.FC = () => {
           </a>
         </div>
       </div>
+
+      {/* Contexto Académico de Unidad Activa y Conmutador Rápido */}
+      <ActiveUnitContextBanner variant="compact" />
 
       {/* 2. Barra de Alertas y Retroalimentación */}
       {saveSuccess && (

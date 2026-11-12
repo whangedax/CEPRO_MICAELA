@@ -26,22 +26,38 @@ export const Topbar: React.FC<TopbarProps> = ({ user, onProfileClick, onLogout }
 
   const isGlobalOverview = !activeWorkspace || Boolean(activeWorkspace.overview);
 
-  const programName = React.useMemo(() => {
-    if (!activeWorkspace?.programId || !options?.programs) return '';
-    return options.programs.find((p) => p.id === activeWorkspace.programId)?.nombre || activeWorkspace.programId;
-  }, [activeWorkspace?.programId, options?.programs]);
-
   const activeGroup = React.useMemo(() => {
     if (selectedGroup) return selectedGroup;
     if (!activeWorkspace?.groupId || !options?.groups) return null;
     return options.groups.find((g) => g.id === activeWorkspace.groupId) || null;
   }, [selectedGroup, activeWorkspace?.groupId, options?.groups]);
 
+  const activePeriodLabel = React.useMemo(() => {
+    if (activeGroup?.periodId) return activeGroup.periodId;
+    if (activeWorkspace?.year) return `${activeWorkspace.year}-I`;
+    return user.period || '2026-I';
+  }, [activeGroup?.periodId, activeWorkspace?.year, user.period]);
+
+  const programName = React.useMemo(() => {
+    const progId = activeGroup?.programId || activeWorkspace?.programId;
+    if (!progId || !options?.programs) return activeWorkspace?.programName || '';
+    return options.programs.find((p) => p.id === progId)?.nombre || activeWorkspace?.programName || progId;
+  }, [activeGroup?.programId, activeWorkspace?.programId, activeWorkspace?.programName, options?.programs]);
+
+  const moduleShortLabel = React.useMemo(() => {
+    const modId = activeGroup?.moduleId || activeWorkspace?.moduleId || '';
+    const num = Number(modId.replace(/\D+/g, ''));
+    if (!Number.isNaN(num) && num > 0) {
+      return num % 2 === 1 ? 'Módulo I' : 'Módulo II';
+    }
+    return activePeriodLabel.endsWith('-II') ? 'Módulo II' : 'Módulo I';
+  }, [activeGroup?.moduleId, activeWorkspace?.moduleId, activePeriodLabel]);
+
   const groupShortLabel = React.useMemo(() => {
     if (activeGroup) {
       const turno = activeGroup.turno || 'Mañana';
       const secc = activeGroup.section ? ` · Secc. ${activeGroup.section}` : '';
-      return `${turno}${secc}`;
+      return `Turno ${turno}${secc}`;
     }
     return '';
   }, [activeGroup]);
@@ -49,13 +65,29 @@ export const Topbar: React.FC<TopbarProps> = ({ user, onProfileClick, onLogout }
   const unitLabel = React.useMemo(() => {
     if (!activeWorkspace || activeWorkspace.overview) return '';
     if (activeWorkspace.mode === 'UNIT') {
-      return activeWorkspace.unit ? `UD ${activeWorkspace.unit}` : 'Unidad Activa';
+      if (!activeWorkspace.unit) return 'Unidad Activa';
+      const u = String(activeWorkspace.unit).trim();
+      const match = u.match(/^UD\s*(\d+)$/i);
+      if (match) return `UD ${match[1]}`;
+      return u.toUpperCase().startsWith('UD') || u.toUpperCase() === 'EFSRT' ? u : `UD ${u}`;
     }
     if (activeWorkspace.mode === 'PRACTICE') {
       return 'EFSRT';
     }
     return 'Módulo Completo';
   }, [activeWorkspace]);
+
+  const activeUnitName = React.useMemo(() => {
+    if (!activeWorkspace || activeWorkspace.overview) return '';
+    if (activeWorkspace.mode === 'UNIT' && activeWorkspace.unit) {
+      const unitObj = activeGroup?.units?.find((u) => u.code === activeWorkspace.unit);
+      return unitObj?.name || activeWorkspace.unitName || '';
+    }
+    if (activeWorkspace.mode === 'PRACTICE') {
+      return 'Prácticas Pre-Profesionales';
+    }
+    return '';
+  }, [activeWorkspace, activeGroup]);
 
   return (
     <header className="fixed top-0 left-64 right-0 h-20 bg-white/80 dark:bg-[#131C1A]/95 backdrop-blur-md border-b border-slate-100 dark:border-[#263834] z-40 flex items-center justify-between px-6 xl:px-8 transition-colors duration-200 select-none">
@@ -70,14 +102,14 @@ export const Topbar: React.FC<TopbarProps> = ({ user, onProfileClick, onLogout }
         {/* Control interactivo permanente de Contexto Académico */}
         {isGlobalOverview ? (
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#182220] border border-slate-200/90 dark:border-[#263834] text-[12px] font-bold text-slate-800 dark:text-slate-200 shadow-xs">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#182220] border border-slate-200/90 dark:border-[#263834] text-xs font-bold text-slate-800 dark:text-slate-200 shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              Vista Global Institucional
+              Vista Global · {activePeriodLabel}
             </span>
             <button
               type="button"
               onClick={() => openSelector(1)}
-              className="px-3 py-1.5 rounded-xl bg-[#13594A] hover:bg-[#004034] text-white text-[12px] font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-[#13594A] hover:bg-[#004034] text-white text-xs font-extrabold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               title="Seleccionar módulo, carrera o unidad didáctica"
             >
               <span>🎯 Seleccionar Unidad</span>
@@ -85,29 +117,66 @@ export const Topbar: React.FC<TopbarProps> = ({ user, onProfileClick, onLogout }
           </div>
         ) : (
           <div className="flex items-center gap-2 min-w-0">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#E6F4F1] dark:bg-[#132B25] border border-[#13594A]/30 dark:border-[#205C4E] text-[#004034] dark:text-[#5EEAD4] text-[12px] font-bold shadow-xs truncate">
-              <span className="w-2 h-2 rounded-full bg-[#13594A] dark:bg-[#5EEAD4] shrink-0" />
-              <span className="font-bold">{programName}</span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#E6F4F1] dark:bg-[#132B25] border border-[#13594A]/30 dark:border-[#205C4E] text-[#004034] dark:text-[#5EEAD4] text-xs font-bold shadow-xs">
+              {/* Paso 1: Periodo */}
+              <button
+                type="button"
+                onClick={() => openSelector(1)}
+                className="px-2 py-0.5 rounded-lg bg-[#13594A] text-white font-extrabold text-xs tabular-nums hover:bg-[#0D382F] transition-colors shrink-0 cursor-pointer"
+                title="Cambiar Periodo o Etapa Modular"
+              >
+                {activePeriodLabel}
+              </button>
+
+              <span className="text-slate-400 dark:text-slate-500 shrink-0">•</span>
+
+              {/* Paso 2: Carrera + Módulo */}
+              <button
+                type="button"
+                onClick={() => openSelector(2)}
+                className="font-extrabold hover:underline truncate max-w-[200px] xl:max-w-[280px] shrink-0 cursor-pointer text-left"
+                title={`Carrera: ${programName} (${moduleShortLabel}) — Clic para cambiar de carrera`}
+              >
+                {programName} <span className="font-semibold opacity-85">({moduleShortLabel})</span>
+              </button>
+
               {groupShortLabel && (
                 <>
-                  <span className="text-slate-400 dark:text-slate-500">•</span>
-                  <span>{groupShortLabel}</span>
+                  <span className="text-slate-400 dark:text-slate-500 hidden 2xl:inline shrink-0">•</span>
+                  <button
+                    type="button"
+                    onClick={() => openSelector(3)}
+                    className="hidden 2xl:inline font-bold hover:underline shrink-0 cursor-pointer"
+                    title="Cambiar Aula o Turno"
+                  >
+                    {groupShortLabel}
+                  </button>
                 </>
               )}
+
               {unitLabel && (
                 <>
-                  <span className="text-slate-400 dark:text-slate-500">•</span>
-                  <span className="px-1.5 py-0.5 rounded bg-[#13594A]/15 dark:bg-[#5EEAD4]/20 text-[#13594A] dark:text-[#5EEAD4] font-extrabold text-[11px]">
+                  <span className="text-slate-400 dark:text-slate-500 shrink-0">•</span>
+                  <button
+                    type="button"
+                    onClick={() => openSelector(3)}
+                    className="px-2 py-0.5 rounded-lg bg-[#13594A]/15 dark:bg-[#5EEAD4]/20 text-[#13594A] dark:text-[#5EEAD4] font-extrabold text-xs hover:bg-[#13594A]/25 dark:hover:bg-[#5EEAD4]/30 transition-colors truncate max-w-[150px] xl:max-w-[240px] shrink-0 cursor-pointer"
+                    title={activeUnitName ? `${unitLabel}: ${activeUnitName}` : unitLabel}
+                  >
                     {unitLabel}
-                  </span>
+                    {activeUnitName ? (
+                      <span className="hidden xl:inline font-bold">: {activeUnitName}</span>
+                    ) : null}
+                  </button>
                 </>
               )}
             </div>
+
             <button
               type="button"
-              onClick={() => openSelector(1)}
-              className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#182220] hover:bg-[#F2FBF8] dark:hover:bg-[#193830] text-[#13594A] dark:text-[#5EEAD4] border border-[#13594A]/40 dark:border-[#205C4E] text-[12px] font-bold shadow-xs transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
-              title="Cambiar módulo formativo, carrera técnica o unidad didáctica"
+              onClick={() => openSelector(activeGroup ? 3 : 1)}
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#182220] hover:bg-[#F2FBF8] dark:hover:bg-[#193830] text-[#13594A] dark:text-[#5EEAD4] border border-[#13594A]/40 dark:border-[#205C4E] text-xs font-extrabold shadow-xs transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+              title="Cambiar unidad didáctica, aula o carrera técnica"
             >
               <span>🔄 Cambiar</span>
             </button>
@@ -120,13 +189,13 @@ export const Topbar: React.FC<TopbarProps> = ({ user, onProfileClick, onLogout }
         {/* Selector de Tema Accesible */}
         <ThemeSwitcher />
 
-        {/* Active Academic Period Badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] text-slate-800 dark:text-slate-200 text-[12px] font-semibold shadow-xs">
+        {/* Active Academic Period Badge (visible en pantallas amplias o vista global) */}
+        <div className="hidden 2xl:inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] text-slate-800 dark:text-slate-200 text-xs font-semibold shadow-xs tabular-nums">
           <CalendarIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
-          <span>{user.period}</span>
+          <span>{activeGroup?.periodId || user.period}</span>
         </div>
 
-        <div className="h-6 w-px bg-slate-200/80 dark:bg-[#263834]" />
+        <div className="hidden 2xl:block h-6 w-px bg-slate-200/80 dark:bg-[#263834]" />
 
         {/* Profile Button with native semantics and accessible name */}
         <button

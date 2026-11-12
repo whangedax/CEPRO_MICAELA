@@ -103,6 +103,18 @@ const routeDetails: Record<
     originalRoute: '#/perfil',
     description: 'Datos del usuario autenticado, vigencia de credenciales y administración de clave local.',
   },
+  'ficha-registro-2026': {
+    title: 'Ficha de Registro 2026',
+    subtitle: 'Captura y matrícula digital',
+    originalRoute: '#/ficha-registro-2026',
+    description: 'Recepción de fichas por WhatsApp/QR, matrícula en aula y emisión de Ficha PDF 2026.',
+  },
+  'admision-qr': {
+    title: 'Formulario de Admisión Móvil',
+    subtitle: 'Pre-inscripción para estudiantes',
+    originalRoute: '#/admision-qr',
+    description: 'Formulario público accesible para registro de postulantes y envío por WhatsApp.',
+  },
 };
 
 export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({

@@ -131,3 +131,99 @@ export function getTodayLima(): string {
     return new Date().toISOString().slice(0, 10);
   }
 }
+
+export interface MonthSpan {
+  monthKey: string; // '2026-03'
+  label: string; // 'Marzo 2026'
+  shortLabel: string; // 'MAR 2026'
+  count: number;
+  dates: string[];
+}
+
+export interface UnitCalendarResolution {
+  fechaInicio: string;
+  fechaFin: string;
+  dates: string[];
+  monthSpans: MonthSpan[];
+  firstSchoolDate: string;
+  totalDays: number;
+}
+
+/**
+ * Genera el conjunto de fechas académicas programadas para una unidad didáctica,
+ * excluyendo fines de semana y feriados institucionales (scripts/academic-calendar-engine.cjs).
+ */
+export function resolveUnitDates(
+  fechaInicio?: string,
+  fechaFin?: string,
+  diasClase: number[] = [1, 2, 3, 4, 5]
+): UnitCalendarResolution {
+  const start = fechaInicio && /^\d{4}-\d{2}-\d{2}$/.test(fechaInicio) ? fechaInicio : '2026-03-16';
+  const end = fechaFin && /^\d{4}-\d{2}-\d{2}$/.test(fechaFin) && fechaFin >= start ? fechaFin : '2026-07-24';
+
+  const allowedSet = new Set(diasClase);
+  const dates: string[] = [];
+  const monthMap = new Map<string, string[]>();
+
+  let curr = start;
+  let safety = 0;
+  while (curr <= end && safety < 400) {
+    safety++;
+    const dow = getDayOfWeekIso(curr);
+    if (allowedSet.has(dow) && !isHoliday(curr)) {
+      dates.push(curr);
+      const mKey = curr.slice(0, 7);
+      if (!monthMap.has(mKey)) {
+        monthMap.set(mKey, []);
+      }
+      monthMap.get(mKey)!.push(curr);
+    }
+
+    const [y, m, d] = curr.split('-').map(Number);
+    const nextDate = new Date(Date.UTC(y, m - 1, d + 1));
+    curr = nextDate.toISOString().slice(0, 10);
+  }
+
+  const monthSpans: MonthSpan[] = Array.from(monthMap.entries()).map(([mKey, mDates]) => {
+    const [year, month] = mKey.split('-').map(Number);
+    const name = MONTH_NAMES[month - 1] || '';
+    return {
+      monthKey: mKey,
+      label: `${name} ${year}`,
+      shortLabel: `${name.slice(0, 3).toUpperCase()} ${year}`,
+      count: mDates.length,
+      dates: mDates,
+    };
+  });
+
+  return {
+    fechaInicio: start,
+    fechaFin: end,
+    dates,
+    monthSpans,
+    firstSchoolDate: dates[0] || start,
+    totalDays: dates.length,
+  };
+}
+
+/**
+ * Encuentra la fecha escolar lectiva válida más cercana a una fecha objetivo.
+ */
+export function getClosestSchoolDate(targetDate: string, validDates: string[]): string {
+  if (!validDates || validDates.length === 0) return targetDate;
+  if (targetDate <= validDates[0]) return validDates[0];
+  if (targetDate >= validDates[validDates.length - 1]) return validDates[validDates.length - 1];
+
+  const targetTime = new Date(targetDate).getTime();
+  let closest = validDates[0];
+  let minDiff = Math.abs(targetTime - new Date(closest).getTime());
+
+  for (const d of validDates) {
+    const diff = Math.abs(targetTime - new Date(d).getTime());
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = d;
+    }
+  }
+  return closest;
+}

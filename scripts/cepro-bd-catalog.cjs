@@ -1223,44 +1223,74 @@ function applyCurriculumProjection(core, catalog, actor) {
       const modRecId = `curriculum:${mDef.id}`;
       const curr = core.record('documentSettings', modRecId);
 
-      // Extraer capacidades asignadas a este módulo
+      // Extraer capacidades y competencias asignadas a este módulo
       const modCapacidades = (prog.capacidades || []).filter(c => c.moduloId === mDef.id);
       const modCompetencias = (prog.competencias || []).filter(c => c.moduloId === mDef.id);
+      const competenceText = modCompetencias[0] ? String(modCompetencias[0].descripcion || '').slice(0, 1900) : '';
 
+      // 1. Enriquecer curriculum:${mDef.id}
       if (curr) {
-        // Enriquecer sin pisar fechas de inicio y fin de preflight ni desincronizar programName con programs.nombre
+        let updatedUnitsJson = curr.fields.unitsJson;
+        if (curr.fields.unitsJson) {
+          try {
+            const cUnits = JSON.parse(curr.fields.unitsJson);
+            const mappedUnits = cUnits.map((u, idx) => {
+              if (u.code === 'EFSRT') return u;
+              const cap = modCapacidades[idx] || modCapacidades[idx % (modCapacidades.length || 1)] || null;
+              const capInds = cap ? (prog.indicadoresCapacidad || []).filter(ic => ic.capacidadId === cap.id) : [];
+              return {
+                ...u,
+                capacity: cap ? String(cap.descripcionCompleta || cap.objeto || '').slice(0, 1900) : (u.capacity || ''),
+                competence: competenceText || u.competence || '',
+                indicator1: capInds[0] ? String(capInds[0].descripcion || '').slice(0, 1900) : (u.indicator1 || ''),
+                indicator2: capInds[1] ? String(capInds[1].descripcion || '').slice(0, 1900) : (u.indicator2 || '')
+              };
+            });
+            updatedUnitsJson = JSON.stringify(mappedUnits);
+          } catch {}
+        }
         const fields = {
           ...curr.fields,
           programName: curr.fields.programName || canonicalProgramName,
           programCode: curr.fields.programCode || prog.codigoCnof || prog.codeCeProBd,
           programHours: curr.fields.programHours || prog.horasDeclaradas,
           programCredits: curr.fields.programCredits || prog.creditosDeclarados,
-          nivelFormativo: curr.fields.nivelFormativo || prog.cicloFormativo
+          nivelFormativo: curr.fields.nivelFormativo || prog.cicloFormativo,
+          unitsJson: updatedUnitsJson || curr.fields.unitsJson
         };
         core.putRecord('documentSettings', { ...curr, fields, updatedAt: new Date().toISOString(), updatedBy: actor.id });
       }
 
-      // Enriquecer moduleDefaults respetando estrictamente las claves permitidas en academic-config.cjs
+      // 2. Enriquecer moduleDefaults:${mDef.id}
       const defRecId = `moduleDefaults:${mDef.id}`;
       const modDef = core.record('documentSettings', defRecId);
       if (modDef && modDef.fields.dataJson) {
         try {
           const parsedData = JSON.parse(modDef.fields.dataJson);
-          if (modCompetencias.length > 0 && !parsedData.module.competence) {
-            parsedData.module.competence = String(modCompetencias[0].descripcion || '').slice(0, 1900);
+          if (competenceText) {
+            parsedData.module.competence = competenceText;
           }
           delete parsedData.module.capacidades;
           if (Array.isArray(parsedData.units)) {
             parsedData.units = parsedData.units.map((u, idx) => {
               if (u.code === 'EFSRT') return u;
-              const cap = modCapacidades[idx] || modCapacidades[0];
+              const cap = modCapacidades[idx] || modCapacidades[idx % (modCapacidades.length || 1)] || null;
               const capInds = cap ? (prog.indicadoresCapacidad || []).filter(ic => ic.capacidadId === cap.id) : [];
+              const realCapacity = cap ? String(cap.descripcionCompleta || cap.objeto || '').slice(0, 1900) : (u.capacity || '');
+              const realInd1 = capInds[0] ? String(capInds[0].descripcion || '').slice(0, 1900) : (u.indicator1 || '');
+              const realInd2 = capInds[1] ? String(capInds[1].descripcion || '').slice(0, 1900) : (u.indicator2 || '');
+              const realInd3 = capInds[2] ? String(capInds[2].descripcion || '').slice(0, 1900) : '';
+              const realInd4 = capInds[3] ? String(capInds[3].descripcion || '').slice(0, 1900) : '';
+              const realInd5 = capInds[4] ? String(capInds[4].descripcion || '').slice(0, 1900) : '';
               return {
                 ...u,
-                capacity: u.capacity || (cap ? String(cap.descripcionCompleta || '').slice(0, 1900) : u.capacity),
-                competence: u.competence || parsedData.module.competence || u.competence,
-                indicator1: u.indicator1 || (capInds[0] ? String(capInds[0].descripcion || '').slice(0, 1900) : u.indicator1),
-                indicator2: u.indicator2 || (capInds[1] ? String(capInds[1].descripcion || '').slice(0, 1900) : u.indicator2)
+                capacity: realCapacity || u.capacity || '',
+                competence: competenceText || u.competence || parsedData.module.competence || '',
+                indicator1: realInd1 || u.indicator1 || '',
+                indicator2: realInd2 || u.indicator2 || '',
+                ...(realInd3 ? { indicator3: realInd3 } : {}),
+                ...(realInd4 ? { indicator4: realInd4 } : {}),
+                ...(realInd5 ? { indicator5: realInd5 } : {})
               };
             });
           }
@@ -1275,6 +1305,55 @@ function applyCurriculumProjection(core, catalog, actor) {
             updatedBy: actor.id
           });
         } catch {}
+      }
+
+      // 3. Sincronizar en grupos activos unit:GRP-*:UD*
+      const groups = core.records('groups').filter(g => g.moduleId === mDef.id);
+      for (const g of groups) {
+        const uCodes = (g.units || []).filter(u => u !== 'EFSRT');
+        uCodes.forEach((uCode, idx) => {
+          const unitRecId = `unit:${g.id}:${uCode}`;
+          const uRec = core.record('documentSettings', unitRecId);
+          const cap = modCapacidades[idx] || modCapacidades[idx % (modCapacidades.length || 1)] || null;
+          const capInds = cap ? (prog.indicadoresCapacidad || []).filter(ic => ic.capacidadId === cap.id) : [];
+          const realCapacity = cap ? String(cap.descripcionCompleta || cap.objeto || '').slice(0, 1900) : '';
+          const realInd1 = capInds[0] ? String(capInds[0].descripcion || '').slice(0, 1900) : '';
+          const realInd2 = capInds[1] ? String(capInds[1].descripcion || '').slice(0, 1900) : '';
+          const realInd3 = capInds[2] ? String(capInds[2].descripcion || '').slice(0, 1900) : '';
+          const realInd4 = capInds[3] ? String(capInds[3].descripcion || '').slice(0, 1900) : '';
+          const realInd5 = capInds[4] ? String(capInds[4].descripcion || '').slice(0, 1900) : '';
+
+          if (uRec) {
+            const uFields = {
+              ...uRec.fields,
+              capacity: realCapacity || uRec.fields.capacity || '',
+              competence: competenceText || uRec.fields.competence || '',
+              indicator1: realInd1 || uRec.fields.indicator1 || '',
+              indicator2: realInd2 || uRec.fields.indicator2 || '',
+              ...(realInd3 ? { indicator3: realInd3 } : {}),
+              ...(realInd4 ? { indicator4: realInd4 } : {}),
+              ...(realInd5 ? { indicator5: realInd5 } : {})
+            };
+            core.putRecord('documentSettings', { ...uRec, fields: uFields, updatedAt: new Date().toISOString(), updatedBy: actor.id });
+          } else {
+            core.putRecord('documentSettings', {
+              id: unitRecId,
+              scope: { kind: 'unit', target: g.id, unit: uCode },
+              fields: {
+                name: `Unidad Didáctica ${uCode}`,
+                capacity: realCapacity,
+                competence: competenceText,
+                indicator1: realInd1,
+                indicator2: realInd2,
+                ...(realInd3 ? { indicator3: realInd3 } : {}),
+                ...(realInd4 ? { indicator4: realInd4 } : {}),
+                ...(realInd5 ? { indicator5: realInd5 } : {})
+              },
+              updatedAt: new Date().toISOString(),
+              updatedBy: actor.id
+            });
+          }
+        });
       }
     }
   }

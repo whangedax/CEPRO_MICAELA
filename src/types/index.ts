@@ -15,7 +15,9 @@ export type NavRoute =
   | 'sincronizacion'
   | 'respaldo'
   | 'configuracion-academica'
-  | 'perfil';
+  | 'perfil'
+  | 'ficha-registro-2026'
+  | 'admision-qr';
 
 export interface UserProfile {
   name: string;

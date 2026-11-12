@@ -31,6 +31,7 @@ import {
   DocumentConfigurationResponse,
 } from '../api/types';
 import { SelectUnitModal } from '../components/academic/SelectUnitModal';
+import ActiveUnitContextBanner from '../components/academic/ActiveUnitContextBanner';
 import {
   EvaluationIcon,
   FolderOpenIcon,
@@ -960,6 +961,9 @@ export const RegistroEvaluaciones: React.FC = () => {
           </button>
         </div>
 
+        {/* Banner Transversal de Contexto de Unidad Activa (con cambio de UD 1..UD 7 en 1 clic) */}
+        <ActiveUnitContextBanner variant="full" className="mb-6" />
+
         {/* Tarjeta de bloqueo informativo con mensaje exacto del servidor */}
         <div className="bg-amber-50/70 dark:bg-amber-950/30 rounded-3xl p-8 border border-amber-200 dark:border-amber-800/60 text-center max-w-2xl mx-auto shadow-sm">
           <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-900/40 border border-amber-300 dark:border-amber-700/60 text-amber-800 dark:text-amber-200 flex items-center justify-center mx-auto mb-4">
@@ -1037,7 +1041,7 @@ export const RegistroEvaluaciones: React.FC = () => {
               {currentGroup?.name || 'Aula Asignada'}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
-              Modo {activeWorkspace.mode} · Unidad {activeWorkspace.unit}
+              Alcance: Por Unidad Didáctica ({activeWorkspace.unit})
             </span>
             {isGroupClosed && (
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
@@ -1051,7 +1055,7 @@ export const RegistroEvaluaciones: React.FC = () => {
               ? `${activeWorkspace.unit}: ${activeWorkspace.unitName}`
               : `Unidad Didáctica Curricular ${activeWorkspace.unit}`}
             {' · '}
-            <span className="font-semibold text-slate-700">
+            <span className="font-semibold text-slate-700 dark:text-slate-300">
               Escala vigesimal (0 a 20) · Criterios normados por el MINEDU
             </span>
           </p>
@@ -1083,6 +1087,9 @@ export const RegistroEvaluaciones: React.FC = () => {
           </a>
         </div>
       </div>
+
+      {/* Banner Transversal de Contexto de Unidad Activa (con cambio rápido de UD 1..UD 7 en 1 clic) */}
+      <ActiveUnitContextBanner variant="full" />
 
       {/* 2. Banner de advertencia si el grupo está cerrado */}
       {isGroupClosed && (

@@ -119,7 +119,7 @@ describe('Tarea 15 — Integridad de Asistencia, Manejo 409 y Calendario', () =>
 
   test('3. Conflicto HTTP 409 y ciclo de resolución segura sin sobrescrituras silenciosas', async () => {
     const conflictDate = '2026-03-25';
-    const conflictSession = '2';
+    const conflictSession = '1';
 
     // Paso A: Guardar estado inicial (Sesión 1)
     const initialDash = await fetch(`${BASE_URL}/api/dashboard`, { headers }).then((r) => r.json());

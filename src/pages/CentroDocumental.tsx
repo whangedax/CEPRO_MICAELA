@@ -40,7 +40,9 @@ import {
   getVisibleTemplates,
   getAvailableCategories,
 } from '../utils/documentTemplates';
+import { resolveUnitDates } from '../utils/calendar';
 import { SelectUnitModal } from '../components/academic/SelectUnitModal';
+import { ActiveUnitContextBanner } from '../components/academic/ActiveUnitContextBanner';
 import { PdfViewer } from '../components/ui/PdfViewer';
 import {
   DocumentIcon,
@@ -81,6 +83,24 @@ export const CentroDocumental: React.FC = () => {
   const [preflightDoc, setPreflightDoc] = useState<DocumentPreflightResponse | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+
+  const formatScopeHumanLabel = (scopeOrMode?: string): string => {
+    const val = (scopeOrMode || '').toUpperCase().trim();
+    if (val === 'UNIT' || val === 'UNIDAD') return 'Alcance: Por Unidad Didáctica';
+    if (val === 'GROUP' || val === 'GRUPO' || val === 'AULA') return 'Alcance: Por Aula / Sección Completa';
+    if (val === 'MODULE' || val === 'MÓDULO' || val === 'MODULO') return 'Alcance: Por Módulo Formativo';
+    if (val === 'PRACTICE' || val === 'PRÁCTICA' || val === 'PRACTICA' || val === 'EFSRT') return 'Alcance: Prácticas EFSRT';
+    if (val === 'INSTITUTION' || val === 'INSTITUCIÓN' || val === 'INSTITUCION') return 'Alcance: Institucional General (CETPRO)';
+    return `Alcance: ${scopeOrMode || 'General'}`;
+  };
+
+  const formatModeShortLabel = (mode?: string): string => {
+    const val = (mode || '').toUpperCase().trim();
+    if (val === 'UNIT') return 'Unidad Didáctica';
+    if (val === 'MODULE') return 'Módulo / Aula Completa';
+    if (val === 'PRACTICE') return 'Prácticas EFSRT';
+    return mode || 'General';
+  };
 
   // Mensajes de retroalimentación
   const [feedback, setFeedback] = useState<{
@@ -181,6 +201,22 @@ export const CentroDocumental: React.FC = () => {
       setSelectedUnit(availableUnits[0]);
     }
   }, [activeWorkspace, availableUnits]);
+
+  // Calendario y vigencia de la unidad seleccionada
+  const selectedUnitOption = useMemo(() => {
+    if (!options?.groups || !currentGroup?.id || !selectedUnit) return null;
+    const grp = options.groups.find((g) => g.id === currentGroup.id);
+    return grp?.units?.find((u) => u.code === selectedUnit) || null;
+  }, [options, currentGroup, selectedUnit]);
+
+  const selectedUnitStartDate: string =
+    selectedUnitOption?.fechaInicio || (currentGroup?.fechaInicio as string) || '2026-03-16';
+  const selectedUnitEndDate: string =
+    selectedUnitOption?.fechaFin || (currentGroup?.fechaFin as string) || '2026-07-24';
+
+  const selectedUnitCalendar = useMemo(() => {
+    return resolveUnitDates(selectedUnitStartDate, selectedUnitEndDate);
+  }, [selectedUnitStartDate, selectedUnitEndDate]);
 
   useEffect(() => {
     if (rosterEnrollments.length > 0 && !selectedEnrollmentId) {
@@ -617,7 +653,7 @@ export const CentroDocumental: React.FC = () => {
               Centro de Documentos Académicos
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
-              Aula: {currentGroup?.name || 'Aula Asignada'} · Modo {activeWorkspace.mode}
+              Aula: {currentGroup?.name || 'Aula Asignada'} · {formatScopeHumanLabel(activeWorkspace.mode)}
               {activeWorkspace.unit ? ` (${activeWorkspace.unit})` : ''}
             </span>
             {!__IS_INSTITUTIONAL__ && isDemoActive && (
@@ -659,6 +695,9 @@ export const CentroDocumental: React.FC = () => {
         </div>
       </div>
 
+      {/* 1.5 Contexto Académico de Unidad Activa y Conmutador Rápido */}
+      <ActiveUnitContextBanner variant="full" />
+
       {/* 2. Banner de advertencia de modo de workspace incompatible */}
       {!isWorkspaceModeCompatible && (
         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 dark:text-amber-200 shadow-sm animate-in fade-in duration-200">
@@ -670,13 +709,12 @@ export const CentroDocumental: React.FC = () => {
             </div>
             <div className="text-xs">
               <strong className="font-bold text-sm block">
-                Plantilla requiere modo {activeTemplateMeta.requiredMode}
+                Este formato requiere {formatScopeHumanLabel(activeTemplateMeta.requiredMode).replace('Alcance: ', '')}
               </strong>
               <span>
-                La plantilla seleccionada (<strong>{activeTemplateMeta.name}</strong>) corresponde al
-                ámbito de <strong>{activeTemplateMeta.scope}</strong>, mientras que el espacio activo está
-                en modo <strong>{activeWorkspace.mode}</strong>. Para evitar rechazos en el servidor, cambie el
-                espacio de trabajo.
+                La plantilla seleccionada (<strong>{activeTemplateMeta.name}</strong>) tiene{' '}
+                <strong>{formatScopeHumanLabel(activeTemplateMeta.scope)}</strong>, mientras que el espacio activo está
+                en <strong>{formatModeShortLabel(activeWorkspace.mode)}</strong>. Active el alcance requerido con un clic:
               </span>
             </div>
           </div>
@@ -686,7 +724,7 @@ export const CentroDocumental: React.FC = () => {
             onClick={() => handleSwitchWorkspaceMode(activeTemplateMeta.requiredMode)}
             className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-colors shadow-sm shrink-0"
           >
-            Cambiar a Modo {activeTemplateMeta.requiredMode}
+            Cambiar a {formatModeShortLabel(activeTemplateMeta.requiredMode)}
           </button>
         </div>
       )}
@@ -836,7 +874,7 @@ export const CentroDocumental: React.FC = () => {
                               isCompatible ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'
                             }`}
                           >
-                            {tmpl.scope} ({tmpl.requiredMode})
+                            {formatScopeHumanLabel(tmpl.scope)}
                           </span>
                         </div>
 
@@ -982,6 +1020,33 @@ export const CentroDocumental: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Banner de vigencia y meses para formatos de unidad (TMPL-05 a TMPL-10 y evaluación) */}
+            {activeTemplateMeta.scope === 'Unidad' && (
+              <div className="mt-4 p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-[#132B25]/70 border border-emerald-200/80 dark:border-emerald-800/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-bold text-emerald-900 dark:text-[#5EEAD4] bg-emerald-100 dark:bg-[#183830] px-2 py-0.5 rounded-md">
+                    📅 Calendario Oficial {selectedUnit}:
+                  </span>
+                  <span className="font-semibold text-slate-800 dark:text-[#F0FDF8]">
+                    {selectedUnitStartDate} al {selectedUnitEndDate} ({selectedUnitCalendar.totalDays} días lectivos programados)
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                    Meses que abarca el formato:
+                  </span>
+                  {selectedUnitCalendar.monthSpans.map((m) => (
+                    <span
+                      key={m.monthKey}
+                      className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#182220] border border-emerald-200 dark:border-emerald-800/80 text-[11px] font-bold text-emerald-800 dark:text-[#5EEAD4] shadow-2xs"
+                    >
+                      🗓 {m.shortLabel} ({m.count} días)
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Checklist Preflight Oficial */}
@@ -1099,7 +1164,7 @@ export const CentroDocumental: React.FC = () => {
                       type="button"
                       onClick={handleClearSimulatedAttendance}
                       disabled={isSimulatingAttendance}
-                      className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all disabled:opacity-50"
+                      className="px-2.5 py-1.5 rounded-xl bg-white/10 dark:bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all disabled:opacity-50"
                       title="Limpiar marcas de asistencia registradas en esta unidad"
                     >
                       Limpiar

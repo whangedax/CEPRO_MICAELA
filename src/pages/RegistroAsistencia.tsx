@@ -29,12 +29,17 @@ import {
 } from '../api/types';
 import StatusBadge from '../components/ui/StatusBadge/StatusBadge';
 import { SelectUnitModal } from '../components/academic/SelectUnitModal';
+import ActiveUnitContextBanner from '../components/academic/ActiveUnitContextBanner';
 import {
   isHoliday,
   isWeekend,
   formatDisplayDate,
   getTodayLima,
   getDayOfWeekIso,
+  resolveUnitDates,
+  getClosestSchoolDate,
+  UnitCalendarResolution,
+  MonthSpan,
 } from '../utils/calendar';
 import {
   AttendanceIcon,
@@ -78,9 +83,8 @@ export const RegistroAsistencia: React.FC = () => {
   const { requestSafeTransition, registerPendingChanges, unregisterPendingChanges } =
     usePendingChanges();
 
-  // Fecha y sesión activas
+  // Fecha activa (la sesión es estrictamente '1' de acuerdo a la normativa institucional)
   const [sessionDate, setSessionDate] = useState<string>(() => getTodayLima());
-  const [sessionNumber, setSessionNumber] = useState<string>('1');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Estado local de filas por enrollmentId
@@ -111,9 +115,6 @@ export const RegistroAsistencia: React.FC = () => {
   const sessionDateRef = useRef<string>(sessionDate);
   sessionDateRef.current = sessionDate;
 
-  const sessionNumberRef = useRef<string>(sessionNumber);
-  sessionNumberRef.current = sessionNumber;
-
   const activeWorkspaceRef = useRef(activeWorkspace);
   activeWorkspaceRef.current = activeWorkspace;
 
@@ -122,6 +123,66 @@ export const RegistroAsistencia: React.FC = () => {
     if (!dashboardData?.groups || !activeWorkspace?.groupId) return null;
     return dashboardData.groups.find((g) => g.id === activeWorkspace.groupId) || null;
   }, [dashboardData, activeWorkspace]);
+
+  // Unidad activa y calendario institucional
+  const activeUnitOption = useMemo(() => {
+    if (!options?.groups || !activeWorkspace?.groupId || !activeWorkspace?.unit) return null;
+    const grp = options.groups.find((g) => g.id === activeWorkspace.groupId);
+    return grp?.units?.find((u) => u.code === activeWorkspace.unit) || null;
+  }, [options, activeWorkspace]);
+
+  const unitStartDate: string = activeUnitOption?.fechaInicio || (currentGroup?.fechaInicio as string) || '2026-03-16';
+  const unitEndDate: string = activeUnitOption?.fechaFin || (currentGroup?.fechaFin as string) || '2026-07-24';
+
+  const unitCalendar = useMemo<UnitCalendarResolution>(() => {
+    return resolveUnitDates(unitStartDate, unitEndDate);
+  }, [unitStartDate, unitEndDate]);
+
+  const [activeMonthFilter, setActiveMonthFilter] = useState<string | null>(null);
+
+  // Auto-ajuste de fecha si hoy o la fecha actual está fuera de los días lectivos de la unidad
+  useEffect(() => {
+    if (unitCalendar.dates.length > 0) {
+      if (sessionDate < unitStartDate || sessionDate > unitEndDate) {
+        setSessionDate(unitCalendar.firstSchoolDate);
+      }
+    }
+  }, [unitStartDate, unitEndDate, unitCalendar.firstSchoolDate, sessionDate]);
+
+  // Validación estricta de fecha para registro de asistencia:
+  // Dentro del rango de la UD, Lu-Vi, y sin ser feriado
+  const dateValidationError = useMemo<string | null>(() => {
+    if (!sessionDate) return 'Debe seleccionar una fecha de sesión.';
+    if (sessionDate < unitStartDate || sessionDate > unitEndDate) {
+      return `La fecha ${sessionDate} está fuera del rango oficial de la unidad didáctica (${unitStartDate} al ${unitEndDate}).`;
+    }
+    const holidayReason = isHoliday(sessionDate);
+    if (holidayReason) {
+      return `La fecha ${sessionDate} es feriado o día no lectivo (${holidayReason}). No se permite registrar asistencia.`;
+    }
+    if (isWeekend(sessionDate)) {
+      const dow = getDayOfWeekIso(sessionDate);
+      return `La fecha ${sessionDate} corresponde a fin de semana (${dow === 0 ? 'domingo' : 'sábado'}). Las clases ordinarias son de lunes a viernes.`;
+    }
+    return null;
+  }, [sessionDate, unitStartDate, unitEndDate]);
+
+  // Fechas que tienen al menos una marca de asistencia guardada con valor válido no nulo (P, F, J, T)
+  const datesWithValidAttendance = useMemo(() => {
+    const set = new Set<string>();
+    if (!dashboardData?.attendance || !activeWorkspace?.unit) return set;
+    for (const att of dashboardData.attendance) {
+      if (
+        att.unit === activeWorkspace.unit &&
+        att.value !== null &&
+        att.value !== undefined &&
+        String(att.value).trim() !== ''
+      ) {
+        set.add(att.date);
+      }
+    }
+    return set;
+  }, [dashboardData?.attendance, activeWorkspace?.unit]);
 
   // Lista de matrículas activas del grupo ordenadas alfabéticamente
   const rosterData = useMemo(() => {
@@ -156,7 +217,7 @@ export const RegistroAsistencia: React.FC = () => {
     return list;
   }, [dashboardData, activeWorkspace]);
 
-  // Sincronizar estado de filas cuando cambie la fecha, sesión o datos de dashboard
+  // Sincronizar estado de filas cuando cambie la fecha o datos de dashboard (consolidado por fecha)
   useEffect(() => {
     if (!activeWorkspace?.unit || !activeWorkspace?.groupId || !dashboardData) {
       setRowsState({});
@@ -168,14 +229,29 @@ export const RegistroAsistencia: React.FC = () => {
 
     for (const item of rosterData) {
       const enId = item.enrollment.id;
-      // Buscar registro existente para esta matrícula, unidad, fecha y sesión
-      const match = currentAttendance.find(
+      // Buscar marcas existentes para esta matrícula, unidad y fecha consolidando por fecha
+      const matchingRecords = currentAttendance.filter(
         (att: AttendanceRecord) =>
           att.enrollmentId === enId &&
           att.unit === activeWorkspace.unit &&
-          att.date === sessionDate &&
-          String(att.session || '').trim() === String(sessionNumber).trim()
+          att.date === sessionDate
       );
+
+      let match: AttendanceRecord | undefined;
+      if (matchingRecords.length === 1) {
+        match = matchingRecords[0];
+      } else if (matchingRecords.length > 1) {
+        // Si existen múltiples marcas heredadas para la misma fecha+matrícula, priorizar session '1' y luego el más reciente por updatedAt
+        matchingRecords.sort((a, b) => {
+          const aSess1 = String(a.session || '').trim() === '1' ? 1 : 0;
+          const bSess1 = String(b.session || '').trim() === '1' ? 1 : 0;
+          if (aSess1 !== bSess1) return bSess1 - aSess1;
+          const aTime = a.updatedAt || '';
+          const bTime = b.updatedAt || '';
+          return bTime.localeCompare(aTime);
+        });
+        match = matchingRecords[0];
+      }
 
       const val = (match?.value as AttendanceValue) || null;
       const obs = match?.observation || '';
@@ -191,7 +267,7 @@ export const RegistroAsistencia: React.FC = () => {
     }
 
     setRowsState(newRows);
-  }, [rosterData, activeWorkspace, sessionDate, sessionNumber, dashboardData]);
+  }, [rosterData, activeWorkspace, sessionDate, dashboardData]);
 
   // Determinar si hay cambios locales no guardados
   const hasUnsavedChanges = useMemo(() => {
@@ -221,9 +297,17 @@ export const RegistroAsistencia: React.FC = () => {
     const ws = activeWorkspaceRef.current;
     const currentRows = rowsStateRef.current;
     const activeDate = sessionDateRef.current;
-    const activeSession = sessionNumberRef.current.trim() || '1';
+    const activeSession = '1';
 
     if (!ws?.groupId || !ws?.unit || currentGroup?.closed) {
+      return false;
+    }
+
+    if (dateValidationError) {
+      setSaveFeedback({
+        type: 'error',
+        message: dateValidationError,
+      });
       return false;
     }
 
@@ -306,13 +390,25 @@ export const RegistroAsistencia: React.FC = () => {
           const conflicts: ConflictItem[] = [];
 
           for (const row of changedRows) {
-            const serverRec = freshAttendance.find(
+            const matchingServer = freshAttendance.filter(
               (a: AttendanceRecord) =>
                 a.enrollmentId === row.enrollmentId &&
                 a.unit === ws.unit &&
-                a.date === activeDate &&
-                String(a.session || '').trim() === activeSession
+                a.date === activeDate
             );
+
+            let serverRec: AttendanceRecord | undefined;
+            if (matchingServer.length === 1) {
+              serverRec = matchingServer[0];
+            } else if (matchingServer.length > 1) {
+              matchingServer.sort((a, b) => {
+                const aS1 = String(a.session || '').trim() === '1' ? 1 : 0;
+                const bS1 = String(b.session || '').trim() === '1' ? 1 : 0;
+                if (aS1 !== bS1) return bS1 - aS1;
+                return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+              });
+              serverRec = matchingServer[0];
+            }
 
             const student = rosterData.find((ro) => ro.enrollment.id === row.enrollmentId)?.student;
             conflicts.push({
@@ -339,14 +435,14 @@ export const RegistroAsistencia: React.FC = () => {
       } else {
         setSaveFeedback({
           type: 'error',
-          message: apiErr?.error || 'Error al guardar la asistencia en el servidor local.',
+          message: apiErr?.error || (err instanceof Error ? err.message : 'Error al guardar la asistencia en el servidor local.'),
         });
       }
       return false;
     } finally {
       setIsSaving(false);
     }
-  }, [activeWorkspace, currentGroup, rowsState, sessionDate, sessionNumber, loadOptions, rosterData]);
+  }, [activeWorkspace, currentGroup, rowsState, sessionDate, dateValidationError, loadOptions, rosterData]);
 
   // Registro del hook de cambios pendientes
   useEffect(() => {
@@ -374,56 +470,30 @@ export const RegistroAsistencia: React.FC = () => {
     handleDiscardLocalChanges,
   ]);
 
-  // Interceptores seguros para cambios de fecha y sesión locales
+  // Interceptores seguros para cambios de fecha locales
   const handleDateChange = (newDate: string) => {
-    if (newDate === sessionDate) return;
+    if (!newDate || newDate === sessionDate) return;
+
+    // Auto-corregir fechas al día escolar válido más cercano de la UD
+    let targetDate = newDate;
+    if (unitCalendar.dates.length > 0 && !unitCalendar.dates.includes(targetDate)) {
+      targetDate = getClosestSchoolDate(targetDate, unitCalendar.dates);
+    }
+
+    if (targetDate === sessionDate) return;
+
     if (hasUnsavedChanges) {
       requestSafeTransition(() => {
-        setSessionDate(newDate);
+        setSessionDate(targetDate);
       });
     } else {
-      setSessionDate(newDate);
+      setSessionDate(targetDate);
     }
   };
-
-  const handleSessionChange = (newSession: string) => {
-    if (newSession === sessionNumber) return;
-    if (hasUnsavedChanges) {
-      requestSafeTransition(() => {
-        setSessionNumber(newSession);
-      });
-    } else {
-      setSessionNumber(newSession);
-    }
-  };
-
-  // Verificaciones de calendario informativo (no inventa prohibiciones absolutas)
-  const calendarAlert = useMemo(() => {
-    if (!sessionDate) return null;
-    const holidayReason = isHoliday(sessionDate);
-    if (holidayReason) {
-      return {
-        type: 'holiday',
-        title: 'Aviso de calendario institucional',
-        message: `La fecha ${sessionDate} está registrada como "${holidayReason}". Si se trata de una sesión ordinaria o recuperación autorizada, puede registrar la asistencia; la validación final corresponde a las reglas académicas del servidor.`,
-      };
-    }
-
-    if (isWeekend(sessionDate)) {
-      const dow = getDayOfWeekIso(sessionDate);
-      return {
-        type: 'weekend',
-        title: 'Aviso: Fecha en fin de semana',
-        message: `La fecha seleccionada corresponde a un ${dow === 0 ? 'domingo' : 'sábado'}. Si se trata de una sesión programada de fin de semana o recuperación autorizada, puede registrar la asistencia; la confirmación definitiva reside en el servidor.`,
-      };
-    }
-
-    return null;
-  }, [sessionDate]);
 
   // Manejador de cambio de marca para un estudiante
   const handleMarkChange = (enrollmentId: string, mark: AttendanceValue) => {
-    if (currentGroup?.closed) return;
+    if (currentGroup?.closed || dateValidationError) return;
 
     setRowsState((prev) => {
       const current = prev[enrollmentId];
@@ -446,7 +516,7 @@ export const RegistroAsistencia: React.FC = () => {
 
   // Manejador de cambio de observación
   const handleObservationChange = (enrollmentId: string, text: string) => {
-    if (currentGroup?.closed) return;
+    if (currentGroup?.closed || dateValidationError) return;
 
     setRowsState((prev) => {
       const current = prev[enrollmentId];
@@ -467,7 +537,7 @@ export const RegistroAsistencia: React.FC = () => {
 
   // Acción rápida: Marcar presentes a todos los habilitados
   const handleMarkAllPresent = () => {
-    if (currentGroup?.closed) return;
+    if (currentGroup?.closed || dateValidationError) return;
     if (!window.confirm('¿Desea marcar PRESENTE (P) a todos los estudiantes habilitados para esta sesión?')) {
       return;
     }
@@ -498,6 +568,13 @@ export const RegistroAsistencia: React.FC = () => {
 
   // Guardar manual al pulsar el botón principal
   const handleSaveClick = async () => {
+    if (dateValidationError) {
+      setSaveFeedback({
+        type: 'error',
+        message: dateValidationError,
+      });
+      return;
+    }
     await executeSaveInternal();
   };
 
@@ -628,7 +705,7 @@ export const RegistroAsistencia: React.FC = () => {
         groupId: activeWorkspace.groupId,
         unit: activeWorkspace.unit,
         date: sessionDate,
-        session: sessionNumber.trim() || '1',
+        session: '1',
         rows: rowsToReapply,
       });
 
@@ -714,7 +791,9 @@ export const RegistroAsistencia: React.FC = () => {
   // Estado: Modo MODULE activo
   if (activeWorkspace.mode === 'MODULE') {
     return (
-      <div className="max-w-4xl mx-auto py-10 px-4 animate-in fade-in duration-300">
+      <div className="max-w-5xl mx-auto py-8 px-4 space-y-6 animate-in fade-in duration-300">
+        <ActiveUnitContextBanner variant="full" />
+
         <div className="bg-white dark:bg-[#182220] rounded-3xl p-8 border border-amber-200 dark:border-amber-800/60 shadow-sm text-center">
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 flex items-center justify-center">
             <AttendanceIcon className="w-7 h-7" />
@@ -723,7 +802,7 @@ export const RegistroAsistencia: React.FC = () => {
             Seleccione una unidad didáctica para registrar asistencia
           </h2>
           <p className="text-sm text-slate-600 dark:text-slate-400 max-w-lg mx-auto mb-6 leading-relaxed">
-            Actualmente se encuentra en la vista general del módulo. El registro de sesiones y asistencia requiere seleccionar una unidad didáctica autorizada.
+            Actualmente se encuentra en la vista general del módulo. Haga clic en cualquiera de las píldoras de unidad didáctica arriba (UD 1, UD 2, etc.) o use el selector para tomar asistencia.
           </p>
           <div className="flex justify-center gap-3">
             <button
@@ -786,20 +865,6 @@ export const RegistroAsistencia: React.FC = () => {
 
         {/* Contexto Activo y Botón de Cambio */}
         <div className="flex items-center gap-3 self-start md:self-auto">
-          <div className="bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] rounded-2xl px-4 py-2.5 shadow-xs flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
-              <InstitutionalBrandIcon className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <span className="text-[11px] font-bold text-slate-800 dark:text-[#F0FDF8] block">
-                {currentGroup?.rawName || currentGroup?.name || 'Aula asignada'}
-              </span>
-              <span className="text-xs font-semibold text-[#13594A] dark:text-[#5EEAD4] block">
-                Unidad: {activeWorkspace.unit} {activeWorkspace.unitName ? `· ${activeWorkspace.unitName}` : ''}
-              </span>
-            </div>
-          </div>
-
           <button
             type="button"
             onClick={handleOpenUnitModal}
@@ -810,6 +875,9 @@ export const RegistroAsistencia: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Banner Transversal de Contexto de Unidad Activa (con cambio de UD 1..UD 7 en 1 clic) */}
+      <ActiveUnitContextBanner variant="full" />
 
       {/* 2. Banner de Grupo Cerrado */}
       {currentGroup?.closed && (
@@ -834,19 +902,19 @@ export const RegistroAsistencia: React.FC = () => {
         </div>
       )}
 
-      {/* 3. Alertas de Calendario Académico Informativo */}
-      {calendarAlert && (
+      {/* 3. Alerta Bloqueante de Fecha No Lectiva / Fuera de Rango */}
+      {dateValidationError && (
         <div
           role="alert"
-          className="p-4 rounded-2xl bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/60 text-sky-950 dark:text-sky-200 flex items-start gap-3 shadow-xs"
+          className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-300 dark:border-rose-800/60 text-rose-900 dark:text-rose-200 flex items-start gap-3 shadow-xs"
         >
-          <span className="text-xl shrink-0 mt-0.5" aria-hidden="true">📅</span>
+          <span className="text-xl shrink-0 mt-0.5" aria-hidden="true">🚫</span>
           <div>
             <strong className="block text-sm font-bold">
-              {calendarAlert.title}
+              Registro no habilitado para esta fecha
             </strong>
-            <p className="text-xs text-sky-800 dark:text-sky-300 mt-0.5 leading-relaxed">
-              {calendarAlert.message}
+            <p className="text-xs text-rose-800 dark:text-rose-300 mt-0.5 leading-relaxed">
+              {dateValidationError}
             </p>
           </div>
         </div>
@@ -885,6 +953,123 @@ export const RegistroAsistencia: React.FC = () => {
         </div>
       )}
 
+      {/* 4.5. Banner Oficial del Calendario de la Unidad Didáctica y Selector Rápido de Días */}
+      <div className="bg-white dark:bg-[#182220] rounded-2xl p-5 border border-slate-200 dark:border-[#263834] shadow-xs space-y-4">
+        {/* Cabecera del Banner: Información de la Unidad y Píldoras de Meses */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-slate-100 dark:border-[#263834]">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-[#5EEAD4] bg-emerald-100 dark:bg-[#132B25] px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                Calendario Oficial · {activeWorkspace.unit}
+              </span>
+              <span className="text-xs font-bold text-slate-800 dark:text-[#F0FDF8]">
+                {activeUnitOption?.name || activeWorkspace.unitName || 'Unidad Didáctica Activa'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              📅 Vigencia programada: <strong className="text-slate-700 dark:text-slate-300">{unitStartDate} al {unitEndDate}</strong> · {unitCalendar.totalDays} días lectivos oficiales (Lu-Vi)
+            </p>
+          </div>
+
+          {/* Píldoras de Meses Automáticos */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">
+              Meses:
+            </span>
+            <button
+              type="button"
+              onClick={() => setActiveMonthFilter(null)}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeMonthFilter === null
+                  ? 'bg-[#13594A] text-white shadow-xs'
+                  : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202E2B]'
+              }`}
+            >
+              Todos ({unitCalendar.totalDays}d)
+            </button>
+            {unitCalendar.monthSpans.map((m) => (
+              <button
+                key={m.monthKey}
+                type="button"
+                onClick={() => setActiveMonthFilter(activeMonthFilter === m.monthKey ? null : m.monthKey)}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeMonthFilter === m.monthKey
+                    ? 'bg-[#13594A] text-white shadow-xs'
+                    : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202E2B]'
+                }`}
+              >
+                <span>🗓 {m.shortLabel}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                  activeMonthFilter === m.monthKey ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                }`}>
+                  {m.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Carrusel / Selector Horizontal de Días Lectivos */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400 px-1">
+            <span>Días de sesión programados (Seleccione para registrar):</span>
+            <span className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-[#5EEAD4]">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" /> Con asistencia registrada
+              </span>
+              <span className="inline-flex items-center gap-1 text-slate-400">
+                <span className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600" /> Sin registrar
+              </span>
+            </span>
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto pb-2 pt-1 scrollbar-thin">
+            {unitCalendar.dates
+              .filter((d) => !activeMonthFilter || d.startsWith(activeMonthFilter))
+              .map((d) => {
+                const isSelected = d === sessionDate;
+                const hasSaved = datesWithValidAttendance.has(d);
+                const dayNum = d.slice(8);
+                const dow = getDayOfWeekIso(d);
+                const dowName = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'][dow] || '';
+
+                return (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => handleDateChange(d)}
+                    className={`shrink-0 flex flex-col items-center justify-center min-w-[52px] py-2 px-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#13594A] border-[#13594A] text-white shadow-sm ring-2 ring-[#13594A]/30 scale-105'
+                        : hasSaved
+                        ? 'bg-emerald-50/70 dark:bg-[#132B25]/70 border-emerald-200 dark:border-emerald-800/60 text-slate-800 dark:text-[#F0FDF8] hover:border-emerald-400'
+                        : 'bg-slate-50 dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182220]'
+                    }`}
+                  >
+                    <span className={`text-[10px] font-semibold ${isSelected ? 'text-white/80' : 'text-slate-400 dark:text-slate-500'}`}>
+                      {dowName}
+                    </span>
+                    <span className="text-sm font-extrabold my-0.5">
+                      {dayNum}
+                    </span>
+                    <span className="text-[10px] leading-none">
+                      {hasSaved ? (
+                        <span className={isSelected ? 'text-white font-bold' : 'text-emerald-700 dark:text-[#5EEAD4] font-bold'}>
+                          ✓
+                        </span>
+                      ) : (
+                        <span className={isSelected ? 'text-white/40' : 'text-slate-300 dark:text-slate-600'}>
+                          ○
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+      </div>
+
       {/* 5. Barra de Herramientas de Sesión */}
       <div className="bg-white dark:bg-[#182220] rounded-2xl p-5 border border-slate-200 dark:border-[#263834] shadow-xs flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex flex-wrap items-center gap-4">
@@ -899,27 +1084,10 @@ export const RegistroAsistencia: React.FC = () => {
             <input
               id="attendance-date"
               type="date"
+              min={unitStartDate}
+              max={unitEndDate}
               value={sessionDate}
               onChange={(e) => handleDateChange(e.target.value)}
-              className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-800 dark:text-[#F0FDF8] focus:bg-white dark:focus:bg-[#182220] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
-            />
-          </div>
-
-          {/* Selector de Sesión */}
-          <div className="flex flex-col gap-1.5 w-28">
-            <label
-              htmlFor="attendance-session"
-              className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
-            >
-              N° Sesión
-            </label>
-            <input
-              id="attendance-session"
-              type="number"
-              min="1"
-              max="120"
-              value={sessionNumber}
-              onChange={(e) => handleSessionChange(e.target.value)}
               className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-800 dark:text-[#F0FDF8] focus:bg-white dark:focus:bg-[#182220] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
             />
           </div>
@@ -937,7 +1105,7 @@ export const RegistroAsistencia: React.FC = () => {
           <button
             type="button"
             onClick={handleMarkAllPresent}
-            disabled={Boolean(currentGroup?.closed) || rosterData.length === 0}
+            disabled={Boolean(currentGroup?.closed) || Boolean(dateValidationError) || rosterData.length === 0}
             className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] hover:bg-slate-50 dark:hover:bg-[#182220] text-slate-700 dark:text-slate-200 text-xs font-bold transition-all disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
           >
             Marcar todos presentes (P)
@@ -946,7 +1114,7 @@ export const RegistroAsistencia: React.FC = () => {
           <button
             type="button"
             onClick={handleSaveClick}
-            disabled={Boolean(currentGroup?.closed) || isSaving || !hasUnsavedChanges}
+            disabled={Boolean(currentGroup?.closed) || Boolean(dateValidationError) || isSaving || !hasUnsavedChanges}
             className="px-5 py-2.5 rounded-xl bg-[#13594A] hover:bg-[#0D382F] dark:bg-[#13594A] dark:hover:bg-[#1a7763] text-white text-xs font-extrabold shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
           >
             {isSaving ? (
@@ -1042,7 +1210,7 @@ export const RegistroAsistencia: React.FC = () => {
                     Boolean(item.enrollment.startDate) &&
                     sessionDate < (item.enrollment.startDate || '');
 
-                  const isDisabled = Boolean(currentGroup?.closed) || isPriorToEnrollment;
+                  const isDisabled = Boolean(currentGroup?.closed) || Boolean(dateValidationError) || isPriorToEnrollment;
 
                   return (
                     <tr

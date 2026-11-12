@@ -32,6 +32,7 @@ import {
   ApiError,
 } from '../api/types';
 import { getVisibleTemplates } from '../utils/documentTemplates';
+import { ActiveUnitContextBanner } from '../components/academic/ActiveUnitContextBanner';
 import { PdfViewer } from '../components/ui/PdfViewer';
 import {
   DeliveriesIcon,
@@ -49,8 +50,32 @@ import {
 
 export const EntregasRevision: React.FC = () => {
   const { user } = useAuth();
-  const { activeWorkspace, dashboardData } = useWorkspace();
+  const { activeWorkspace, dashboardData, options } = useWorkspace();
   const { registerPendingChanges, unregisterPendingChanges, requestSafeTransition } = usePendingChanges();
+
+  const getReadableGroupLabel = useCallback(
+    (groupId?: string): string => {
+      if (!groupId) return 'Sin aula seleccionada';
+      const optGroup = options?.groups.find((g) => g.id === groupId);
+      const dashGroup = dashboardData?.groups?.find((g) => g.id === groupId);
+      const g = optGroup || dashGroup;
+      if (!g) return groupId;
+
+      const prog =
+        options?.programs.find((p) => p.id === g.programId) ||
+        dashboardData?.programs?.find((p) => p.id === g.programId);
+      const mod =
+        options?.modules.find((m) => m.id === g.moduleId) ||
+        dashboardData?.modules?.find((m) => m.id === g.moduleId);
+
+      const progName = prog?.nombre || (prog as { name?: string })?.name || '';
+      const modName = mod?.nombre || (mod as { name?: string })?.name || '';
+      const groupName = g.name || `Secc. ${g.section || 'A1'} (${g.turno || 'Mañana'})`;
+
+      return [progName, modName, groupName].filter(Boolean).join(' · ') || groupName;
+    },
+    [options, dashboardData]
+  );
 
   // Rol del usuario actual
   const role = user?.role || 'DOCENTE';
@@ -479,6 +504,9 @@ export const EntregasRevision: React.FC = () => {
         </div>
       </div>
 
+      {/* Contexto Académico de Unidad Activa y Conmutador Rápido */}
+      <ActiveUnitContextBanner variant="compact" />
+
       {/* Notificaciones */}
       {errorMsg && (
         <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-200 text-sm flex items-start justify-between gap-3 animate-fadeIn">
@@ -625,7 +653,7 @@ export const EntregasRevision: React.FC = () => {
                       </h2>
                       <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                         Docente: <strong className="text-slate-700 dark:text-slate-200">{user?.name}</strong> | Aula:{' '}
-                        <strong className="text-slate-700 dark:text-slate-200">{activeWorkspace?.groupId || 'Sin aula'}</strong>
+                        <strong className="text-slate-700 dark:text-slate-200">{getReadableGroupLabel(activeWorkspace?.groupId)}</strong>
                         {activeWorkspace?.unit && ` | Unidad: ${activeWorkspace.unit}`}
                       </div>
                     </div>
@@ -801,6 +829,7 @@ export const EntregasRevision: React.FC = () => {
 
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
                           <span>Fecha: {new Date(s.createdAt).toLocaleString('es-PE')}</span>
+                          <span>Aula: <strong className="text-slate-700 dark:text-slate-300">{getReadableGroupLabel(s.groupId)}</strong></span>
                           {s.unit && <span>Unidad: <strong className="text-slate-700 dark:text-slate-300">{s.unit}</strong></span>}
                           <span>ID: <code className="font-mono text-[11px]">{s.id.slice(0, 8)}</code></span>
                           <span>Hash PDF: <code className="font-mono text-[11px]">{s.pdfHash.slice(0, 10)}...</code></span>
@@ -973,7 +1002,7 @@ export const EntregasRevision: React.FC = () => {
                           {s.authorName}
                         </td>
                         <td className="py-3.5 px-4">
-                          <span className="font-mono text-[11px] text-slate-600 dark:text-slate-300">{s.groupId.slice(0, 10)}</span>
+                          <span className="font-semibold text-xs text-slate-700 dark:text-slate-200">{getReadableGroupLabel(s.groupId)}</span>
                           {s.unit && (
                             <span className="ml-1.5 px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 font-bold text-[10px]">
                               {s.unit}
@@ -1037,7 +1066,7 @@ export const EntregasRevision: React.FC = () => {
 
               <div className="p-3 bg-slate-50 dark:bg-[#131C1A] rounded-2xl border border-slate-200 dark:border-[#263834] space-y-1.5 text-xs text-slate-700 dark:text-slate-200">
                 <div><strong>Plantilla:</strong> {selectedTemplateId} · {catalogTemplates.find(t => t.id === selectedTemplateId)?.title}</div>
-                <div><strong>Aula:</strong> {activeWorkspace?.groupId}</div>
+                <div><strong>Aula:</strong> {getReadableGroupLabel(activeWorkspace?.groupId)}</div>
                 {activeWorkspace?.unit && <div><strong>Unidad Didáctica:</strong> {activeWorkspace.unit}</div>}
                 <div><strong>Docente Remitente:</strong> {user?.name}</div>
                 <div><strong>Huella SHA-256:</strong> <code className="font-mono text-[#13594A] dark:text-[#5EEAD4]">{preflightData.fingerprint.slice(0, 20)}...</code></div>
@@ -1086,7 +1115,7 @@ export const EntregasRevision: React.FC = () => {
                   Dictamen para {selectedSubmission.templateId}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Docente: {selectedSubmission.authorName} | Presentado:{' '}
+                  Docente: {selectedSubmission.authorName} | Aula: {getReadableGroupLabel(selectedSubmission.groupId)} | Presentado:{' '}
                   {new Date(selectedSubmission.createdAt).toLocaleString('es-PE')}
                 </p>
               </div>

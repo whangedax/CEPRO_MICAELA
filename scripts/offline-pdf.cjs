@@ -44,7 +44,7 @@ async function renderPDFInternal(root, doc, actor,options) {
     const bytes = fs.readFileSync(file); return type === 'json' ? JSON.parse(bytes.toString('utf8')) : bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
   };
   const n = Number(doc.templateId.slice(5)), unitOrder = n >= 5 && n <= 10 ? doc.units?.find(u=>u.code===doc.unitCode)?.order||1 : n >= 11 && n <= 17 ? n - 10 : 1;
-  const sessions = [...new Map(doc.attendance.map(r => [`${r.date}|${r.session}`, { sessionId: `${r.date}|${r.session}`, fecha: r.date }])).values()].sort((a, b) => a.sessionId.localeCompare(b.sessionId));
+  const sessions = (n <= 10 && doc.academicDates?.length) ? doc.academicDates : [...new Map(doc.attendance.map(r => [`${r.date}|${r.session}`, { sessionId: `${r.date}|${r.session}`, fecha: r.date }])).values()].sort((a, b) => a.sessionId.localeCompare(b.sessionId));
   const rows = doc.students.map(({ student: s, enrollment: e }) => {
     const scores = doc.grades.filter(r => r.enrollmentId === e.id);
     const evaluations = Array.from({ length: 5 }, (_, i) => Object.fromEntries(['score','ia1','ia2','ia3','recovery'].map(key => [key, scores.find(r => r.indicator === `IL${i + 1}${key === 'score' ? '' : '.' + key.toUpperCase()}`)?.value])));
@@ -64,7 +64,7 @@ async function renderPDFInternal(root, doc, actor,options) {
       'efsrt.finalGrade':doc.students.find(row=>row.enrollment.id===e.id)?.parameters.efsrtFinalGrade,
       criteria:Array.from({length:9},(_,i)=>doc.students.find(row=>row.enrollment.id===e.id)?.parameters[`criterion${i+1}`]),
       presentCount,absentCount,absencePercent,estadoMatricula:e.active?'MATRICULADO':'RETIRADO',
-      marksBySession: sessions.map(session => ({ sessionId: session.sessionId, estadoRegistro: doc.attendance.find(r => r.enrollmentId === e.id && `${r.date}|${r.session}` === session.sessionId)?.value || 'SIN_REGISTRO' })) };
+      marksBySession: sessions.map(session => ({ sessionId: session.sessionId, fecha: session.fecha || session.date, date: session.fecha || session.date, estadoRegistro: doc.attendance.find(r => r.enrollmentId === e.id && r.date === (session.fecha || session.date) && r.value != null)?.value || 'SIN_REGISTRO' })) };
   }).sort((a,b) => a.studentName.localeCompare(b.studentName, 'es'));
   const unit=doc.unitData||{};
   const context = { institution: {...doc.institution,resolucionPrograma:doc.program?.resolucionPrograma}, program: doc.program || {}, module: {...doc.module,horas:doc.module?.hours,creditos:doc.module?.credits,resolucion:doc.module?.resolucionAutorizacion}, group: { ...doc.group, grupoCode: doc.group.id, docente: doc.teacher||'' },

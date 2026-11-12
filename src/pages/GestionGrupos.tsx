@@ -26,6 +26,7 @@ import {
   ApiError,
 } from '../api/types';
 import StatusBadge from '../components/ui/StatusBadge/StatusBadge';
+import { ActiveUnitContextBanner } from '../components/academic/ActiveUnitContextBanner';
 import {
   GroupsIcon,
   SearchIcon,
@@ -467,6 +468,9 @@ export const GestionGrupos: React.FC<GestionGruposProps> = ({ onNavigate }) => {
           </button>
         </div>
       </header>
+
+      {/* Contexto Académico de Unidad Activa y Conmutador Rápido */}
+      <ActiveUnitContextBanner variant="compact" onNavigate={onNavigate} />
 
       {/* 2. Mensajes de Notificación */}
       {errorMsg && (

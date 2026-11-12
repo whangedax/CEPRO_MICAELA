@@ -1437,7 +1437,7 @@ export class PdfTemplateEngine {
 
       for (let j = 0; j < colsToDraw; j++) {
         const session = activeSessions[j];
-        const markObj = session ? (marksList.find(m => m.sessionId === session.sessionId || (m.date === session.fecha && String(m.session || '1') === String(session.session || '1'))) || marksList[j] || null) : (marksList[j] || null);
+        const markObj = session ? (marksList.find(m => m.sessionId === session.sessionId || (m.date === session.fecha && String(m.session || '1') === String(session.session || '1'))) || null) : (marksList[j] || null);
         const state = String(markObj?.estadoRegistro || markObj?.state || markObj?.value || markObj || '').toUpperCase();
 
         let markChar = '—';

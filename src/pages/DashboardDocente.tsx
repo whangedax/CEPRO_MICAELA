@@ -18,6 +18,7 @@ import StatusBadge from '../components/ui/StatusBadge/StatusBadge';
 import ActivityCard from '../components/ui/ActivityCard/ActivityCard';
 import ClassroomCard from '../components/ui/ClassroomCard/ClassroomCard';
 import SelectUnitModal from '../components/academic/SelectUnitModal';
+import ActiveUnitContextBanner from '../components/academic/ActiveUnitContextBanner';
 import { CalendarIcon } from '../components/ui/Icons';
 import { WorkspaceGroupOption } from '../api/types';
 import { isInstitutional } from '../utils/appProfile';
@@ -74,13 +75,13 @@ export const DashboardDocente: React.FC<DashboardDocenteProps> = ({ onNavigate }
     return options?.modules.find((m) => m.id === moduleId)?.nombre || moduleId;
   };
 
-  // Determinar periodo activo oficial
-  const activePeriod =
-    activeWorkspace?.year ||
-    (options?.groups && options.groups.length > 0 ? options.groups[0].periodId : '2026-I');
-
   // Aula activa en sesión (si existe)
   const activeGroup = options?.groups.find((g) => g.id === activeWorkspace?.groupId);
+
+  // Determinar periodo activo oficial
+  const activePeriod =
+    activeGroup?.periodId ||
+    (options?.groups && options.groups.length > 0 ? options.groups[0].periodId : '2026-I');
 
   return (
     <div className="flex flex-col w-full max-w-7xl mx-auto">
@@ -121,94 +122,12 @@ export const DashboardDocente: React.FC<DashboardDocenteProps> = ({ onNavigate }
       </header>
 
       {/* Banner de Contexto Académico Activo en Sesión */}
-      {activeWorkspace && activeGroup ? (
-        <aside
-          aria-label="Espacio académico activo"
-          className="mb-8 p-4 rounded-2xl bg-[#e6f4f1] dark:bg-[#182220] border border-[#13594A]/25 dark:border-[#263834] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-slate-800 dark:text-slate-200 shadow-[0_2px_12px_rgba(19,89,74,0.06)] animate-in fade-in duration-300"
-        >
-          <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-[#13594A] dark:bg-[#132B25] dark:border dark:border-[#205C4E] text-white dark:text-[#5EEAD4] flex items-center justify-center font-bold text-[13px] shadow-sm shrink-0">
-              {activeWorkspace.mode === 'UNIT' ? (activeWorkspace.unit || 'U.D.') : 'MOD'}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-[#004034] dark:text-[#5EEAD4] uppercase tracking-wider">
-                  Espacio de Trabajo Activo en Sesión
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-[#5EEAD4] animate-pulse" />
-              </div>
-              <h2 className="text-[15px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-snug">
-                {getProgramName(activeGroup.programId)} · {getModuleName(activeGroup.moduleId)}
-              </h2>
-              <p className="text-[12px] text-slate-700 dark:text-slate-300 font-medium">
-                Aula: <span className="font-bold text-slate-900 dark:text-slate-100">{activeGroup.name}</span>
-                {activeWorkspace.mode === 'UNIT' && activeWorkspace.unit ? (
-                  <> · Unidad: <span className="font-bold text-[#13594A] dark:text-[#5EEAD4]">{activeWorkspace.unit}</span></>
-                ) : (
-                  <> · Módulo Completo</>
-                )}
-                {' · '}Turno: <span className="font-semibold text-slate-800 dark:text-slate-200">{activeGroup.turno || 'Mañana'}</span>
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5">
-            {(activeGroup.units || []).map((u) => {
-              const isCurrentUnit =
-                (activeWorkspace.mode === 'UNIT' && activeWorkspace.unit === u.code) ||
-                (activeWorkspace.mode === 'PRACTICE' && u.code === 'EFSRT');
-              return (
-                <button
-                  key={u.code}
-                  type="button"
-                  onClick={() => selectGroupAndUnit(activeGroup, u.code === 'EFSRT' ? 'PRACTICE' : 'UNIT', u.code)}
-                  title={u.name ? `${u.code}: ${u.name}` : `Activar ${u.code}`}
-                  className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
-                    isCurrentUnit
-                      ? 'bg-[#13594A] text-white border-[#13594A] shadow-xs'
-                      : 'bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#263834] hover:border-[#13594A] hover:text-[#13594A] dark:hover:text-[#5EEAD4]'
-                  }`}
-                >
-                  {u.code}
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() => openSelector(1)}
-              className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-[#131C1A] border border-[#13594A]/30 dark:border-[#205C4E] text-[#13594A] dark:text-[#5EEAD4] text-[12px] font-bold hover:bg-[#13594A] hover:text-white dark:hover:bg-[#1A6B5A] transition-all shadow-xs shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4]"
-            >
-              🔄 Cambiar aula
-            </button>
-          </div>
-        </aside>
-      ) : (
-        <aside
-          aria-label="Selección de espacio docente"
-          className="mb-8 p-5 rounded-2xl bg-[#E6F4F1] dark:bg-[#132B25] border border-[#13594A]/25 dark:border-[#205C4E] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-[#13594A] text-white flex items-center justify-center font-bold text-[14px] shadow-sm shrink-0">
-              🎯
-            </div>
-            <div>
-              <h2 className="text-[15px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-snug">
-                Seleccione su Aula y Unidad Didáctica de Trabajo
-              </h2>
-              <p className="text-[12px] text-slate-700 dark:text-slate-300 font-medium">
-                Abra el asistente por pasos para seleccionar la carrera, módulo, aula y unidad que va a calificar o tomar asistencia.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => openSelector(1)}
-            className="self-start sm:self-center px-4 py-2.5 rounded-xl bg-[#13594A] hover:bg-[#004034] text-white text-[12px] font-bold shadow-xs shrink-0 cursor-pointer transition-colors"
-          >
-            Seleccionar Unidad →
-          </button>
-        </aside>
-      )}
+      <ActiveUnitContextBanner
+        variant="full"
+        showQuickModuleActions
+        onNavigate={onNavigate}
+        className="mb-8"
+      />
 
       {/* 2. Sección de Actividades Pedagógicas (4 tarjetas oficiales de Stitch) */}
       <section className="mb-12" aria-labelledby="section-pedagogical-title">

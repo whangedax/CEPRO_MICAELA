@@ -16,6 +16,7 @@ import { useWorkspace } from '../context/WorkspaceContext';
 import { apiClient } from '../api/client';
 import { DashboardResponse, SubmissionStatus } from '../api/types';
 import StatusBadge from '../components/ui/StatusBadge/StatusBadge';
+import ActiveUnitContextBanner from '../components/academic/ActiveUnitContextBanner';
 import { isInstitutional } from '../utils/appProfile';
 import {
   AcademicConfigIcon,
@@ -106,8 +107,13 @@ export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavi
     loadDashboardData();
   }, [loadDashboardData]);
 
-  // Cálculos estadísticos oficiales del backend SQLite sintético
-  const metrics = useMemo(() => {
+  // Modo de visualización: false = Filtrar por carrera seleccionada (si existe); true = Mostrar consolidado institucional
+  const [showAllInstitutional, setShowAllInstitutional] = useState<boolean>(false);
+
+  const hasCareerContext = Boolean(!activeWorkspace?.overview && (activeWorkspace?.programId || activeWorkspace?.groupId));
+
+  // Cálculos estadísticos oficiales con soporte de filtrado contextual por carrera
+  const careerFilteredMetrics = useMemo(() => {
     if (!data) {
       return {
         activeStudents: 0,
@@ -117,30 +123,77 @@ export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavi
         programsCount: 0,
         modulesCount: 0,
         totalSubmissions: 0,
+        isFiltered: false,
+        careerStudentsCount: 0,
+        totalStudentsCount: 0,
       };
     }
 
-    const activeStudents = (data.students || []).filter(s => s.active && !s.archived).length;
-    const activeEnrollments = (data.enrollments || []).filter(e => e.active).length;
-    const groupsCount = (data.groups || []).length;
-    const submissions = data.submissions || [];
-    const pendingSubmissions = submissions.filter(s => s.status === 'ENTREGADO').length;
-    const programsCount = (data.programs || []).length;
-    const modulesCount = (data.modules || []).length;
+    const allStudents = (data.students || []).filter(s => s.active && !s.archived);
+    const totalStudentsCount = allStudents.length;
+
+    if (!hasCareerContext || showAllInstitutional) {
+      const activeEnrollments = (data.enrollments || []).filter(e => e.active).length;
+      const groupsCount = (data.groups || []).length;
+      const submissions = data.submissions || [];
+      const pendingSubmissions = submissions.filter(s => s.status === 'ENTREGADO').length;
+      return {
+        activeStudents: totalStudentsCount,
+        activeEnrollments,
+        groupsCount,
+        pendingSubmissions,
+        programsCount: (data.programs || []).length,
+        modulesCount: (data.modules || []).length,
+        totalSubmissions: submissions.length,
+        isFiltered: false,
+        careerStudentsCount: totalStudentsCount,
+        totalStudentsCount,
+      };
+    }
+
+    // Filtrar por carrera activa
+    const targetProgramId = activeWorkspace?.programId;
+    const targetGroupId = activeWorkspace?.groupId;
+
+    const relevantGroups = (data.groups || []).filter(g => {
+      if (targetGroupId) return g.id === targetGroupId;
+      return targetProgramId ? g.programId === targetProgramId : true;
+    });
+
+    const relevantGroupIds = new Set(relevantGroups.map(g => g.id));
+    const careerEnrollments = (data.enrollments || []).filter(e => e.active && relevantGroupIds.has(e.groupId));
+    const careerStudentIds = new Set(careerEnrollments.map(e => e.studentId));
+    const careerStudents = allStudents.filter(s => careerStudentIds.has(s.id));
+    const careerSubmissions = (data.submissions || []).filter(s => relevantGroupIds.has(s.groupId));
+    const pendingSubmissions = careerSubmissions.filter(s => s.status === 'ENTREGADO').length;
 
     return {
-      activeStudents,
-      activeEnrollments,
-      groupsCount,
+      activeStudents: careerStudents.length,
+      activeEnrollments: careerEnrollments.length,
+      groupsCount: relevantGroups.length,
       pendingSubmissions,
-      programsCount,
-      modulesCount,
-      totalSubmissions: submissions.length,
+      programsCount: 1,
+      modulesCount: (data.modules || []).filter(m => !targetProgramId || m.programId === targetProgramId).length,
+      totalSubmissions: careerSubmissions.length,
+      isFiltered: true,
+      careerStudentsCount: careerStudents.length,
+      totalStudentsCount,
     };
-  }, [data]);
+  }, [data, hasCareerContext, showAllInstitutional, activeWorkspace?.programId, activeWorkspace?.groupId]);
+
+  const metrics = careerFilteredMetrics;
 
   // Tarjetas operativas autorizadas para Secretaría (scripts/role-policy.cjs - Excluye rigurosamente 'respaldo')
   const secretariatActions = useMemo(() => [
+    {
+      route: 'ficha-registro-2026' as NavRoute,
+      title: 'Ficha de Registro 2026 (WhatsApp / QR)',
+      description: 'Recepción de fichas de pre-inscripción por WhatsApp, código QR, matrícula en aula y generación de Ficha PDF 2026.',
+      icon: <DocumentIcon className="w-5 h-5 text-[#13594A] dark:text-[#5EEAD4]" />,
+      badge: '📲 Admisión 2026',
+      highlight: true,
+      highlightText: 'Nuevo',
+    },
     {
       route: 'matriculas' as NavRoute,
       title: 'Matrículas de participantes',
@@ -245,8 +298,17 @@ export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavi
   };
 
   const recentSubmissions = useMemo(() => {
-    return (data?.submissions || []).slice(0, 5);
-  }, [data?.submissions]);
+    let list = data?.submissions || [];
+    if (careerFilteredMetrics.isFiltered && activeWorkspace?.programId) {
+      const relevantGroupIds = new Set(
+        (data?.groups || [])
+          .filter((g) => (activeWorkspace.groupId ? g.id === activeWorkspace.groupId : g.programId === activeWorkspace.programId))
+          .map((g) => g.id)
+      );
+      list = list.filter((s) => relevantGroupIds.has(s.groupId));
+    }
+    return list.slice(0, 5);
+  }, [data?.submissions, data?.groups, careerFilteredMetrics.isFiltered, activeWorkspace?.programId, activeWorkspace?.groupId]);
 
   return (
     <div className="flex flex-col w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
@@ -317,6 +379,37 @@ export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavi
         )}
       </div>
 
+      {/* Banner Destacado: Ficha de Registro 2026 (WhatsApp / QR) */}
+      <div className="p-5 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-[#13594A]/10 to-teal-500/10 dark:from-[#132B25] dark:via-[#182220] dark:to-[#132B25] border-2 border-[#13594A]/30 dark:border-[#5EEAD4]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-[#13594A] text-white flex items-center justify-center text-2xl shrink-0 shadow-xs">
+            📲
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <strong className="text-base font-black text-slate-900 dark:text-white">
+                Ficha de Registro 2026 (WhatsApp / QR)
+              </strong>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white">
+                Admisión 2026
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">
+              Recepción automática de fichas enviadas por postulantes vía WhatsApp Web, escaneo de QR y generación instantánea de la Ficha PDF 2026 a máquina.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('ficha-registro-2026')}
+          className="px-5 py-3 rounded-2xl bg-[#13594A] hover:bg-[#0D382F] text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer whitespace-nowrap self-stretch sm:self-auto"
+        >
+          <span>Abrir Módulo de Fichas 2026</span>
+          <ArrowForwardIcon className="w-4 h-4 text-white" />
+        </button>
+      </div>
+
       {/* Alerta de error si falla la carga */}
       {error && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-sm flex items-center justify-between gap-3">
@@ -362,91 +455,23 @@ export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavi
       )}
 
       {/* 4. Banner Contextual de Espacio de Trabajo Activo */}
-      <section
-        aria-label="Espacio de Trabajo Activo"
-        className="p-5 rounded-3xl bg-white dark:bg-[#182220] border border-slate-200/90 dark:border-[#263834] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col lg:flex-row lg:items-center justify-between gap-4"
-      >
-        <div className="flex items-start sm:items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#E6F4F1] dark:bg-[#132B25] border border-[#13594A]/20 dark:border-[#205C4E] flex items-center justify-center text-[#13594A] dark:text-[#5EEAD4] shrink-0">
-            <CheckCircleIcon className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#13594A] dark:text-[#5EEAD4] bg-[#13594A]/10 dark:bg-[#205C4E]/40 px-2 py-0.5 rounded-md">
-                {isGlobalOverview ? 'Ámbito Global' : 'Contexto de Unidad Activa'}
-              </span>
-              <span className="text-[12px] font-bold text-slate-700 dark:text-slate-300">
-                {activeProgramName || 'CETPRO Micaela Bastidas Puyucawa'}
-              </span>
-            </div>
-            <h2 className="text-[17px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-tight">
-              {activeGroup ? `${activeGroup.name} · ${activeUnitLabel}` : 'Vista Global Institucional (Todas las 7 carreras)'}
-            </h2>
-            <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
-              {activeGroup
-                ? `Docente: ${activeGroup.teacherName || 'Asignado'} · ${activeGroup.studentCount} participantes matriculados · Turno ${activeGroup.turno || 'Mañana'}`
-                : 'Supervisión central de 7 carreras y 16 aulas formativas. Seleccione una unidad para enfocar la gestión.'}
-            </p>
-            {activeGroup && activeGroup.units && activeGroup.units.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mr-1">
-                  Unidades del Aula:
-                </span>
-                {activeGroup.units.map((u) => {
-                  const isUnitSelected =
-                    (activeWorkspace?.mode === 'UNIT' && activeWorkspace?.unit === u.code) ||
-                    (activeWorkspace?.mode === 'PRACTICE' && u.code === 'EFSRT');
-                  return (
-                    <button
-                      key={u.code}
-                      type="button"
-                      onClick={() => selectGroupAndUnit(activeGroup, u.code === 'EFSRT' ? 'PRACTICE' : 'UNIT', u.code)}
-                      title={u.name ? `${u.code}: ${u.name}` : `Seleccionar ${u.code}`}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
-                        isUnitSelected
-                          ? 'bg-[#13594A] text-white border-[#13594A] shadow-xs'
-                          : 'bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#263834] hover:border-[#13594A] hover:text-[#13594A] dark:hover:text-[#5EEAD4]'
-                      }`}
-                    >
-                      {u.code}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {activeGroup && (
-            <>
-              <button
-                type="button"
-                onClick={() => onNavigate('matriculas')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#13594A] text-white text-[12px] font-bold hover:bg-[#004034] transition-colors shadow-xs cursor-pointer"
-              >
-                <EnrollmentIcon className="w-4 h-4" />
-                <span>Matrículas del Aula</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onNavigate('documentos')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#131C1A] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#263834] text-[12px] font-bold hover:border-[#13594A] transition-colors cursor-pointer"
-              >
-                <DocumentIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
-                <span>Formatos PDF</span>
-              </button>
-            </>
-          )}
-          <button
-            type="button"
-            onClick={() => openSelector(1)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-[#182220] hover:bg-[#F2FBF8] dark:hover:bg-[#193830] text-[#13594A] dark:text-[#5EEAD4] border border-[#13594A]/40 dark:border-[#205C4E] text-[12px] font-bold transition-all shadow-xs cursor-pointer"
-          >
-            <span>🔄 {activeGroup ? 'Cambiar Carrera / Unidad' : 'Seleccionar Carrera / Unidad'}</span>
-          </button>
-        </div>
-      </section>
+      <ActiveUnitContextBanner
+        variant="full"
+        showQuickModuleActions
+        onNavigate={onNavigate}
+        careerScopeToggle={
+          hasCareerContext
+            ? {
+                showAll: showAllInstitutional,
+                onToggle: setShowAllInstitutional,
+                careerCount: careerFilteredMetrics.careerStudentsCount,
+                totalCount: careerFilteredMetrics.totalStudentsCount,
+                unitLabel: 'matriculados',
+                onQuickEnroll: () => onNavigate('matriculas'),
+              }
+            : undefined
+        }
+      />
 
       <section aria-labelledby="kpi-heading-sec">
         <h2 id="kpi-heading-sec" className="sr-only">Indicadores Académicos de Secretaría</h2>
@@ -634,7 +659,14 @@ export const DashboardSecretaria: React.FC<DashboardSecretariaProps> = ({ onNavi
                     {renderStatusBadge(s.status)}
                   </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
-                    <span>Aula: <strong className="text-slate-700 dark:text-slate-200">{s.groupId}</strong></span>
+                    <span>
+                      Aula:{' '}
+                      <strong className="text-slate-700 dark:text-slate-200">
+                        {options?.groups?.find((g) => g.id === s.groupId)?.name ||
+                          data?.groups?.find((g) => g.id === s.groupId)?.name ||
+                          s.groupId}
+                      </strong>
+                    </span>
                     {s.unit && <span>Unidad: <strong className="text-slate-700 dark:text-slate-200">{s.unit}</strong></span>}
                     <span>Fecha: {new Date(s.createdAt).toLocaleString('es-PE')}</span>
                   </div>

@@ -26,6 +26,7 @@ import {
   ApiError,
 } from '../api/types';
 import StatusBadge from '../components/ui/StatusBadge/StatusBadge';
+import { ActiveUnitContextBanner } from '../components/academic/ActiveUnitContextBanner';
 import {
   EnrollmentIcon,
   SearchIcon,
@@ -58,18 +59,39 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Filtros de tabla
+  // Filtros de tabla y contexto de carrera
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedGroupFilter, setSelectedGroupFilter] = useState<string>('');
   const [selectedStateFilter, setSelectedStateFilter] = useState<string>('');
+  const [showAllCareers, setShowAllCareers] = useState<boolean>(false);
+
+  const hasCareerContext = Boolean(!activeWorkspace?.overview && (activeWorkspace?.programId || activeWorkspace?.groupId));
+
+  const activeProgramName = useMemo(() => {
+    if (!activeWorkspace?.programId) return '';
+    return (
+      programs.find((p) => p.id === activeWorkspace.programId)?.nombre ||
+      programs.find((p) => p.id === activeWorkspace.programId)?.name ||
+      activeWorkspace.programId
+    );
+  }, [programs, activeWorkspace?.programId]);
 
   // Formulario de Nueva Matrícula
+  const [enrollMode, setEnrollMode] = useState<'search' | 'create'>('search');
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [startDate, setStartDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [studentSearchInput, setStudentSearchInput] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false);
+
+  // Campos para Alta Rápida de Alumno en 1 paso
+  const [newStudentDni, setNewStudentDni] = useState<string>('');
+  const [newStudentLastName1, setNewStudentLastName1] = useState<string>('');
+  const [newStudentLastName2, setNewStudentLastName2] = useState<string>('');
+  const [newStudentNames, setNewStudentNames] = useState<string>('');
+  const [newStudentSex, setNewStudentSex] = useState<string>('H');
+  const [newStudentBirthDate, setNewStudentBirthDate] = useState<string>('');
 
   // Modal de Corrección Modular (CONFIRM | EXCLUDE | RESTORE)
   const [moduleModal, setModuleModal] = useState<{
@@ -123,6 +145,17 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
       if (pendingNewStudent && res.students?.some((s) => s.id === pendingNewStudent)) {
         setSelectedStudentId(pendingNewStudent);
         sessionStorage.removeItem('CETPRO_NEW_STUDENT');
+      }
+
+      // Revisar si viene studentId desde URL hash query params (ej. #/matriculas?studentId=...)
+      const hash = window.location.hash;
+      const qIndex = hash.indexOf('?');
+      if (qIndex !== -1) {
+        const params = new URLSearchParams(hash.slice(qIndex));
+        const sId = params.get('studentId');
+        if (sId && res.students?.some((s) => s.id === sId)) {
+          setSelectedStudentId(sId);
+        }
       }
 
       // Si hay un aula activa en sesión, sugerirla por defecto
@@ -205,12 +238,115 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
       });
   }, [students, studentSearchInput]);
 
+  // Grupos de la carrera activa
+  const careerGroups = useMemo(() => {
+    if (!hasCareerContext || !activeWorkspace?.programId) return groups;
+    return groups.filter((g) => g.programId === activeWorkspace.programId);
+  }, [groups, hasCareerContext, activeWorkspace?.programId]);
+
   // Grupos disponibles para matrícula (con periodo y módulo configurados)
   const availableGroups = useMemo(() => {
     return groups.filter((g) => g.moduleId && g.periodId);
   }, [groups]);
 
-  // Registrar nueva matrícula
+  // Grupos mostrados en el selector de aula según carrera activa
+  const selectableEnrollmentGroups = useMemo(() => {
+    const list = availableGroups;
+    if (hasCareerContext && !showAllCareers && careerGroups.length > 0) {
+      return list.filter((g) => g.programId === activeWorkspace?.programId);
+    }
+    return list;
+  }, [availableGroups, hasCareerContext, showAllCareers, careerGroups, activeWorkspace?.programId]);
+
+  // Auto-selección inicial de aula y ajuste de fecha al calendario del aula
+  useEffect(() => {
+    if (groups.length === 0) return;
+    let targetId = selectedGroupId;
+    if (!targetId) {
+      if (hasCareerContext && activeWorkspace?.groupId && careerGroups.some((g) => g.id === activeWorkspace.groupId)) {
+        targetId = activeWorkspace.groupId;
+      } else if (hasCareerContext && careerGroups.length > 0) {
+        targetId = careerGroups[0].id;
+      } else if (groups.length > 0) {
+        targetId = groups[0].id;
+      }
+      if (targetId) {
+        setSelectedGroupId(targetId);
+      }
+    }
+
+    if (targetId) {
+      const g = groups.find((grp) => grp.id === targetId);
+      const gStart: string = (g?.fechaInicio as string) || '2026-03-16';
+      const gEnd: string = (g?.fechaFin as string) || '2026-07-24';
+      const today = new Date().toISOString().slice(0, 10);
+      if (today < gStart || today > gEnd) {
+        setStartDate(gStart);
+      }
+    }
+  }, [groups, careerGroups, hasCareerContext, activeWorkspace?.groupId, selectedGroupId]);
+
+  // Al cambiar manualmente de aula, recalcular si la fecha de inicio debe ajustarse
+  const handleGroupChange = (newGroupId: string) => {
+    setSelectedGroupId(newGroupId);
+    setIsFormDirty(true);
+    const g = groups.find((grp) => grp.id === newGroupId);
+    if (g) {
+      const gStart: string = (g.fechaInicio as string) || '2026-03-16';
+      const gEnd: string = (g.fechaFin as string) || '2026-07-24';
+      const today = new Date().toISOString().slice(0, 10);
+      if (today < gStart || today > gEnd) {
+        setStartDate(gStart);
+      }
+    }
+  };
+
+  const currentSelectedGroup = useMemo(() => {
+    return groups.find((g) => g.id === selectedGroupId) || null;
+  }, [groups, selectedGroupId]);
+
+  const groupDateRangeInfo = useMemo<{ gStart: string; gEnd: string } | null>(() => {
+    if (!currentSelectedGroup) return null;
+    const gStart: string = (currentSelectedGroup.fechaInicio as string) || '2026-03-16';
+    const gEnd: string = (currentSelectedGroup.fechaFin as string) || '2026-07-24';
+    return { gStart, gEnd };
+  }, [currentSelectedGroup]);
+
+  // Buscador interactivo en los 286 alumnos del padrón general
+  const studentSearchResults = useMemo(() => {
+    const q = studentSearchInput.toLowerCase().trim();
+    if (!q) return [];
+    return students
+      .filter((s) => s.active && !s.archived)
+      .filter((s) => {
+        return (
+          s.name.toLowerCase().includes(q) ||
+          s.document.toLowerCase().includes(q) ||
+          (s.firstNames && s.firstNames.toLowerCase().includes(q)) ||
+          (s.lastName1 && s.lastName1.toLowerCase().includes(q)) ||
+          (s.lastName2 && s.lastName2.toLowerCase().includes(q))
+        );
+      })
+      .slice(0, 10);
+  }, [students, studentSearchInput]);
+
+  const isEnrolledInSelectedGroup = useCallback(
+    (studentId: string) => {
+      return enrollments.some((e) => e.studentId === studentId && e.groupId === selectedGroupId && e.active);
+    },
+    [enrollments, selectedGroupId]
+  );
+
+  const getOtherEnrollmentGroup = useCallback(
+    (studentId: string) => {
+      const other = enrollments.find((e) => e.studentId === studentId && e.active && e.groupId !== selectedGroupId);
+      if (!other) return null;
+      return groups.find((g) => g.id === other.groupId) || null;
+    },
+    [enrollments, selectedGroupId, groups]
+  );
+
+  // Registrar nueva matrícula desde selección de estudiante
   const handleSubmitEnrollment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudentId || !selectedGroupId || !startDate) {
@@ -233,6 +369,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
         studentId: selectedStudentId,
         groupId: selectedGroupId,
         startDate,
+        autoAdjustDate: true,
       };
 
       const result = await apiClient.enroll(payload);
@@ -254,6 +391,77 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
       } else {
         setErrorMsg(apiErr?.error || 'Error al registrar la matrícula.');
       }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Alta rápida de nuevo estudiante y matrícula en 1 paso
+  const handleQuickCreateAndEnroll = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStudentDni.trim() || !/^\d{8}$/.test(newStudentDni.trim())) {
+      setErrorMsg('El DNI debe contener exactamente 8 dígitos numéricos.');
+      return;
+    }
+    if (!newStudentLastName1.trim() || !newStudentNames.trim()) {
+      setErrorMsg('El Apellido Paterno y Nombres son obligatorios.');
+      return;
+    }
+    if (!selectedGroupId) {
+      setErrorMsg('Debe seleccionar el aula a la que se matriculará al nuevo participante.');
+      return;
+    }
+
+    const group = groups.find((g) => g.id === selectedGroupId);
+    if (group?.closed) {
+      setErrorMsg('El aula seleccionada se encuentra cerrada. Dirección debe autorizar su reapertura antes de matricular.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      const fullName = `${newStudentLastName1.trim()} ${newStudentLastName2.trim()}, ${newStudentNames.trim()}`;
+      // 1. Guardar estudiante en el padrón
+      const savedStudent = await apiClient.saveStudent({
+        document: newStudentDni.trim(),
+        name: fullName,
+        documentType: 'DNI',
+        lastName1: newStudentLastName1.trim(),
+        lastName2: newStudentLastName2.trim(),
+        firstNames: newStudentNames.trim(),
+        sex: newStudentSex,
+        birthDate: newStudentBirthDate || undefined,
+        active: true,
+      });
+
+      // 2. Matricular de inmediato en el aula seleccionada
+      const enrollResult = await apiClient.enroll({
+        studentId: savedStudent.id,
+        groupId: selectedGroupId,
+        startDate,
+        autoAdjustDate: true,
+      });
+
+      setSuccessMsg(
+        `Estudiante "${fullName}" registrado y matriculado con éxito en ${group?.name || 'el aula'} (Código: ${enrollResult.code || 'MAT'}).`
+      );
+
+      // Limpiar formulario rápido
+      setNewStudentDni('');
+      setNewStudentLastName1('');
+      setNewStudentLastName2('');
+      setNewStudentNames('');
+      setNewStudentBirthDate('');
+      setSelectedStudentId('');
+      setStudentSearchInput('');
+      setEnrollMode('search');
+      await loadData();
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
+      setErrorMsg(apiErr?.error || 'Error al registrar y matricular al nuevo estudiante.');
     } finally {
       setIsSubmitting(false);
     }
@@ -355,10 +563,17 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
     }
   };
 
-  // Filtrado de filas de matrículas
+  // Filtrado de filas de matrículas con soporte de carrera activa
   const filteredEnrollments = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
+    const careerGroupIds = new Set(careerGroups.map((g) => g.id));
+
     return enrollments.filter((en) => {
+      // Filtrar por carrera activa si no se seleccionó "todas las carreras"
+      if (hasCareerContext && !showAllCareers && !careerGroupIds.has(en.groupId)) {
+        return false;
+      }
+
       const state = getEnrollmentState(en);
       const studentName = getStudentName(en.studentId).toLowerCase();
       const studentDoc = getStudentDocument(en.studentId).toLowerCase();
@@ -374,17 +589,31 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
       return matchesGroup && matchesState && matchesQuery;
     });
-  }, [enrollments, searchQuery, selectedGroupFilter, selectedStateFilter, getStudentName, getStudentDocument]);
+  }, [enrollments, searchQuery, selectedGroupFilter, selectedStateFilter, getStudentName, getStudentDocument, hasCareerContext, showAllCareers, careerGroups]);
 
-  // Contadores por estado
+  // Contadores por estado contextualizados a la carrera activa
   const counts = useMemo(() => {
-    const total = enrollments.length;
-    const active = enrollments.filter((e) => e.active).length;
-    const provisional = enrollments.filter((e) => e.provisional && e.active).length;
-    const confirmed = enrollments.filter((e) => !e.provisional && e.active && e.moduleState !== 'EXCLUDED').length;
-    const excluded = enrollments.filter((e) => e.moduleState === 'EXCLUDED').length;
-    return { total, active, provisional, confirmed, excluded };
-  }, [enrollments]);
+    const careerGroupIds = new Set(careerGroups.map((g) => g.id));
+    const baseList =
+      hasCareerContext && !showAllCareers
+        ? enrollments.filter((e) => careerGroupIds.has(e.groupId))
+        : enrollments;
+
+    const total = baseList.length;
+    const active = baseList.filter((e) => e.active).length;
+    const provisional = baseList.filter((e) => e.provisional && e.active).length;
+    const confirmed = baseList.filter((e) => !e.provisional && e.active && e.moduleState !== 'EXCLUDED').length;
+    const excluded = baseList.filter((e) => e.moduleState === 'EXCLUDED').length;
+    return {
+      total,
+      active,
+      provisional,
+      confirmed,
+      excluded,
+      allTotal: enrollments.length,
+      careerTotal: enrollments.filter((e) => careerGroupIds.has(e.groupId)).length,
+    };
+  }, [enrollments, hasCareerContext, showAllCareers, careerGroups]);
 
   // Renderizar badge de estado modular
   const renderStateBadge = (state: 'PROVISIONAL' | 'CONFIRMED' | 'EXCLUDED' | 'RETIRED') => {
@@ -454,6 +683,9 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
         </div>
       </header>
 
+      {/* Contexto Académico de Unidad Activa y Conmutador Rápido */}
+      <ActiveUnitContextBanner variant="compact" onNavigate={onNavigate} />
+
       {/* 2. Mensajes de Notificación */}
       {errorMsg && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-sm flex items-start justify-between gap-3 animate-fadeIn">
@@ -484,6 +716,45 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
           >
             Cerrar
           </button>
+        </div>
+      )}
+
+      {/* Banner de Contexto de Carrera y Conmutador */}
+      {hasCareerContext && (
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] flex flex-wrap items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Ámbito de visualización:</span>
+            <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834]">
+              <button
+                type="button"
+                onClick={() => setShowAllCareers(false)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  !showAllCareers
+                    ? 'bg-[#13594A] text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+                }`}
+              >
+                🎯 Carrera: {activeProgramName} ({counts.careerTotal} matrículas)
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAllCareers(true)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  showAllCareers
+                    ? 'bg-[#13594A] text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+                }`}
+              >
+                🌐 Todas las carreras ({counts.allTotal})
+              </button>
+            </div>
+          </div>
+
+          {activeWorkspace?.groupId && (
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] border border-emerald-200/80 dark:border-[#205C4E]">
+              Aula activa en sesión: {groups.find((g) => g.id === activeWorkspace.groupId)?.name || activeWorkspace.groupId}
+            </span>
+          )}
         </div>
       )}
 
@@ -557,127 +828,367 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
               Registrar Nueva Matrícula
             </h2>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-              Seleccione un estudiante del padrón activo y el aula correspondiente al periodo y turno lectivo.
+              Seleccione un estudiante del padrón general del CETPRO o cree uno nuevo en un solo paso.
             </p>
           </div>
 
-          <form onSubmit={handleSubmitEnrollment} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {/* Selección de Estudiante */}
-              <div className="space-y-1.5">
-                <label htmlFor="select-student" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Estudiante Participante <span className="text-rose-600 dark:text-rose-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Filtrar por nombre o DNI…"
-                  value={studentSearchInput}
-                  onChange={(e) => {
-                    setStudentSearchInput(e.target.value);
-                    setIsFormDirty(true);
-                  }}
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs mb-1.5 focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
-                />
-                <select
-                  id="select-student"
-                  required
-                  value={selectedStudentId}
-                  onChange={(e) => {
-                    setSelectedStudentId(e.target.value);
-                    setIsFormDirty(true);
-                  }}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
-                >
-                  <option value="">Seleccionar estudiante…</option>
-                  {eligibleStudents.map((st) => (
-                    <option key={st.id} value={st.id}>
-                      {st.name} · {st.document}
-                    </option>
-                  ))}
-                </select>
+          {/* Selector de Modo de Incorporación */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-[#263834] pb-3">
+            <button
+              type="button"
+              onClick={() => setEnrollMode('search')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                enrollMode === 'search'
+                  ? 'bg-[#13594A] text-white shadow-xs'
+                  : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1F2D2A]'
+              }`}
+            >
+              <SearchIcon className="w-3.5 h-3.5" />
+              1. Buscar Alumno del Padrón General ({students.length} registrados)
+            </button>
+            <button
+              type="button"
+              onClick={() => setEnrollMode('create')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                enrollMode === 'create'
+                  ? 'bg-[#13594A] text-white shadow-xs'
+                  : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1F2D2A]'
+              }`}
+            >
+              <span>✨ 2. Registrar Nuevo Alumno y Matricular Aquí (En 1 paso)</span>
+            </button>
+          </div>
+
+          {enrollMode === 'search' ? (
+            <form onSubmit={handleSubmitEnrollment} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* Selección y Búsqueda de Estudiante */}
+                <div className="space-y-1.5 md:col-span-1">
+                  <label htmlFor="student-search-box" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Buscar Alumno en Padrón (DNI o Nombre) <span className="text-rose-600 dark:text-rose-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      id="student-search-box"
+                      type="text"
+                      placeholder="Escriba DNI o apellidos del alumno…"
+                      value={studentSearchInput}
+                      onChange={(e) => {
+                        setStudentSearchInput(e.target.value);
+                        setIsFormDirty(true);
+                      }}
+                      className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                    />
+                  </div>
+
+                  {/* Lista de coincidencias interactivas */}
+                  {studentSearchInput.trim() && studentSearchResults.length > 0 && (
+                    <div className="max-h-60 overflow-y-auto rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#182220] shadow-lg divide-y divide-slate-100 dark:divide-[#263834] z-20 relative">
+                      {studentSearchResults.map((st) => {
+                        const inCurrent = isEnrolledInSelectedGroup(st.id);
+                        const otherGrp = getOtherEnrollmentGroup(st.id);
+                        const isSelected = selectedStudentId === st.id;
+                        return (
+                          <div
+                            key={st.id}
+                            onClick={() => {
+                              setSelectedStudentId(st.id);
+                              setIsFormDirty(true);
+                            }}
+                            className={`p-2.5 transition-colors cursor-pointer flex items-center justify-between gap-2 text-xs ${
+                              isSelected
+                                ? 'bg-emerald-50 dark:bg-[#132B25]'
+                                : 'hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
+                            }`}
+                          >
+                            <div>
+                              <p className="font-bold text-slate-900 dark:text-[#F0FDF8]">
+                                {st.name}
+                              </p>
+                              <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
+                                DNI: {st.document}
+                              </span>
+                            </div>
+                            <div className="text-right shrink-0">
+                              {inCurrent ? (
+                                <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+                                  Ya matriculado en esta aula
+                                </span>
+                              ) : otherGrp ? (
+                                <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-300">
+                                  Matriculado en: {otherGrp.name.slice(0, 15)}…
+                                </span>
+                              ) : (
+                                <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                                  Listo para matricular
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Tarjeta de Estudiante Seleccionado */}
+                  {selectedStudentId && (
+                    <div className="mt-2 p-3 rounded-xl bg-emerald-50 dark:bg-[#132B25] border border-emerald-200 dark:border-[#208B73]/60 flex items-center justify-between gap-2">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-[#5EEAD4] block">
+                          Seleccionado
+                        </span>
+                        <p className="text-xs font-bold text-emerald-950 dark:text-[#F0FDF8]">
+                          {getStudentName(selectedStudentId)}
+                        </p>
+                        <span className="text-[11px] font-mono text-emerald-800 dark:text-emerald-300">
+                          DNI: {getStudentDocument(selectedStudentId)}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedStudentId('');
+                          setStudentSearchInput('');
+                        }}
+                        className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                      >
+                        ✕ Quitar
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Selección de Grupo / Aula */}
+                <div className="space-y-1.5 md:col-span-1">
+                  <label htmlFor="select-group" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Aula y Módulo Curricular <span className="text-rose-600 dark:text-rose-400">*</span>
+                  </label>
+                  <select
+                    id="select-group"
+                    required
+                    value={selectedGroupId}
+                    onChange={(e) => handleGroupChange(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                  >
+                    <option value="">Seleccionar aula…</option>
+                    {selectableEnrollmentGroups.map((g) => {
+                      const prog = programs.find((p) => p.id === g.programId);
+                      return (
+                        <option key={g.id} value={g.id}>
+                          {g.name} · {g.periodId} {g.turno ? `(${g.turno})` : ''} {prog?.nombre ? `— ${prog.nombre}` : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  {selectedGroupId && groups.find((g) => g.id === selectedGroupId)?.closed && (
+                    <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-1">
+                      ⚠ Aula cerrada: Requiere reapertura para admitir nuevas matrículas.
+                    </span>
+                  )}
+                  {groupDateRangeInfo && (
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-1">
+                      Vigencia del aula: {groupDateRangeInfo.gStart} al {groupDateRangeInfo.gEnd}
+                    </span>
+                  )}
+                </div>
+
+                {/* Fecha de Ingreso con auto-ajuste */}
+                <div className="space-y-1.5 md:col-span-1">
+                  <label htmlFor="input-start-date" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Fecha de Ingreso <span className="text-rose-600 dark:text-rose-400">*</span>
+                  </label>
+                  <input
+                    id="input-start-date"
+                    type="date"
+                    required
+                    value={startDate}
+                    onChange={(e) => {
+                      setStartDate(e.target.value);
+                      setIsFormDirty(true);
+                    }}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                  />
+                  {groupDateRangeInfo && (
+                    <span className="text-[11px] font-semibold text-emerald-700 dark:text-[#5EEAD4] block">
+                      Periodo del aula: {groupDateRangeInfo.gStart} al {groupDateRangeInfo.gEnd} (Fecha ajustada automáticamente al calendario lectivo)
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {/* Selección de Grupo / Aula */}
-              <div className="space-y-1.5">
-                <label htmlFor="select-group" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Aula y Módulo Curricular <span className="text-rose-600 dark:text-rose-400">*</span>
-                </label>
-                <select
-                  id="select-group"
-                  required
-                  value={selectedGroupId}
-                  onChange={(e) => {
-                    setSelectedGroupId(e.target.value);
-                    setIsFormDirty(true);
-                  }}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4] mt-8 md:mt-0"
-                >
-                  <option value="">Seleccionar aula…</option>
-                  {availableGroups.map((g) => {
-                    const prog = programs.find((p) => p.id === g.programId);
-                    return (
-                      <option key={g.id} value={g.id}>
-                        {g.name} · {g.periodId} {g.turno ? `(${g.turno})` : ''} {prog?.nombre ? `— ${prog.nombre}` : ''}
-                      </option>
-                    );
-                  })}
-                </select>
-                {selectedGroupId && groups.find((g) => g.id === selectedGroupId)?.closed && (
-                  <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 block mt-1">
-                    ⚠ Aula cerrada: Requiere reapertura para admitir nuevas matrículas.
-                  </span>
-                )}
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-[#263834]">
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  {isFormDirty && <span className="text-amber-800 dark:text-amber-400 font-semibold">● Datos de matrícula listos para confirmación</span>}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedStudentId('');
+                      setStudentSearchInput('');
+                      setIsFormDirty(false);
+                    }}
+                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors cursor-pointer"
+                  >
+                    Limpiar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !selectedStudentId || !selectedGroupId}
+                    className="px-6 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#1A7360] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSubmitting ? 'Registrando matrícula…' : 'Confirmar Matrícula en Aula'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          ) : (
+            /* Modo 2: Alta Rápida de Alumno en 1 Paso */
+            <form onSubmit={handleQuickCreateAndEnroll} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    DNI del Estudiante (8 dígitos) <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={8}
+                    value={newStudentDni}
+                    onChange={(e) => setNewStudentDni(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Ej.: 72345678"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-mono font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Apellido Paterno <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newStudentLastName1}
+                    onChange={(e) => setNewStudentLastName1(e.target.value)}
+                    placeholder="Ej.: Quispe"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Apellido Materno
+                  </label>
+                  <input
+                    type="text"
+                    value={newStudentLastName2}
+                    onChange={(e) => setNewStudentLastName2(e.target.value)}
+                    placeholder="Ej.: Mamani"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Nombres Completos <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newStudentNames}
+                    onChange={(e) => setNewStudentNames(e.target.value)}
+                    placeholder="Ej.: Juan Carlos"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Sexo
+                  </label>
+                  <select
+                    value={newStudentSex}
+                    onChange={(e) => setNewStudentSex(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                  >
+                    <option value="H">Hombre (H)</option>
+                    <option value="M">Mujer (M)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Fecha de Nacimiento
+                  </label>
+                  <input
+                    type="date"
+                    value={newStudentBirthDate}
+                    onChange={(e) => setNewStudentBirthDate(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Aula de Matrícula <span className="text-rose-600">*</span>
+                  </label>
+                  <select
+                    required
+                    value={selectedGroupId}
+                    onChange={(e) => handleGroupChange(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                  >
+                    <option value="">Seleccionar aula…</option>
+                    {selectableEnrollmentGroups.map((g) => {
+                      const prog = programs.find((p) => p.id === g.programId);
+                      return (
+                        <option key={g.id} value={g.id}>
+                          {g.name} · {g.periodId} {g.turno ? `(${g.turno})` : ''} {prog?.nombre ? `— ${prog.nombre}` : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Fecha de Ingreso <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                  />
+                  {groupDateRangeInfo && (
+                    <span className="text-[11px] font-semibold text-emerald-700 dark:text-[#5EEAD4] block mt-1">
+                      Periodo: {groupDateRangeInfo.gStart} al {groupDateRangeInfo.gEnd}
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {/* Fecha de Ingreso */}
-              <div className="space-y-1.5">
-                <label htmlFor="input-start-date" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Fecha de Ingreso <span className="text-rose-600 dark:text-rose-400">*</span>
-                </label>
-                <input
-                  id="input-start-date"
-                  type="date"
-                  required
-                  value={startDate}
-                  onChange={(e) => {
-                    setStartDate(e.target.value);
-                    setIsFormDirty(true);
-                  }}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4] mt-8 md:mt-0"
-                />
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
-                  Fecha formal de inicio lectivo del participante.
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-[#263834]">
-              <div className="text-xs text-slate-500 dark:text-slate-400">
-                {isFormDirty && <span className="text-amber-800 dark:text-amber-400 font-semibold">● Datos de matrícula listos para confirmación</span>}
-              </div>
-
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-[#263834]">
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedStudentId('');
-                    setStudentSearchInput('');
-                    setIsFormDirty(false);
-                  }}
-                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors"
+                  onClick={() => setEnrollMode('search')}
+                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors cursor-pointer"
                 >
-                  Limpiar
+                  Volver a Buscar en Padrón
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !newStudentDni.trim() || !newStudentLastName1.trim() || !newStudentNames.trim() || !selectedGroupId}
                   className="px-6 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#1A7360] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? 'Registrando matrícula…' : 'Registrar Matrícula'}
+                  {isSubmitting ? 'Registrando y Matriculando…' : 'Crear Alumno y Matricular de Inmediato (1 paso)'}
                 </button>
               </div>
-            </div>
-          </form>
+            </form>
+          )}
         </div>
       )}
 

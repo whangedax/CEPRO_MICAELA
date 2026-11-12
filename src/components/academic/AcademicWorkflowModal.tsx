@@ -49,6 +49,7 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
   const {
     options,
     activeWorkspace,
+    selectedGroup,
     isSelectorOpen,
     selectorStep,
     closeSelector,
@@ -77,26 +78,36 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
   const modules = useMemo(() => options?.modules || [], [options?.modules]);
   const groups = useMemo(() => options?.groups || [], [options?.groups]);
 
-  // Sincronizar paso si selectorStep cambia externamente
-  useEffect(() => {
-    if (selectorStep) {
-      setStep(selectorStep);
-    }
-  }, [selectorStep]);
-
-  // Determinar si un módulo es Módulo I o Módulo II
-  const getModuleStage = (moduleId: string): 'M1' | 'M2' => {
-    const num = Number(moduleId.replace(/\D+/g, ''));
+  // Determinar si un módulo o grupo es Módulo I (2026-I) o Módulo II (2026-II)
+  const getModuleStage = (moduleId: string, periodId?: string): 'M1' | 'M2' => {
+    if (periodId && String(periodId).endsWith('-II')) return 'M2';
+    if (periodId && String(periodId).endsWith('-I')) return 'M1';
+    const num = Number((moduleId || '').replace(/\D+/g, ''));
     if (!Number.isNaN(num) && num > 0) {
       return num % 2 === 1 ? 'M1' : 'M2';
     }
     return 'M1';
   };
 
-  // Inicializar selección basada en el espacio activo únicamente al abrir el modal
+  // Sincronizar paso y pre-selección inteligente al abrir el modal en Paso 1, 2 o 3
   useEffect(() => {
-    if (!isOpen || !programs.length) return;
-    if (activeWorkspace && !activeWorkspace.overview && activeWorkspace.programId) {
+    if (!isOpen) return;
+    if (selectorStep) {
+      setStep(selectorStep);
+    }
+    if (!programs.length) return;
+
+    const currentGrp =
+      selectedGroup ||
+      (activeWorkspace?.groupId
+        ? groups.find((g) => g.id === activeWorkspace.groupId) || null
+        : null);
+
+    if (currentGrp) {
+      setSelectedProgramId(currentGrp.programId);
+      setSelectedGroupId(currentGrp.id);
+      setStageFilter(getModuleStage(currentGrp.moduleId, currentGrp.periodId));
+    } else if (activeWorkspace && !activeWorkspace.overview && activeWorkspace.programId) {
       setSelectedProgramId(activeWorkspace.programId);
       if (activeWorkspace.groupId) {
         setSelectedGroupId(activeWorkspace.groupId);
@@ -104,13 +115,23 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
     } else {
       setSelectedProgramId((prev) => prev || programs[0].id);
     }
-  }, [isOpen, programs]);
+  }, [isOpen, selectorStep, programs, groups, selectedGroup, activeWorkspace]);
 
-  // Aulas de la carrera seleccionada
-  const careerGroups = useMemo(() => {
+  // Todas las aulas de la carrera seleccionada
+  const allCareerGroups = useMemo(() => {
     if (!selectedProgramId) return [];
     return groups.filter((g) => g.programId === selectedProgramId);
   }, [groups, selectedProgramId]);
+
+  // Aulas de la carrera filtradas por Etapa Modular (M1 = 2026-I, M2 = 2026-II, ALL = Ambos)
+  const careerGroups = useMemo(() => {
+    if (!allCareerGroups.length) return [];
+    if (stageFilter === 'ALL') return allCareerGroups;
+    const filtered = allCareerGroups.filter(
+      (g) => getModuleStage(g.moduleId, g.periodId) === stageFilter
+    );
+    return filtered.length > 0 ? filtered : allCareerGroups;
+  }, [allCareerGroups, stageFilter]);
 
   // Aula actualmente seleccionada
   const currentGroup: WorkspaceGroupOption | null = useMemo(() => {
@@ -489,32 +510,76 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
           {step === 3 && currentProgram && (
             <div className="space-y-6 animate-fade-in">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#263834]">
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <button
                     type="button"
                     onClick={() => setStep(2)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#182220] hover:bg-slate-200 dark:hover:bg-[#263834] text-slate-700 dark:text-slate-300 text-[12px] font-bold transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#182220] hover:bg-slate-200 dark:hover:bg-[#263834] text-slate-700 dark:text-slate-300 text-xs font-bold transition-colors cursor-pointer"
                   >
                     <span>← Volver a Carreras</span>
                   </button>
-                  <span className="text-[13px] text-slate-600 dark:text-slate-300 font-medium">
-                    Carrera seleccionada: <strong className="text-[#13594A] dark:text-[#5EEAD4]">{currentProgram.nombre}</strong>
+                  <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
+                    Carrera seleccionada:{' '}
+                    <strong className="text-[#13594A] dark:text-[#5EEAD4]">
+                      {currentProgram.nombre}
+                    </strong>
                   </span>
                 </div>
-                <span className="text-[12px] font-semibold text-slate-500 dark:text-slate-400">
-                  {careerGroups.length} {careerGroups.length === 1 ? 'aula habilitada' : 'aulas habilitadas'}
-                </span>
+
+                {/* Conmutador de Semestre / Etapa Modular en Paso 3 */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setStageFilter('M1')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                      stageFilter === 'M1'
+                        ? 'bg-[#13594A] text-white'
+                        : 'bg-slate-100 dark:bg-[#182220] text-slate-600 dark:text-slate-300 hover:text-[#13594A]'
+                    }`}
+                  >
+                    Módulo I (2026-I)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStageFilter('M2')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                      stageFilter === 'M2'
+                        ? 'bg-[#13594A] text-white'
+                        : 'bg-slate-100 dark:bg-[#182220] text-slate-600 dark:text-slate-300 hover:text-[#13594A]'
+                    }`}
+                  >
+                    Módulo II (2026-II)
+                  </button>
+                  {stageFilter !== 'ALL' && allCareerGroups.length > careerGroups.length && (
+                    <button
+                      type="button"
+                      onClick={() => setStageFilter('ALL')}
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#E6F4F1] dark:bg-[#132B25] text-[#004034] dark:text-[#5EEAD4] border border-[#13594A]/30 dark:border-[#205C4E] hover:underline cursor-pointer"
+                    >
+                      Ver todos los semestres (2026-I y 2026-II)
+                    </button>
+                  )}
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 ml-1">
+                    {careerGroups.length}{' '}
+                    {careerGroups.length === 1 ? 'aula habilitada' : 'aulas habilitadas'}
+                  </span>
+                </div>
               </div>
 
               {/* Selector de Aula / Turno / Sección */}
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-2.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-2.5">
                   1. Seleccione el Aula / Turno de la Carrera:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {careerGroups.map((grp) => {
                     const isGrpSelected = currentGroup?.id === grp.id;
                     const isMorning = (grp.turno || '').toLowerCase().includes('mañana');
+                    const grpModule = modules.find((m) => m.id === grp.moduleId);
+                    const grpStageLabel =
+                      getModuleStage(grp.moduleId, grp.periodId) === 'M2'
+                        ? 'Módulo II'
+                        : 'Módulo I';
 
                     return (
                       <button
@@ -528,16 +593,23 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                         }`}
                       >
                         <div>
-                          <div className="flex items-center justify-between gap-1 mb-1">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200/80">
-                              {isMorning ? <SunIcon className="w-3 h-3 text-amber-600" /> : <SunsetIcon className="w-3 h-3 text-indigo-500" />}
+                          <div className="flex items-center justify-between gap-1 mb-1.5">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200/80 dark:border-amber-800/60">
+                              {isMorning ? (
+                                <SunIcon className="w-3 h-3 text-amber-600" />
+                              ) : (
+                                <SunsetIcon className="w-3 h-3 text-indigo-500" />
+                              )}
                               Turno {grp.turno || 'Mañana'}
                             </span>
-                            <span className="text-[10px] font-bold text-[#13594A] dark:text-[#5EEAD4]">
-                              Secc. {grp.section || 'A1'}
+                            <span className="text-[10px] font-bold text-[#13594A] dark:text-[#5EEAD4] tabular-nums">
+                              {grp.periodId || '2026-I'} · Secc. {grp.section || 'A1'}
                             </span>
                           </div>
-                          <h4 className="text-[13px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-tight">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#13594A] dark:text-[#5EEAD4] block">
+                            {grpStageLabel}: {grpModule?.nombre || grp.moduleId}
+                          </span>
+                          <h4 className="text-[13px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-tight mt-0.5">
                             {grp.name}
                           </h4>
                           {grp.teacherName && (
@@ -546,7 +618,7 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                             </p>
                           )}
                         </div>
-                        <div className="pt-2 border-t border-slate-100 dark:border-[#263834] flex items-center justify-between text-[11px] font-semibold text-[#13594A] dark:text-[#5EEAD4]">
+                        <div className="pt-2 border-t border-slate-100 dark:border-[#263834] flex items-center justify-between text-[11px] font-semibold text-[#13594A] dark:text-[#5EEAD4] tabular-nums">
                           <span>{grp.studentCount} matriculados</span>
                           <span>{isGrpSelected ? 'Seleccionada ✓' : 'Elegir'}</span>
                         </div>
@@ -561,11 +633,20 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                 <div className="pt-4 border-t border-slate-200/80 dark:border-[#263834] space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
-                        2. Haga clic en la Unidad Didáctica que desea gestionar:
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
+                        2. Haga clic en la Unidad Didáctica que desea gestionar (
+                        {pedagogicalUnits.length} UDs):
                       </span>
-                      <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        Al hacer clic, el sistema abrirá el espacio de trabajo con esa unidad activa.
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Módulo:{' '}
+                        <strong className="text-slate-800 dark:text-slate-200">
+                          {modules.find((m) => m.id === currentGroup.moduleId)?.nombre ||
+                            currentGroup.name}
+                        </strong>{' '}
+                        · Periodo{' '}
+                        <strong className="text-slate-800 dark:text-slate-200">
+                          {currentGroup.periodId || '2026-I'}
+                        </strong>
                       </p>
                     </div>
 
@@ -575,7 +656,7 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                         type="button"
                         disabled={isApplying}
                         onClick={() => handleSelectUnit(currentGroup, 'MODULE', undefined, 'matriculas')}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#182220] hover:bg-[#13594A] hover:text-white dark:hover:bg-[#1A6B5A] text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-[#263834] text-[12px] font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#182220] hover:bg-[#13594A] hover:text-white dark:hover:bg-[#1A6B5A] text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-[#263834] text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
                       >
                         <EnrollmentIcon className="w-4 h-4" />
                         <span>Gestionar Aula Completa (Nóminas de Matrícula)</span>
@@ -602,19 +683,28 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                         >
                           <div>
                             <div className="flex items-center justify-between gap-2 mb-2">
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-[#13594A] text-white text-[11px] font-bold">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-[#13594A] text-white text-xs font-bold tabular-nums">
                                 {unit.code} · Unidad {idx + 1}
                               </span>
-                              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 tabular-nums">
                                 {unit.hours ? <span>{unit.hours} h</span> : null}
                                 {unit.hours && unit.credits ? <span>·</span> : null}
                                 {unit.credits ? <span>{unit.credits} créd.</span> : null}
                               </div>
                             </div>
 
-                            <h4 className="text-[14px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-snug">
+                            <h4 className="text-sm font-bold text-[#172B28] dark:text-[#F0FDF8] leading-snug">
                               {unit.name || `Unidad Didáctica ${unit.code}`}
                             </h4>
+
+                            {(unit.fechaInicio || unit.fechaFin) && (
+                              <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-[#131C1A] border border-emerald-200/70 dark:border-[#263834] text-[11px] font-bold text-[#004034] dark:text-[#5EEAD4] tabular-nums">
+                                <CalendarIcon className="w-3 h-3 shrink-0" />
+                                <span>
+                                  {unit.fechaInicio || ''} al {unit.fechaFin || ''}
+                                </span>
+                              </div>
+                            )}
                           </div>
 
                           <div className="mt-4 pt-3 border-t border-slate-100 dark:border-[#263834] space-y-2">
