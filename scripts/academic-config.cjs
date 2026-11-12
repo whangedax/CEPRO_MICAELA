@@ -44,7 +44,26 @@ function cloneYear(core,actor,input){core.requireRole(actor,['DIRECTOR']);if(!co
  const save=(kind,target,fields)=>D.saveSettings(core,actor,{scope:{kind,target},fields,rev:null});
  save('academicYear',input.year,{...source.fields,calendarJson:'[]',directoryDate:''});
  for(const p of records(core,'academicPeriod').filter(r=>r.fields.year===input.sourceYear))save('academicPeriod',input.year+p.scope.target.slice(4),{...p.fields,year:input.year,fechaInicio:'',fechaFin:''});
- const programs=new Map();for(const r of records(core,'curriculum').filter(r=>r.fields.year===input.sourceYear)){const old=core.record('modules',r.scope.target),id='MOD-'+input.year+'-'+crypto.randomUUID();if(!programs.has(old.programaId)){const previous=core.record('programs',old.programaId),pid='PROG-'+input.year+'-'+crypto.randomUUID();core.write(actor,'programs',{id:pid,nombre:previous.nombre,academicYear:input.year});programs.set(old.programaId,pid);}core.write(actor,'modules',{id,nombre:old.nombre,programaId:programs.get(old.programaId),academicYear:input.year});save('curriculum',id,{...r.fields,year:input.year,periodId:input.year+r.fields.periodId.slice(4),unitsJson:JSON.stringify(parse(r.fields.unitsJson).map(u=>({...u,fechaInicio:'',fechaFin:'',dateOrigin:''})))});const ref=core.record('documentSettings','moduleDefaults:'+old.id);if(ref){const data=parse(ref.fields.dataJson);data.units=data.units.map(u=>({...u,fechaInicio:'',fechaFin:'',dateOrigin:''}));save('moduleDefaults',id,{...ref.fields,year:input.year,dataJson:JSON.stringify(data)});}}
+ const programs=new Map();for(const r of records(core,'curriculum').filter(r=>r.fields.year===input.sourceYear)){
+  const old=core.record('modules',r.scope.target);
+  const canonicalCode=old.canonicalCode||(old.id.startsWith('MOD-')&&!old.id.includes('-'+input.sourceYear)?old.id:old.id.replace(new RegExp('^MOD-'+input.sourceYear+'-'),''));
+  const id='MOD-'+input.year+'-'+canonicalCode;
+  if(!programs.has(old.programaId)){
+    const previous=core.record('programs',old.programaId);
+    const canonicalProgCode=previous.canonicalCode||(previous.id.startsWith('PROG-')&&!previous.id.includes('-'+input.sourceYear)?previous.id:previous.id.replace(new RegExp('^PROG-'+input.sourceYear+'-'),''));
+    const pid='PROG-'+input.year+'-'+canonicalProgCode;
+    core.write(actor,'programs',{id:pid,canonicalCode:canonicalProgCode,nombre:previous.nombre,academicYear:input.year});
+    programs.set(old.programaId,pid);
+  }
+  core.write(actor,'modules',{id,canonicalCode,nombre:old.nombre,programaId:programs.get(old.programaId),academicYear:input.year});
+  save('curriculum',id,{...r.fields,year:input.year,periodId:input.year+r.fields.periodId.slice(4),unitsJson:JSON.stringify(parse(r.fields.unitsJson).map(u=>({...u,fechaInicio:'',fechaFin:'',dateOrigin:''})))});
+  const ref=core.record('documentSettings','moduleDefaults:'+old.id);
+  if(ref){
+    const data=parse(ref.fields.dataJson);
+    data.units=data.units.map(u=>({...u,fechaInicio:'',fechaFin:'',dateOrigin:''}));
+    save('moduleDefaults',id,{...ref.fields,year:input.year,dataJson:JSON.stringify(data)});
+  }
+ }
  for(const p of records(core,'personnel').filter(r=>r.fields.year===input.sourceYear))save('personnel',input.year+':'+p.fields.document,{...p.fields,year:input.year});
  return {year:input.year,message:'Año creado. Complete fechas, grupos, secciones y asignaciones; el historial anterior se conserva.'};
  });}

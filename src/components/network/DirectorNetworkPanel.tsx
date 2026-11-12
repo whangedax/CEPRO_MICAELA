@@ -40,6 +40,12 @@ export const DirectorNetworkPanel: React.FC<DirectorNetworkPanelProps> = ({ curr
   const [isImporting, setIsImporting] = useState<boolean>(false);
   const [importResult, setImportResult] = useState<BatchImportResponse | null>(null);
 
+  // Estado Importación WhatsApp
+  const [waInputCode, setWaInputCode] = useState<string>('');
+  const [isImportingWa, setIsImportingWa] = useState<boolean>(false);
+  const [waImportResult, setWaImportResult] = useState<any>(null);
+  const [waImportError, setWaImportError] = useState<string | null>(null);
+
   // Modal Emisión de Kit
   const [selectedUserForKit, setSelectedUserForKit] = useState<NetworkAccountStatus | null>(null);
   const [kitExpiryDays, setKitExpiryDays] = useState<number>(7);
@@ -102,6 +108,25 @@ export const DirectorNetworkPanel: React.FC<DirectorNetworkPanelProps> = ({ curr
       setScanError(err.message || 'Error al importar lote en el Maestro.');
     } finally {
       setIsImporting(false);
+    }
+  };
+
+  const handleImportWhatsApp = async () => {
+    if (!waInputCode.trim()) return;
+    setIsImportingWa(true);
+    setWaImportError(null);
+    setWaImportResult(null);
+    try {
+      const res = await apiClient.importWhatsAppSync({
+        tokenText: waInputCode.trim(),
+      });
+      setWaImportResult(res);
+      setWaInputCode('');
+      loadNetworkStatus();
+    } catch (err: any) {
+      setWaImportError(err.message || 'Error al procesar el código de sincronización de WhatsApp.');
+    } finally {
+      setIsImportingWa(false);
     }
   };
 
@@ -318,6 +343,56 @@ export const DirectorNetworkPanel: React.FC<DirectorNetworkPanelProps> = ({ curr
             )}
           </div>
         )}
+      </div>
+
+      {/* 4. Recepción Directa por WhatsApp (Pegar Código) */}
+      <div className="bg-[#101A17] border border-[#1C2B27] rounded-xl p-6">
+        <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
+          <span className="text-emerald-400">💬</span>
+          Recepción Directa por WhatsApp (Pegar Código)
+        </h3>
+        <p className="text-xs text-gray-400 mb-3">
+          Si un docente o secretaria le envió un código copiado de su celular por WhatsApp, péguelo aquí para consolidar sus notas o asistencias de inmediato en la Base de Datos.
+        </p>
+
+        <div className="space-y-3">
+          <textarea
+            value={waInputCode}
+            onChange={(e) => setWaInputCode(e.target.value)}
+            placeholder="Pegue aquí el bloque recibido de WhatsApp (que inicia con ---INICIO-CETPRO-SYNC---)..."
+            rows={3}
+            className="w-full bg-[#162320] border border-[#253934] rounded-lg p-3 text-emerald-200 font-mono text-xs focus:outline-none focus:border-emerald-500"
+          />
+
+          <div className="flex justify-end">
+            <button
+              onClick={handleImportWhatsApp}
+              disabled={isImportingWa || !waInputCode.trim()}
+              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold px-4 py-2 rounded-lg text-xs flex items-center gap-2 transition-colors shadow-md"
+            >
+              {isImportingWa ? 'Procesando Código...' : '📥 Consolidar Código de WhatsApp en BD'}
+            </button>
+          </div>
+
+          {waImportError && (
+            <div className="p-3 rounded-lg bg-red-950/40 border border-red-800/60 text-red-200 text-xs">
+              {waImportError}
+            </div>
+          )}
+
+          {waImportResult && (
+            <div className="p-3.5 rounded-lg bg-emerald-950/40 border border-emerald-800/60 text-emerald-200 text-xs flex items-start gap-2">
+              <CheckCircleIcon className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-emerald-300">¡Datos de WhatsApp importados con éxito!</p>
+                <p className="text-gray-300 text-[11px] mt-0.5">
+                  Remitente: <strong>{waImportResult.sender}</strong> | Operaciones aplicadas:{' '}
+                  <strong>{waImportResult.operationsApplied}</strong> | Módulo: <strong>{waImportResult.syncModule}</strong>
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 4. Censo Oficial de las 13 Cuentas Institucionales 2026 */}

@@ -1002,6 +1002,31 @@ export interface PrepareBatchExportInput {
   usbDrivePath?: string;
   passphrase?: string;
   recipientUserIds?: string[];
+  syncModule?: 'all' | 'config' | 'enrollments' | 'grades' | 'attendance';
+  includeSecretaria?: boolean;
+}
+
+export interface WhatsAppExportResponse {
+  success: boolean;
+  syncModule: string;
+  operationsCount: number;
+  sizeBytes: number;
+  isTokenAvailable: boolean;
+  tokenText: string | null;
+  fileName: string;
+  filePath: string;
+  instructions: string;
+}
+
+export interface WhatsAppImportResponse {
+  success: boolean;
+  channel: string;
+  syncModule: string;
+  fromDeviceId?: string;
+  sender: string;
+  operationsApplied: number;
+  conflictsDetected: number;
+  report: any;
 }
 
 export interface ExportedPackageSummary {

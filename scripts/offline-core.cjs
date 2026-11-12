@@ -7,6 +7,7 @@ const path = require('node:path');
 const DocumentSettings = require('./offline-documents.cjs');
 const { unitDateRange } = require('./unit-date-range.cjs');
 const { AcademicCalendarEngine, getDayOfWeekIso } = require('./academic-calendar-engine.cjs');
+const { matchesSyncModule } = require('./sync-modules.cjs');
 const {policyFor,groupName,enrollmentCode}=require('./role-policy.cjs');
 const APP = 'CETPRO_OFFLINE', VERSION = 1;
 const canonical = value => JSON.stringify(value ?? null);
@@ -66,11 +67,20 @@ class OfflineCore {
     const targetDb = path.join(this.directory, 'cetpro.sqlite');
     const isRunningTest = process.argv.some(a => a.includes('test')) || !!process.env.NODE_TEST_CONTEXT || !!process.env.CETPRO_QA_PORT || process.env.CETPRO_SKIP_BASELINE_SEED === '1';
     const baseRoot = process.env.CETPRO_ROOT || this.root || path.resolve(__dirname, '..');
+    const sterilePackagedBaseline = path.join(baseRoot, 'baseline', 'production-2026-sterile.sqlite');
+    const sterileSourcesBaseline = path.join(baseRoot, 'sources', 'baseline', 'production-2026-sterile.sqlite');
+    const sterileFallbackBaseline = path.resolve(__dirname, '..', 'baseline', 'production-2026-sterile.sqlite');
     const packagedBaseline = path.join(baseRoot, 'baseline', 'production-2026.sqlite');
     const sourcesBaseline = path.join(baseRoot, 'sources', 'baseline', 'production-2026.sqlite');
     const fallbackBaseline = path.resolve(__dirname, '..', 'baseline', 'production-2026.sqlite');
     let foundBaseline = null;
-    if (fs.existsSync(packagedBaseline)) {
+    if (fs.existsSync(sterilePackagedBaseline)) {
+      foundBaseline = sterilePackagedBaseline;
+    } else if (fs.existsSync(sterileFallbackBaseline)) {
+      foundBaseline = sterileFallbackBaseline;
+    } else if (!isRunningTest && fs.existsSync(sterileSourcesBaseline)) {
+      foundBaseline = sterileSourcesBaseline;
+    } else if (fs.existsSync(packagedBaseline)) {
       foundBaseline = packagedBaseline;
     } else if (fs.existsSync(fallbackBaseline)) {
       foundBaseline = fallbackBaseline;
@@ -602,17 +612,19 @@ class OfflineCore {
     return { success: true };
   }
   exchangePackage(actor,input={}){
+    const syncModule=input.syncModule||input.module||'all';
     const recipient=input.recipientUserId?(this.user(input.recipientUserId)||this.record('userDirectory',input.recipientUserId)):null;if(input.recipientUserId){this.requireRole(actor,ADMIN);if(!recipient)fail('Seleccione una cuenta destinataria registrada.');}
     if(!actor.active)fail('Cuenta inactiva.',403);const groups=this.scoped(actor,'groups').filter(g=>(!input.groupId||g.id===input.groupId)&&(!input.moduleId||g.moduleId===input.moduleId)&&(!recipient||this.assignment(recipient,g.id)));if(!groups.length&&(!recipient||recipient.active))fail('Seleccione un grupo permitido para esa cuenta.');
     const groupIds=new Set(groups.map(g=>g.id)),programs=new Set(groups.map(g=>g.programId)),modules=new Set(groups.map(g=>g.moduleId)),enrollments=this.scoped(actor,'enrollments').filter(e=>groupIds.has(e.groupId)),studentIds=new Set(enrollments.map(e=>e.studentId)),enrollmentIds=new Set(enrollments.map(e=>e.id));
-    const rawOperations=this.operations().filter(op=>{const b=op.body,v=b.value;if(!this.operationVisible(actor,b)||(recipient&&!this.operationVisible(recipient,b)))return false;if(b.entity==='groups')return groupIds.has(v.id);if(b.entity==='programs')return programs.has(v.id);if(b.entity==='modules')return modules.has(v.id);if(b.entity==='students')return studentIds.has(v.id);if(['enrollments','grades','attendance'].includes(b.entity))return groupIds.has(v.groupId)&&(!input.unit||b.entity==='enrollments'||v.unit===input.unit);if(b.entity==='documentSubmissions')return groupIds.has(v.groupId)&&(!input.unit||v.unit===input.unit);if(b.entity==='studentRequests')return groupIds.has(v.groupId)&&(actor.role==='DOCENTE'||input.includeAccounts===true);if(b.entity==='documentSettings'){const scope=v?.scope;if(!scope?.kind)return false;if(input.unit&&['unit','unitCurriculum'].includes(scope.kind)&&scope.unit!==input.unit)return false;if(input.unit&&scope.kind==='practice'&&input.unit!=='EFSRT')return false;return scope.kind==='institution'||(['academicYear','academicPeriod'].includes(scope.kind)&&groups.some(g=>scope.target===(scope.kind==='academicYear'?String(g.periodId||'').slice(0,4):g.periodId)))||(scope.kind==='personnel'&&ADMIN.includes(actor.role)&&input.includeAccounts===true&&(!recipient||ADMIN.includes(recipient.role)))||groupIds.has(scope.target)||enrollmentIds.has(scope.target)||programs.has(scope.target)||modules.has(scope.target);}if(b.entity==='accountRequests'&&v.action==='PASSWORD'&&v.userId===actor.id)return true;return ['accountRequests','userDirectory'].includes(b.entity)&&ADMIN.includes(actor.role)&&input.includeAccounts===true;});
+    const rawOperations=this.operations().filter(op=>{const b=op.body,v=b.value;if(!matchesSyncModule(b.entity,v,syncModule))return false;if(!this.operationVisible(actor,b)||(recipient&&!this.operationVisible(recipient,b)))return false;if(b.entity==='groups')return groupIds.has(v.id);if(b.entity==='programs')return programs.has(v.id);if(b.entity==='modules')return modules.has(v.id);if(b.entity==='students')return studentIds.has(v.id);if(['enrollments','grades','attendance'].includes(b.entity))return groupIds.has(v.groupId)&&(!input.unit||b.entity==='enrollments'||v.unit===input.unit);if(b.entity==='documentSubmissions')return groupIds.has(v.groupId)&&(!input.unit||v.unit===input.unit);if(b.entity==='studentRequests')return groupIds.has(v.groupId)&&(actor.role==='DOCENTE'||input.includeAccounts===true);if(b.entity==='documentSettings'){const scope=v?.scope;if(!scope?.kind)return false;if(input.unit&&['unit','unitCurriculum'].includes(scope.kind)&&scope.unit!==input.unit)return false;if(input.unit&&scope.kind==='practice'&&input.unit!=='EFSRT')return false;return scope.kind==='institution'||(['academicYear','academicPeriod'].includes(scope.kind)&&groups.some(g=>scope.target===(scope.kind==='academicYear'?String(g.periodId||'').slice(0,4):g.periodId)))||(scope.kind==='personnel'&&ADMIN.includes(actor.role)&&input.includeAccounts===true&&(!recipient||ADMIN.includes(recipient.role)))||groupIds.has(scope.target)||enrollmentIds.has(scope.target)||programs.has(scope.target)||modules.has(scope.target);}if(b.entity==='accountRequests'&&v.action==='PASSWORD'&&v.userId===actor.id)return true;return ['accountRequests','userDirectory'].includes(b.entity)&&ADMIN.includes(actor.role)&&input.includeAccounts===true;});
     const latestByRecord=new Map();for(const op of rawOperations)latestByRecord.set(op.body.entity+':'+op.body.recordId,op);const operations=[...latestByRecord.values()];
-    const device=this.setting('device'),encryptedAccounts=this.setting('authorityPrivate')&&ADMIN.includes(actor.role)?(this.setting('devices')||[]).filter(d=>d.id!==device.id&&this.user(d.userId)).map(d=>({to:d.id,envelope:seal({user:this.user(d.userId),certificate:this.certificate(this.user(d.userId),d),directoryOperations:ADMIN.includes(this.user(d.userId).role)?this.operations().filter(op=>op.body.entity==='userDirectory'&&this.operationVisible(this.user(d.userId),op.body)):[]},d.encryptionKey)})):[],body={app:APP,type:'GROUP_EXCHANGE',audience:recipient?.role==='DOCENTE'?'SCOPED':ADMIN.includes(actor.role)?'ADMIN':'SCOPED',recipientUserId:recipient?.id||null,version:VERSION,id:id(),institutionId:this.setting('institution').id,from:device.id,at:now(),certificate:this.setting('authorityPrivate')?this.certificate(actor,device):this.setting('certificate'),envelope:tableEnvelope({operations,encryptedAccounts,acknowledgements:ADMIN.includes(actor.role)?this.operations().map(op=>op.body.id):[],resolutions:this.setting('authorityPrivate')?this.db.prepare('SELECT value FROM conflicts').all().map(r=>JSON.parse(r.value)).filter(c=>c.resolved&&groupIds.has(c.operation.body.value.groupId)).map(c=>({operationId:c.id,entity:c.operation.body.entity,proposedRev:c.operation.body.value.rev,value:c.retained,decision:c.resolution})):[],groups:groups.map(g=>({id:g.id,name:groupName(this,g)}))},input.passphrase)};
-    const summary=this.exchangeDescription(actor,operations,groups,recipient);this.audit('EXCHANGE_EXPORTED',actor,{groups:[...groupIds],operations:operations.length});return {body,signature:sign(body,device.signing.private),summary};
+    const device=this.setting('device'),encryptedAccounts=this.setting('authorityPrivate')&&ADMIN.includes(actor.role)?(this.setting('devices')||[]).filter(d=>d.id!==device.id&&this.user(d.userId)).map(d=>({to:d.id,envelope:seal({user:this.user(d.userId),certificate:this.certificate(this.user(d.userId),d),directoryOperations:ADMIN.includes(this.user(d.userId).role)?this.operations().filter(op=>op.body.entity==='userDirectory'&&this.operationVisible(this.user(d.userId),op.body)):[]},d.encryptionKey)})):[],body={app:APP,type:'GROUP_EXCHANGE',syncModule,audience:recipient?.role==='DOCENTE'?'SCOPED':ADMIN.includes(actor.role)?'ADMIN':'SCOPED',recipientUserId:recipient?.id||null,version:VERSION,id:id(),institutionId:this.setting('institution').id,from:device.id,at:now(),certificate:this.setting('authorityPrivate')?this.certificate(actor,device):this.setting('certificate'),envelope:tableEnvelope({operations,encryptedAccounts,acknowledgements:ADMIN.includes(actor.role)?this.operations().map(op=>op.body.id):[],resolutions:this.setting('authorityPrivate')?this.db.prepare('SELECT value FROM conflicts').all().map(r=>JSON.parse(r.value)).filter(c=>c.resolved&&groupIds.has(c.operation.body.value.groupId)).map(c=>({operationId:c.id,entity:c.operation.body.entity,proposedRev:c.operation.body.value.rev,value:c.retained,decision:c.resolution})):[],groups:groups.map(g=>({id:g.id,name:groupName(this,g)}))},input.passphrase)};
+    const summary=this.exchangeDescription(actor,operations,groups,recipient);this.audit('EXCHANGE_EXPORTED',actor,{groups:[...groupIds],operations:operations.length,syncModule});return {body,signature:sign(body,device.signing.private),summary};
   }
   exchangeDescription(sender,operations,groups=null,recipient=null){const latest=new Map();for(const op of operations){const b=op.body;latest.set(b.entity+':'+b.recordId,b);}const counts={};for(const b of latest.values())counts[b.entity]=(counts[b.entity]||0)+1;const groupIds=new Set([...latest.values()].flatMap(b=>b.entity==='groups'?[b.value.id]:b.value.groupId?[b.value.groupId]:[]));const view=Object.create(this);view.record=(entity,recordId)=>latest.get(entity+':'+recordId)?.value||this.record(entity,recordId);const names=(groups||[...groupIds].map(g=>view.record('groups',g)).filter(Boolean)).map(g=>({id:g.id,name:groupName(view,g)}));return {sender:{name:sender.name,role:sender.role},recipient:recipient?{name:recipient.name,role:recipient.role}:null,groups:names,counts};}
   recoverExchange(input){if(!this.status().initialized||this.status().authority)fail('La recuperación corresponde a un equipo vinculado.');const pkg=input.package;if(pkg?.body?.type!=='GROUP_EXCHANGE'||pkg.body.from!==this.setting('institution').hub.id||!ADMIN.includes(pkg.body.certificate?.body.user?.role))fail('Use un archivo de acceso exportado por el equipo institucional.');const local=this.user(this.setting('certificate').body.user.id);if(!local)fail('Cuenta local no encontrada.');return this.importPackage(local,pkg,true,input.passphrase);}
-  packageFor(actor, deviceId) {
+  packageFor(actor, deviceId, options = {}) {
+    const syncModule = options?.syncModule || options?.module || 'all';
     const institution = this.setting('institution'), d = this.setting('device'), hub = !!this.setting('authorityPrivate');
     let target, targetUser;
     if (hub) {
@@ -627,12 +639,12 @@ class OfflineCore {
       : new Set(this.db.prepare('SELECT id FROM operations WHERE acknowledged=1').all().map(o => o.id));
     const vCache = this.buildVisibilityCache();
     const targetScopeCache = this.getUserScopeCache(hub ? targetUser : actor, vCache);
-    const candidates = this.operations().filter(op => !confirmed.has(op.body.id) && !rejected.has(op.body.id) && (hub ? targetUser.active && this.operationVisible(targetUser, op.body, targetScopeCache) : op.body.actor.id === actor.id && this.operationVisible(actor, op.body, targetScopeCache)));
+    const candidates = this.operations().filter(op => !confirmed.has(op.body.id) && !rejected.has(op.body.id) && matchesSyncModule(op.body.entity, op.body.value, syncModule) && (hub ? targetUser.active && this.operationVisible(targetUser, op.body, targetScopeCache) : op.body.actor.id === actor.id && this.operationVisible(actor, op.body, targetScopeCache)));
     const operations=[];let packageBytes=0;
     for(const op of candidates){const bytes=Buffer.byteLength(canonical(op));if(bytes>16*1024*1024)fail('Una operación supera el tamaño del lote de sincronización.');if(packageBytes+bytes>16*1024*1024)break;operations.push(op);packageBytes+=bytes;}
     const acknowledgements = hub ? this.operations().map(op => op.body.id) : this.operations().filter(op => op.body.actor.id !== actor.id).map(op => op.body.id);
     const account = hub ? { user: publicUser(targetUser), certificate: this.certificate(targetUser, { id: target.id, signingKey: target.signingKey, encryptionKey: target.encryptionKey }) } : null;
-    const body = { app: APP, type: 'SYNC', version: VERSION, id: id(), institutionId: institution.id, from: d.id, to: target.id, at: now(),
+    const body = { app: APP, type: 'SYNC', syncModule, version: VERSION, id: id(), institutionId: institution.id, from: d.id, to: target.id, at: now(),
       certificate: hub ? this.certificate(actor, d) : this.setting('certificate'), envelope: seal({ operations, acknowledgements, account,
         resolutions: hub ? resolved.filter(c => targetUser.active && this.operationVisible(targetUser, c.operation.body)).map(c => ({ operationId: c.id, entity: c.operation.body.entity, proposedRev: c.operation.body.value.rev, value: c.retained, decision: c.resolution })) : [] }, target.encryptionKey) };
     if (hub) for (const op of operations) this.db.prepare('INSERT OR IGNORE INTO deliveries (deviceId,operationId) VALUES (?,?)').run(target.id, op.body.id);
@@ -750,7 +762,7 @@ class OfflineCore {
       if (applied.has(c.id)) { report.duplicates++; continue; }
       let state = 'apply';
       if (current && current.rev !== c.baseRev && current.rev !== c.value.rev) state = 'conflict';
-      if (!current && c.baseRev) state = 'pending';
+      if (!current && c.baseRev && !['documentSettings', 'programs', 'modules', 'groups', 'academic_years', 'periods'].includes(c.entity)) state = 'pending';
       if (['grades', 'attendance'].includes(c.entity)) {
         const enrollment = simulate.get(`enrollments:${c.value.enrollmentId}`) || this.record('enrollments', c.value.enrollmentId);
         const group = simulate.get(`groups:${c.value.groupId}`) || this.record('groups', c.value.groupId);

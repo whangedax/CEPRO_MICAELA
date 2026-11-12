@@ -573,20 +573,21 @@ function prepareBatchExport(core, actor, input) {
   const dateStamp = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 
   const isSatellite = !core.setting('authorityPrivate') || actor.role === 'DOCENTE';
+  const syncModule = input?.syncModule || input?.module || 'all';
 
   if (isSatellite) {
     // NODO SATÉLITE (DOCENTE o SECRETARIA) exporta hacia Dirección
     const targetFolder = dirs.toDirection;
-    const fileName = `${dateStamp}_DE-${actor.username}_HACIA-DIRECCION_lote-01.cetpro`;
+    const fileName = `${dateStamp}_DE-${actor.username}_HACIA-DIRECCION_${syncModule}_lote-01.cetpro`;
     const tempFile = path.join(targetFolder, `${fileName}.tmp_${id().slice(0, 8)}`);
     const finalFile = path.join(targetFolder, fileName);
 
     let pkg;
     const hubId = core.setting('institution')?.hub?.id;
     if (hubId && core.setting('certificate')) {
-      pkg = core.packageFor(actor, hubId);
+      pkg = core.packageFor(actor, hubId, { syncModule });
     } else {
-      pkg = core.exchangePackage(actor, { passphrase: input?.passphrase || 'CETPRO_2026' });
+      pkg = core.exchangePackage(actor, { syncModule, passphrase: input?.passphrase || 'CETPRO_2026' });
     }
 
     const payload = canonical(pkg);
@@ -611,36 +612,91 @@ function prepareBatchExport(core, actor, input) {
       targetFolder: 'para-direccion',
       fileName,
       filePath: finalFile,
+      syncModule,
       operationsCount: opsCount,
       packageId: pkg.body?.id || id(),
       sha256: expectedSha
     });
   } else {
-    // DIRECTOR o SECRETARIA exporta hacia Docentes
-    const allUsers = core.users().filter((u) => u.active && u.role === 'DOCENTE');
+    // DIRECTOR o SECRETARIA exporta hacia Docentes y hacia Secretaría
+    const allDocentes = core.users().filter((u) => u.active && u.role === 'DOCENTE');
     const recipientIds = input?.recipientUserIds && input.recipientUserIds.length > 0
       ? input.recipientUserIds
-      : allUsers.map((u) => u.id);
+      : allDocentes.map((u) => u.id);
 
-    const targetUsers = allUsers.filter((u) => recipientIds.includes(u.id));
+    const targetUsers = allDocentes.filter((u) => recipientIds.includes(u.id));
     const devicesList = core.setting('devices') || [];
+
+    // Exportación hacia Secretaría si no está explícitamente deshabilitada
+    if (actor.role === 'DIRECTOR' && input?.includeSecretaria !== false) {
+      const secUsers = core.users().filter((u) => u.active && u.role === 'SECRETARIA');
+      for (const targetSec of secUsers) {
+        const secFolder = dirs.toSecretaria;
+        fs.mkdirSync(secFolder, { recursive: true });
+
+        const fileName = `${dateStamp}_DE-${actor.username}_HACIA-SECRETARIA_${syncModule}_lote-01.cetpro`;
+        const tempFile = path.join(secFolder, `${fileName}.tmp_${id().slice(0, 8)}`);
+        const finalFile = path.join(secFolder, fileName);
+
+        let pkg;
+        const linkedDev = devicesList.find((dev) => dev.userId === targetSec.id);
+        if (linkedDev) {
+          pkg = core.packageFor(actor, linkedDev.id, { syncModule });
+        } else {
+          pkg = core.exchangePackage(actor, {
+            recipientUserId: targetSec.id,
+            syncModule,
+            passphrase: input?.passphrase || 'CETPRO_2026'
+          });
+        }
+
+        const payload = canonical(pkg);
+        const expectedSha = hash(payload);
+        fs.writeFileSync(tempFile, payload, 'utf8');
+
+        const writtenSha = hash(fs.readFileSync(tempFile, 'utf8'));
+        if (writtenSha !== expectedSha) {
+          fs.unlinkSync(tempFile);
+          fail('Error de integridad al escribir en el medio de almacenamiento.', 500);
+        }
+
+        fs.renameSync(tempFile, finalFile);
+
+        const opsCount = pkg.body?.operations?.length || 0;
+        totalOperations += opsCount;
+
+        packages.push({
+          recipientUserId: targetSec.id,
+          recipientName: targetSec.name,
+          recipientRole: targetSec.role,
+          targetFolder: 'para-secretaria',
+          fileName,
+          filePath: finalFile,
+          syncModule,
+          operationsCount: opsCount,
+          packageId: pkg.body?.id || id(),
+          sha256: expectedSha
+        });
+      }
+    }
 
     for (const targetDocente of targetUsers) {
       const docenteFolder = path.join(dirs.toDocentes, targetDocente.username);
       fs.mkdirSync(docenteFolder, { recursive: true });
 
-      const fileName = `${dateStamp}_DE-${actor.username}_HACIA-${targetDocente.username}_lote-01.cetpro`;
+      const fileName = `${dateStamp}_DE-${actor.username}_HACIA-${targetDocente.username}_${syncModule}_lote-01.cetpro`;
       const tempFile = path.join(docenteFolder, `${fileName}.tmp_${id().slice(0, 8)}`);
       const finalFile = path.join(docenteFolder, fileName);
 
       let pkg;
       const linkedDev = devicesList.find((dev) => dev.userId === targetDocente.id);
       if (linkedDev) {
-        pkg = core.packageFor(actor, linkedDev.id);
+        pkg = core.packageFor(actor, linkedDev.id, { syncModule });
       } else {
         const docenteGroupIds = (targetDocente.assignments || []).map((a) => a.groupId);
         pkg = core.exchangePackage(actor, {
           groupId: docenteGroupIds[0],
+          syncModule,
           passphrase: input?.passphrase || 'CETPRO_2026'
         });
       }
@@ -667,6 +723,7 @@ function prepareBatchExport(core, actor, input) {
         targetFolder: `para-docentes/${targetDocente.username}`,
         fileName,
         filePath: finalFile,
+        syncModule,
         operationsCount: opsCount,
         packageId: pkg.body?.id || id(),
         sha256: expectedSha
@@ -777,6 +834,7 @@ function scanUsb(core, actor, input) {
         filePath: item.fullPath,
         subFolder: path.basename(item.dir),
         packageType: pkg.body?.type || 'SYNC',
+        syncModule: pkg.body?.syncModule || 'all',
         fromDeviceId: pkg.body?.from || '',
         senderName: pkg.body?.certificate?.body?.user?.name || 'Desconocido',
         senderRole: pkg.body?.certificate?.body?.user?.role || 'DOCENTE',

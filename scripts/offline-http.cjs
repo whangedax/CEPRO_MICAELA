@@ -10,6 +10,7 @@ const {DataUpdateService}=require('./data-update-service.cjs');
 const InstitutionalNetwork = require('./institutional-network.cjs');
 const CeproBdCatalog = require('./cepro-bd-catalog.cjs');
 const FichaRegistro2026 = require('./ficha-registro-2026.cjs');
+const SyncWhatsApp = require('./sync-whatsapp.cjs');
 const isPublicAdmissionRoute = (pathname) => {
   return pathname === '/admision-qr' ||
          pathname === '/ficha-2026' ||
@@ -241,6 +242,8 @@ function createService({ root, directory, backupFile }) {
           case '/api/network/import-batch': result = InstitutionalNetwork.importBatch(core, user, body); break;
           case '/api/network/revoke': result = InstitutionalNetwork.revokeDevice(core, user, body); break;
           case '/api/network/replace': result = InstitutionalNetwork.replaceDevice(core, user, body, root); break;
+          case '/api/network/whatsapp/export': result = SyncWhatsApp.exportForWhatsApp(core, user, body); break;
+          case '/api/network/whatsapp/import': result = SyncWhatsApp.importFromWhatsApp(core, user, body); break;
           case '/api/admission-ficha/config': result = FichaRegistro2026.updateConfig(core, user, body); break;
           case '/api/admission-ficha/import-whatsapp':
           case '/api/secretaria/fichas-registro/importar-texto':

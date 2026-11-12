@@ -802,6 +802,20 @@ class ApiClient {
     return this.request<ReplaceDeviceResponse>('POST', '/api/network/replace', input, true);
   }
 
+  /**
+   * Exporta un paquete ligero optimizado para compartir por chat de WhatsApp (POST /api/network/whatsapp/export).
+   */
+  public async exportWhatsAppSync(input: { syncModule?: string; asToken?: boolean; recipientUserId?: string }): Promise<any> {
+    return this.request<any>('POST', '/api/network/whatsapp/export', input, true);
+  }
+
+  /**
+   * Importa datos provenientes de WhatsApp mediante código copiado o archivo (POST /api/network/whatsapp/import).
+   */
+  public async importWhatsAppSync(input: { tokenText?: string; filePath?: string }): Promise<any> {
+    return this.request<any>('POST', '/api/network/whatsapp/import', input, true);
+  }
+
   // ==========================================
   // CATÁLOGO DOCUMENTAL Y SANEAMIENTO CURRICULAR (CEPRO_BD)
   // ==========================================
