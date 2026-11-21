@@ -19,6 +19,7 @@
  * - Interfaz premium Google Stitch (#13594A, #0D3E34, #F6F8FA) y accesibilidad WCAG 2.2 AA
  */
 
+import { DashboardPhotoBand } from '../components/ui/DashboardPhotoBand';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useWorkspace } from '../context/WorkspaceContext';
@@ -44,8 +45,14 @@ import {
   AlertCircleIcon,
   CheckCircleIcon,
   FolderOpenIcon,
+  KeyIcon,
 } from '../components/ui/Icons';
 import { ActiveUnitContextBanner } from '../components/academic/ActiveUnitContextBanner';
+import { RegistryCodeGuideBanner } from '../components/ui/RegistryCodeGuideBanner';
+import {
+  applyRegistryFieldChange,
+  REGISTER_CODE_SEGMENT_KEYS,
+} from '../utils/documentTemplates';
 
 // Denominación institucional y legible de los ámbitos documentales
 const SCOPE_NAMES: Record<string, string> = {
@@ -77,7 +84,15 @@ const FIELD_EXAMPLES: Record<string, string> = {
   indicator3: 'Ej.: Configura páginas, encabezados y referencias bibliográficas.',
   indicator4: 'Ej.: Diseña presentaciones interactivas respetando la identidad visual.',
   indicator5: 'Ej.: Exporta y comparte archivos en formatos estándares y seguros.',
-  registerCode: 'Ej.: REG-2026-001',
+  registerCode: 'Ej.: 000333-AT-30425346-CE25-2026',
+  registryCorrelative: 'Ej.: 000333',
+  registryLevelCode: 'Ej.: AT',
+  programAcronym: 'Ej.: CE, CI, MA',
+  sigla: 'Ej.: CE, CI, MA',
+  registryShortRef: 'Ej.: 25',
+  registryCodeYear: 'Ej.: 2026',
+  referenceResolution: 'Ej.: R.D. Nº 2053-2025-DUGEL-SR',
+  tituladoName: 'Opcional si difiere de la ficha del estudiante',
   teacherName: 'Ej.: Apellidos y Nombres del docente responsable',
   fechaInicio: 'AAAA-MM-DD',
   fechaFin: 'AAAA-MM-DD',
@@ -86,7 +101,7 @@ const FIELD_EXAMPLES: Record<string, string> = {
   departamento: 'Ej.: Puno',
   provincia: 'Ej.: San Román',
   distrito: 'Ej.: Juliaca',
-  lugar: 'Ej.: Puno, Perú',
+  lugar: 'Ej.: San Miguel',
   direccion: 'Ej.: Av. Circunvalación 1234',
   telefono: 'Ej.: 051321456',
   resolucionAutorizacion: 'Ej.: R.D. N.° 025-2026-DREP',
@@ -96,8 +111,8 @@ const FIELD_EXAMPLES: Record<string, string> = {
   coordinadorNombre: 'Ej.: Prof. Magda Chura Huanca',
   nivelFormativo: 'Ej.: Auxiliar Técnico',
   tipoPlan: 'Ej.: Modular',
-  resolucionPrograma: 'Ej.: R.D. N.° 030-2026-DREP',
-  officialTitleText: 'Ej.: Auxiliar Técnico en Soporte y Operaciones Informáticas',
+  resolucionPrograma: 'Ej.: R.D. Nº 2053-2025-DUGEL-SR',
+  officialTitleText: 'Ej.: CORTE Y ENSAMBLAJE',
   ciclo: 'Ej.: I Ciclo',
   seccion: 'Ej.: Única',
   turno: 'Ej.: Mañana',
@@ -108,10 +123,61 @@ const FIELD_EXAMPLES: Record<string, string> = {
   registryBook: 'Ej.: Libro N.° 01 de Títulos',
   registryFolio: 'Ej.: Folio 045',
   registryNumber: 'Ej.: N.° 0012-2026',
+  registryDate: 'AAAA-MM-DD',
   registryAsiento: 'Ej.: Asiento 12',
+  ugelCode: 'Ej.: 000333-AT-00333-CE25-2026',
+  resolutionNumber: 'Ej.: 000333-2026-DCETPROMB-SM',
+  resolutionDate: 'AAAA-MM-DD',
+  expedienteNumber: 'Ej.: EXP-0045-2026',
+  expedienteDate: 'AAAA-MM-DD',
+  graduationDate: 'AAAA-MM-DD',
+  specialtyTeacher: 'Ej.: Prof. María Elena Quispe Mamani',
   observations: 'Ej.: Culminación de práctica sin observaciones.',
   subsanacionUnit: 'Ej.: Procesador de textos',
 };
+
+const FIELD_HELP: Record<string, string> = {
+  sigla: 'Sigla oficial del programa usada en el Código Institucional ({{sigla_programa}}, p. ej. CE, CI, MA).',
+  registerCode: 'Señal A: Código de Registro Institucional ({{correlativo}}-{{nivel_formativo}}-{{dni}}-{{sigla_programa}}{{referencia_corta}}-{{anio_codigo}}). Se imprime igual en portada vertical y dos veces en reverso.',
+  registryCorrelative: 'Segmento 1 de A: correlativo institucional de 6 dígitos ({{correlativo}}).',
+  registryLevelCode: 'Segmento 2 de A: nivel formativo del código ({{nivel_formativo}}, por defecto AT).',
+  programAcronym: 'Segmento 4 de A: sigla del programa ({{sigla_programa}}, p. ej. CE, CI).',
+  registryShortRef: 'Segmento 5 de A: referencia corta de 2 dígitos ({{referencia_corta}}, p. ej. 25).',
+  registryCodeYear: 'Segmento 6 de A: año final de 4 dígitos en el código ({{anio_codigo}}).',
+  registryBook: 'Libro oficial donde se asienta el título o certificado. Exclusivo de Dirección.',
+  registryFolio: 'Folio del libro institucional de registro. Exclusivo de Dirección.',
+  registryNumber: 'Número correlativo asentado en el libro institucional. Exclusivo de Dirección.',
+  registryDate: 'Fecha oficial de inscripción en el libro institucional. Exclusivo de Dirección.',
+  registryAsiento: 'Asiento registral correspondiente al libro institucional. Exclusivo de Dirección.',
+  ugelCode: 'Señal B: Código asignado por la UGEL ({{codigo_registro_ugel}}). Es independiente de A y no debe inventarse.',
+  referenceResolution: 'Señal C: Resolución de referencia en la portada del título (p. ej. R.D. Nº 2053-2025-DUGEL-SR).',
+  resolutionNumber: 'Número de Resolución Directoral de Título (TMPL-22). Exclusivo de Dirección.',
+  resolutionDate: 'Fecha de emisión de la Resolución Directoral de Título. Exclusivo de Dirección.',
+  expedienteNumber: 'Número de expediente administrativo de titulación o egreso. Exclusivo de Dirección.',
+  expedienteDate: 'Fecha de ingreso o trámite del expediente administrativo. Exclusivo de Dirección.',
+  graduationDate: 'Fecha de egreso consignada en el Certificado de Egresado (TMPL-23) y expediente. Editable por Dirección y Secretaría.',
+  specialtyTeacher: 'Docente de la especialidad que avala la trayectoria modular (TMPL-22 / TMPL-23). Editable por Dirección y Secretaría.',
+  tituladoName: 'Señal D (opcional): sobrescribe el nombre en la portada del Título si difiere de la ficha del estudiante.',
+  officialTitleText: 'Señal E (opcional): denominación del programa/título en portada del Título.',
+};
+
+const REGISTRY_EXTENDED_FIELDS_FALLBACK: DocumentFieldSchema[] = [
+  { key: 'registryCorrelative', label: 'Correlativo institucional (6 dígitos — {{correlativo}})', type: 'text', roles: ['DIRECTOR'] },
+  { key: 'registryLevelCode', label: 'Nivel formativo del código ({{nivel_formativo}})', type: 'text', roles: ['DIRECTOR'] },
+  { key: 'programAcronym', label: 'Sigla del programa ({{sigla_programa}})', type: 'text', roles: ['DIRECTOR'] },
+  { key: 'registryShortRef', label: 'Referencia corta (2 dígitos — {{referencia_corta}})', type: 'text', roles: ['DIRECTOR'] },
+  { key: 'registryCodeYear', label: 'Año del código (4 dígitos — {{anio_codigo}})', type: 'text', roles: ['DIRECTOR'] },
+  { key: 'ugelCode', label: 'Código de Registro UGEL (B)', type: 'text', roles: ['DIRECTOR'] },
+  { key: 'referenceResolution', label: 'Resolución de referencia en portada (C)', type: 'text', roles: ['DIRECTOR'] },
+  { key: 'resolutionNumber', label: 'N° Resolución Directoral de Título', type: 'text', roles: ['DIRECTOR'] },
+  { key: 'resolutionDate', label: 'Fecha de Resolución Directoral', type: 'date', roles: ['DIRECTOR'] },
+  { key: 'expedienteNumber', label: 'N° de Expediente Administrativo', type: 'text', roles: ['DIRECTOR'] },
+  { key: 'expedienteDate', label: 'Fecha de Expediente', type: 'date', roles: ['DIRECTOR'] },
+  { key: 'graduationDate', label: 'Fecha de Egreso (Módulo/Programa)', type: 'date', roles: ['DIRECTOR', 'SECRETARIA'] },
+  { key: 'specialtyTeacher', label: 'Docente de la Especialidad', type: 'text', roles: ['DIRECTOR', 'SECRETARIA'] },
+  { key: 'tituladoName', label: 'Nombre del titulado en diploma (D, opcional)', type: 'text', roles: ['DIRECTOR'] },
+  { key: 'officialTitleText', label: 'Denominación del título en diploma (E, opcional)', type: 'text', roles: ['DIRECTOR'] },
+];
 
 function getFieldPlaceholder(key: string, type: string): string {
   if (FIELD_EXAMPLES[key]) return FIELD_EXAMPLES[key];
@@ -151,6 +217,8 @@ export const ConfiguracionDocumental: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [conflictError, setConflictError] = useState<string | null>(null);
+  const [isSuggestingRegistry, setIsSuggestingRegistry] = useState<boolean>(false);
+  const [registrySuggestMessage, setRegistrySuggestMessage] = useState<string | null>(null);
 
   // Referencias para transiciones y control de versiones
   const lastSavedRevRef = useRef<string | null>(null);
@@ -245,6 +313,11 @@ export const ConfiguracionDocumental: React.FC = () => {
       .sort((a, b) => a.name.localeCompare(b.name, 'es'));
   }, [dashboardData, currentGroup]);
 
+  const selectedEnrollmentMeta = useMemo(
+    () => groupEnrollments.find((e) => e.id === selectedTargetId) || null,
+    [groupEnrollments, selectedTargetId]
+  );
+
   // Programas y módulos disponibles para selección de target
   const programsList = useMemo(() => dashboardData?.programs || [], [dashboardData]);
   const modulesList = useMemo(() => dashboardData?.modules || [], [dashboardData]);
@@ -307,10 +380,17 @@ export const ConfiguracionDocumental: React.FC = () => {
   // ID canónico del ámbito actual (ej. "unit:GRP-001:UD1", "institution:institution")
   const currentScopeId = useMemo(() => computeScopeId(currentScope), [currentScope]);
 
-  // Esquema de campos para el ámbito activo
+  // Esquema de campos para el ámbito activo (asegura visibilidad de los 7 campos registrales 2026)
   const activeFieldsSchema = useMemo(() => {
     if (!docConfig?.schema || !docConfig.schema[selectedKind]) return [];
-    return docConfig.schema[selectedKind];
+    const baseFields = docConfig.schema[selectedKind];
+    if (selectedKind !== 'registry') return baseFields;
+
+    const existingKeys = new Set(baseFields.map((f) => f.key));
+    const supplemented = REGISTRY_EXTENDED_FIELDS_FALLBACK
+      .filter((f) => !existingKeys.has(f.key))
+      .map((f) => ({ ...f, roles: ['DIRECTOR'] }));
+    return [...baseFields, ...supplemented];
   }, [docConfig, selectedKind]);
 
   // Comprobar si el usuario actual tiene permisos de edición sobre un campo específico
@@ -333,6 +413,94 @@ export const ConfiguracionDocumental: React.FC = () => {
   const isScopeEditable = useMemo(() => {
     return activeFieldsSchema.some((f) => isFieldEditable(f));
   }, [activeFieldsSchema, isFieldEditable]);
+
+  const canSuggestRegistryCodes = useMemo(() => {
+    return (
+      selectedKind === 'registry' &&
+      Boolean(currentGroup?.id && selectedTargetId) &&
+      activeFieldsSchema.some(
+        (f) => (f.key === 'registerCode' || f.key === 'resolutionNumber') && isFieldEditable(f)
+      )
+    );
+  }, [selectedKind, currentGroup?.id, selectedTargetId, activeFieldsSchema, isFieldEditable]);
+
+  useEffect(() => {
+    setRegistrySuggestMessage(null);
+  }, [selectedKind, selectedGroupId, selectedTargetId]);
+
+  const handleSuggestRegistryCodes = useCallback(async () => {
+    if (!currentGroup?.id || !selectedTargetId) return;
+    setIsSuggestingRegistry(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+    setConflictError(null);
+    setRegistrySuggestMessage(null);
+    try {
+      const suggestion = await apiClient.suggestDocumentRegisterCode({
+        groupId: currentGroup.id,
+        enrollmentId: selectedTargetId,
+        emissionYear: activeWorkspace?.year || String(new Date().getFullYear()),
+        dni:
+          selectedEnrollmentMeta?.document && selectedEnrollmentMeta.document !== 'S/D'
+            ? selectedEnrollmentMeta.document
+            : undefined,
+        demoMode: !isInstitutional(),
+        levelCode: formData.registryLevelCode ? String(formData.registryLevelCode) : undefined,
+        programAcronym: formData.programAcronym ? String(formData.programAcronym) : undefined,
+        shortRef: formData.registryShortRef ? String(formData.registryShortRef) : undefined,
+        codeYear: formData.registryCodeYear ? String(formData.registryCodeYear) : undefined,
+      });
+
+      const editableKeys = new Set(
+        activeFieldsSchema.filter((f) => isFieldEditable(f)).map((f) => f.key)
+      );
+
+      setFormData((prev) => ({
+        ...prev,
+        ...(editableKeys.has('registerCode') ? { registerCode: suggestion.registerCode } : {}),
+        ...(editableKeys.has('resolutionNumber') ? { resolutionNumber: suggestion.resolutionNumber } : {}),
+        ...(editableKeys.has('registryCorrelative') && suggestion.correlativeFormatted
+          ? { registryCorrelative: suggestion.correlativeFormatted }
+          : {}),
+        ...(editableKeys.has('registryLevelCode') && suggestion.levelCode
+          ? { registryLevelCode: suggestion.levelCode }
+          : {}),
+        ...(editableKeys.has('programAcronym') && suggestion.programAcronym
+          ? { programAcronym: suggestion.programAcronym }
+          : {}),
+        ...(editableKeys.has('registryShortRef') && suggestion.shortRef
+          ? { registryShortRef: suggestion.shortRef }
+          : {}),
+        ...(editableKeys.has('registryCodeYear') && suggestion.codeYear
+          ? { registryCodeYear: suggestion.codeYear }
+          : {}),
+        ...(editableKeys.has('referenceResolution') && suggestion.referenceResolution
+          ? { referenceResolution: suggestion.referenceResolution }
+          : {}),
+      }));
+      setRegistrySuggestMessage(
+        `Sugerencia 2026 aplicada (correlativo #${suggestion.correlative}, ingreso ${suggestion.intakeYear} -> emisión ${suggestion.emissionYear}). Revisa y pulsa «Guardar Parámetros».`
+      );
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
+      setSaveError(
+        apiErr?.error || 'No se pudo sugerir el Código Institucional y N° de Resolución Directoral.'
+      );
+    } finally {
+      setIsSuggestingRegistry(false);
+    }
+  }, [
+    currentGroup?.id,
+    selectedTargetId,
+    activeWorkspace?.year,
+    selectedEnrollmentMeta?.document,
+    formData.registryLevelCode,
+    formData.programAcronym,
+    formData.registryShortRef,
+    formData.registryCodeYear,
+    activeFieldsSchema,
+    isFieldEditable,
+  ]);
 
   // Cargar valores iniciales desde defaults y settings del backend
   const loadInitialValues = useCallback(() => {
@@ -377,10 +545,23 @@ export const ConfiguracionDocumental: React.FC = () => {
 
   // Manejador de cambios en los inputs
   const handleFieldChange = (key: string, value: string | number) => {
-    setFormData((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setFormData((prev) => {
+      if (
+        selectedKind === 'registry' &&
+        (REGISTER_CODE_SEGMENT_KEYS.has(key) || key === 'registerCode')
+      ) {
+        const stringified: Record<string, string> = {};
+        for (const [k, v] of Object.entries(prev)) stringified[k] = String(v ?? '');
+        const updated = applyRegistryFieldChange(
+          stringified,
+          key,
+          String(value),
+          selectedEnrollmentMeta?.document
+        );
+        return { ...prev, ...updated };
+      }
+      return { ...prev, [key]: value };
+    });
     setSaveSuccess(null);
     setSaveError(null);
     setConflictError(null);
@@ -448,6 +629,7 @@ export const ConfiguracionDocumental: React.FC = () => {
       setCurrentSettingRecord(savedRecord);
       lastSavedRevRef.current = savedRecord.rev || null;
       setInitialFormData(formData);
+      setRegistrySuggestMessage(null);
       setSaveSuccess(
         __IS_INSTITUTIONAL__
           ? `Parámetros guardados exitosamente en la base de datos local (${savedRecord.id}). Los cambios se reflejarán en las validaciones preflight y en los formatos PDF del Centro Documental.`
@@ -484,6 +666,7 @@ export const ConfiguracionDocumental: React.FC = () => {
     setSaveSuccess(null);
     setSaveError(null);
     setConflictError(null);
+    setRegistrySuggestMessage(null);
   }, [initialFormData]);
 
   // Recargar datos desde el servidor en caso de conflicto
@@ -573,10 +756,10 @@ export const ConfiguracionDocumental: React.FC = () => {
   if (isLoadingConfig && !docConfig) {
     return (
       <div className="space-y-6 animate-in fade-in duration-150">
-        <div className="bg-white dark:bg-[#182220] rounded-3xl p-8 border border-slate-200/90 dark:border-[#263834] shadow-sm flex flex-col items-center justify-center min-h-[360px] text-center">
-          <div className="w-10 h-10 border-4 border-[#13594A]/20 dark:border-[#5EEAD4]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin mb-4" />
-          <h2 className="text-base font-bold text-slate-800 dark:text-[#F0FDF8]">Cargando Parámetros Documentales…</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+        <div className="bg-surface rounded-2xl p-8 border border-line shadow-[var(--ui-shadow)] flex flex-col items-center justify-center min-h-[360px] text-center">
+          <div className="w-10 h-10 border-4 border-brand/20 border-t-brand rounded-full animate-spin mb-4" />
+          <h2 className="text-base font-bold text-ink">Cargando Parámetros Documentales…</h2>
+          <p className="text-xs text-muted mt-1">
             Consultando el esquema y las asignaciones autorizadas en el servidor local.
           </p>
         </div>
@@ -587,33 +770,35 @@ export const ConfiguracionDocumental: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* 1. Encabezado Institucional y Navegación de Contexto */}
-      <div className="bg-white dark:bg-[#182220] rounded-3xl p-6 border border-slate-200/90 dark:border-[#263834] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
-        <div className="space-y-1">
+      <DashboardPhotoBand as="header" scene="pedagogia" contentClassName="flex flex-wrap items-center justify-between gap-4">
+        <div className="space-y-1 min-w-0">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-[11px] text-slate-500 font-semibold mb-1">
-            <a href="#/inicio" className="hover:text-[#13594A] transition-colors">
+          <div className="flex items-center gap-2 text-[11px] text-muted font-semibold mb-1">
+            <a href="#/inicio" className="hover:text-brand transition-colors">
               Inicio
             </a>
-            <span>/</span>
-            <a href="#/documentos" className="hover:text-[#13594A] transition-colors">
+            <span aria-hidden="true">/</span>
+            <a href="#/documentos" className="hover:text-brand transition-colors">
               Documentos
             </a>
-            <span>/</span>
-            <span className="text-[#13594A] font-bold">Configuración Documental</span>
+            <span aria-hidden="true">/</span>
+            <span className="text-brand font-bold">Configuración Documental</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-[#F0FDF8] tracking-tight flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#13594A]" />
-              {user?.role === 'DOCENTE' ? 'Preparación de Unidad Didáctica' : 'Configuración de Parámetros Documentales'}
+          <div className="flex flex-wrap items-center gap-3 min-w-0">
+            <h1 className="text-[24px] sm:text-[30px] leading-tight font-bold text-ink tracking-tight flex items-center gap-2 min-w-0">
+              <span className="w-3 h-3 rounded-full bg-brand shrink-0" aria-hidden="true" />
+              <span className="truncate">
+                {user?.role === 'DOCENTE' ? 'Preparación de Unidad Didáctica' : 'Configuración de Parámetros Documentales'}
+              </span>
             </h1>
 
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#13594A]/10 text-[#13594A]">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-brand-soft text-brand border border-brand/20">
               Rol: {user?.role || 'DOCENTE'}
             </span>
 
             {activeWorkspace?.mode && (
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-[#132B25] text-slate-700 dark:text-[#5EEAD4]">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-surface-alt border border-line text-ink tabular-nums">
                 {activeWorkspace.mode === 'UNIT'
                   ? `Alcance: Por Unidad Didáctica${activeWorkspace.unit ? ` (${activeWorkspace.unit})` : ''}`
                   : activeWorkspace.mode === 'PRACTICE'
@@ -629,7 +814,7 @@ export const ConfiguracionDocumental: React.FC = () => {
             )}
           </div>
 
-          <p className="text-xs text-slate-600 dark:text-slate-300 max-w-3xl">
+          <p className="text-xs text-muted max-w-3xl">
             {user?.role === 'DOCENTE'
               ? 'Defina el nombre oficial, la capacidad terminal, la competencia y los cinco indicadores de logro (IL1..IL5) para la unidad didáctica activa. Estos datos alimentan automáticamente los formatos oficiales del MINEDU.'
               : 'Administre los datos institucionales, grupos, periodos y parámetros curriculares según los permisos autorizados para su rol.'}
@@ -642,7 +827,7 @@ export const ConfiguracionDocumental: React.FC = () => {
             type="button"
             onClick={fetchConfiguration}
             disabled={isLoadingConfig}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-[#1F2D2A] hover:bg-slate-200 dark:hover:bg-[#263834] text-slate-700 dark:text-slate-200 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#34D399] disabled:opacity-50"
+            className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] bg-surface-alt border border-line hover:bg-brand-soft text-ink hover:text-brand text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50 cursor-pointer"
             title="Recargar configuración desde el servidor local"
           >
             <RefreshIcon className={`w-3.5 h-3.5 ${isLoadingConfig ? 'animate-spin' : ''}`} />
@@ -651,14 +836,14 @@ export const ConfiguracionDocumental: React.FC = () => {
 
           <a
             href="#/documentos"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#13594A] hover:bg-[#0D3E34] text-white text-xs font-bold transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] bg-brand hover:bg-brand/90 text-on-brand text-xs font-bold transition-all shadow-sm focus-visible:ring-2 focus-visible:ring-brand"
             title="Ir al Centro Documental para generar y verificar PDFs"
           >
             <DocumentIcon className="w-3.5 h-3.5" />
             <span>Ver Centro Documental</span>
           </a>
         </div>
-      </div>
+      </DashboardPhotoBand>
 
       {/* Contexto Académico de Unidad Activa y Conmutador Rápido */}
       <ActiveUnitContextBanner variant="compact" />
@@ -669,15 +854,15 @@ export const ConfiguracionDocumental: React.FC = () => {
           role="status"
           className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl p-4 flex items-start gap-3 text-emerald-950 dark:text-emerald-200 text-xs shadow-sm animate-in fade-in duration-200"
         >
-          <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-          <div className="flex-1">
+          <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
             <strong className="font-bold text-sm block">Cambios Guardados Exitosamente</strong>
             <span>{saveSuccess}</span>
           </div>
           <button
             type="button"
             onClick={() => setSaveSuccess(null)}
-            className="text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-emerald-100 font-bold p-1 text-sm"
+            className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-[10px] text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-emerald-100 font-bold p-1 text-sm cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
             aria-label="Cerrar notificación de éxito"
           >
             ✕
@@ -690,15 +875,15 @@ export const ConfiguracionDocumental: React.FC = () => {
           role="alert"
           className="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/60 rounded-2xl p-4 flex items-start gap-3 text-rose-950 dark:text-rose-200 text-xs shadow-sm animate-in fade-in duration-200"
         >
-          <AlertCircleIcon className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
-          <div className="flex-1">
+          <AlertCircleIcon className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
             <strong className="font-bold text-sm block">No se pudo guardar la configuración</strong>
             <span>{saveError}</span>
           </div>
           <button
             type="button"
             onClick={() => setSaveError(null)}
-            className="text-rose-700 hover:text-rose-900 dark:text-rose-300 dark:hover:text-rose-100 font-bold p-1 text-sm"
+            className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-[10px] text-rose-700 hover:text-rose-900 dark:text-rose-300 dark:hover:text-rose-100 font-bold p-1 text-sm cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
             aria-label="Cerrar error"
           >
             ✕
@@ -711,9 +896,9 @@ export const ConfiguracionDocumental: React.FC = () => {
           role="alert"
           className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 dark:text-amber-200 text-xs shadow-sm animate-in fade-in duration-200"
         >
-          <div className="flex items-start gap-3">
-            <AlertCircleIcon className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-            <div>
+          <div className="flex items-start gap-3 min-w-0">
+            <AlertCircleIcon className="w-5 h-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="min-w-0">
               <strong className="font-bold text-sm block">Conflicto de Concurrencia (HTTP 409)</strong>
               <span>{conflictError}</span>
             </div>
@@ -722,14 +907,14 @@ export const ConfiguracionDocumental: React.FC = () => {
             <button
               type="button"
               onClick={handleReloadServerData}
-              className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm"
+              className="min-h-[44px] px-3.5 py-2 rounded-[10px] bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
             >
               Recargar versión del servidor
             </button>
             <button
               type="button"
               onClick={handleDiscard}
-              className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#182220] border border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-300 font-semibold text-xs hover:bg-amber-100 dark:hover:bg-[#1F2D2A]"
+              className="min-h-[44px] px-3.5 py-2 rounded-[10px] bg-surface border border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-300 font-semibold text-xs hover:bg-amber-100 dark:hover:bg-surface-alt cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
             >
               Descartar mis cambios
             </button>
@@ -738,21 +923,21 @@ export const ConfiguracionDocumental: React.FC = () => {
       )}
 
       {/* 3. Selector de Ámbito, Grupo, Destino y Unidad */}
-      <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 border border-slate-200/90 dark:border-[#263834] shadow-sm space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-[#263834] pb-3">
-          <div className="flex items-center gap-2">
-            <DocConfigIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
-            <h2 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
+      <div className="bg-surface rounded-2xl p-5 border border-line shadow-[var(--ui-shadow)] space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <DocConfigIcon className="w-4 h-4 text-brand shrink-0" />
+            <h2 className="text-sm font-bold text-ink tracking-tight">
               Selección de Ámbito y Contexto Académico
             </h2>
           </div>
           {user?.role !== 'DOCENTE' && (
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                Identificador: <strong className="text-slate-700 dark:text-slate-200">{currentScopeId}</strong>
+              <span className="text-[11px] text-muted font-mono tabular-nums">
+                Identificador: <strong className="text-ink">{currentScopeId}</strong>
               </span>
               {currentSettingRecord?.rev && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#1F2D2A] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-surface-alt text-muted border border-line tabular-nums">
                   rev: {currentSettingRecord.rev.slice(0, 8)}
                 </span>
               )}
@@ -762,15 +947,15 @@ export const ConfiguracionDocumental: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
           {/* A. Selector de Ámbito (Kind) */}
-          <div className="space-y-1">
-            <label htmlFor="parameter-kind" className="font-bold text-slate-700 dark:text-slate-300 block">
+          <div className="space-y-1 min-w-0">
+            <label htmlFor="parameter-kind" className="font-bold text-ink block">
               Datos a Configurar
             </label>
             <select
               id="parameter-kind"
               value={selectedKind}
               onChange={(e) => safeChangeKind(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
+              className="w-full min-h-[44px] px-3 py-2 rounded-[10px] border border-line bg-surface text-ink font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               {availableKinds.map((k) => (
                 <option key={k} value={k}>
@@ -782,15 +967,15 @@ export const ConfiguracionDocumental: React.FC = () => {
 
           {/* B. Selector de Grupo (Aula) */}
           {!['institution', 'program', 'module'].includes(selectedKind) && (
-            <div className="space-y-1" id="parameter-group-label">
-              <label htmlFor="parameter-group" className="font-bold text-slate-700 dark:text-slate-300 block">
+            <div className="space-y-1 min-w-0" id="parameter-group-label">
+              <label htmlFor="parameter-group" className="font-bold text-ink block">
                 Aula / Grupo
               </label>
               <select
                 id="parameter-group"
                 value={selectedGroupId}
                 onChange={(e) => safeChangeGroup(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
+                className="w-full min-h-[44px] px-3 py-2 rounded-[10px] border border-line bg-surface text-ink font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 {availableGroups.map((g) => (
                   <option key={g.id} value={g.id}>
@@ -803,15 +988,15 @@ export const ConfiguracionDocumental: React.FC = () => {
 
           {/* C. Selector de Unidad Didáctica (Solo para unit y unitCurriculum) */}
           {['unit', 'unitCurriculum'].includes(selectedKind) && (
-            <div className="space-y-1" id="parameter-unit-label">
-              <label htmlFor="parameter-unit" className="font-bold text-slate-700 dark:text-slate-300 block">
+            <div className="space-y-1 min-w-0" id="parameter-unit-label">
+              <label htmlFor="parameter-unit" className="font-bold text-ink block">
                 Unidad Didáctica
               </label>
               <select
                 id="parameter-unit"
                 value={selectedUnitCode}
                 onChange={(e) => safeChangeUnit(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
+                className="w-full min-h-[44px] px-3 py-2 rounded-[10px] border border-line bg-surface text-ink font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 {groupUnits.map((u) => (
                   <option key={u} value={u}>
@@ -824,15 +1009,15 @@ export const ConfiguracionDocumental: React.FC = () => {
 
           {/* D. Selector de Destino / Estudiante (para enrollment, practice, program, module, etc.) */}
           {!['institution', 'group', 'unit', 'unitCurriculum'].includes(selectedKind) && (
-            <div className="space-y-1" id="parameter-target-label">
-              <label htmlFor="parameter-target" className="font-bold text-slate-700 dark:text-slate-300 block">
+            <div className="space-y-1 min-w-0" id="parameter-target-label">
+              <label htmlFor="parameter-target" className="font-bold text-ink block">
                 Destino / Registro
               </label>
               <select
                 id="parameter-target"
                 value={selectedTargetId}
                 onChange={(e) => safeChangeTarget(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
+                className="w-full min-h-[44px] px-3 py-2 rounded-[10px] border border-line bg-surface text-ink font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 {['enrollment', 'registry', 'practice', 'closure'].includes(selectedKind) &&
                   groupEnrollments.map((en) => (
@@ -858,23 +1043,23 @@ export const ConfiguracionDocumental: React.FC = () => {
         </div>
 
         {/* Nota informativa de permisos */}
-        <div className="pt-2 text-[11px] text-slate-600 dark:text-slate-400 flex flex-wrap items-center justify-between gap-2">
+        <div className="pt-2 text-[11px] text-muted flex flex-wrap items-center justify-between gap-2">
           <span>
             {isScopeEditable ? (
               <span className="text-emerald-800 dark:text-emerald-300 font-semibold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
                 Los campos habilitados corresponden a su alcance pedagógico y administrativo autorizado.
               </span>
             ) : (
               <span className="text-amber-800 dark:text-amber-300 font-semibold flex items-center gap-1.5">
-                <LockIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                <LockIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                 Modo Consulta (Solo Lectura): Los datos de este ámbito son administrados por Dirección o Secretaría.
               </span>
             )}
           </span>
 
           {isDirty && (
-            <span className="px-2.5 py-1 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-500/40 font-bold animate-pulse text-[11px]">
+            <span className="px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-500/40 font-bold text-[11px]">
               ● Hay modificaciones sin guardar en este formulario
             </span>
           )}
@@ -894,13 +1079,13 @@ export const ConfiguracionDocumental: React.FC = () => {
         {isUnitPedagogy ? (
           <>
             {/* Sección 1: Datos Generales de la Unidad */}
-            <div className="bg-white dark:bg-[#182220] rounded-3xl p-6 border border-slate-200/90 dark:border-[#263834] shadow-sm space-y-4">
-              <div className="border-b border-slate-100 dark:border-[#263834] pb-3">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-[#5EEAD4] tracking-tight flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#13594A] dark:bg-[#5EEAD4]" />
+            <div className="bg-surface rounded-2xl p-6 border border-line shadow-[var(--ui-shadow)] space-y-4">
+              <div className="border-b border-line pb-3">
+                <h3 className="text-sm font-bold text-brand tracking-tight flex items-center gap-2 tabular-nums">
+                  <span className="w-2 h-2 rounded-full bg-brand shrink-0" aria-hidden="true" />
                   1. Identificación y Capacidades de la Unidad ({selectedUnitCode})
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-muted">
                   Defina la denominación de la unidad didáctica, su capacidad terminal y la competencia modular asociada.
                 </p>
               </div>
@@ -916,13 +1101,13 @@ export const ConfiguracionDocumental: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <label
                           htmlFor={`field-${field.key}`}
-                          className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1"
+                          className="text-xs font-bold text-ink flex items-center gap-1"
                         >
                           <span>{field.label}</span>
                           <span className="text-rose-500" title="Campo requerido para emisión oficial">*</span>
                         </label>
                         {!editable && (
-                          <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
+                          <span className="text-[10px] font-semibold text-muted flex items-center gap-1">
                             <LockIcon className="w-3 h-3" /> Solo lectura
                           </span>
                         )}
@@ -937,7 +1122,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                           onChange={(e) => handleFieldChange(field.key, e.target.value)}
                           disabled={!editable}
                           placeholder={placeholder}
-                          className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-50 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all leading-relaxed"
+                          className="w-full px-3.5 py-2.5 text-xs rounded-[10px] border border-line bg-surface text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:bg-surface-alt disabled:text-muted disabled:cursor-not-allowed transition-all leading-relaxed"
                         />
                       ) : (
                         <input
@@ -948,7 +1133,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                           onChange={(e) => handleFieldChange(field.key, e.target.value)}
                           disabled={!editable}
                           placeholder={placeholder}
-                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-50 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
+                          className="w-full min-h-[44px] px-3.5 py-2 text-xs rounded-[10px] border border-line bg-surface text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:bg-surface-alt disabled:text-muted disabled:cursor-not-allowed transition-all"
                         />
                       )}
                     </div>
@@ -958,18 +1143,18 @@ export const ConfiguracionDocumental: React.FC = () => {
             </div>
 
             {/* Sección 2: Indicadores de Logro (IL1 a IL5) */}
-            <div className="bg-white dark:bg-[#182220] rounded-3xl p-6 border border-slate-200/90 dark:border-[#263834] shadow-sm space-y-4">
-              <div className="border-b border-slate-100 dark:border-[#263834] pb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="bg-surface rounded-2xl p-6 border border-line shadow-[var(--ui-shadow)] space-y-4">
+              <div className="border-b border-line pb-3 flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-[#5EEAD4] tracking-tight flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#13594A] dark:bg-[#5EEAD4]" />
+                  <h3 className="text-sm font-bold text-brand tracking-tight flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-brand shrink-0" aria-hidden="true" />
                     2. Indicadores de Logro Pedagógicos (IL1 a IL5)
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-muted">
                     Redacte de manera concisa cada criterio de logro. Estos textos se imprimen en los Registros de Evaluación y Calificaciones.
                   </p>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-soft text-brand border border-brand/20 tabular-nums">
                   5 Indicadores Normados
                 </span>
               </div>
@@ -983,22 +1168,22 @@ export const ConfiguracionDocumental: React.FC = () => {
                   return (
                     <div
                       key={field.key}
-                      className={`space-y-1.5 p-4 rounded-2xl border border-slate-200/80 dark:border-[#263834] bg-slate-50/50 dark:bg-[#131C1A] ${
+                      className={`space-y-1.5 p-4 rounded-2xl border border-line bg-surface-alt ${
                         idx === 4 ? 'md:col-span-2' : ''
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <label
                           htmlFor={`field-${field.key}`}
-                          className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5"
+                          className="text-xs font-bold text-ink flex items-center gap-1.5"
                         >
-                          <span className="px-1.5 py-0.5 rounded bg-[#13594A] dark:bg-[#107560] text-white font-mono text-[10px]">
+                          <span className="px-1.5 py-0.5 rounded bg-brand text-on-brand font-mono text-[10px] tabular-nums">
                             IL{idx + 1}
                           </span>
                           <span>{field.label}</span>
                         </label>
                         {!editable && (
-                          <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
+                          <span className="text-[10px] font-semibold text-muted flex items-center gap-1">
                             <LockIcon className="w-3 h-3" /> Solo lectura
                           </span>
                         )}
@@ -1012,7 +1197,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                         onChange={(e) => handleFieldChange(field.key, e.target.value)}
                         disabled={!editable}
                         placeholder={placeholder}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#0F1715] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-100 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all leading-relaxed"
+                        className="w-full px-3 py-2 text-xs rounded-[10px] border border-line bg-surface text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:bg-surface-alt disabled:text-muted disabled:cursor-not-allowed transition-all leading-relaxed"
                       />
                     </div>
                   );
@@ -1022,20 +1207,61 @@ export const ConfiguracionDocumental: React.FC = () => {
           </>
         ) : (
           /* Caso B: Otros Ámbitos (Institución, Módulo, Grupo, Práctica, etc.) */
-          <div className="bg-white dark:bg-[#182220] rounded-3xl p-6 border border-slate-200/90 dark:border-[#263834] shadow-sm space-y-4">
-            <div className="border-b border-slate-100 dark:border-[#263834] pb-3 flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-[#5EEAD4] tracking-tight flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#13594A] dark:bg-[#5EEAD4]" />
-                  Campos Oficiales — {SCOPE_NAMES[selectedKind] || selectedKind}
+          <div className="bg-surface rounded-2xl p-6 border border-line shadow-[var(--ui-shadow)] space-y-4">
+            <div className="border-b border-line pb-3 flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-brand tracking-tight flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-brand shrink-0" aria-hidden="true" />
+                  <span>Campos Oficiales — {SCOPE_NAMES[selectedKind] || selectedKind}</span>
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-muted">
                   {isScopeEditable
                     ? 'Los campos marcados con asterisco (*) son obligatorios para la emisión formal de documentos.'
                     : 'Su cuenta no dispone de permisos de edición para este ámbito. Los valores se presentan para fines de auditoría y consulta.'}
                 </p>
               </div>
+
+              {canSuggestRegistryCodes && (
+                <button
+                  type="button"
+                  id="btn-suggest-registry-config"
+                  onClick={handleSuggestRegistryCodes}
+                  disabled={isSuggestingRegistry || isSaving}
+                  className="min-h-[40px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] border border-brand/30 bg-brand-soft hover:bg-brand text-brand hover:text-on-brand text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand shrink-0"
+                >
+                  <KeyIcon className={`w-3.5 h-3.5 ${isSuggestingRegistry ? 'animate-spin' : ''}`} />
+                  <span>
+                    {isSuggestingRegistry
+                      ? 'Calculando sugerencia…'
+                      : 'Sugerir Código Institucional y N° RD'}
+                  </span>
+                </button>
+              )}
             </div>
+
+            {selectedKind === 'registry' && (
+              <div className="space-y-2.5">
+                <div className="rounded-xl border border-line bg-surface-alt px-3.5 py-2.5 text-xs text-muted leading-relaxed">
+                  <strong className="text-ink font-semibold">Permisos registrales 2026:</strong>{' '}
+                  Dirección gestiona Código Institucional, Código UGEL, Resolución Directoral (N° y fecha), Expediente (N° y fecha) y datos del libro.
+                  Secretaría puede actualizar Fecha de Egreso y Docente de la Especialidad.
+                </div>
+                <RegistryCodeGuideBanner
+                  fields={formData}
+                  dni={selectedEnrollmentMeta?.document}
+                />
+              </div>
+            )}
+
+            {registrySuggestMessage && selectedKind === 'registry' && (
+              <div
+                role="status"
+                className="rounded-xl border border-emerald-300 dark:border-emerald-700/60 bg-emerald-50 dark:bg-emerald-950/30 px-3.5 py-2.5 text-xs text-emerald-900 dark:text-emerald-200 flex items-center gap-2"
+              >
+                <CheckCircleIcon className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <span>{registrySuggestMessage}</span>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="parameter-fields">
               {activeFieldsSchema
@@ -1044,27 +1270,43 @@ export const ConfiguracionDocumental: React.FC = () => {
                   const editable = isFieldEditable(field);
                   const val = formData[field.key] ?? '';
                   const placeholder = getFieldPlaceholder(field.key, field.type);
+                  const helpText = FIELD_HELP[field.key];
+                  const isRegistryScope = selectedKind === 'registry';
+                  const allowsSecretaria = field.roles.includes('SECRETARIA');
 
                   return (
                     <div
                       key={field.key}
-                      className={`space-y-1 ${field.type === 'textarea' ? 'md:col-span-2 lg:col-span-3' : ''}`}
+                      className={`space-y-1 min-w-0 ${field.type === 'textarea' ? 'md:col-span-2 lg:col-span-3' : ''}`}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <label
                           htmlFor={`field-${field.key}`}
-                          className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1"
+                          className="text-xs font-bold text-ink flex items-center gap-1 min-w-0"
                         >
-                          <span>{field.label}</span>
+                          <span className="truncate">{field.label}</span>
                           {editable && field.key === 'nombre' && selectedKind === 'institution' && (
                             <span className="text-rose-500">*</span>
                           )}
                         </label>
-                        {!editable && (
-                          <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
-                            <LockIcon className="w-3 h-3" /> Solo lectura
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {isRegistryScope && (
+                            <span
+                              className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${
+                                allowsSecretaria
+                                  ? 'border-brand/25 bg-brand-soft text-brand'
+                                  : 'border-line bg-surface-alt text-muted'
+                              }`}
+                            >
+                              {allowsSecretaria ? 'Dir. / Sec.' : 'Solo Dirección'}
+                            </span>
+                          )}
+                          {!editable && (
+                            <span className="text-[10px] font-semibold text-muted flex items-center gap-1">
+                              <LockIcon className="w-3 h-3" /> Solo lectura
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {field.type === 'textarea' ? (
@@ -1076,7 +1318,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                           onChange={(e) => handleFieldChange(field.key, e.target.value)}
                           disabled={!editable}
                           placeholder={placeholder}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-50 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
+                          className="w-full px-3 py-2 text-xs rounded-[10px] border border-line bg-surface text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:bg-surface-alt disabled:text-muted disabled:cursor-not-allowed transition-all"
                         />
                       ) : field.type === 'select' ? (
                         <select
@@ -1085,7 +1327,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                           value={String(val)}
                           onChange={(e) => handleFieldChange(field.key, e.target.value)}
                           disabled={!editable}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-50 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
+                          className="w-full min-h-[44px] px-3 py-2 text-xs rounded-[10px] border border-line bg-surface text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:bg-surface-alt disabled:text-muted disabled:cursor-not-allowed transition-all"
                         >
                           <option value="">Sin configurar</option>
                           {field.options?.map((opt) => (
@@ -1105,8 +1347,11 @@ export const ConfiguracionDocumental: React.FC = () => {
                           onChange={(e) => handleFieldChange(field.key, field.type === 'number' ? e.target.value : e.target.value)}
                           disabled={!editable}
                           placeholder={placeholder}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399] disabled:bg-slate-50 dark:disabled:bg-[#182220] disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all"
+                          className="w-full min-h-[44px] px-3 py-2 text-xs rounded-[10px] border border-line bg-surface text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:bg-surface-alt disabled:text-muted disabled:cursor-not-allowed transition-all"
                         />
+                      )}
+                      {helpText && (
+                        <p className="text-[11px] text-muted leading-snug">{helpText}</p>
                       )}
                     </div>
                   );
@@ -1116,14 +1361,14 @@ export const ConfiguracionDocumental: React.FC = () => {
         )}
 
         {/* 5. Barra de Acciones y Guardado */}
-        <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 border border-slate-200/90 dark:border-[#263834] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+        <div className="bg-surface rounded-2xl p-5 border border-line shadow-[var(--ui-shadow)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               id="save-parameters"
               onClick={handleSave}
               disabled={isSaving || !isScopeEditable || !isDirty}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#13594A] hover:bg-[#0D3E34] text-white text-xs font-bold transition-all shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5EEAD4] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="min-h-[44px] inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-brand hover:bg-brand/90 text-on-brand text-xs font-bold transition-all shadow-sm focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               <SaveIcon className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
               <span>{isSaving ? 'Guardando en Servidor…' : 'Guardar Parámetros'}</span>
@@ -1134,7 +1379,7 @@ export const ConfiguracionDocumental: React.FC = () => {
                 type="button"
                 onClick={handleDiscard}
                 disabled={isSaving}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors disabled:opacity-50"
+                className="min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface-alt hover:bg-brand-soft text-ink hover:text-brand text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
               >
                 Descartar Cambios
               </button>
@@ -1144,44 +1389,101 @@ export const ConfiguracionDocumental: React.FC = () => {
           <div className="flex items-center gap-3">
             <a
               href="#/documentos"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#1F2D2A] hover:bg-slate-200 dark:hover:bg-[#263834] text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors"
+              className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] bg-surface-alt border border-line hover:bg-brand-soft text-ink hover:text-brand text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-brand"
             >
               <span>Ver Formatos en Centro Documental</span>
-              <span>→</span>
+              <span aria-hidden="true">→</span>
             </a>
           </div>
         </div>
       </form>
 
       {/* 6. Panel Informativo: Integración con Preflight y Centro Documental */}
-      <div className="bg-gradient-to-r from-slate-50 to-emerald-50/40 dark:from-[#182220] dark:to-[#131C1A] rounded-3xl p-6 border border-slate-200/80 dark:border-[#263834] shadow-sm space-y-3">
+      <div className="bg-surface-alt rounded-2xl p-6 border border-line shadow-[var(--ui-shadow)] space-y-3">
         <div className="flex items-center gap-2">
-          <DocumentIcon className="w-5 h-5 text-[#13594A] dark:text-[#5EEAD4]" />
-          <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
+          <DocumentIcon className="w-5 h-5 text-brand shrink-0" />
+          <h3 className="text-sm font-bold text-ink tracking-tight">
             Efecto sobre el Centro Documental y el Checklist Preflight
           </h3>
         </div>
 
-        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-4xl">
+        <p className="text-xs text-muted leading-relaxed max-w-4xl">
           Los indicadores de logro guardados se integrarán en la próxima validación documental.
           <br /><br />
           La disponibilidad de cada formato dependerá del cumplimiento de todos los requisitos del Preflight.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
-          <div className="bg-white dark:bg-[#131C1A] p-3 rounded-2xl border border-slate-200/80 dark:border-[#263834]">
-            <strong className="font-bold text-slate-800 dark:text-slate-200 block mb-0.5">TMPL-04 · Carpeta Pedagógica</strong>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Refleja la programación, horas y capacidades de la unidad.</span>
+          <div className="bg-surface p-3.5 rounded-2xl border border-line">
+            <strong className="font-bold text-ink block mb-0.5 tabular-nums">TMPL-04 · Carpeta Pedagógica</strong>
+            <span className="text-[11px] text-muted">Refleja la programación, horas y capacidades de la unidad.</span>
           </div>
-          <div className="bg-white dark:bg-[#131C1A] p-3 rounded-2xl border border-slate-200/80 dark:border-[#263834]">
-            <strong className="font-bold text-slate-800 dark:text-slate-200 block mb-0.5">TMPL-05..10 · Asistencia UD1..UD6</strong>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Valida fechas lectivas y nombre oficial de la unidad.</span>
+          <div className="bg-surface p-3.5 rounded-2xl border border-line">
+            <strong className="font-bold text-ink block mb-0.5 tabular-nums">TMPL-05..10 · Asistencia UD1..UD6</strong>
+            <span className="text-[11px] text-muted">Valida fechas lectivas y nombre oficial de la unidad.</span>
           </div>
-          <div className="bg-white dark:bg-[#131C1A] p-3 rounded-2xl border border-slate-200/80 dark:border-[#263834]">
-            <strong className="font-bold text-slate-800 dark:text-slate-200 block mb-0.5">TMPL-11..17 · Evaluación UD1..UD7</strong>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Imprime los 5 indicadores de logro en la cabecera del registro.</span>
+          <div className="bg-surface p-3.5 rounded-2xl border border-line">
+            <strong className="font-bold text-ink block mb-0.5 tabular-nums">TMPL-11..17 · Evaluación UD1..UD7</strong>
+            <span className="text-[11px] text-muted">Imprime los 5 indicadores de logro en la cabecera del registro.</span>
           </div>
         </div>
+
+        {(docConfig?.extendedCatalog?.length || docConfig?.catalog?.length) ? (
+          <div className="pt-3 border-t border-line space-y-2.5" id="catalog-extension-overview">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs font-bold text-ink">
+                  Catálogo Documental Activo ({docConfig?.extendedCatalog?.length ? docConfig.extendedCatalog.length : docConfig?.catalog?.length} formatos)
+                </h4>
+                {Boolean(docConfig?.extendedCatalog?.length) && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-soft text-brand border border-brand/20">
+                    Incluye Extensión 2026 (TMPL-22 / TMPL-23)
+                  </span>
+                )}
+              </div>
+              <span className="text-[11px] text-muted">
+                Los campos configurados alimentan automáticamente el preflight y la emisión PDF 2026.
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {(docConfig?.extendedCatalog?.length ? docConfig.extendedCatalog : docConfig?.catalog || []).map((item) => {
+                const supports2026 =
+                  Boolean(item.official2026Support || item.official2026) ||
+                  ['TMPL-01', 'TMPL-19', 'TMPL-20', 'TMPL-21', 'TMPL-22', 'TMPL-23'].includes(item.id);
+                const isExtension = Boolean(item.extension || item.id === 'TMPL-22' || item.id === 'TMPL-23');
+                return (
+                  <div
+                    key={item.id}
+                    className={`rounded-xl border p-3 bg-surface text-xs flex flex-col justify-between gap-1.5 ${
+                      isExtension ? 'border-brand/35 ring-1 ring-brand/10' : 'border-line'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-ink tabular-nums">{item.id}</span>
+                      <div className="flex items-center gap-1 flex-wrap justify-end">
+                        {isExtension && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-brand-soft text-brand">
+                            Extensión 2026
+                          </span>
+                        )}
+                        {supports2026 && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300">
+                            Oficial 2026
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-[11px] font-semibold text-ink leading-snug">{item.name}</p>
+                    <span className="text-[10px] text-muted tabular-nums">
+                      {Array.isArray(item.parameters) ? item.parameters.length : 0} parámetros vinculados
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

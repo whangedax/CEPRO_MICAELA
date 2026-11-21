@@ -1,0 +1,50 @@
+/* Shared, scoped academic records. Colors pair with labels in both product themes. */
+:root {
+  --record-academic: #075985;
+  --record-code: #6b3fa0;
+}
+html.dark {
+  --record-academic: #7dd3fc;
+  --record-code: #c4b5fd;
+}
+.record-name {
+  color: var(--ui-brand);
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.record-academic {
+  color: var(--record-academic);
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.record-code {
+  color: var(--record-code);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.record-label {
+  color: var(--ui-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.record-table {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.record-table thead th {
+  background: var(--ui-surface-alt);
+  color: var(--ui-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+.record-table td { vertical-align: middle; }
+.record-table tbody tr:focus-within { background: var(--ui-surface-alt); }
+@media print {
+  .record-name, .record-academic, .record-code { color: #111; }
+}

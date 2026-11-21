@@ -58,18 +58,18 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
 
   return (
     <div
-      className={`bg-white dark:bg-[#182220] rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between ${
+      className={`min-w-0 bg-[var(--ui-surface)] rounded-2xl p-6 border transition-all duration-200 flex flex-col justify-between shadow-[var(--ui-shadow)] ${
         isActiveWorkspace
-          ? 'border-[#13594A] dark:border-[#205C4E] shadow-[0_8px_30px_rgba(19,89,74,0.12)] ring-1 ring-[#13594A]/30 dark:ring-[#205C4E]/40'
-          : 'border-slate-100/90 dark:border-[#263834] shadow-[0_4px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_10px_32px_rgba(19,89,74,0.08)] dark:hover:border-[#205C4E]'
+          ? 'border-[var(--ui-brand)] ring-1 ring-[var(--ui-brand)]/30'
+          : 'border-[var(--ui-line)] hover:border-[var(--ui-brand)]/60'
       }`}
     >
-      <div>
+      <div className="min-w-0">
         {/* Header Aula */}
-        <div className="flex items-start justify-between gap-4 mb-5">
-          <div className="flex items-start gap-3.5">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+          <div className="flex items-start gap-4 min-w-0">
             <div
-              className={`w-12 h-12 rounded-2xl ${careerTheme.iconBgClass} text-white flex items-center justify-center shadow-md shrink-0`}
+              className={`w-12 h-12 rounded-2xl ${careerTheme.iconBgClass} text-white flex items-center justify-center shadow-sm shrink-0`}
             >
               <CareerEmblemIcon
                 programId={group.programId}
@@ -77,22 +77,19 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
                 className="w-6 h-6 text-white"
               />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-[#13594A] dark:text-[#5EEAD4] tracking-wider uppercase font-bold">
-                  Carrera Técnica
-                </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
                 {isActiveWorkspace && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-[#132B25] text-emerald-900 dark:text-[#5EEAD4] text-[10px] font-bold border border-emerald-300 dark:border-[#205C4E]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-[#5EEAD4] animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[var(--ui-brand-soft)] text-[var(--ui-brand)] text-[12px] leading-[18px] font-bold border border-[var(--ui-line)]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--ui-brand)] animate-pulse" />
                     Aula Activa
                   </span>
                 )}
               </div>
-              <h3 className="text-[18px] text-[#172B28] dark:text-[#F0FDF8] font-bold tracking-tight leading-snug">
+              <h3 className="text-lg leading-snug text-ink font-bold break-words">
                 {programName}
               </h3>
-              <p className="text-[12px] text-slate-600 dark:text-slate-300 font-medium mt-0.5">
+              <p className="text-sm leading-relaxed text-muted mt-1 break-words">
                 {moduleName}
               </p>
             </div>
@@ -100,12 +97,12 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
 
           {/* Shift Badge (WCAG 2.2 AA compliant contrast) */}
           {isMorning ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300/80 dark:border-amber-800/60 text-[11px] font-semibold shrink-0">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300/80 dark:border-amber-800/60 text-[12px] leading-[18px] font-semibold shrink-0">
               <SunIcon className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
               {group.turno || 'Mañana'}
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800/60 text-[11px] font-semibold shrink-0">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800/60 text-[12px] leading-[18px] font-semibold shrink-0">
               <SunsetIcon className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
               {group.turno || 'Tarde'}
             </span>
@@ -113,40 +110,41 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
         </div>
 
         {/* Ilustración Descriptiva de la Carrera */}
-        <div className="mb-5">
+        <div className="mb-4">
           <CareerVisualBanner
             programId={group.programId}
             programName={programName}
             instanceId={group.id}
             heightClass="h-36"
+            showToolsFooter={false}
             rightBadgeText={`Periodo ${group.periodId} · Sección ${group.section || 'A1'}`}
           />
         </div>
 
         {/* Academic Metadata Grid (contrast >= 4.5:1 on labels) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-5 p-3.5 rounded-2xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200/80 dark:border-[#263834]">
-          <div className="flex flex-col">
-            <span className="text-[10px] text-slate-600 dark:text-slate-400 uppercase tracking-wider font-bold">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 p-4 rounded-2xl bg-[var(--ui-surface-alt)] border border-[var(--ui-line)]">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[12px] leading-[18px] text-[var(--ui-muted)] uppercase tracking-wider font-bold">
               Grupo
             </span>
-            <span className="text-[13px] text-slate-900 dark:text-slate-100 font-bold mt-0.5 truncate" title={groupLabel}>
+            <span className="text-sm leading-relaxed text-ink font-bold mt-0.5 break-words" title={groupLabel}>
               {groupLabel}
             </span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] text-slate-600 dark:text-slate-400 uppercase tracking-wider font-bold">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[12px] leading-[18px] text-[var(--ui-muted)] uppercase tracking-wider font-bold">
               Matriculados
             </span>
-            <span className="text-[13px] text-[#13594A] dark:text-[#5EEAD4] font-bold mt-0.5 flex items-center gap-1.5">
-              <StudentsIcon className="w-3.5 h-3.5 text-[#13594A] dark:text-[#5EEAD4]" />
-              {group.studentCount} estudiantes
+            <span className="text-[14px] leading-[21px] text-[var(--ui-brand)] font-bold tabular-nums mt-0.5 flex items-center gap-1.5">
+              <StudentsIcon className="w-3.5 h-3.5 text-[var(--ui-brand)] shrink-0" />
+              <span>{group.studentCount} estudiantes</span>
             </span>
           </div>
-          <div className="flex flex-col col-span-2 sm:col-span-1">
-            <span className="text-[10px] text-slate-600 dark:text-slate-400 uppercase tracking-wider font-bold mb-1">
+          <div className="flex flex-col col-span-2 sm:col-span-1 min-w-0">
+            <span className="text-[12px] leading-[18px] text-[var(--ui-muted)] uppercase tracking-wider font-bold tabular-nums mb-1.5">
               Unidades ({group.units.length} U.D.)
             </span>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-2">
               {group.units.map((u) => {
                 const isUnitSelected = isActiveWorkspace && activeUnitCode === u.code;
                 return (
@@ -161,10 +159,10 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
                       }
                     }}
                     title={u.name ? `Seleccionar ${u.code}: ${u.name}` : `Seleccionar unidad ${u.code}`}
-                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all cursor-pointer border ${
+                    className={`min-h-[44px] px-3 py-2 rounded-[10px] text-[12px] leading-[18px] font-bold transition-colors cursor-pointer border ${
                       isUnitSelected
-                        ? 'bg-[#13594A] text-white border-[#13594A] shadow-xs'
-                        : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:border-[#13594A] hover:text-[#13594A] dark:hover:text-[#5EEAD4]'
+                        ? 'bg-[var(--ui-brand)] text-[var(--ui-on-brand)] border-[var(--ui-brand)]'
+                        : 'bg-[var(--ui-surface)] text-[var(--ui-ink)] border-[var(--ui-line)] hover:border-[var(--ui-brand)] hover:text-[var(--ui-brand)]'
                     }`}
                   >
                     {u.code}
@@ -177,14 +175,14 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
       </div>
 
       {/* Card Footer: Action with accessible label and focus */}
-      <div className="pt-4 border-t border-slate-100 dark:border-[#263834] flex items-center justify-between">
+      <div className="pt-4 border-t border-[var(--ui-line)] flex flex-wrap items-center justify-between gap-3">
         {isActiveWorkspace ? (
-          <div className="text-[11px] font-semibold text-[#13594A] dark:text-[#5EEAD4] flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>Unidad: {activeUnitCode || 'Módulo completo'}</span>
+          <div className="text-[12px] leading-[18px] font-semibold text-[var(--ui-brand)] flex items-center gap-2 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-[var(--ui-brand)] shrink-0" />
+            <span className="truncate">Unidad: {activeUnitCode || 'Módulo completo'}</span>
           </div>
         ) : (
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+          <span className="text-[12px] leading-[18px] text-[var(--ui-muted)] font-medium">
             Selección disponible
           </span>
         )}
@@ -193,7 +191,7 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
           type="button"
           onClick={() => onEnterClassroom(group)}
           aria-label={`Ingresar al aula: ${programName}, ${groupLabel}`}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#13594A] text-white text-[12px] font-semibold shadow-sm hover:bg-[#004034] dark:hover:bg-[#1A6B5A] hover:shadow-[0_4px_12px_rgba(19,89,74,0.25)] transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4] focus-visible:ring-offset-2"
+          className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2.5 rounded-[10px] bg-[var(--ui-brand)] text-[var(--ui-on-brand)] text-[14px] leading-[21px] font-semibold hover:opacity-90 transition-all duration-200 group cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-brand)] focus-visible:ring-offset-2"
         >
           <span>{isActiveWorkspace ? 'Cambiar unidad' : 'Ingresar al aula'}</span>
           <span className="transition-transform group-hover:translate-x-1">

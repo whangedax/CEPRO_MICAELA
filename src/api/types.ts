@@ -22,6 +22,7 @@ export interface PublicUser {
   username: string;
   name: string;
   description?: string;
+  careerId?: string;
   assignmentPending: boolean;
   role: UserRole;
   assignments: UserAssignment[];
@@ -86,12 +87,16 @@ export interface WorkspaceGroupOption {
   year: string;
   turno: string;
   modalidad: string;
+  isConvenio?: boolean;
+  convenioName?: string;
   fechaInicio?: string;
   fechaFin?: string;
   units: WorkspaceUnitOption[];
 }
 
 export interface WorkspaceModuleOption {
+  periodId?: string;
+  plannedUnits?: { code: string; name?: string }[];
   id: string;
   nombre: string;
   programId?: string;
@@ -111,6 +116,7 @@ export interface WorkspaceYearStat {
 }
 
 export interface WorkspaceOptionsResponse {
+  periods?: string[];
   role: UserRole;
   assignmentPending: boolean;
   years: string[];
@@ -121,6 +127,7 @@ export interface WorkspaceOptionsResponse {
 }
 
 export interface SelectWorkspacePayload {
+  periodId?: string;
   overview?: boolean;
   year?: string;
   programId?: string;
@@ -131,6 +138,7 @@ export interface SelectWorkspacePayload {
 }
 
 export interface WorkspaceContext {
+  periodId?: string;
   overview?: boolean;
   year?: string;
   programId?: string;
@@ -151,6 +159,9 @@ export interface DashboardGroup {
   moduleId: string;
   periodId: string;
   turno?: string;
+  teacherName?: string;
+  isConvenio?: boolean;
+  convenioName?: string;
   closed?: boolean;
   closureReason?: string;
   units?: string[];
@@ -240,8 +251,11 @@ export interface DocumentCatalogItem {
   name: string; // e.g. 'Nómina de matrícula'
   parameters: string[];
   capacity?: Record<string, unknown>;
-  pages?: Array<{ number: number; width: number; height: number }>;
+  pages?: number | Array<{ number: number; width: number; height: number }>;
   physicalKeys?: string[];
+  extension?: boolean;
+  official2026?: boolean;
+  official2026Support?: boolean;
 }
 
 export interface DocumentFieldSchema {
@@ -286,9 +300,43 @@ export interface DocumentSettingRecord {
 
 export interface DocumentConfigurationResponse {
   catalog: DocumentCatalogItem[];
+  extendedCatalog?: DocumentCatalogItem[];
   schema: Record<string, DocumentFieldSchema[]>;
   defaults: Record<string, Record<string, string>>;
   settings: DocumentSettingRecord[];
+}
+
+export interface ProgramTrajectoryModuleSummary {
+  order: number;
+  enrollmentId: string;
+  groupId: string;
+  periodId: string | null;
+  moduleId: string;
+  moduleCode: string;
+  moduleName: string;
+  hours: number;
+  credits: number;
+  efsrtHours: number;
+  modularGrade: number | null;
+  efsrtFinalGrade: number | null;
+  condition: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  provisional: boolean;
+  active: boolean;
+}
+
+export interface ProgramTrajectorySummary {
+  studentId?: string | null;
+  programId?: string | null;
+  programName?: string;
+  module1: ProgramTrajectoryModuleSummary | null;
+  module2: ProgramTrajectoryModuleSummary | null;
+  modules?: ProgramTrajectoryModuleSummary[];
+  totalHours: number;
+  totalCredits: number;
+  hasBothModules: boolean;
+  missingModules: string[];
 }
 
 export interface PreflightField {
@@ -320,10 +368,14 @@ export interface DocumentRequestPayload {
   enrollmentId?: string;
   includeRetired?: boolean;
   demoFill?: boolean;
+  official2026?: boolean;
 }
+
+export type DocumentRequest = DocumentRequestPayload;
 
 export interface DocumentPreflightResponse {
   templateId: string;
+  catalogName?: string;
   fingerprint: string;
   groupId?: string;
   unit?: string;
@@ -332,6 +384,8 @@ export interface DocumentPreflightResponse {
   demoFill?: boolean;
   demoMode?: boolean;
   official?: boolean;
+  official2026?: boolean;
+  trajectory?: ProgramTrajectorySummary | null;
   preflight: DocumentPreflight;
   warnings?: string[];
   institution?: Record<string, unknown>;
@@ -342,9 +396,11 @@ export interface DocumentPreflightResponse {
   grades?: unknown[];
   attendance?: unknown[];
   academicDates?: string[];
-  parameters?: string[];
+  parameters?: Record<string, unknown> | string[];
   [key: string]: unknown;
 }
+
+export type DocumentRecord = DocumentPreflightResponse;
 
 export interface DocumentPdfPayload {
   groupId: string;
@@ -353,6 +409,7 @@ export interface DocumentPdfPayload {
   enrollmentId?: string;
   includeRetired?: boolean;
   demoFill?: boolean;
+  official2026?: boolean;
   fingerprint?: string;
 }
 
@@ -390,6 +447,7 @@ export interface DocumentSubmitPayload {
   unit?: string;
   enrollmentId?: string;
   includeRetired?: boolean;
+  official2026?: boolean;
   fingerprint: string;
 }
 
@@ -398,6 +456,102 @@ export interface DocumentReviewPayload {
   status: 'RECIBIDO' | 'OBSERVADO' | 'REVISADO';
   reason: string;
   rev: string;
+}
+
+export interface TitleEmissionSnapshot {
+  correlative?: string;
+  levelCode?: string;
+  studentDni?: string;
+  studentName?: string;
+  tituladoName?: string;
+  officialTitleText?: string;
+  programAcronym?: string;
+  completionYear?: string;
+  processYear?: string;
+  registerCode?: string;
+  ugelCode?: string;
+  referenceResolution?: string;
+  emissionDate?: string;
+  directorName?: string;
+  lugar?: string;
+}
+
+export interface DocumentEmissionRecord {
+  id: string;
+  templateId: string;
+  templateName: string;
+  groupId: string | null;
+  periodId: string | null;
+  year: string | null;
+  unit: string | null;
+  enrollmentId: string | null;
+  studentId: string | null;
+  studentName: string | null;
+  studentDni: string | null;
+  programId: string | null;
+  moduleId: string | null;
+  correlative?: string | null;
+  registerCode: string | null;
+  resolutionNumber: string | null;
+  ugelCode: string | null;
+  official2026: boolean;
+  demoMode: boolean;
+  isDraft: boolean;
+  pdfHash: string;
+  byteLength: number;
+  titleSnapshot?: TitleEmissionSnapshot;
+  issuedBy: string;
+  issuedByName: string;
+  issuedByRole: UserRole | string;
+  issuedAt: string;
+  meta?: Record<string, unknown>;
+}
+
+export interface DocumentEmissionsFilters {
+  groupId?: string;
+  templateId?: string;
+  enrollmentId?: string;
+  studentId?: string;
+  year?: string;
+  query?: string;
+}
+
+export interface DeleteDocumentEmissionResponse {
+  deleted: boolean;
+  id: string;
+  templateId: string;
+  registerCode: string | null;
+  freedCorrelative: string | null;
+}
+
+export interface SuggestDocumentRegisterCodePayload {
+  groupId: string;
+  templateId?: string;
+  enrollmentId?: string;
+  emissionYear?: string;
+  dni?: string;
+  demoMode?: boolean;
+  correlative?: string | number;
+  levelCode?: string;
+  programAcronym?: string;
+  shortRef?: string;
+  codeYear?: string;
+  forceNext?: boolean;
+}
+
+export interface SuggestedRegistryCodes {
+  correlative: number;
+  correlativeFormatted?: string;
+  levelCode?: string;
+  dni?: string;
+  programAcronym?: string;
+  shortRef?: string;
+  codeYear?: string;
+  registerCode: string;
+  resolutionNumber: string;
+  referenceResolution?: string;
+  intakeYear: string;
+  emissionYear: string;
 }
 
 export interface SimulateUnitAttendancePayload {
@@ -507,6 +661,8 @@ export interface SaveGroupPayload {
   periodId: string;
   section?: string;
   turno?: string;
+  isConvenio?: boolean;
+  convenioName?: string;
   units: string[];
 }
 
@@ -517,11 +673,32 @@ export interface ClosureGroupPayload {
   rev?: string;
 }
 
+export interface DeleteGroupPayload {
+  id: string;
+  rev?: string;
+  reason: string;
+}
+
+export interface ReassignGroupTeacherPayload {
+  groupId: string;
+  teacherId?: string;
+  units?: string[];
+  exclusive?: boolean;
+  unassign?: boolean;
+}
+
+export interface ReassignGroupTeacherResponse {
+  group: DashboardGroup;
+  teacher: PublicUser | null;
+  previousTeachers: string[];
+}
+
 export interface SaveUserPayload {
   id?: string;
   username: string;
   name: string;
   description?: string;
+  careerId?: string;
   role: UserRole;
   password?: string;
   active?: boolean;
@@ -534,6 +711,7 @@ export interface ArchiveUserPayload {
   id: string;
   version?: number;
   reason: string;
+  replacementTeacherId?: string;
 }
 
 export interface ChangePasswordPayload {
@@ -854,6 +1032,7 @@ export interface RestoreBackupPayload {
 }
 
 export interface RestoreBackupResponse {
+  requiresLogin?: boolean;
   success: boolean;
   previousCopy: string;
 }
@@ -1302,3 +1481,52 @@ export interface DocumentaryCatalogResponse {
 
 
 
+
+/** Portable, capability-driven synchronization shared by every profile. */
+export interface SyncTransferCapabilities {
+  role: UserRole;
+  modules: { id: string; label: string; description: string; canExport: boolean; canImport: boolean }[];
+  recipients: { id: string; name: string; role: UserRole }[];
+  importPolicy: string;
+  passphraseRequired: boolean;
+}
+export interface SyncTransferSummary {
+  module: string;
+  label: string;
+  total: number;
+  counts: Record<string, number>;
+  dependencies?: Record<string, number>;
+  sender: { id: string; name: string; role: UserRole };
+  recipient: { id: string; name: string; role: UserRole } | null;
+}
+export interface SyncTransferExportInput {
+  syncModule: string;
+  recipientUserId?: string;
+  passphrase: string;
+  groupId?: string;
+  unit?: string;
+  channel: 'WHATSAPP' | 'USB';
+}
+export interface SyncTransferExportResponse {
+  package: unknown;
+  tokenText?: string | null;
+  shareText?: string;
+  message?: string;
+  summary: SyncTransferSummary;
+  fileName: string;
+  instructions: string;
+}
+export interface SyncTransferPreviewInput {
+  tokenText?: string;
+  package?: unknown;
+  passphrase: string;
+}
+export interface SyncTransferPreviewResponse {
+  previewToken: string;
+  report: SyncPreviewReport;
+  summary: SyncTransferSummary;
+}
+export interface SyncTransferImportResponse {
+  report: SyncPreviewReport;
+  summary: SyncTransferSummary;
+}

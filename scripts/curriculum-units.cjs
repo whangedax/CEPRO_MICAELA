@@ -120,7 +120,10 @@ function removeCurriculumUnit(core, actor, input) {
       return matchGroup && g.unit === unitCode;
     });
 
-    const hasRecordedGrades = existingGrades.length > 0;
+    const belongsToUnit = record => (!input.groupId || record.groupId === input.groupId) && record.unit === unitCode;
+    const existingAttendance = core.records('attendance').filter(belongsToUnit);
+    const existingDocuments = core.records('documentSubmissions').filter(belongsToUnit);
+    const hasRecordedGrades = existingGrades.length + existingAttendance.length + existingDocuments.length > 0;
 
     if (input.groupId) {
       const group = core.record('groups', input.groupId);
@@ -128,20 +131,22 @@ function removeCurriculumUnit(core, actor, input) {
 
       if (hasRecordedGrades) {
         // APLICAR ARCHIVO LÓGICO: Nunca borrar
-        const archivedUnits = group.archivedUnits || [];
+        const archivedUnits = [...(group.archivedUnits || [])];
         if (!archivedUnits.includes(unitCode)) archivedUnits.push(unitCode);
 
         // Actualizar registro en SQLite preservando el array físico units para integridad referencial
-        core.putRecord('groups', {
+        core.write(actor, 'groups', {
           ...group,
           archivedUnits
-        });
+        }, group.rev);
 
         core.audit('CURRICULUM_UNIT_ARCHIVED', actor, {
           unitCode,
           groupId: group.id,
           preservedGradesCount: existingGrades.length,
-          reason: 'Preservación histórica obligatoria de calificaciones registradas'
+          preservedAttendanceCount: existingAttendance.length,
+          preservedDocumentsCount: existingDocuments.length,
+          reason: 'Preservación histórica de calificaciones, asistencias y documentos registrados'
         });
 
         return {
@@ -149,7 +154,9 @@ function removeCurriculumUnit(core, actor, input) {
           action: 'ARCHIVED',
           unitCode,
           preservedGradesCount: existingGrades.length,
-          message: `La unidad ${unitCode} contiene ${existingGrades.length} nota(s) registrada(s). Se archivó lógicamente sin perder datos históricos.`
+          preservedAttendanceCount: existingAttendance.length,
+          preservedDocumentsCount: existingDocuments.length,
+          message: `La unidad ${unitCode} tiene registros académicos. Se archivó lógicamente sin perder notas, asistencias ni documentos.`
         };
       } else {
         // Si NO hay notas, remoción limpia del aula

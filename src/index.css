@@ -1,41 +1,143 @@
 @import "tailwindcss";
+@import "./styles/academic-records.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/PlusJakartaSans-Variable.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+@theme inline {
+  --font-sans: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
   --color-institutional: #13594a;
   --color-petroleum: #004034;
   --color-mint: #e6f4f1;
   --color-background-main: #f6f8fa;
+  --color-canvas: var(--ui-canvas);
+  --color-surface: var(--ui-surface);
+  --color-surface-alt: var(--ui-surface-alt);
+  --color-ink: var(--ui-ink);
+  --color-muted: var(--ui-muted);
+  --color-line: var(--ui-line);
+  --color-brand: var(--ui-brand);
+  --color-on-brand: var(--ui-on-brand);
+  --color-brand-soft: var(--ui-brand-soft);
+}
+
+:root {
+  --ui-canvas: #f6f8fa;
+  --ui-surface: #ffffff;
+  --ui-surface-alt: #f1f5f4;
+  --ui-ink: #172b28;
+  --ui-muted: #52645d;
+  --ui-line: #d7e2dc;
+  --ui-brand: #13594a;
+  --ui-on-brand: #ffffff;
+  --ui-brand-soft: #e6f4f1;
+  --ui-sidebar: #103e33;
+  --ui-sidebar-active: #e5f2e9;
+  --ui-shadow: 0 3px 16px rgb(20 52 38 / 3%);
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-  background-color: #f6f8fa;
-  color: #172b28;
+  font-family: var(--font-sans);
+  background-color: var(--ui-canvas);
+  color: var(--ui-ink);
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
 }
 
 html.dark {
-  background-color: #0F1715;
-  color: #F0FDF8;
+  --ui-canvas: #0f1715;
+  --ui-surface: #182220;
+  --ui-surface-alt: #1f2d2a;
+  --ui-ink: #f0fdf8;
+  --ui-muted: #b8cbc2;
+  --ui-line: #2b413b;
+  --ui-brand: #98d5bb;
+  --ui-on-brand: #12211e;
+  --ui-brand-soft: #213c34;
+  --ui-sidebar: #0b2922;
+  --ui-sidebar-active: #1f4a3e;
+  --ui-shadow: 0 3px 16px rgb(0 0 0 / 24%);
+  background-color: var(--ui-canvas);
+  color: var(--ui-ink);
   color-scheme: dark;
 }
 
 html.dark body {
-  background-color: #0F1715;
-  color: #F0FDF8;
+  background-color: var(--ui-canvas);
+  color: var(--ui-ink);
 }
 
 :focus-visible {
-  outline: 2px solid #13594a;
-  outline-offset: 2px;
+  outline: 2px solid var(--ui-brand);
+  outline-offset: 3px;
 }
 
-html.dark :focus-visible {
-  outline: 2px solid #5EEAD4;
+.ui-button-primary,
+.ui-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background-color 150ms, border-color 150ms, color 150ms;
+}
+
+.ui-button-primary {
+  background-color: var(--ui-brand);
+  color: var(--ui-on-brand);
+  border: 1px solid var(--ui-brand);
+}
+
+.ui-button-primary:hover {
+  background-color: color-mix(in srgb, var(--ui-brand) 85%, var(--ui-ink));
+}
+
+.ui-button-secondary {
+  background-color: var(--ui-surface);
+  color: var(--ui-brand);
+  border: 1px solid var(--ui-line);
+}
+
+.ui-button-secondary:hover {
+  background-color: var(--ui-brand-soft);
+}
+
+.cepro-dialog-panel {
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  background-color: var(--ui-surface);
+  color: var(--ui-ink);
+  border: 1px solid var(--ui-line);
+  border-radius: 16px;
+}
+
+.cepro-dialog-panel button {
+  min-height: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Red de seguridad base para controles de formulario en Modo Oscuro */
@@ -85,6 +187,20 @@ html.dark table td {
 
 
 @media print {
+  :root,
+  html.dark {
+    --ui-canvas: #ffffff;
+    --ui-surface: #ffffff;
+    --ui-surface-alt: #ffffff;
+    --ui-ink: #000000;
+    --ui-muted: #000000;
+    --ui-line: #cccccc;
+    --ui-brand: #000000;
+    --ui-on-brand: #ffffff;
+    --ui-brand-soft: #f5f5f5;
+    --ui-shadow: none;
+    color-scheme: light !important;
+  }
   html, body {
     background-color: #ffffff !important;
     color: #000000 !important;

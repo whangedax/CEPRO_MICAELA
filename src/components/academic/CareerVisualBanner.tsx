@@ -1,7 +1,7 @@
 /**
  * src/components/academic/CareerVisualBanner.tsx
  *
- * Arte visual descriptivo y temático (100% vectorial SVG, offline-first y CSP-safe)
+ * Fotografía contextual local con respaldo vectorial, offline y compatible con CSP
  * para las 7 Carreras Oficiales de CEPRO_MICAELA 2.0 (2026):
  *   - PROG-001: Mecánica Automotriz
  *   - PROG-002: Mecánica de Motos y Vehículos Afines
@@ -12,7 +12,7 @@
  *   - PROG-007: Mantenimiento de Sistemas Eléctricos
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 
 export interface CareerVisualTheme {
   id: string;
@@ -224,162 +224,68 @@ export const CareerVisualBanner: React.FC<CareerVisualBannerProps> = ({
   showToolsFooter = true,
 }) => {
   const theme = resolveCareerVisualTheme(programId, programName);
-  const patternId = `career-pat-${theme.key}-${instanceId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
-
   return (
-    <div
-      className={`relative w-full ${heightClass} rounded-2xl overflow-hidden ${theme.gradientClass} group flex flex-col justify-between p-4 shadow-inner select-none`}
-    >
-      {/* Patrón de fondo técnico/artesanal sutil */}
-      <div className="absolute inset-0 opacity-12 pointer-events-none">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <defs>
-            <pattern id={patternId} width="22" height="22" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1" fill="#ffffff" />
-              <path d="M 22 0 L 0 0 0 22" fill="none" stroke="#ffffff" strokeWidth="0.35" opacity="0.45" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill={`url(#${patternId})`} />
-        </svg>
+    <div className={`relative isolate w-full ${heightClass} min-h-40 overflow-hidden rounded-2xl ${theme.gradientClass} flex flex-col justify-between`} data-career-banner={theme.id}>
+      <CareerPhoto programId={programId} programName={programName} className="absolute inset-0 h-full w-full" />
+      <div className="relative z-10 flex flex-wrap items-start justify-between gap-2 p-3">
+        <span className="rounded-lg bg-black/80 px-2.5 py-1 text-xs font-semibold text-white">{badgeText || theme.shortLabel}</span>
+        {rightBadgeText && <span className="rounded-lg bg-black/80 px-2.5 py-1 text-xs font-medium text-white">{rightBadgeText}</span>}
       </div>
-
-      {/* Ilustración Descriptiva Vectorial según la Carrera */}
-      <div className="absolute right-2 bottom-1 top-1 w-48 pointer-events-none flex items-center justify-end opacity-90 group-hover:scale-105 transition-transform duration-500">
-        {theme.key === 'automotriz' && (
-          <svg viewBox="0 0 180 110" className="w-44 h-28 drop-shadow-md" fill="none" aria-hidden="true">
-            {/* Silueta de automóvil técnico + engranaje y escáner */}
-            <circle cx="135" cy="36" r="22" stroke="#7DD3FC" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.5" />
-            <circle cx="135" cy="36" r="11" stroke="#BAE6FD" strokeWidth="2" opacity="0.65" />
-            <path d="M22 72 L38 48 C42 43 48 40 56 40 L102 40 C110 40 117 44 122 50 L138 68 L154 70 C159 71 162 75 162 80 L162 86 L16 86 L16 78 C16 74 18 72 22 72 Z" fill="#0284C7" fillOpacity="0.35" stroke="#E0F2FE" strokeWidth="2" />
-            <path d="M46 45 L74 45 L74 63 L34 63 Z" fill="#BAE6FD" fillOpacity="0.25" stroke="#BAE6FD" strokeWidth="1.2" />
-            <path d="M80 45 L106 45 L118 63 L80 63 Z" fill="#BAE6FD" fillOpacity="0.25" stroke="#BAE6FD" strokeWidth="1.2" />
-            <circle cx="46" cy="86" r="13" fill="#0F172A" stroke="#7DD3FC" strokeWidth="2.5" />
-            <circle cx="46" cy="86" r="5" fill="#7DD3FC" />
-            <circle cx="130" cy="86" r="13" fill="#0F172A" stroke="#7DD3FC" strokeWidth="2.5" />
-            <circle cx="130" cy="86" r="5" fill="#7DD3FC" />
-            {/* Pulso de diagnóstico electrónico */}
-            <path d="M18 28 L34 28 L40 16 L47 38 L54 22 L60 28 L78 28" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )}
-
-        {theme.key === 'motos' && (
-          <svg viewBox="0 0 180 110" className="w-44 h-28 drop-shadow-md" fill="none" aria-hidden="true">
-            {/* Motocicleta técnica y piñón de transmisión */}
-            <circle cx="42" cy="80" r="18" fill="#1C1917" fillOpacity="0.55" stroke="#FDBA74" strokeWidth="2.5" />
-            <circle cx="42" cy="80" r="7" stroke="#FED7AA" strokeWidth="1.8" />
-            <circle cx="140" cy="80" r="18" fill="#1C1917" fillOpacity="0.55" stroke="#FDBA74" strokeWidth="2.5" />
-            <circle cx="140" cy="80" r="7" stroke="#FED7AA" strokeWidth="1.8" />
-            <path d="M42 80 L76 80 L98 50 L68 50 L54 66" stroke="#FFEDD5" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M76 80 L114 66 L98 50" fill="#FB923C" fillOpacity="0.3" stroke="#FDBA74" strokeWidth="2" />
-            <path d="M114 32 L124 32 L140 80" stroke="#FFEDD5" strokeWidth="2.5" strokeLinecap="round" />
-            <path d="M56 48 L84 48 C90 48 94 43 98 40" stroke="#FDE68A" strokeWidth="3" strokeLinecap="round" />
-            <circle cx="132" cy="44" r="5" fill="#FDE047" fillOpacity="0.7" />
-          </svg>
-        )}
-
-        {theme.key === 'metalica' && (
-          <svg viewBox="0 0 180 110" className="w-44 h-28 drop-shadow-md" fill="none" aria-hidden="true">
-            {/* Estructura reticulada metálica + arco y chispas de soldadura */}
-            <rect x="24" y="28" width="128" height="62" rx="4" stroke="#CBD5E1" strokeWidth="2" fill="#0F172A" fillOpacity="0.3" />
-            <line x1="24" y1="59" x2="152" y2="59" stroke="#94A3B8" strokeWidth="1.8" />
-            <line x1="24" y1="28" x2="66" y2="90" stroke="#94A3B8" strokeWidth="1.6" />
-            <line x1="66" y1="28" x2="24" y2="90" stroke="#94A3B8" strokeWidth="1.6" />
-            <line x1="66" y1="28" x2="110" y2="90" stroke="#94A3B8" strokeWidth="1.6" />
-            <line x1="110" y1="28" x2="66" y2="90" stroke="#94A3B8" strokeWidth="1.6" />
-            <line x1="110" y1="28" x2="152" y2="90" stroke="#94A3B8" strokeWidth="1.6" />
-            <line x1="152" y1="28" x2="110" y2="90" stroke="#94A3B8" strokeWidth="1.6" />
-            {/* Antorcha y chispas de soldadura */}
-            <circle cx="110" cy="59" r="7" fill="#F97316" fillOpacity="0.75" />
-            <circle cx="110" cy="59" r="3.5" fill="#FEF08A" />
-            <path d="M110 59 L126 42 M110 59 L95 40 M110 59 L128 66 M110 59 L96 74" stroke="#FDE047" strokeWidth="1.8" strokeLinecap="round" />
-          </svg>
-        )}
-
-        {theme.key === 'peluqueria' && (
-          <svg viewBox="0 0 180 110" className="w-44 h-28 drop-shadow-md" fill="none" aria-hidden="true">
-            {/* Tijeras de estilismo, peine profesional y poste clásico de barbería */}
-            {/* Poste de barbería */}
-            <rect x="134" y="20" width="20" height="70" rx="10" fill="#1E1B4B" fillOpacity="0.45" stroke="#F5D0FE" strokeWidth="2" />
-            <path d="M134 36 L154 26 M134 52 L154 42 M134 68 L154 58 M134 82 L154 72" stroke="#F472B6" strokeWidth="3" />
-            {/* Tijeras profesionales */}
-            <circle cx="46" cy="36" r="11" stroke="#F5D0FE" strokeWidth="2.2" fill="#701A75" fillOpacity="0.3" />
-            <circle cx="46" cy="76" r="11" stroke="#F5D0FE" strokeWidth="2.2" fill="#701A75" fillOpacity="0.3" />
-            <path d="M56 41 L118 74" stroke="#FDF4FF" strokeWidth="2.6" strokeLinecap="round" />
-            <path d="M56 71 L118 38" stroke="#FDF4FF" strokeWidth="2.6" strokeLinecap="round" />
-            <circle cx="82" cy="56" r="3" fill="#F0ABFC" />
-            {/* Peine */}
-            <rect x="64" y="82" width="54" height="8" rx="2" fill="#E879F9" fillOpacity="0.35" stroke="#F5D0FE" strokeWidth="1.4" />
-            <path d="M70 82 V90 M76 82 V90 M82 82 V90 M88 82 V90 M94 82 V90 M100 82 V90 M106 82 V90 M112 82 V90" stroke="#F5D0FE" strokeWidth="1.2" />
-          </svg>
-        )}
-
-        {theme.key === 'computacion' && (
-          <svg viewBox="0 0 180 110" className="w-44 h-28 drop-shadow-md" fill="none" aria-hidden="true">
-            {/* Monitor estación de trabajo + código + red de datos */}
-            <rect x="44" y="20" width="96" height="62" rx="6" fill="#042F2E" fillOpacity="0.55" stroke="#5EEAD4" strokeWidth="2.2" />
-            <rect x="52" y="28" width="80" height="44" rx="3" fill="#134E4A" fillOpacity="0.6" />
-            <path d="M62 42 L56 48 L62 54 M76 42 L82 48 L76 54 M71 40 L67 56" stroke="#99F6E4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <line x1="92" y1="42" x2="122" y2="42" stroke="#5EEAD4" strokeWidth="2" strokeLinecap="round" />
-            <line x1="92" y1="50" x2="116" y2="50" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round" />
-            <line x1="92" y1="58" x2="124" y2="58" stroke="#5EEAD4" strokeWidth="2" strokeLinecap="round" />
-            <path d="M82 82 L102 82 L106 94 L78 94 Z" fill="#5EEAD4" fillOpacity="0.35" />
-            <line x1="68" y1="94" x2="116" y2="94" stroke="#99F6E4" strokeWidth="2.4" strokeLinecap="round" />
-          </svg>
-        )}
-
-        {theme.key === 'corte' && (
-          <svg viewBox="0 0 180 110" className="w-44 h-28 drop-shadow-md" fill="none" aria-hidden="true">
-            {/* Máquina de coser industrial + maniquí de sastrería */}
-            {/* Maniquí */}
-            <path d="M38 24 C44 24 48 28 48 34 C48 40 44 48 46 58 L30 58 C32 48 28 40 28 34 C28 28 32 24 38 24 Z" fill="#818CF8" fillOpacity="0.3" stroke="#E0E7FF" strokeWidth="1.8" />
-            <line x1="38" y1="58" x2="38" y2="88" stroke="#E0E7FF" strokeWidth="2" />
-            <line x1="28" y1="88" x2="48" y2="88" stroke="#E0E7FF" strokeWidth="2" strokeLinecap="round" />
-            {/* Máquina de coser */}
-            <path d="M72 82 L156 82 L156 72 L102 72 L102 48 L142 48 L142 32 L82 32 C76 32 72 36 72 42 L72 56 L86 56 L86 46" fill="#4F46E5" fillOpacity="0.35" stroke="#C7D2FE" strokeWidth="2.2" strokeLinejoin="round" />
-            <line x1="82" y1="56" x2="82" y2="70" stroke="#FDE68A" strokeWidth="2" />
-            <circle cx="154" cy="40" r="8" stroke="#E0E7FF" strokeWidth="2" fill="#312E81" />
-          </svg>
-        )}
-
-        {theme.key === 'electricidad' && (
-          <svg viewBox="0 0 180 110" className="w-44 h-28 drop-shadow-md" fill="none" aria-hidden="true">
-            {/* Tablero eléctrico, circuito y rayo de energía */}
-            <rect x="36" y="20" width="66" height="72" rx="5" fill="#083344" fillOpacity="0.55" stroke="#67E8F9" strokeWidth="2" />
-            <polygon points="72 34 56 56 68 56 64 76 82 52 70 52 72 34" fill="#FDE047" fillOpacity="0.85" stroke="#FEF08A" strokeWidth="1.2" />
-            {/* Líneas de circuito e instrumento */}
-            <path d="M102 36 H128 L138 26" stroke="#67E8F9" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="141" cy="23" r="3.5" fill="#67E8F9" />
-            <path d="M102 56 H146" stroke="#22D3EE" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="150" cy="56" r="3.5" fill="#22D3EE" />
-            <path d="M102 76 H128 L138 86" stroke="#67E8F9" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="141" cy="89" r="3.5" fill="#67E8F9" />
-          </svg>
-        )}
-      </div>
-
-      {/* fila superior de badges */}
-      <div className="relative z-10 flex items-center justify-between gap-2">
-        <span className={`px-2.5 py-1 rounded-lg backdrop-blur-md text-[11px] font-bold tracking-wide border ${theme.accentBadgeClass}`}>
-          {badgeText || theme.shortLabel}
-        </span>
-        {rightBadgeText && (
-          <span className="px-2.5 py-1 rounded-lg bg-black/25 backdrop-blur-md text-white/95 text-[11px] font-semibold border border-white/15">
-            {rightBadgeText}
-          </span>
-        )}
-      </div>
-
-      {/* fila inferior descriptiva */}
-      <div className="relative z-10 mt-auto pr-28">
-        <p className="text-white/95 text-[12px] font-semibold leading-snug drop-shadow-sm line-clamp-1">
-          {subtitleText || theme.tagline}
-        </p>
-        {showToolsFooter && (
-          <p className="text-white/75 text-[10px] font-medium mt-0.5 truncate">
-            {theme.toolsSummary}
-          </p>
-        )}
-      </div>
+      {(showToolsFooter || subtitleText) && <div className="relative z-10 bg-black/80 px-3 py-2.5 text-white">
+        <p className="text-sm font-semibold leading-snug">{subtitleText || theme.tagline}</p>
+        {showToolsFooter && <p className="mt-1 text-xs leading-relaxed text-white/90">{theme.toolsSummary}</p>}
+      </div>}
     </div>
   );
 };
+
+// Public assets are bundled with the app; provenance is in public/images/careers/SOURCES.json.
+const CAREER_PHOTOS: Record<string, {src: string; alt: string}> = {
+  "PROG-001": {
+    "src": "/images/careers/automotriz.webp",
+    "alt": "Motor de un automóvil bajo el capó abierto en un taller."
+  },
+  "PROG-002": {
+    "src": "/images/careers/motos.webp",
+    "alt": "Técnico trabajando en una motocicleta dentro del taller."
+  },
+  "PROG-003": {
+    "src": "/images/careers/metalica.webp",
+    "alt": "Soldador con equipo de protección trabajando una estructura metálica."
+  },
+  "PROG-004": {
+    "src": "/images/careers/peluqueria.webp",
+    "alt": "Profesional realizando un corte de cabello en una barbería."
+  },
+  "PROG-005": {
+    "src": "/images/careers/computacion.webp",
+    "alt": "Trabajo colaborativo con aplicaciones en una computadora de escritorio."
+  },
+  "PROG-006": {
+    "src": "/images/careers/corte.webp",
+    "alt": "Confección de prendas con una máquina de coser."
+  },
+  "PROG-007": {
+    "src": "/images/careers/electricidad.webp",
+    "alt": "Técnico con equipo de protección trabajando en un tablero eléctrico."
+  }
+};
+
+export interface CareerPhotoProps {
+  programId?: string;
+  programName?: string;
+  className?: string;
+  decorative?: boolean;
+}
+/** Shared by all roles. Unknown careers and missing files retain the vector fallback. */
+export function CareerPhoto({programId, programName, className = '', decorative = false}: CareerPhotoProps) {
+  const theme = resolveCareerVisualTheme(programId, programName);
+  return <CareerPhotoAsset key={theme.id} theme={theme} className={className} decorative={decorative} />;
+}
+function CareerPhotoAsset({theme, className, decorative}: {theme: CareerVisualTheme; className: string; decorative: boolean}) {
+  const [failed, setFailed] = useState(false);
+  const photo = CAREER_PHOTOS[theme.id];
+  return <div className={`overflow-hidden ${theme.gradientClass} ${className}`} data-career-photo={theme.id}>
+    {photo && !failed ? <img src={`${import.meta.env.BASE_URL}${photo.src.slice(1)}`} alt={decorative ? '' : photo.alt} width={960} height={640} loading="lazy" decoding="async" className="h-full w-full object-cover object-center" onError={() => setFailed(true)} /> : <div className="flex h-full min-h-20 items-center justify-center text-white" role={decorative ? undefined : 'img'} aria-label={decorative ? undefined : `Ilustración de ${theme.shortLabel}`} aria-hidden={decorative || undefined}><CareerEmblemIcon programId={theme.id} className="h-12 w-12" /></div>}
+  </div>;
+}

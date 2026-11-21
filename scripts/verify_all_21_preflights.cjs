@@ -35,6 +35,7 @@ async function verifyAllTemplates() {
   let tempEnrPel2Id = null;
   let tempGroupPel2Id = null;
   let tempGroupPel2Created = false;
+  const tempPel2SettingSnapshots = new Map();
 
   try {
     const director = core.users().find(u => u.role === 'DIRECTOR') || core.users()[0];
@@ -58,9 +59,10 @@ async function verifyAllTemplates() {
       D.saveSettings(core, director, { scope, fields, rev: existing ? existing.rev : null });
     };
 
+    const currMod8 = core.record('documentSettings', 'curriculum:MOD-008')?.fields || {};
+    const unitsMod8 = JSON.parse(currMod8.unitsJson || '[]');
+
     if (!groupPel2) {
-      const currMod8 = core.record('documentSettings', 'curriculum:MOD-008')?.fields || {};
-      const unitsMod8 = JSON.parse(currMod8.unitsJson || '[]');
       groupPel2 = core.write(director, 'groups', {
         id: canonical.peluqueriaM2,
         name: 'Peluquería y Barbería · Mañana · Sección A1 (Módulo II)',
@@ -76,40 +78,61 @@ async function verifyAllTemplates() {
       }, null);
       tempGroupPel2Id = groupPel2.id;
       tempGroupPel2Created = true;
+    }
 
-      putS('group', groupPel2.id, {
-        ciclo: 'Auxiliar Técnico',
-        seccion: 'A1',
-        turno: 'Mañana',
-        modalidad: 'Presencial',
-        fechaInicio: '2026-08-10',
-        fechaFin: '2026-12-18',
-        periodClase: '2026-II',
-        teacherName: 'Prof. Alejandrina Ayna Cabrera',
-        efsrtInicio: '2026-10-12',
-        efsrtFin: '2026-12-18'
-      });
-
-      for (const u of unitsMod8) {
-        if (u.code === 'EFSRT') continue;
-        putS('unit', groupPel2.id, {
-          name: u.name,
-          capacity: `Aplica técnicas y procedimientos operativos de ${u.name.toLowerCase()} cumpliendo especificaciones técnicas y seguridad.`,
-          competence: 'Realizar procesos de ondulación, decoloración y tinturación capilar aplicando protocolos de diagnóstico y bioseguridad.',
-          indicator1: `Organiza el área de trabajo, equipos, herramientas y materiales para ${u.name.toLowerCase()}.`,
-          indicator2: `Ejecuta procesos técnicos de ${u.name.toLowerCase()} siguiendo protocolos establecidos.`,
-          indicator3: `Aplica normas de seguridad, higiene y cuidado ambiental en las prácticas de taller.`,
-          indicator4: `Verifica la calidad del producto o servicio realizado corrigiendo observaciones.`,
-          indicator5: `Sustenta los procedimientos aplicados con responsabilidad y trabajo en equipo.`
-        }, u.code);
-        putS('unitCurriculum', groupPel2.id, {
-          hours: u.hours,
-          credits: u.credits,
-          fechaInicio: u.fechaInicio,
-          fechaFin: u.fechaFin,
-          dateOrigin: 'Calendarización Oficial 2026-II'
-        }, u.code);
+    const ensureSettingFields = (kind, target, defaults, unit) => {
+      const scope = { kind, ...(target ? { target } : {}), ...(unit ? { unit } : {}) };
+      const docId = D.idFor(scope);
+      const existing = core.record('documentSettings', docId);
+      const curFields = existing?.fields || {};
+      const needsSeed = Object.keys(defaults).some(k => curFields[k] === undefined || curFields[k] === null || String(curFields[k]).trim() === '');
+      if (!needsSeed) return;
+      if (!tempGroupPel2Created && !tempPel2SettingSnapshots.has(docId)) {
+        const rawRow = core.db.prepare("SELECT * FROM records WHERE entity='documentSettings' AND id=?").get(docId) || null;
+        tempPel2SettingSnapshots.set(docId, rawRow);
       }
+      const merged = { ...defaults };
+      for (const [k, v] of Object.entries(curFields)) {
+        if (v !== undefined && v !== null && String(v).trim() !== '') merged[k] = v;
+      }
+      putS(kind, target, merged, unit);
+    };
+
+    ensureSettingFields('group', groupPel2.id, {
+      ciclo: 'Auxiliar Técnico',
+      seccion: 'A1',
+      turno: 'Mañana',
+      modalidad: 'Presencial',
+      fechaInicio: '2026-08-10',
+      fechaFin: '2026-12-18',
+      periodClase: '2026-II',
+      teacherName: 'Prof. Alejandrina Ayna Cabrera',
+      efsrtInicio: '2026-10-12',
+      efsrtFin: '2026-12-18'
+    });
+
+    const unitCodesPel2 = [...new Set([...(groupPel2.units || []), ...unitsMod8.map(u => u.code)])];
+    for (const uCode of unitCodesPel2) {
+      if (uCode === 'EFSRT') continue;
+      const u = unitsMod8.find(item => item.code === uCode) || { code: uCode, name: `${uCode}: Procedimientos Técnicos de Peluquería`, hours: 48, credits: 2, fechaInicio: '2026-08-10', fechaFin: '2026-12-18' };
+      const uLabel = (u.name || uCode).toLowerCase();
+      ensureSettingFields('unit', groupPel2.id, {
+        name: u.name,
+        capacity: `Aplica técnicas y procedimientos operativos de ${uLabel} cumpliendo especificaciones técnicas y seguridad.`,
+        competence: 'Realizar procesos de ondulación, decoloración y tinturación capilar aplicando protocolos de diagnóstico y bioseguridad.',
+        indicator1: `Organiza el área de trabajo, equipos, herramientas y materiales para ${uLabel}.`,
+        indicator2: `Ejecuta procesos técnicos de ${uLabel} siguiendo protocolos establecidos.`,
+        indicator3: `Aplica normas de seguridad, higiene y cuidado ambiental en las prácticas de taller.`,
+        indicator4: `Verifica la calidad del producto o servicio realizado corrigiendo observaciones.`,
+        indicator5: `Sustenta los procedimientos aplicados con responsabilidad y trabajo en equipo.`
+      }, u.code);
+      ensureSettingFields('unitCurriculum', groupPel2.id, {
+        hours: u.hours ?? 48,
+        credits: u.credits ?? 2,
+        fechaInicio: u.fechaInicio || '2026-08-10',
+        fechaFin: u.fechaFin || '2026-12-18',
+        dateOrigin: 'Calendarización Oficial 2026-II'
+      }, u.code);
     }
 
     const enrComp = core.records('enrollments').filter(e => e.groupId === groupComp.id && e.active)[0];
@@ -456,6 +479,19 @@ async function verifyAllTemplates() {
         if (tempGroupPel2Created) {
           core.db.prepare("DELETE FROM records WHERE entity='groups' AND id=?").run(tempGroupPel2Id);
           core.db.prepare("DELETE FROM records WHERE entity='documentSettings' AND json_extract(value, '$.scope.target')=?").run(tempGroupPel2Id);
+        }
+      } catch (_) {}
+    }
+    if (!tempGroupPel2Created && tempPel2SettingSnapshots.size) {
+      try {
+        for (const [docId, rawRow] of tempPel2SettingSnapshots.entries()) {
+          if (!rawRow) {
+            core.db.prepare("DELETE FROM records WHERE entity='documentSettings' AND id=?").run(docId);
+          } else {
+            const cols = Object.keys(rawRow);
+            const placeholders = cols.map(() => '?').join(',');
+            core.db.prepare(`INSERT OR REPLACE INTO records (${cols.join(',')}) VALUES (${placeholders})`).run(...cols.map(c => rawRow[c]));
+          }
         }
       } catch (_) {}
     }

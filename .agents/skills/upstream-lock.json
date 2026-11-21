@@ -1,0 +1,20 @@
+[
+  {
+    "path": "skills/frontend-design",
+    "name": "frontend-design",
+    "commit": "2c5958ecac7cee2b583967a2c4981d0f4a75c579",
+    "repository": "anthropics/skills"
+  },
+  {
+    "path": "skills/web-design-guidelines",
+    "name": "web-design-guidelines",
+    "commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+    "repository": "vercel-labs/agent-skills"
+  },
+  {
+    "path": ".claude/skills/ui-ux-pro-max",
+    "name": "ui-ux-pro-max",
+    "commit": "6ae86f61f520d6ca229d2f40e070410638c908c5",
+    "repository": "nextlevelbuilder/ui-ux-pro-max-skill"
+  }
+]

@@ -1,15 +1,84 @@
 // Selección de trabajo por sesión: no modifica cuentas ni permisos firmados.
 const fail=(text,status=403)=>{throw Object.assign(new Error(text),{status});};
 const yearOf=g=>/^\d{4}/.exec(g.periodId||'')?.[0]||g.periodId||'SIN-PERIODO';
-const MODULE_TEMPLATES=new Set(['TMPL-01','TMPL-02','TMPL-03','TMPL-04','TMPL-19','TMPL-20','TMPL-21']);
+const MODULE_TEMPLATES=new Set(['TMPL-01','TMPL-02','TMPL-03','TMPL-04','TMPL-19','TMPL-20','TMPL-21','TMPL-22','TMPL-23']);
 const { unitDateRange } = require('./unit-date-range.cjs');
 function units(core,user,g){const reference=require('./reference-defaults.cjs'),ref=reference.get(core,g.moduleId),plan=require('./offline-documents.cjs').curriculumFor(core,g),rows=plan?.unitsJson?JSON.parse(plan.unitsJson):[];return (g.units||[]).filter(code=>user.role!=='DOCENTE'||core.assignment(user,g.id,code)).map(code=>{const dates=unitDateRange(core,g,code);const u={code,...reference.merge(ref.units.find(u=>u.code===code),rows.find(u=>u.code===code)),...core.record('documentSettings',`unit:${g.id}:${code}`)?.fields,...core.record('documentSettings',`unitCurriculum:${g.id}:${code}`)?.fields};return {...u,fechaInicio:dates.fechaInicio,fechaFin:dates.fechaFin,hours:typeof u.hours==='number'?u.hours:0,credits:typeof u.credits==='number'?u.credits:0,capacity:u.capacity||'',indicator1:u.indicator1||'',indicator2:u.indicator2||''};});}
 function templatesFor(core,user,context,templates){if(!context||context.overview||!context.mode)return templates;if(context.mode==='MODULE')return templates.filter(id=>MODULE_TEMPLATES.has(id));if(context.mode==='PRACTICE')return templates.filter(id=>id==='TMPL-18');const g=core.record('groups',context.groupId),index=g?.units.filter(u=>u!=='EFSRT').indexOf(context.unit)??-1;return templates.filter(id=>id===(index<6?`TMPL-${String(5+index).padStart(2,'0')}`:'TMPL-05')||index>=0&&index<7&&id===`TMPL-${String(11+index).padStart(2,'0')}`);}
-function options(core,user){const groups=core.scoped(user,'groups').filter(g=>!g.archived),modules=core.scoped(user,'modules'),programs=core.scoped(user,'programs'),enrollments=core.scoped(user,'enrollments');const stats=[];for(const year of new Set(groups.map(yearOf)))for(const p of programs){const gs=groups.filter(g=>yearOf(g)===year&&g.programId===p.id),ids=new Set(gs.map(g=>g.id));stats.push({year,programId:p.id,students:new Set(enrollments.filter(r=>ids.has(r.groupId)&&r.active).map(r=>r.studentId)).size});}return {role:user.role,assignmentPending:!!user.assignmentPending,years:[...new Set([...groups.map(yearOf),...(user.role!=='DOCENTE'?core.records('documentSettings').filter(r=>r.scope?.kind==='academicYear'&&!r.archived).map(r=>r.scope?.target).filter(Boolean):[])])],stats,groups:groups.map(g=>{const gConfig=core.record('documentSettings','group:'+g.id)?.fields||{},pConfig=core.record('documentSettings','academicPeriod:'+g.periodId)?.fields||{};return {id:g.id,name:require('./role-policy.cjs').groupName(core,g),section:g.section||gConfig.seccion||'A1',teacherName:gConfig.teacherName||'',studentCount:new Set(enrollments.filter(r=>r.groupId===g.id&&r.active).map(r=>r.studentId)).size,programId:g.programId,moduleId:g.moduleId,periodId:g.periodId,year:yearOf(g),turno:gConfig.turno||g.turno||'',modalidad:gConfig.modalidad||g.modalidad||'',fechaInicio:g.fechaInicio||gConfig.fechaInicio||pConfig.fechaInicio||'2026-03-16',fechaFin:g.fechaFin||gConfig.fechaFin||pConfig.fechaFin||'2026-07-24',units:units(core,user,g)};}),modules:modules.map(m=>({id:m.id,nombre:m.nombre,programId:m.programId,hours:m.hours||core.record('documentSettings','module:'+m.id)?.fields.hours||0,credits:m.credits||core.record('documentSettings','module:'+m.id)?.fields.credits||0})),programs:programs.map(p=>({id:p.id,nombre:p.nombre}))};}
-function groupIds(core,user,context){const groups=core.scoped(user,'groups').filter(g=>!g.archived);if(!context||context.overview)return new Set(groups.map(g=>g.id));return new Set(groups.filter(g=>(!context.year||yearOf(g)===context.year)&&(!context.programId||g.programId===context.programId)&&(!context.moduleId||g.moduleId===context.moduleId)&&(!context.groupId||g.id===context.groupId)).map(g=>g.id));}
-function select(core,user,input){if(input.overview){if(user.role==='DOCENTE')fail('El docente debe seleccionar un módulo de sus aulas.');return {overview:true};}const clean=Object.fromEntries(['year','programId','moduleId','groupId','mode','unit'].filter(k=>input[k]).map(k=>[k,String(input[k])]));if(!clean.year||!clean.programId||!clean.moduleId)fail('Seleccione año, carrera y módulo.',400);if(!groupIds(core,user,clean).size)fail('El módulo o aula no pertenece a su cuenta.');if(clean.mode){if(!['UNIT','MODULE','PRACTICE'].includes(clean.mode)||!clean.groupId)fail('Seleccione aula y espacio de trabajo.',400);if(clean.mode==='PRACTICE')clean.unit='EFSRT';if(clean.mode==='MODULE'){if(clean.unit)fail('Los documentos del módulo incluyen todas sus unidades.',400);}else{if(!clean.unit||clean.mode==='UNIT'&&clean.unit==='EFSRT')fail('Seleccione una unidad didáctica válida.',400);if(!core.record('groups',clean.groupId)?.units.includes(clean.unit))fail('La unidad no pertenece al aula.');core.requireGroup(user,clean.groupId,clean.unit);}}else if(clean.unit)fail('Seleccione el espacio de trabajo de la unidad.',400);return clean;}
+function plannedUnitSummaries(curriculum) {
+  if (!curriculum?.unitsJson) return;
+  let units;
+  try {
+    units = JSON.parse(curriculum.unitsJson);
+  } catch {
+    return;
+  }
+  if (!Array.isArray(units)) return;
+  return units.filter(unit => typeof unit?.code === 'string').map(({code, name}) => ({
+    code, name: typeof name === 'string' ? name : undefined
+  }));
+}
+function options(core, user) {
+  const groups = core.scoped(user, 'groups').filter(g => !g.archived);
+  const modules = core.scoped(user, 'modules');
+  const programs = core.scoped(user, 'programs');
+  const enrollments = core.scoped(user, 'enrollments');
+  const activeStudents = new Map();
+  for (const enrollment of enrollments.filter(row => row.active)) {
+    if (!activeStudents.has(enrollment.groupId)) activeStudents.set(enrollment.groupId, new Set());
+    activeStudents.get(enrollment.groupId).add(enrollment.studentId);
+  }
+  const stats = [];
+  for (const year of new Set(groups.map(yearOf))) {
+    for (const program of programs) {
+      const programGroups = groups.filter(g => yearOf(g) === year && g.programId === program.id);
+      const students = new Set(programGroups.flatMap(g => [...(activeStudents.get(g.id) || [])]));
+      stats.push({ year, programId: program.id, students: students.size });
+    }
+  }
+  const canViewPlans = user.role === 'DIRECTOR' || user.role === 'SECRETARIA';
+  const calendar = canViewPlans ? core.records('documentSettings').filter(r => !r.archived) : [];
+  const configuredTargets = kind => calendar.filter(r => r.scope?.kind === kind).map(r => r.scope.target).filter(Boolean);
+  return {
+    role: user.role,
+    assignmentPending: !!user.assignmentPending,
+    years: [...new Set([...groups.map(yearOf), ...configuredTargets('academicYear')])],
+    periods: [...new Set([...groups.map(g => g.periodId), ...configuredTargets('academicPeriod')].filter(Boolean))],
+    stats,
+    groups: groups.map(g => {
+      const groupConfig = core.record('documentSettings', 'group:' + g.id)?.fields || {};
+      const period = core.record('documentSettings', 'academicPeriod:' + g.periodId)?.fields || {};
+      return {
+        id: g.id, name: require('./role-policy.cjs').groupName(core, g),
+        section: g.section || groupConfig.seccion || 'A1',
+        teacherName: groupConfig.teacherName || '',
+        studentCount: activeStudents.get(g.id)?.size || 0,
+        programId: g.programId, moduleId: g.moduleId, periodId: g.periodId, year: yearOf(g),
+        turno: groupConfig.turno || g.turno || '', modalidad: groupConfig.modalidad || g.modalidad || '',
+        isConvenio: Boolean(g.isConvenio || groupConfig.convenio),
+        convenioName: String(g.convenioName || groupConfig.convenio || '').trim(),
+        fechaInicio: g.fechaInicio || groupConfig.fechaInicio || period.fechaInicio,
+        fechaFin: g.fechaFin || groupConfig.fechaFin || period.fechaFin,
+        units: units(core, user, g)
+      };
+    }),
+    modules: modules.filter(m => !m.archived).map(m => {
+      const config = core.record('documentSettings', 'module:' + m.id)?.fields || {};
+      const plan = canViewPlans ? core.record('documentSettings', 'curriculum:' + m.id) : null;
+      const curriculum = plan && !plan.archived ? plan.fields : null;
+      return {
+        id: m.id, nombre: m.nombre, programId: m.programaId || m.programId,
+        periodId: curriculum?.periodId || (canViewPlans ? m.periodId : undefined),
+        plannedUnits: plannedUnitSummaries(curriculum), hours: m.hours || config.hours || 0, credits: m.credits || config.credits || 0
+      };
+    }),
+    programs: programs.map(p => ({id: p.id, nombre: p.nombre}))
+  };
+}
+function groupIds(core,user,context){const groups=core.scoped(user,'groups').filter(g=>!g.archived);if(!context||context.overview)return new Set(groups.map(g=>g.id));return new Set(groups.filter(g=>(!context.year||yearOf(g)===context.year)&&(!context.periodId||g.periodId===context.periodId)&&(!context.programId||g.programId===context.programId)&&(!context.moduleId||g.moduleId===context.moduleId)&&(!context.groupId||g.id===context.groupId)).map(g=>g.id));}
+function select(core,user,input){if(input.overview){if(user.role==='DOCENTE')fail('El docente debe seleccionar un módulo de sus aulas.');return {overview:true};}const clean=Object.fromEntries(['year','periodId','programId','moduleId','groupId','mode','unit'].filter(k=>input[k]).map(k=>[k,String(input[k])]));if(!clean.year||!clean.programId||!clean.moduleId)fail('Seleccione año, carrera y módulo.',400);if(!groupIds(core,user,clean).size)fail(clean.periodId?'El módulo o aula no está disponible para su cuenta en el periodo seleccionado.':'El módulo o aula no pertenece a su cuenta.');if(clean.mode){if(!['UNIT','MODULE','PRACTICE'].includes(clean.mode)||!clean.groupId)fail('Seleccione aula y espacio de trabajo.',400);if(clean.mode==='PRACTICE')clean.unit='EFSRT';if(clean.mode==='MODULE'){if(clean.unit)fail('Los documentos del módulo incluyen todas sus unidades.',400);}else{if(!clean.unit||clean.mode==='UNIT'&&clean.unit==='EFSRT')fail('Seleccione una unidad didáctica válida.',400);if(!core.record('groups',clean.groupId)?.units.includes(clean.unit))fail('La unidad no pertenece al aula.');core.requireGroup(user,clean.groupId,clean.unit);}}else if(clean.unit)fail('Seleccione el espacio de trabajo de la unidad.',400);return clean;}
 function dashboard(core,user,context){const d=core.dashboard(user);if(!context||context.overview)return {...d,workspace:context||null};const ids=groupIds(core,user,context),groups=d.groups.filter(g=>ids.has(g.id)),enrollments=d.enrollments.filter(e=>ids.has(e.groupId)),students=new Set(enrollments.map(e=>e.studentId)),programs=new Set(groups.map(g=>g.programId)),modules=new Set(groups.map(g=>g.moduleId));return {...d,workspace:{...context,unitName:context.unit&&context.groupId?units(core,user,core.record('groups',context.groupId)).find(u=>u.code===context.unit)?.name:''},templates:templatesFor(core,user,context,d.templates),groups,enrollments,students:d.students.filter(s=>students.has(s.id)),programs:d.programs.filter(p=>programs.has(p.id)),modules:d.modules.filter(m=>modules.has(m.id)),grades:d.grades.filter(r=>ids.has(r.groupId)&&(!context.unit||r.unit===context.unit)),attendance:d.attendance.filter(r=>ids.has(r.groupId)&&(!context.unit||r.unit===context.unit)),submissions:d.submissions.filter(r=>ids.has(r.groupId)&&(context.mode==='MODULE'&&user.role!=='DOCENTE'?true:context.mode==='MODULE'?MODULE_TEMPLATES.has(r.templateId):!context.unit||r.unit===context.unit)),studentRequests:d.studentRequests.filter(r=>ids.has(r.groupId)),conflicts:d.conflicts.filter(r=>ids.has(r.operation?.body?.value?.groupId))};}
-function filterConfiguration(core,user,context,config){if(!context||context.overview)return config;const ids=groupIds(core,user,context),enrollments=new Set(core.scoped(user,'enrollments').filter(e=>ids.has(e.groupId)).map(e=>e.id)),scope=s=>{if(!s?.kind)return false;if(context.mode==='UNIT')return ['unit','unitCurriculum'].includes(s.kind)&&s.unit===context.unit&&ids.has(s.target);if(context.mode==='PRACTICE')return s.kind==='practice'&&enrollments.has(s.target);if(context.mode==='MODULE'&&['unit','unitCurriculum','practice'].includes(s.kind))return false;return s.kind==='institution'||s.kind==='academicYear'&&s.target===context.year||s.kind==='academicPeriod'&&[...ids].some(id=>core.record('groups',id)?.periodId===s.target)||['program','module','curriculum','moduleDefaults'].includes(s.kind)&&[context.programId,context.moduleId].includes(s.target)||['group','unit','unitCurriculum'].includes(s.kind)&&ids.has(s.target)||['enrollment','registry','practice','closure'].includes(s.kind)&&enrollments.has(s.target);};const allowed=kind=>!context.mode||context.mode==='UNIT'?(!context.mode||['unit','unitCurriculum'].includes(kind)):context.mode==='PRACTICE'?kind==='practice':!['unit','unitCurriculum','practice'].includes(kind);return {...config,schema:Object.fromEntries(Object.entries(config.schema).filter(([kind])=>allowed(kind))),catalog:config.catalog.filter(t=>templatesFor(core,user,context,[t.id]).length),settings:config.settings.filter(r=>scope(r.scope)),defaults:Object.fromEntries(Object.entries(config.defaults).filter(([key])=>scope({kind:key.split(':')[0],target:key.split(':')[1],unit:key.split(':')[2]})))};}
+function filterConfiguration(core,user,context,config){if(!context||context.overview)return config;const ids=groupIds(core,user,context),enrollments=new Set(core.scoped(user,'enrollments').filter(e=>ids.has(e.groupId)).map(e=>e.id)),scope=s=>{if(!s?.kind)return false;if(context.mode==='UNIT')return ['unit','unitCurriculum'].includes(s.kind)&&s.unit===context.unit&&ids.has(s.target);if(context.mode==='PRACTICE')return s.kind==='practice'&&enrollments.has(s.target);if(context.mode==='MODULE'&&['unit','unitCurriculum','practice'].includes(s.kind))return false;return s.kind==='institution'||s.kind==='academicYear'&&s.target===context.year||s.kind==='academicPeriod'&&[...ids].some(id=>core.record('groups',id)?.periodId===s.target)||['program','module','curriculum','moduleDefaults'].includes(s.kind)&&[context.programId,context.moduleId].includes(s.target)||['group','unit','unitCurriculum'].includes(s.kind)&&ids.has(s.target)||['enrollment','registry','practice','closure'].includes(s.kind)&&enrollments.has(s.target);};const allowed=kind=>!context.mode||context.mode==='UNIT'?(!context.mode||['unit','unitCurriculum'].includes(kind)):context.mode==='PRACTICE'?kind==='practice':!['unit','unitCurriculum','practice'].includes(kind);return {...config,schema:Object.fromEntries(Object.entries(config.schema).filter(([kind])=>allowed(kind))),catalog:config.catalog.filter(t=>templatesFor(core,user,context,[t.id]).length),...(Array.isArray(config.extendedCatalog)?{extendedCatalog:config.extendedCatalog.filter(t=>templatesFor(core,user,context,[t.id]).length)}:{}),settings:config.settings.filter(r=>scope(r.scope)),defaults:Object.fromEntries(Object.entries(config.defaults).filter(([key])=>scope({kind:key.split(':')[0],target:key.split(':')[1],unit:key.split(':')[2]})))};}
 function assertGroup(core,user,context,id){if(context&&!context.overview&&id&&!groupIds(core,user,context).has(id))fail('Esta aula está fuera del módulo seleccionado. Cambie de módulo para trabajar con ella.');}
 function guard(core,user,context,route,body){if(!context||context.overview)return;let group=body.groupId;if(['/api/enrollments/module','/api/enrollments/retire'].includes(route))group=core.record('enrollments',body.id)?.groupId;
  if(['/api/grades','/api/attendance','/api/attendance/simulate-unit','/api/attendance/clear-unit'].includes(route)){if(context.mode&&context.mode!=='UNIT')fail('Seleccione una unidad didáctica para registrar notas o asistencia.');assertUnit(context,body.unit);}

@@ -11,6 +11,7 @@ const InstitutionalNetwork = require('./institutional-network.cjs');
 const CeproBdCatalog = require('./cepro-bd-catalog.cjs');
 const FichaRegistro2026 = require('./ficha-registro-2026.cjs');
 const SyncWhatsApp = require('./sync-whatsapp.cjs');
+const SyncTransfer=require('./sync-transfer.cjs');
 const isPublicAdmissionRoute = (pathname) => {
   return pathname === '/admision-qr' ||
          pathname === '/ficha-2026' ||
@@ -22,7 +23,14 @@ const isPublicAdmissionRoute = (pathname) => {
 };
 function createService({ root, directory, backupFile }) {
   const core = new OfflineCore(directory, backupFile);
+  try {
+    require('./prepare-module-classrooms.cjs').prepareModuleClassrooms(core);
+  } catch (error) {
+    core.close();
+    throw error;
+  }
   const updates=new DataUpdateService(core,root);
+  const transfers=new SyncTransfer.SyncTransferService(core);
   const json = (res, status, value) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(JSON.stringify(value)); };
   async function handler(req, res) {
     try {
@@ -34,12 +42,12 @@ function createService({ root, directory, backupFile }) {
       if (isPublicAdmission) {
         if (!/^(127\.0\.0\.1|localhost|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|\[::1\])(:\d+)?$/.test(req.headers.host || '')) fail('Host no permitido.', 403);
       } else {
-        if (!/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(req.headers.host || '')) fail('Host no permitido.', 403);
+        if (!/^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/.test(req.headers.host || '')) fail('Host no permitido.', 403);
       }
       const isAllowedOrigin = isPublicAdmission || !req.headers.origin ||
         req.headers.origin === 'null' ||
         req.headers.origin === `http://${req.headers.host}` ||
-        /^http:\/\/(127\.0\.0\.1|localhost|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(req.headers.origin);
+        /^http:\/\/(127\.0\.0\.1|localhost|\[::1\]|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(req.headers.origin);
       if (!isAllowedOrigin) fail('Origen no permitido.', 403);
       if (req.headers.origin && isAllowedOrigin) {
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
@@ -118,12 +126,14 @@ function createService({ root, directory, backupFile }) {
         const scopedUpdates=new DataUpdateService(Workspace.scopedCore(core,user,context),root);scopedUpdates.previews=updates.previews;
         if(['/api/data/export','/api/data/template'].includes(route)&&context&&!context.overview){body.options={...(body.options||{}),groupId:body.options?.groupId||context.groupId,unit:context.unit?(body.options?.unit||context.unit):body.options?.unit};if(body.options.unit)Workspace.assertUnit(context,body.options.unit);Workspace.assertGroup(core,user,context,body.options.groupId);}
         if(route==='/api/exchange/export'&&context&&!context.overview){if(body.groupId)Workspace.assertGroup(core,user,context,body.groupId);body={...body,moduleId:context.moduleId,groupId:body.groupId||context.groupId,unit:context.unit||body.unit};}
+        if(route==='/api/network/sync/capabilities'&&req.method==='GET')return json(res,200,SyncTransfer.capabilities(core,user));
         if (route === '/api/me' && req.method === 'GET') return json(res, 200, publicUser(user));
         if (route === '/api/dashboard' && req.method === 'GET') return json(res, 200, Workspace.dashboard(core,user,user.role!=='DOCENTE'&&url.searchParams.get('overview')==='1'?{overview:true}:context));
         if(route==='/api/academic/configuration'&&req.method==='GET')return json(res,200,require('./academic-config.cjs').configuration(core,user));
         if (route === '/api/academic/documentary-catalog' && req.method === 'GET') return json(res, 200, CeproBdCatalog.getCatalog(core, user, url.searchParams));
         if(route==='/api/data/catalog'&&req.method==='GET'){const catalog=updates.catalog(user);if(context?.mode&&context.mode!=='UNIT')catalog.kinds=catalog.kinds.map(k=>({...k,canImport:['notas','asistencias'].includes(k.kind)?false:k.canImport}));return json(res,200,catalog);}
         if(route==='/api/document/configuration'&&req.method==='GET')return json(res,200,Workspace.filterConfiguration(core,user,context,DocumentSettings.configuration(core,user)));
+        if(route==='/api/document/emissions'&&req.method==='GET')return json(res,200,core.listDocumentEmissions(user,{groupId:url.searchParams.get('groupId')||undefined,templateId:url.searchParams.get('templateId')||undefined,enrollmentId:url.searchParams.get('enrollmentId')||undefined,studentId:url.searchParams.get('studentId')||undefined,year:url.searchParams.get('year')||undefined,query:url.searchParams.get('query')||undefined}));
         if (route === '/api/users' && req.method === 'GET') return json(res,200,url.searchParams.get('context')==='1'?AccountContext.list(core,user,context):core.listUsers(user));
         if((route==='/api/database/health'||route==='/api/system/health')&&req.method==='GET')return json(res,200,core.databaseHealth(user));
         if (route === '/api/network/status' && req.method === 'GET') return json(res, 200, InstitutionalNetwork.getNetworkStatus(core, user));
@@ -168,17 +178,35 @@ function createService({ root, directory, backupFile }) {
         if (req.method !== 'POST') fail('Ruta no encontrada.', 404);
         if(route==='/api/data/export'||route==='/api/data/template'){const file=scopedUpdates.export(user,body.kind,body.format,body.options||{},route.endsWith('/template'));res.writeHead(200,{'Content-Type':file.type,'Content-Disposition':`attachment; filename="CETPRO_${body.kind}.${body.format||'csv'}"`,'Cache-Control':'no-store'});res.end(file.bytes);return;}
         if (route === '/api/document/pdf') {
-          const doc = Workspace.document(core,user,context,body);if(body.fingerprint&&body.fingerprint!==doc.fingerprint)fail('Los datos cambiaron. Actualice la vista previa.',409);const bytes = await renderPDF(root, doc, user);
+          const docInput = { ...body, official2026: body.official2026 !== false };
+          const doc = Workspace.document(core,user,context,docInput);if(body.fingerprint&&body.fingerprint!==doc.fingerprint)fail('Los datos cambiaron. Actualice la vista previa.',409);const bytes = await renderPDF(root, doc, user);
+          core.recordDocumentEmission(user, doc, bytes, { source: route });
           const isDemo = Boolean(doc.demoMode || doc.demoFill); const isDraft = !isDemo && !doc.preflight?.complete; const statusSuffix = isDemo ? 'DEMOSTRACION' : (isDraft ? 'BORRADOR' : 'COMPLETADO');
           res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${doc.templateId}_${statusSuffix}.pdf"`, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(bytes); return;
         }
         if(route==='/api/document/submit'){
-          const doc=Workspace.document(core,user,context,body);if(body.fingerprint!==doc.fingerprint)fail('Los datos cambiaron después de la vista previa. Actualícela antes de entregar.',409);
+          const docInput={...body,official2026:body.official2026!==false};
+          const doc=Workspace.document(core,user,context,docInput);if(body.fingerprint!==doc.fingerprint)fail('Los datos cambiaron después de la vista previa. Actualícela antes de entregar.',409);
           if(!doc.preflight.complete)fail('Hay campos pendientes. Complete los datos señalados antes de entregar.',422);
-          return json(res,200,core.submitDocument(user,doc,await renderPDF(root,doc,user)));
+          const bytes=await renderPDF(root,doc,user);
+          const submission=core.submitDocument(user,doc,bytes);
+          core.recordDocumentEmission(user,doc,bytes,{source:route});
+          return json(res,200,submission);
         }
         if(route==='/api/document/submission-pdf'){
           const bytes=core.submissionPDF(user,body.id);res.writeHead(200,{'Content-Type':'application/pdf','Cache-Control':'no-store'});res.end(bytes);return;
+        }
+        if(route==='/api/document/emissions/reprint'){
+          const { bytes, record } = core.reprintDocumentEmission(user, body);
+          const safeCode = String(record.registerCode || record.id).replace(/[^A-Za-z0-9._-]/g, '_');
+          res.writeHead(200, {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="${record.templateId}_DUPLICADO_${safeCode}.pdf"`,
+            'Cache-Control': 'no-store',
+            'X-Content-Type-Options': 'nosniff',
+          });
+          res.end(bytes);
+          return;
         }
         if (route === '/api/admission-ficha/pdf' && req.method === 'POST') {
           core.requireRole(user, ['DIRECTOR', 'SECRETARIA']);
@@ -203,18 +231,20 @@ function createService({ root, directory, backupFile }) {
           case '/api/logout': result = core.logout(token); break;
           case '/api/password': result = core.changePassword(user, body); break;
           case '/api/users/reject-request':result=core.rejectAccountRequest(user,body);break;
-          case '/api/users/archive':result=AccountContext.remove(core,user,context,body);break;
+          case '/api/users/archive': result = url.searchParams.get('global') === '1' ? core.archiveUser(user, body) : AccountContext.remove(core, user, context, body); break;
           case '/api/students/archive':result=core.archiveStudent(user,body);break;
           case '/api/exchange/export':result=core.exchangePackage(user,body);break;
           case '/api/exchange/preview':result=core.importPackage(user,body.package,false,body.passphrase);break;
           case '/api/exchange/import':result=core.importPackage(user,body.package,true,body.passphrase);break;
-          case '/api/users': result = AccountContext.save(core,user,context,body); break;
+          case '/api/users': result = url.searchParams.get('global') === '1' ? core.saveUser(user, body) : AccountContext.save(core, user, context, body); break;
           case '/api/users/accept-request':result=core.acceptRegistrationRequest(user,body);break;
           case '/api/students/accept-request':result=core.acceptStudentRequest(user,body);break;
           case '/api/data/preview':if(context?.mode&&context.mode!=='UNIT'&&['notas','asistencias'].includes(body.kind))fail('Seleccione una unidad para importar sus notas o asistencias.');result=scopedUpdates.preview(user,body);scopedUpdates.previews.get(result.token).workspaceKey=JSON.stringify(context);break;
           case '/api/data/apply':if(scopedUpdates.previews.get(body.token)?.workspaceKey!==undefined&&scopedUpdates.previews.get(body.token).workspaceKey!==JSON.stringify(context))fail('Cambió el módulo. Revise el archivo nuevamente antes de aplicar.',409);result=scopedUpdates.apply(user,body.token);break;
           case '/api/students': result = core.saveStudent(user, body); break;
           case '/api/groups': result = core.saveGroup(user, body); break;
+          case '/api/groups/delete': result = core.deleteGroup(user, body); break;
+          case '/api/groups/assign-teacher': result = core.reassignGroupTeacher(user, body); break;
           case '/api/enrollments': result = core.enroll(user, body); break;
           case '/api/enrollments/retire': result = core.retireEnrollment(user, body); break;
           case '/api/enrollments/module': result=require('./module-enrollments.cjs').correctModule(core,user,body);break;
@@ -233,8 +263,10 @@ function createService({ root, directory, backupFile }) {
           case '/api/backup/inspect': core.requireRole(user, ['DIRECTOR']); result = core.inspectBackup(user, body); break;
           case '/api/restore': core.requireRole(user, ['DIRECTOR']); result = core.restoreBackup(user, body); break;
           case '/api/legacy/import': result = core.importLegacy(user, body); break;
-          case '/api/document': result = Workspace.document(core,user,context,body); break;
+          case '/api/document': result = Workspace.document(core,user,context,{...body,official2026:body.official2026!==false}); break;
           case '/api/document/configuration': result=DocumentSettings.saveSettings(core,user,body);break;
+          case '/api/document/register-code/suggest': result=DocumentSettings.suggestInstitutionalRegistry(core,user,body);break;
+          case '/api/document/emissions/delete': result = core.deleteDocumentEmission(user, body); break;
           case '/api/document/review':result=core.reviewDocument(user,body);break;
           case '/api/network/kit': result = InstitutionalNetwork.createKit(core, user, body, root); break;
           case '/api/network/export-batch': result = InstitutionalNetwork.prepareBatchExport(core, user, body); break;
@@ -242,8 +274,11 @@ function createService({ root, directory, backupFile }) {
           case '/api/network/import-batch': result = InstitutionalNetwork.importBatch(core, user, body); break;
           case '/api/network/revoke': result = InstitutionalNetwork.revokeDevice(core, user, body); break;
           case '/api/network/replace': result = InstitutionalNetwork.replaceDevice(core, user, body, root); break;
+          case '/api/network/sync/export': result=SyncTransfer.exportTransfer(core,user,body);break;
+          case '/api/network/sync/preview': result=transfers.preview(user,body,context);break;
+          case '/api/network/sync/import': result=transfers.import(user,body,context);break;
           case '/api/network/whatsapp/export': result = SyncWhatsApp.exportForWhatsApp(core, user, body); break;
-          case '/api/network/whatsapp/import': result = SyncWhatsApp.importFromWhatsApp(core, user, body); break;
+          case '/api/network/whatsapp/import': result = SyncWhatsApp.importFromWhatsApp(core, user, body, context); break;
           case '/api/admission-ficha/config': result = FichaRegistro2026.updateConfig(core, user, body); break;
           case '/api/admission-ficha/import-whatsapp':
           case '/api/secretaria/fichas-registro/importar-texto':

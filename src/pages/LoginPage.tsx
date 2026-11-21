@@ -12,10 +12,12 @@
  * - Accesos rápidos de 1 clic para las 13 cuentas institucionales 2026 (Director, Secretaría y 11 Docentes)
  */
 
-import React, { useState } from 'react';
+import { InstitutionalLogo } from '../components/ui/InstitutionalLogo';
+import { DashboardPhotoBand } from '../components/ui/DashboardPhotoBand';
+import React, { useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/client';
-import { InstitutionalBrandIcon, UsbIcon, CheckCircleIcon, AlertCircleIcon, LaptopIcon } from '../components/ui/Icons';
+import { UsbIcon, CheckCircleIcon, AlertCircleIcon, LaptopIcon } from '../components/ui/Icons';
 import { ValidateInvitationResponse } from '../api/types';
 
 export const LoginPage: React.FC = () => {
@@ -34,6 +36,76 @@ export const LoginPage: React.FC = () => {
   const [invitationError, setInvitationError] = useState<string | null>(null);
   const [isLinkingInvitation, setIsLinkingInvitation] = useState(false);
   const [linkSuccessMessage, setLinkSuccessMessage] = useState<string | null>(null);
+  const [isDraggingInvitation, setIsDraggingInvitation] = useState(false);
+  const invitationPanelRef = useRef<HTMLDivElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    if (!invitationModalOpen) return;
+
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+
+    const focusFirst = () => {
+      const panel = invitationPanelRef.current;
+      if (!panel) return;
+      const focusables = Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => el.offsetParent !== null);
+      if (focusables.length > 0) {
+        focusables[0].focus();
+      } else {
+        panel.focus();
+      }
+    };
+
+    const rafId = window.requestAnimationFrame(focusFirst);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (!isLinkingInvitation) {
+          e.preventDefault();
+          setInvitationModalOpen(false);
+        }
+        return;
+      }
+
+      if (e.key !== 'Tab' || !invitationPanelRef.current) return;
+      const focusables = Array.from(
+        invitationPanelRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => el.offsetParent !== null);
+
+      if (focusables.length === 0) {
+        e.preventDefault();
+        return;
+      }
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first || !invitationPanelRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (document.activeElement === last || !invitationPanelRef.current.contains(document.activeElement)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener('keydown', handleKeyDown);
+      if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [invitationModalOpen, isLinkingInvitation]);
 
   // Estados para Asistente de Configuración Inicial (Primer Arranque)
   const isConnected = !!systemStatus;
@@ -171,56 +243,54 @@ export const LoginPage: React.FC = () => {
   const activeInSetup = (systemStatus ? !systemStatus.initialized : false) || setupMode;
 
   return (
-    <div className="min-h-screen bg-[#F6F8FA] dark:bg-[#0F1715] text-[#172B28] dark:text-[#F0FDF8] flex flex-col justify-between items-center px-4 py-8 select-none antialiased">
+    <div className="min-h-screen bg-canvas text-ink flex flex-col justify-between items-center px-4 py-8 select-none antialiased">
       {/* Encabezado de estado local */}
-      <header className="w-full max-w-md flex justify-between items-center py-2">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2.5 w-2.5" aria-hidden="true">
+      <header className="w-full max-w-lg flex justify-between items-center gap-3 py-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="relative flex h-2.5 w-2.5 shrink-0" aria-hidden="true">
             <span
               className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                isConnected ? 'bg-[#13594A] dark:bg-[#5EEAD4]' : 'bg-amber-500'
+                isConnected ? 'bg-brand' : 'bg-amber-500'
               }`}
             />
             <span
               className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                isConnected ? 'bg-[#13594A] dark:bg-[#5EEAD4]' : 'bg-amber-500'
+                isConnected ? 'bg-brand' : 'bg-amber-500'
               }`}
             />
           </span>
-          <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300">
+          <span className="text-[12px] leading-[18px] font-semibold text-muted truncate">
             {isConnected ? 'Servicio Local Conectado (127.0.0.1)' : 'Buscando servicio local…'}
           </span>
         </div>
-        <span className="text-[10px] font-bold text-[#004034] dark:text-[#5EEAD4] bg-[#c0ecde] dark:bg-[#132B25] px-2 py-0.5 rounded-md uppercase tracking-wider">
+        <span className="text-[11px] font-bold text-brand bg-brand-soft border border-line px-2.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 tabular-nums">
           v2.0 Offline
         </span>
       </header>
 
       {/* Tarjeta Principal de Login / Setup */}
-      <main className="w-full max-w-md bg-white dark:bg-[#182220] rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-200/80 dark:border-[#263834] p-7 sm:p-9 my-auto">
+      <main className="w-full max-w-lg bg-surface rounded-2xl shadow-[var(--ui-shadow)] border border-line p-6 sm:p-8 my-auto">
         {/* Identidad Institucional */}
-        <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#13594A]/10 dark:bg-[#132B25] border border-[#13594A]/15 dark:border-[#205C4E] flex items-center justify-center text-[#13594A] dark:text-[#5EEAD4] mb-3 shadow-xs">
-            <InstitutionalBrandIcon className="w-9 h-9" />
-          </div>
-          <h1 className="text-[24px] font-bold tracking-tight text-[#0D382F] dark:text-[#5EEAD4] leading-tight">
+        <DashboardPhotoBand as="header" scene="docente" variant="stacked" className="mb-6" contentClassName="flex flex-col items-center text-center">
+          <InstitutionalLogo className="mb-3 h-28 w-20" />
+          <h1 className="text-[24px] sm:text-[30px] font-bold tracking-tight text-ink leading-[30px] sm:leading-[36px]">
             CEPRO_MICAELA
           </h1>
-          <p className="text-[12px] font-semibold tracking-wider text-slate-600 dark:text-slate-400 uppercase mt-0.5">
+          <p className="text-[12px] leading-[18px] font-semibold tracking-wider text-muted uppercase mt-1">
             {activeInSetup ? 'Asistente de Primer Arranque' : 'Gestión Académica 2.0'}
           </p>
           {systemStatus?.institutionName && !activeInSetup && (
-            <span className="inline-block mt-2 text-[11px] font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] px-3 py-1 rounded-full">
+            <span className="inline-block mt-2.5 max-w-full min-w-0 truncate text-[12px] leading-[18px] font-medium text-ink bg-surface-alt border border-line px-3 py-1 rounded-full">
               {systemStatus.institutionName}
             </span>
           )}
-        </div>
+        </DashboardPhotoBand>
 
         {/* MODO ASISTENTE DE PRIMERA CONFIGURACIÓN (MED-01) */}
         {activeInSetup ? (
           <div>
-            <div className="mb-5 p-4 rounded-2xl bg-emerald-50/80 dark:bg-[#132B25] border border-emerald-200/80 dark:border-[#205C4E] text-emerald-950 dark:text-emerald-100 text-[12px] leading-relaxed">
-              <p className="font-bold text-[13px] text-[#0D382F] dark:text-[#5EEAD4] mb-1">
+            <div className="mb-5 p-4 rounded-2xl bg-brand-soft border border-line text-ink text-[12px] leading-[18px]">
+              <p className="font-bold text-[14px] leading-[21px] text-brand mb-1">
                 Configuración Inicial Institucional
               </p>
               Bienvenido. Establezca los datos institucionales y cree la cuenta principal de
@@ -229,100 +299,107 @@ export const LoginPage: React.FC = () => {
 
             {setupError && (
               <div
-                className="mb-4 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-900 dark:text-rose-200 text-[12px] flex items-center gap-2"
+                className="mb-4 p-3.5 rounded-[10px] bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-900 dark:text-rose-200 text-[12px] leading-[18px] flex items-start gap-2.5"
                 role="alert"
               >
-                <span className="font-semibold">{setupError}</span>
+                <AlertCircleIcon className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
+                <span className="font-semibold min-w-0">{setupError}</span>
               </div>
             )}
 
             {setupSuccess && (
               <div
-                className="mb-4 p-3.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-[12px] flex items-center gap-2"
+                className="mb-4 p-3.5 rounded-[10px] bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-[12px] leading-[18px] flex items-start gap-2.5"
                 role="status"
               >
-                <span className="font-semibold">{setupSuccess}</span>
+                <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" aria-hidden="true" />
+                <span className="font-semibold min-w-0">{setupSuccess}</span>
               </div>
             )}
 
-            <form onSubmit={handleSetupSubmit} className="flex flex-col gap-3.5" noValidate>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+            <form onSubmit={handleSetupSubmit} className="flex flex-col gap-4" noValidate>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="setup-inst-name" className="text-[14px] leading-[21px] font-semibold text-ink">
                   Nombre Institucional
                 </label>
                 <input
+                  id="setup-inst-name"
                   type="text"
                   required
                   value={instName}
                   onChange={(e) => setInstName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-white text-[13px] font-medium focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-[10px] bg-surface-alt border border-line text-ink text-[14px] font-medium placeholder:text-muted focus:bg-surface focus:outline-none focus:ring-2 focus:ring-[var(--ui-brand)]"
                   placeholder="e.g. CETPRO MICAELA BASTIDAS"
                 />
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="setup-director-name" className="text-[14px] leading-[21px] font-semibold text-ink">
                   Nombre Completo del Director
                 </label>
                 <input
+                  id="setup-director-name"
                   type="text"
                   required
                   value={directorFullName}
                   onChange={(e) => setDirectorFullName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-white text-[13px] font-medium focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-[10px] bg-surface-alt border border-line text-ink text-[14px] font-medium placeholder:text-muted focus:bg-surface focus:outline-none focus:ring-2 focus:ring-[var(--ui-brand)]"
                   placeholder="e.g. Mg. Juan Pérez Rodríguez"
                 />
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="setup-director-user" className="text-[14px] leading-[21px] font-semibold text-ink">
                   Usuario del Director
                 </label>
                 <input
+                  id="setup-director-user"
                   type="text"
                   required
                   value={directorUser}
                   onChange={(e) => setDirectorUser(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-white text-[13px] font-medium focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-[10px] bg-surface-alt border border-line text-ink text-[14px] font-medium placeholder:text-muted focus:bg-surface focus:outline-none focus:ring-2 focus:ring-[var(--ui-brand)]"
                   placeholder="e.g. director"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="setup-director-pass" className="text-[14px] leading-[21px] font-semibold text-ink">
                     Contraseña
                   </label>
                   <input
+                    id="setup-director-pass"
                     type="password"
                     required
                     value={directorPass}
                     onChange={(e) => setDirectorPass(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-white text-[13px] font-medium focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
-                    placeholder="Min. 8 car."
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-[10px] bg-surface-alt border border-line text-ink text-[14px] font-medium placeholder:text-muted focus:bg-surface focus:outline-none focus:ring-2 focus:ring-[var(--ui-brand)]"
+                    placeholder="Mín. 8 car."
                   />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="setup-confirm-pass" className="text-[14px] leading-[21px] font-semibold text-ink">
                     Confirmar
                   </label>
                   <input
+                    id="setup-confirm-pass"
                     type="password"
                     required
                     value={confirmPass}
                     onChange={(e) => setConfirmPass(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-white text-[13px] font-medium focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-[10px] bg-surface-alt border border-line text-ink text-[14px] font-medium placeholder:text-muted focus:bg-surface focus:outline-none focus:ring-2 focus:ring-[var(--ui-brand)]"
                     placeholder="Repita"
                   />
                 </div>
               </div>
 
-              <label className="flex items-center gap-2 mt-1 text-[12px] text-slate-700 dark:text-slate-300 font-medium cursor-pointer">
+              <label className="flex items-center gap-2.5 mt-1 min-h-[44px] text-[12px] leading-[18px] text-ink font-medium cursor-pointer">
                 <input
                   type="checkbox"
                   checked={importBaseline}
                   onChange={(e) => setImportBaseline(e.target.checked)}
-                  className="rounded text-[#13594A] focus:ring-[#13594A] h-4 w-4"
+                  className="rounded text-brand focus:ring-[var(--ui-brand)] h-4 w-4 shrink-0"
                 />
                 <span>Cargar catálogo curricular oficial (programas y módulos)</span>
               </label>
@@ -330,7 +407,7 @@ export const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={setupSubmitting}
-                className="w-full mt-3 py-3 px-6 rounded-xl bg-[#13594A] hover:bg-[#0E4438] active:bg-[#0B372D] text-white font-bold text-[14px] shadow-sm transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full min-h-[44px] mt-2 py-2.5 px-6 rounded-[10px] bg-brand hover:opacity-90 text-on-brand font-bold text-[14px] shadow-sm transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
               >
                 {setupSubmitting ? (
                   <span>Inicializando Sistema...</span>
@@ -344,7 +421,7 @@ export const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSetupMode(false)}
-                className="w-full mt-3 text-[12px] font-semibold text-[#13594A] hover:underline text-center cursor-pointer"
+                className="w-full min-h-[44px] mt-2 text-[12px] font-semibold text-brand hover:underline text-center cursor-pointer rounded-[10px]"
               >
                 Volver al formulario de inicio de sesión
               </button>
@@ -359,8 +436,8 @@ export const LoginPage: React.FC = () => {
                 className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-200 text-[13px] flex items-start gap-3 animate-fade-in"
                 role="status"
               >
-                <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                <div className="flex-1">
+                <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" aria-hidden="true" />
+                <div className="flex-1 min-w-0">
                   <span className="font-semibold block">{linkSuccessMessage}</span>
                 </div>
               </div>
@@ -372,21 +449,8 @@ export const LoginPage: React.FC = () => {
                 className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-200 text-[13px] flex items-start gap-3 animate-fade-in"
                 role="alert"
               >
-                <svg
-                  className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-                <div className="flex-1">
+                <AlertCircleIcon className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
+                <div className="flex-1 min-w-0">
                   <span className="font-semibold block">{error}</span>
                 </div>
               </div>
@@ -398,7 +462,7 @@ export const LoginPage: React.FC = () => {
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="username"
-                  className="text-[12px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider"
+                  className="text-[14px] leading-[21px] font-semibold text-ink"
                 >
                   Usuario institucional
                 </label>
@@ -415,16 +479,16 @@ export const LoginPage: React.FC = () => {
                     setUsername(e.target.value);
                   }}
                   placeholder={__IS_INSTITUTIONAL__ ? 'Ingrese su usuario institucional' : 'e.g. eloy.paredes, carmen.vilca o magda.chura'}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-white text-[14px] font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4] focus:border-transparent transition-all"
+                  className="w-full min-h-[44px] px-4 py-2.5 rounded-[10px] bg-surface-alt border border-line text-ink text-[14px] font-medium placeholder:text-muted focus:bg-surface focus:outline-none focus:ring-2 focus:ring-[var(--ui-brand)] focus:border-transparent transition-all"
                 />
               </div>
 
               {/* Campo Contraseña */}
               <div className="flex flex-col gap-1.5">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center gap-2">
                   <label
                     htmlFor="password"
-                    className="text-[12px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider"
+                    className="text-[14px] leading-[21px] font-semibold text-ink"
                   >
                     Contraseña
                   </label>
@@ -432,7 +496,7 @@ export const LoginPage: React.FC = () => {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                    className="text-[11px] font-semibold text-[#13594A] dark:text-[#5EEAD4] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4] focus-visible:ring-offset-1 rounded px-1 transition-all cursor-pointer"
+                    className="min-h-[44px] px-2 -my-2 inline-flex items-center text-[12px] font-semibold text-brand hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-brand)] rounded-[10px] transition-all cursor-pointer"
                   >
                     {showPassword ? 'Ocultar' : 'Mostrar'}
                   </button>
@@ -450,7 +514,7 @@ export const LoginPage: React.FC = () => {
                       setPassword(e.target.value);
                     }}
                     placeholder="••••••••"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-white text-[14px] font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4] focus:border-transparent transition-all"
+                    className="w-full min-h-[44px] px-4 py-2.5 rounded-[10px] bg-surface-alt border border-line text-ink text-[14px] font-medium placeholder:text-muted focus:bg-surface focus:outline-none focus:ring-2 focus:ring-[var(--ui-brand)] focus:border-transparent transition-all"
                   />
                 </div>
               </div>
@@ -459,14 +523,15 @@ export const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading || submitting || !username.trim() || !password}
-                className="w-full mt-2 py-3.5 px-6 rounded-xl bg-[#13594A] hover:bg-[#0E4438] active:bg-[#0B372D] text-white font-bold text-[14px] tracking-wide shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4] focus-visible:ring-offset-2"
+                className="w-full min-h-[44px] mt-2 py-2.5 px-6 rounded-[10px] bg-brand hover:opacity-90 text-on-brand font-bold text-[14px] tracking-wide shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 {submitting ? (
                   <>
                     <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-on-brand"
                       fill="none"
                       viewBox="0 0 24 24"
+                      aria-hidden="true"
                     >
                       <circle
                         className="opacity-25"
@@ -490,14 +555,31 @@ export const LoginPage: React.FC = () => {
               </button>
             </form>
 
-            {/* Sección de Vinculación Institucional de Red Offline */}
-            <div className="mt-5 pt-4 border-t border-slate-200/80 dark:border-[#263834] text-center">
+            {/* Sección de Vinculación Institucional de Red Offline (Drag-and-drop + selector) */}
+            <div
+              className={`mt-5 pt-4 border-t border-line`}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDraggingInvitation(true);
+              }}
+              onDragLeave={() => setIsDraggingInvitation(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDraggingInvitation(false);
+                const f = e.dataTransfer.files?.[0];
+                if (f) handleInvitationFile(f);
+              }}
+            >
               <label
                 htmlFor="invitation-upload"
-                className="inline-flex items-center gap-2 text-[12px] font-semibold text-[#13594A] dark:text-[#5EEAD4] hover:underline cursor-pointer"
+                className={`w-full min-h-[44px] px-4 py-2.5 rounded-[10px] border border-dashed flex items-center justify-center gap-2 text-[12px] leading-[18px] font-semibold transition-colors cursor-pointer ${
+                  isDraggingInvitation
+                    ? 'bg-brand-soft border-[var(--ui-brand)] text-brand'
+                    : 'bg-surface-alt/60 border-line text-brand hover:bg-brand-soft/60'
+                }`}
               >
-                <UsbIcon className="w-4 h-4" />
-                <span>¿Recibió un Kit de Instalación? Vincular este equipo</span>
+                <UsbIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span>¿Recibió un Kit de Instalación? Vincular este equipo (.cetpro-invitacion)</span>
               </label>
               <input
                 id="invitation-upload"
@@ -516,57 +598,75 @@ export const LoginPage: React.FC = () => {
 
       {/* Modal de Validación y Vinculación por Invitación Institucional */}
       {invitationModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8] flex items-center gap-2">
-                <LaptopIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                Vinculación Institucional de Equipo
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="invitation-modal-title"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            ref={invitationPanelRef}
+            tabIndex={-1}
+            className="cepro-dialog-panel bg-surface border border-line rounded-2xl max-w-md w-full p-6 shadow-[var(--ui-shadow)] space-y-4 focus:outline-none"
+          >
+            <div className="flex justify-between items-center gap-3">
+              <h3
+                id="invitation-modal-title"
+                className="text-[16px] leading-[24px] font-bold text-ink flex items-center gap-2 min-w-0"
+              >
+                <LaptopIcon className="w-5 h-5 text-brand shrink-0" aria-hidden="true" />
+                <span className="truncate">Vinculación Institucional de Equipo</span>
               </h3>
               <button
+                type="button"
                 onClick={() => setInvitationModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-white font-bold"
+                aria-label="Cerrar diálogo de vinculación"
+                className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-[10px] text-muted hover:text-ink hover:bg-surface-alt font-bold cursor-pointer shrink-0"
               >
                 ✕
               </button>
             </div>
 
             {invitationError ? (
-              <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-900 dark:text-red-200 text-xs flex items-start gap-2">
-                <AlertCircleIcon className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <span>{invitationError}</span>
+              <div
+                role="alert"
+                className="p-4 rounded-[10px] bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-200 text-[12px] leading-[18px] flex items-start gap-2.5"
+              >
+                <AlertCircleIcon className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
+                <span className="min-w-0 font-semibold">{invitationError}</span>
               </div>
             ) : invitationValidation ? (
-              <div className="space-y-3 text-xs">
-                <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200">
-                  <p className="font-bold text-sm mb-1 text-[#0D382F] dark:text-emerald-300">
-                    Invitación Institucional Verificada
+              <div className="space-y-3 text-[12px] leading-[18px]">
+                <div className="p-3.5 rounded-2xl bg-brand-soft border border-line text-ink">
+                  <p className="font-bold text-[14px] leading-[21px] mb-1 text-brand flex items-center gap-2">
+                    <CheckCircleIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    <span>Invitación Institucional Verificada</span>
                   </p>
-                  <p className="text-slate-600 dark:text-slate-300">
+                  <p className="text-muted">
                     La Dirección del CETPRO ha emitido una autorización criptográfica para este equipo.
                   </p>
                 </div>
 
-                <div className="bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] rounded-xl p-3 space-y-1.5 font-mono text-[11px]">
-                  <div>
-                    <span className="text-slate-500">Institución:</span>{' '}
-                    <strong className="text-slate-800 dark:text-white">{invitationValidation.institution.name}</strong>
+                <div className="bg-surface-alt border border-line rounded-[10px] p-3 space-y-1.5 font-mono text-[12px]">
+                  <div className="min-w-0 truncate">
+                    <span className="text-muted">Institución:</span>{' '}
+                    <strong className="text-ink">{invitationValidation.institution.name}</strong>
+                  </div>
+                  <div className="min-w-0 truncate">
+                    <span className="text-muted">Destinatario:</span>{' '}
+                    <strong className="text-ink">{invitationValidation.recipient.name}</strong>
+                  </div>
+                  <div className="min-w-0 truncate">
+                    <span className="text-muted">Usuario oficial:</span>{' '}
+                    <strong className="text-brand">{invitationValidation.recipient.username}</strong> ({invitationValidation.recipient.role})
                   </div>
                   <div>
-                    <span className="text-slate-500">Destinatario:</span>{' '}
-                    <strong className="text-slate-800 dark:text-white">{invitationValidation.recipient.name}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-500">Usuario oficial:</span>{' '}
-                    <strong className="text-emerald-600 dark:text-emerald-400">{invitationValidation.recipient.username}</strong> ({invitationValidation.recipient.role})
-                  </div>
-                  <div>
-                    <span className="text-slate-500">Vigencia hasta:</span>{' '}
-                    <span className="text-slate-700 dark:text-slate-300">{invitationValidation.expiresAt.slice(0, 10)}</span>
+                    <span className="text-muted">Vigencia hasta:</span>{' '}
+                    <span className="text-ink tabular-nums">{invitationValidation.expiresAt.slice(0, 10)}</span>
                   </div>
                 </div>
 
-                <p className="text-[11px] text-slate-500 leading-normal">
+                <p className="text-[12px] text-muted leading-[18px]">
                   Al confirmar, este equipo adoptará el certificado institucional y quedará formalmente autorizado para exportar e importar datos académicos hacia la Dirección.
                 </p>
               </div>
@@ -574,16 +674,18 @@ export const LoginPage: React.FC = () => {
 
             <div className="flex justify-end gap-2 pt-2">
               <button
+                type="button"
                 onClick={() => setInvitationModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                className="min-h-[44px] px-4 py-2 rounded-[10px] text-[14px] font-semibold text-muted hover:text-ink hover:bg-surface-alt cursor-pointer"
               >
                 Cerrar
               </button>
               {invitationValidation && !invitationError && (
                 <button
+                  type="button"
                   onClick={handleConfirmLink}
                   disabled={isLinkingInvitation}
-                  className="bg-[#13594A] hover:bg-[#0E4438] active:bg-[#0B372D] disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition-all"
+                  className="min-h-[44px] bg-brand hover:opacity-90 disabled:opacity-50 text-on-brand font-bold px-4 py-2 rounded-[10px] text-[14px] shadow-sm transition-all cursor-pointer"
                 >
                   {isLinkingInvitation ? 'Vinculando Equipo...' : 'Aceptar y Vincular este Equipo →'}
                 </button>
@@ -594,8 +696,8 @@ export const LoginPage: React.FC = () => {
       )}
 
       {/* Pie institucional */}
-      <footer className="w-full max-w-md text-center py-4">
-        <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+      <footer className="w-full max-w-lg text-center py-4">
+        <p className="text-[12px] leading-[18px] font-medium text-muted">
           Operación 100% fuera de línea · Información institucional protegida en este equipo
         </p>
       </footer>

@@ -13,7 +13,7 @@
  * cualquier dato académico previo.
  */
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../api/client';
 import {
   WorkspaceOptionsResponse,
@@ -58,10 +58,11 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isSelectorOpen, setIsSelectorOpen] = useState<boolean>(false);
   const [selectorStep, setSelectorStep] = useState<1 | 2 | 3>(1);
 
+  const optionsRequest = useRef(0);
+  const workspaceRevision = useRef(0);
+
   const openSelector = useCallback((step?: 1 | 2 | 3) => {
-    if (step) {
-      setSelectorStep(step);
-    }
+    setSelectorStep(step ?? 1);
     setIsSelectorOpen(true);
   }, []);
 
@@ -70,6 +71,8 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   const clearWorkspace = useCallback(() => {
+    optionsRequest.current++;
+    workspaceRevision.current++;
     setOptions(null);
     setActiveWorkspace(null);
     setDashboardData(null);
@@ -87,15 +90,20 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const loadOptions = useCallback(async () => {
     if (!isAuthenticated) return;
+    const request = ++optionsRequest.current;
+    const revision = workspaceRevision.current;
     setIsLoading(true);
     setError(null);
     try {
       const opts = await apiClient.getWorkspaceOptions();
+      if (optionsRequest.current !== request) return;
       setOptions(opts);
+      if (workspaceRevision.current !== revision) return;
 
       // Cargar estado inicial del dashboard para verificar si ya existe un workspace en sesión
       try {
         const dash = await apiClient.getDashboard();
+        if (optionsRequest.current !== request || workspaceRevision.current !== revision) return;
         setDashboardData(dash);
         if (dash.workspace) {
           setActiveWorkspace(dash.workspace);
@@ -104,10 +112,11 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         // Si no hay dashboard disponible aún, se mantiene en null
       }
     } catch (err: unknown) {
+      if (optionsRequest.current !== request || workspaceRevision.current !== revision) return;
       const apiErr = err as ApiError;
       setError(apiErr?.error || 'No se pudieron cargar las opciones académicas.');
     } finally {
-      setIsLoading(false);
+      if (optionsRequest.current === request && workspaceRevision.current === revision) setIsLoading(false);
     }
   }, [isAuthenticated]);
 
@@ -119,24 +128,29 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [isAuthenticated, user, loadOptions]);
 
   const selectWorkspace = useCallback(async (payload: SelectWorkspacePayload): Promise<IWorkspaceContext> => {
+    let revision = ++workspaceRevision.current;
     setIsLoading(true);
     setError(null);
     try {
       const context = await apiClient.selectWorkspace(payload);
+      if (workspaceRevision.current !== revision) return context;
+      revision = ++workspaceRevision.current;
       setActiveWorkspace(context);
+      setDashboardData(null);
 
       // Inmediatamente consultar dashboard con el nuevo contexto
       const dash = await apiClient.getDashboard();
+      if (workspaceRevision.current !== revision) return context;
       setDashboardData(dash);
       setIsSelectorOpen(false);
       return context;
     } catch (err: unknown) {
       const apiErr = err as ApiError;
       const msg = apiErr?.error || 'Error al seleccionar el espacio de trabajo académico.';
-      setError(msg);
+      if (workspaceRevision.current === revision) setError(msg);
       throw err;
     } finally {
-      setIsLoading(false);
+      if (workspaceRevision.current === revision) setIsLoading(false);
     }
   }, []);
 
@@ -148,7 +162,8 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     ): Promise<IWorkspaceContext> => {
       const effectiveMode = unitCode === 'EFSRT' ? 'PRACTICE' : mode;
       const payload: SelectWorkspacePayload = {
-        year: group.year || (group.periodId ? String(group.periodId).slice(0, 4) : '2026'),
+        year: group.year,
+        periodId: group.periodId,
         programId: group.programId,
         moduleId: group.moduleId,
         groupId: group.id,

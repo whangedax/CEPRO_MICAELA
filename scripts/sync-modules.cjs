@@ -1,113 +1,29 @@
-/**
- * scripts/sync-modules.cjs
- * 
- * Definición y categorización de módulos de sincronización para el intercambio
- * estructurado por partes (Matrículas, Configuraciones, Notas, Asistencias).
- */
-
-const SYNC_MODULES = {
-  ALL: 'all',
-  CONFIG: 'config',
-  ENROLLMENTS: 'enrollments',
-  GRADES: 'grades',
-  ATTENDANCE: 'attendance'
-};
-
-const MODULE_LABELS = {
-  all: 'Lote Completo (Todos los datos)',
-  config: 'Configuraciones Académicas e Institucionales',
-  enrollments: 'Estudiantes y Matrículas',
-  grades: 'Calificaciones, Notas de Logro y Evaluaciones',
-  attendance: 'Control de Asistencias'
-};
-
-/**
- * Determina si una entidad y su scope pertenecen al módulo de sincronización solicitado.
- * @param {string} entity - Nombre de la entidad ('students', 'grades', 'documentSettings', etc.)
- * @param {object|string} [detail] - Objeto o scope de la operación
- * @param {string} syncModule - 'all' | 'config' | 'enrollments' | 'grades' | 'attendance'
- * @returns {boolean}
- */
-function matchesSyncModule(entity, detail, syncModule) {
-  if (!syncModule || syncModule === SYNC_MODULES.ALL) {
-    return true;
-  }
-
-  const scopeKind = detail?.scope?.kind || detail?.scopeKind || null;
-
-  switch (syncModule) {
-    case SYNC_MODULES.CONFIG:
-      // Programas, módulos, settings institucionales, periodos, años, valores de referencia
-      if (['programs', 'modules', 'academic_years', 'periods'].includes(entity)) {
-        return true;
-      }
-      if (entity === 'documentSettings') {
-        // Excluir notas o entregas específicas si estuvieran en documentSettings
-        return true;
-      }
-      if (entity === 'userDirectory') {
-        return true;
-      }
-      return false;
-
-    case SYNC_MODULES.ENROLLMENTS:
-      // Estudiantes, matrículas, admisiones y solicitudes de alumnos
-      if (['students', 'enrollments', 'studentRequests'].includes(entity)) {
-        return true;
-      }
-      if (entity === 'documentSettings' && ['admissionConfig', 'admissionSubmission', 'profile2026'].includes(scopeKind)) {
-        return true;
-      }
-      return false;
-
-    case SYNC_MODULES.GRADES:
-      // Calificaciones vigesimales, actas y entregas documentales
-      if (['grades', 'documentSubmissions'].includes(entity)) {
-        return true;
-      }
-      if (entity === 'documentSettings' && ['unit', 'practice'].includes(scopeKind)) {
-        return true;
-      }
-      return false;
-
-    case SYNC_MODULES.ATTENDANCE:
-      // Control de asistencias
-      return entity === 'attendance';
-
-    default:
-      return true;
-  }
+// Transport-independent module classification. Unknown modules fail closed.
+const SYNC_MODULES={ALL:'all',CONFIG:'config',ENROLLMENTS:'enrollments',GRADES:'grades',ATTENDANCE:'attendance'};
+const MODULE_LABELS={all:'Lote completo',config:'Configuración académica e institucional',enrollments:'Estudiantes y matrículas',grades:'Calificaciones y planificación',attendance:'Control de asistencias'};
+const CONFIG_SCOPES=new Set(['institution','program','module','group','curriculum','moduleDefaults','academicYear','academicPeriod','unitCurriculum']);
+function validateSyncModule(value='all'){if(!Object.values(SYNC_MODULES).includes(value)){const e=new Error('Módulo de sincronización desconocido.');e.status=400;throw e;}return value;}
+function matchesSyncModule(entity,detail,module='all'){
+ validateSyncModule(module);const scope=detail?.scope?.kind||detail?.scopeKind;
+ if(module==='all')return true;
+ if(module==='config')return ['programs','modules','groups','academic_years','periods'].includes(entity)||(entity==='documentSettings'&&CONFIG_SCOPES.has(scope));
+ if(module==='enrollments')return ['students','enrollments','studentRequests'].includes(entity)||(entity==='documentSettings'&&['admissionConfig','admissionSubmission','profile2026'].includes(scope));
+ if(module==='grades')return ['grades','documentSubmissions'].includes(entity)||(entity==='documentSettings'&&['unit','practice'].includes(scope));
+ return entity==='attendance';
 }
-
-/**
- * Clasifica una lista de operaciones por módulo de sincronización.
- * @param {Array} operations - Lista de operaciones
- * @returns {object} Contadores por módulo
- */
-function classifyOperations(operations = []) {
-  const counts = {
-    all: operations.length,
-    config: 0,
-    enrollments: 0,
-    grades: 0,
-    attendance: 0
-  };
-
-  for (const op of operations) {
-    const entity = op?.body?.entity;
-    const detail = op?.body?.value;
-    if (matchesSyncModule(entity, detail, SYNC_MODULES.CONFIG)) counts.config++;
-    if (matchesSyncModule(entity, detail, SYNC_MODULES.ENROLLMENTS)) counts.enrollments++;
-    if (matchesSyncModule(entity, detail, SYNC_MODULES.GRADES)) counts.grades++;
-    if (matchesSyncModule(entity, detail, SYNC_MODULES.ATTENDANCE)) counts.attendance++;
-  }
-
-  return counts;
+// Add only signed dependencies already visible to sender AND recipient.
+function withDependencies(operations,module){
+ validateSyncModule(module);const latest=new Map();for(const op of operations)latest.set(op.body.entity+':'+op.body.recordId,op);
+ const selected=new Map([...latest].filter(([,op])=>matchesSyncModule(op.body.entity,op.body.value,module))),required=new Set();
+ const add=(entity,id)=>{const key=entity+':'+id,op=latest.get(key);if(op&&!selected.has(key)){selected.set(key,op);required.add(key);}return op?.body.value;};
+ for(const op of [...selected.values()]){const b=op.body,v=b.value;if(!['grades','attendance','documentSubmissions','enrollments','studentRequests'].includes(b.entity))continue;const en=v.enrollmentId?add('enrollments',v.enrollmentId):null;if(en)add('students',en.studentId);const group=add('groups',v.groupId||en?.groupId);if(group){add('programs',group.programId);add('modules',group.moduleId);for(const config of latest.values()){if(config.body.entity!=='documentSettings')continue;const scope=config.body.value?.scope;if((scope?.kind==='unitCurriculum'&&scope.target===group.id&&scope.unit===v.unit)||(scope?.kind==='group'&&scope.target===group.id)||(['curriculum','moduleDefaults','module'].includes(scope?.kind)&&scope.target===group.moduleId))add('documentSettings',config.body.recordId);}}}
+ const rank={programs:0,modules:1,groups:2,students:3,enrollments:4,documentSettings:5};
+ // Keep signed causal predecessors for each selected record. A latest-only
+ // update may refer to a revision the receiving computer has never seen.
+ const result=operations.filter(op=>selected.has(op.body.entity+':'+op.body.recordId))
+  .sort((a,b)=>(rank[a.body.entity]??6)-(rank[b.body.entity]??6));
+ const dependencies={};for(const key of required){const entity=key.split(':')[0];dependencies[entity]=(dependencies[entity]||0)+1;}
+ return {operations:result,dependencies};
 }
-
-module.exports = {
-  SYNC_MODULES,
-  MODULE_LABELS,
-  matchesSyncModule,
-  classifyOperations
-};
+function classifyOperations(operations=[]){return Object.fromEntries(Object.values(SYNC_MODULES).map(module=>[module,operations.filter(op=>matchesSyncModule(op.body.entity,op.body.value,module)).length]));}
+module.exports={SYNC_MODULES,MODULE_LABELS,CONFIG_SCOPES,validateSyncModule,matchesSyncModule,classifyOperations,withDependencies};

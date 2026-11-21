@@ -272,7 +272,8 @@ function parseProgramCatalog(sourcesDir, pDef) {
     const tCap = tables.find(t => t.section.includes('Capacidades normalizadas'));
     if (tCap) {
       for (const r of tCap.rows) {
-        const modId = r[3] === 'M1' ? pDef.m1.id : pDef.m2.id;
+        const modTag = String(r[3] || '').trim().toUpperCase();
+        const modId = (modTag === 'M1' || modTag === 'AUTO-M1' || modTag === 'I') ? pDef.m1.id : pDef.m2.id;
         const decomp = decomposeCapacityText(r[5]);
         capacidades.push({
           id: r[0],
@@ -635,12 +636,13 @@ function parseProgramCatalog(sourcesDir, pDef) {
     const tComp = tables.find(t => t.section.includes('Perfil y unidades de competencia'));
     if (tComp) {
       for (const r of tComp.rows) {
+        const isM1Comp = r[0] === 'CI-UC1' || r[0] === 'CI.UC01' || r[1] === 'UC1';
         competencias.push({
           id: r[0],
           codigo: r[1],
           tipo: 'ESPECIFICA',
           descripcion: r[2],
-          moduloId: r[0] === 'CI-UC1' ? pDef.m1.id : pDef.m2.id,
+          moduloId: isM1Comp ? pDef.m1.id : pDef.m2.id,
           paginaPdf: parseInt(r[3], 10) || 101
         });
       }
@@ -650,7 +652,8 @@ function parseProgramCatalog(sourcesDir, pDef) {
     const tCap = tables.find(t => t.section.includes('Capacidades'));
     if (tCap) {
       for (const r of tCap.rows) {
-        const modId = r[1] === 'CI-M1' ? pDef.m1.id : pDef.m2.id;
+        const modTag = String(r[1] || '').trim().toUpperCase();
+        const modId = (modTag === 'I' || modTag === 'M1' || modTag === 'CI-M1') ? pDef.m1.id : pDef.m2.id;
         const decomp = decomposeCapacityText(r[4]);
         capacidades.push({
           id: r[0],
@@ -701,12 +704,13 @@ function parseProgramCatalog(sourcesDir, pDef) {
     const tComp = tables.find(t => t.section.includes('Perfil y competencias'));
     if (tComp) {
       for (const r of tComp.rows) {
+        const isM1Comp = ['CE-UC1', 'CE-UC2', 'CE.UC01', 'CE.UC02', 'CE.UC03'].includes(r[0]) || ['UC1', 'UC2', 'UC3'].includes(r[1]);
         competencias.push({
           id: r[0],
           codigo: r[1],
           tipo: r[0].includes('CE') ? 'EMPLEABILIDAD' : 'ESPECIFICA',
           descripcion: r[2],
-          moduloId: ['CE-UC1', 'CE-UC2'].includes(r[0]) ? pDef.m1.id : pDef.m2.id,
+          moduloId: isM1Comp ? pDef.m1.id : pDef.m2.id,
           paginaPdf: parseInt(r[3], 10) || 122
         });
       }
@@ -716,7 +720,8 @@ function parseProgramCatalog(sourcesDir, pDef) {
     const tCap = tables.find(t => t.section.includes('Capacidades'));
     if (tCap) {
       for (const r of tCap.rows) {
-        const modId = r[1] === 'CE-M1' ? pDef.m1.id : pDef.m2.id;
+        const modTag = String(r[1] || '').trim().toUpperCase();
+        const modId = (modTag === 'I' || modTag === 'M1' || modTag === 'CE-M1') ? pDef.m1.id : pDef.m2.id;
         const decomp = decomposeCapacityText(r[4]);
         capacidades.push({
           id: r[0],
@@ -769,12 +774,13 @@ function parseProgramCatalog(sourcesDir, pDef) {
     const tCompEsp = tables.find(t => t.section.includes('Competencias específicas'));
     if (tCompEsp) {
       for (const r of tCompEsp.rows) {
+        const isM1Comp = ['ELE-UC1', 'ELE-UC01'].includes(r[0]) || r[1] === 'UC1';
         competencias.push({
           id: r[0],
           codigo: r[1],
           tipo: 'ESPECIFICA',
           descripcion: r[2],
-          moduloId: r[0] === 'ELE-UC1' ? pDef.m1.id : pDef.m2.id,
+          moduloId: isM1Comp ? pDef.m1.id : pDef.m2.id,
           paginaPdf: parseInt(r[3], 10) || 143
         });
       }
@@ -782,12 +788,13 @@ function parseProgramCatalog(sourcesDir, pDef) {
     const tCompEmp = tables.find(t => t.section.includes('Competencias de empleabilidad'));
     if (tCompEmp) {
       for (const r of tCompEmp.rows) {
+        const isM1Emp = ['ELE-CE1', 'ELE-CE2', 'ELE-CE01', 'ELE-CE02'].includes(r[0]) || ['CE1', 'CE2'].includes(r[1]);
         competencias.push({
           id: r[0],
           codigo: r[1],
           tipo: 'EMPLEABILIDAD',
           descripcion: r[2],
-          moduloId: ['ELE-CE1', 'ELE-CE2'].includes(r[0]) ? pDef.m1.id : pDef.m2.id,
+          moduloId: isM1Emp ? pDef.m1.id : pDef.m2.id,
           paginaPdf: parseInt(r[3], 10) || 143
         });
       }
@@ -797,7 +804,8 @@ function parseProgramCatalog(sourcesDir, pDef) {
     const tCap = tables.find(t => t.section.includes('Capacidades de la formulación'));
     if (tCap) {
       for (const r of tCap.rows) {
-        const modId = r[1] === 'ELE-M1' || r[1] === 'M1' ? pDef.m1.id : pDef.m2.id;
+        const modTag = String(r[1] || '').trim().toUpperCase();
+        const modId = (modTag === 'M01' || modTag === 'ELE-M1' || modTag === 'M1' || modTag === 'I') ? pDef.m1.id : pDef.m2.id;
         const decomp = decomposeCapacityText(r[5]);
         capacidades.push({
           id: r[0],
@@ -1210,6 +1218,50 @@ function seedCatalog(core, options = {}) {
  * Proyecta competencias y capacidades desde el catálogo hacia curriculum y moduleDefaults
  * sin modificar fechas operativas, respetando las 7 UDs de Peluquería M2 y preservando 286 matrículas.
  */
+function resolveUnitCapacityForProjection(moduleId, uCode, idx, modCapacidades, fallbackCap, existingCapacity = '') {
+  if (uCode === 'EFSRT') {
+    return existingCapacity || 'Consolida desempeños técnicos y competencias del módulo formativo en situaciones reales de trabajo cumpliendo normas de seguridad y control de calidad.';
+  }
+  if (moduleId === 'MOD-011') {
+    const pickIds = {
+      UD1: ['CE.C01', 'CE.C02'],
+      UD2: ['CE.C04', 'CE.C05'],
+      UD3: ['CE.C07', 'CE.C08'],
+      UD4: ['CE.C10', 'CE.C11'],
+      UD5: ['CE.C13'],
+      UD6: ['CE.C15', 'CE.C16'],
+    }[uCode];
+    if (pickIds) {
+      const joined = pickIds
+        .map(pid => modCapacidades.find(c => c.id === pid))
+        .filter(Boolean)
+        .map(c => `${c.codigo ? `${c.codigo} ` : ''}${c.descripcionCompleta || c.objeto || ''}`.trim())
+        .join(' ');
+      if (joined) return joined.slice(0, 1900);
+    }
+  }
+  if (moduleId === 'MOD-013') {
+    const capByUd = {
+      UD1: 'ELE-CAP01',
+      UD2: 'ELE-CAP02',
+      UD3: 'ELE-CAP03',
+      UD4: 'ELE-CAP04',
+      UD5: 'ELE-CAP06',
+    };
+    if (capByUd[uCode]) {
+      const matched = modCapacidades.find(c => c.id === capByUd[uCode]);
+      if (matched) return String(matched.descripcionCompleta || matched.objeto || '').slice(0, 1900);
+    }
+    if (uCode === 'UD6') {
+      return existingCapacity || 'Realizar el mantenimiento de equipos eléctricos y electrónicos de acuerdo con manuales, diagramas y procedimientos, con seguridad e higiene.';
+    }
+  }
+  if (existingCapacity && !/pendiente/i.test(existingCapacity)) {
+    return existingCapacity;
+  }
+  return fallbackCap ? String(fallbackCap.descripcionCompleta || fallbackCap.objeto || '').slice(0, 1900) : '';
+}
+
 function applyCurriculumProjection(core, catalog, actor) {
   for (const prog of catalog.programs) {
     const pDef = PROGRAM_DEFINITIONS.find(d => d.programId === prog.programId);
@@ -1235,15 +1287,14 @@ function applyCurriculumProjection(core, catalog, actor) {
           try {
             const cUnits = JSON.parse(curr.fields.unitsJson);
             const mappedUnits = cUnits.map((u, idx) => {
-              if (u.code === 'EFSRT') return u;
-              const cap = modCapacidades[idx] || modCapacidades[idx % (modCapacidades.length || 1)] || null;
+              const cap = u.code === 'EFSRT' ? null : (modCapacidades[idx] || modCapacidades[idx % (modCapacidades.length || 1)] || null);
               const capInds = cap ? (prog.indicadoresCapacidad || []).filter(ic => ic.capacidadId === cap.id) : [];
               return {
                 ...u,
-                capacity: cap ? String(cap.descripcionCompleta || cap.objeto || '').slice(0, 1900) : (u.capacity || ''),
+                capacity: resolveUnitCapacityForProjection(mDef.id, u.code, idx, modCapacidades, cap, u.capacity || ''),
                 competence: competenceText || u.competence || '',
-                indicator1: capInds[0] ? String(capInds[0].descripcion || '').slice(0, 1900) : (u.indicator1 || ''),
-                indicator2: capInds[1] ? String(capInds[1].descripcion || '').slice(0, 1900) : (u.indicator2 || '')
+                indicator1: u.code === 'EFSRT' ? (u.indicator1 || '') : (capInds[0] ? String(capInds[0].descripcion || '').slice(0, 1900) : (u.indicator1 || '')),
+                indicator2: u.code === 'EFSRT' ? (u.indicator2 || '') : (capInds[1] ? String(capInds[1].descripcion || '').slice(0, 1900) : (u.indicator2 || ''))
               };
             });
             updatedUnitsJson = JSON.stringify(mappedUnits);
@@ -1258,7 +1309,7 @@ function applyCurriculumProjection(core, catalog, actor) {
           nivelFormativo: curr.fields.nivelFormativo || prog.cicloFormativo,
           unitsJson: updatedUnitsJson || curr.fields.unitsJson
         };
-        core.putRecord('documentSettings', { ...curr, fields, updatedAt: new Date().toISOString(), updatedBy: actor.id });
+        core.putRecord('documentSettings', { ...curr, fields, rev: curr.rev || crypto.randomUUID(), updatedAt: new Date().toISOString(), updatedBy: actor.id });
       }
 
       // 2. Enriquecer moduleDefaults:${mDef.id}
@@ -1273,15 +1324,14 @@ function applyCurriculumProjection(core, catalog, actor) {
           delete parsedData.module.capacidades;
           if (Array.isArray(parsedData.units)) {
             parsedData.units = parsedData.units.map((u, idx) => {
-              if (u.code === 'EFSRT') return u;
-              const cap = modCapacidades[idx] || modCapacidades[idx % (modCapacidades.length || 1)] || null;
+              const cap = u.code === 'EFSRT' ? null : (modCapacidades[idx] || modCapacidades[idx % (modCapacidades.length || 1)] || null);
               const capInds = cap ? (prog.indicadoresCapacidad || []).filter(ic => ic.capacidadId === cap.id) : [];
-              const realCapacity = cap ? String(cap.descripcionCompleta || cap.objeto || '').slice(0, 1900) : (u.capacity || '');
-              const realInd1 = capInds[0] ? String(capInds[0].descripcion || '').slice(0, 1900) : (u.indicator1 || '');
-              const realInd2 = capInds[1] ? String(capInds[1].descripcion || '').slice(0, 1900) : (u.indicator2 || '');
-              const realInd3 = capInds[2] ? String(capInds[2].descripcion || '').slice(0, 1900) : '';
-              const realInd4 = capInds[3] ? String(capInds[3].descripcion || '').slice(0, 1900) : '';
-              const realInd5 = capInds[4] ? String(capInds[4].descripcion || '').slice(0, 1900) : '';
+              const realCapacity = resolveUnitCapacityForProjection(mDef.id, u.code, idx, modCapacidades, cap, u.capacity || '');
+              const realInd1 = u.code !== 'EFSRT' && capInds[0] ? String(capInds[0].descripcion || '').slice(0, 1900) : (u.indicator1 || '');
+              const realInd2 = u.code !== 'EFSRT' && capInds[1] ? String(capInds[1].descripcion || '').slice(0, 1900) : (u.indicator2 || '');
+              const realInd3 = u.code !== 'EFSRT' && capInds[2] ? String(capInds[2].descripcion || '').slice(0, 1900) : '';
+              const realInd4 = u.code !== 'EFSRT' && capInds[3] ? String(capInds[3].descripcion || '').slice(0, 1900) : '';
+              const realInd5 = u.code !== 'EFSRT' && capInds[4] ? String(capInds[4].descripcion || '').slice(0, 1900) : '';
               return {
                 ...u,
                 capacity: realCapacity || u.capacity || '',
@@ -1296,6 +1346,7 @@ function applyCurriculumProjection(core, catalog, actor) {
           }
           core.putRecord('documentSettings', {
             ...modDef,
+            rev: modDef.rev || crypto.randomUUID(),
             fields: {
               ...modDef.fields,
               source: modDef.fields.source || `BD CEPRO DOCUMENTOS.pdf (${prog.codigoCnof || prog.codeCeProBd})`,
@@ -1308,15 +1359,15 @@ function applyCurriculumProjection(core, catalog, actor) {
       }
 
       // 3. Sincronizar en grupos activos unit:GRP-*:UD*
-      const groups = core.records('groups').filter(g => g.moduleId === mDef.id);
+      const groups = core.records('groups').filter(g => !g.archived && g.moduleId === mDef.id);
       for (const g of groups) {
-        const uCodes = (g.units || []).filter(u => u !== 'EFSRT');
+        const uCodes = (g.units || []);
         uCodes.forEach((uCode, idx) => {
           const unitRecId = `unit:${g.id}:${uCode}`;
           const uRec = core.record('documentSettings', unitRecId);
-          const cap = modCapacidades[idx] || modCapacidades[idx % (modCapacidades.length || 1)] || null;
+          const cap = uCode === 'EFSRT' ? null : (modCapacidades[idx] || modCapacidades[idx % (modCapacidades.length || 1)] || null);
           const capInds = cap ? (prog.indicadoresCapacidad || []).filter(ic => ic.capacidadId === cap.id) : [];
-          const realCapacity = cap ? String(cap.descripcionCompleta || cap.objeto || '').slice(0, 1900) : '';
+          const realCapacity = resolveUnitCapacityForProjection(mDef.id, uCode, idx, modCapacidades, cap, uRec?.fields?.capacity || '');
           const realInd1 = capInds[0] ? String(capInds[0].descripcion || '').slice(0, 1900) : '';
           const realInd2 = capInds[1] ? String(capInds[1].descripcion || '').slice(0, 1900) : '';
           const realInd3 = capInds[2] ? String(capInds[2].descripcion || '').slice(0, 1900) : '';
@@ -1334,10 +1385,11 @@ function applyCurriculumProjection(core, catalog, actor) {
               ...(realInd4 ? { indicator4: realInd4 } : {}),
               ...(realInd5 ? { indicator5: realInd5 } : {})
             };
-            core.putRecord('documentSettings', { ...uRec, fields: uFields, updatedAt: new Date().toISOString(), updatedBy: actor.id });
+            core.putRecord('documentSettings', { ...uRec, rev: uRec.rev || crypto.randomUUID(), fields: uFields, updatedAt: new Date().toISOString(), updatedBy: actor.id });
           } else {
             core.putRecord('documentSettings', {
               id: unitRecId,
+              rev: crypto.randomUUID(),
               scope: { kind: 'unit', target: g.id, unit: uCode },
               fields: {
                 name: `Unidad Didáctica ${uCode}`,
@@ -1775,6 +1827,7 @@ function resolveIssue(core, user, body) {
 
     core.putRecord('documentSettings', {
       ...issuesRec,
+      rev: issuesRec.rev || crypto.randomUUID(),
       fields: { issues: updatedIssues },
       updatedAt: resolvedAt,
       updatedBy: user.id
@@ -1843,6 +1896,7 @@ function saveParameter(core, user, body) {
 
     core.putRecord('documentSettings', {
       ...paramsRec,
+      rev: paramsRec.rev || crypto.randomUUID(),
       fields: { parameters: updatedParams },
       updatedAt: now,
       updatedBy: user.id

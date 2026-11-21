@@ -153,6 +153,10 @@ async function run() {
 
   try {
     const page = await browser.newPage();
+    page.on('pageerror', (err) => console.error('[PAGEERROR]', err.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') console.error('[CONSOLE ERROR]', msg.text());
+    });
 
     // -------------------------------------------------------------
     // PRUEBA 1: ANTI-FOUC Y CARGA INICIAL CON TEMA OSCURO
@@ -198,6 +202,14 @@ async function run() {
     console.log('\n--- PRUEBA 2: Dashboard de Dirección (director.dev) ---');
     await page.goto(`${BASE_URL}/#/inicio`, { waitUntil: 'networkidle0' });
 
+    const dismissWorkflowModalIfOpen = async () => {
+      const closeBtn = await page.$('button[aria-label="Cerrar ventana"]');
+      if (closeBtn) {
+        await closeBtn.click();
+        await new Promise((r) => setTimeout(r, 300));
+      }
+    };
+
     const userInput = await page.$('#username');
     if (userInput) {
       await fillField(page, '#username', 'director.dev');
@@ -205,6 +217,7 @@ async function run() {
       await page.click('button[type="submit"]');
       await page.waitForSelector('aside nav', { timeout: 10000 });
       await new Promise((r) => setTimeout(r, 1200));
+      await dismissWorkflowModalIfOpen();
     }
 
     // Captura Director en Modo Claro
@@ -243,18 +256,21 @@ async function run() {
     // -------------------------------------------------------------
     console.log('\n--- PRUEBA 3: Dashboard de Secretaría (secretaria.dev) ---');
     // Cerrar sesión
-    const logoutBtn = await page.$('button[title="Cerrar sesión institucional"]');
+    const logoutBtn = await page.$('#btn-logout, button[title="Cerrar sesión institucional"]');
     if (logoutBtn) {
       await logoutBtn.click();
-      await new Promise((r) => setTimeout(r, 800));
+      await page.waitForSelector('#username', { timeout: 10000 });
+    } else {
+      console.warn('[WARN] No se encontró botón de logout en Prueba 3; URL actual:', page.url());
+      await page.goto(`${BASE_URL}/#/inicio`, { waitUntil: 'networkidle0' });
+      await page.waitForSelector('#username', { timeout: 10000 });
     }
-
-    await page.goto(`${BASE_URL}/#/inicio`, { waitUntil: 'networkidle0' });
     await fillField(page, '#username', 'secretaria.dev');
     await fillField(page, '#password', 'SecretariaDev2026!');
     await page.click('button[type="submit"]');
     await page.waitForSelector('aside nav', { timeout: 10000 });
     await new Promise((r) => setTimeout(r, 1200));
+    await dismissWorkflowModalIfOpen();
 
     // Capturas Secretaría en Modo Oscuro (1920x1080 y 1366x768)
     await page.setViewport({ width: 1920, height: 1080 });
@@ -280,18 +296,21 @@ async function run() {
     // PRUEBA 4: DOCENTE — DASHBOARD Y PLATAFORMA DE AULAS
     // -------------------------------------------------------------
     console.log('\n--- PRUEBA 4: Dashboard Docente (docente.dev) ---');
-    const logoutBtn2 = await page.$('button[title="Cerrar sesión institucional"]');
+    const logoutBtn2 = await page.$('#btn-logout, button[title="Cerrar sesión institucional"]');
     if (logoutBtn2) {
       await logoutBtn2.click();
-      await new Promise((r) => setTimeout(r, 800));
+      await page.waitForSelector('#username', { timeout: 10000 });
+    } else {
+      console.warn('[WARN] No se encontró botón de logout en Prueba 4; URL actual:', page.url());
+      await page.goto(`${BASE_URL}/#/inicio`, { waitUntil: 'networkidle0' });
+      await page.waitForSelector('#username', { timeout: 10000 });
     }
-
-    await page.goto(`${BASE_URL}/#/inicio`, { waitUntil: 'networkidle0' });
     await fillField(page, '#username', 'docente.dev');
     await fillField(page, '#password', 'DocenteDev2026!');
     await page.click('button[type="submit"]');
     await page.waitForSelector('aside nav', { timeout: 10000 });
     await new Promise((r) => setTimeout(r, 1200));
+    await dismissWorkflowModalIfOpen();
 
     // Captura Docente en Modo Oscuro (1920x1080 y 1366x768)
     await page.setViewport({ width: 1920, height: 1080 });

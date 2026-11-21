@@ -1,0 +1,297 @@
+{
+  "schemaVersion": 1,
+  "skills": [
+    {
+      "name": "frontend-design",
+      "origin": {
+        "kind": "github",
+        "path": "skills/frontend-design",
+        "name": "frontend-design",
+        "commit": "2c5958ecac7cee2b583967a2c4981d0f4a75c579",
+        "repository": "anthropics/skills"
+      },
+      "adaptations": [],
+      "files": {
+        "LICENSE.txt": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+        "SKILL.md": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3"
+      }
+    },
+    {
+      "name": "ui-ux-pro-max",
+      "origin": {
+        "kind": "github",
+        "path": ".claude/skills/ui-ux-pro-max",
+        "name": "ui-ux-pro-max",
+        "commit": "6ae86f61f520d6ca229d2f40e070410638c908c5",
+        "repository": "nextlevelbuilder/ui-ux-pro-max-skill"
+      },
+      "adaptations": [
+        {
+          "file": "SKILL.md",
+          "change": "Use project-local search paths instead of a Claude plugin environment variable.",
+          "originalSha256": "14f43337edfbf7822e091428e4ae0c6f92f86e3353deda6a30f6613121e2cf2d"
+        }
+      ],
+      "files": {
+        "LICENSE": "738f69dfa83db5c347c678fb9d90e560877059f0de93a327c39001bff92dc014",
+        "SKILL.md": "bc25d220186f436a21f5a687571ed52049dc4ba67df420a61e193f2818326b13",
+        "data/app-interface.csv": "331e7cf2c0b222d80c566c5f255c63cb339f65bfd02e471a720f28e4864a9f08",
+        "data/catalog-summary.json": "b27655fbce8fec64b7ab7ec6ac11f079a0e6ab29a5c2785d624cedc96dd0742f",
+        "data/charts.csv": "4115cf1120680f2cedef0676cb648f30c7ef4699e2a947535d4113e71ed3b12a",
+        "data/colors.csv": "8162429222bce22df62b564085946a30d07cc9722c58d0a3a494bd0d1d00841c",
+        "data/data-provenance.json": "e29a3aab8d8418a23f67e00a8e8f3064afe4eea1183540ec4af374ec6f4fc938",
+        "data/google-font-licenses.json": "35688523f2955795caa1a47c53b83099e60c1708461476f9cc3a050cf3b0148a",
+        "data/google-fonts.csv": "1c8c3b2ea1faf6a1012da463756def8b3889db33f2226f0343bb4daa80307d03",
+        "data/icons.csv": "50816c6012030178195a16ee481ebf58b47bd985d70e8ec58886cc83f6eddafc",
+        "data/landing.csv": "9a2edd3bb676c2a58f00ade7a062e285222d4297bfd847c8d5b056f0dbbf52d0",
+        "data/motion.csv": "381affe8df8ea1f66fbbda2598827f9f54299107bbe6a1b4e9b68f6b62091ceb",
+        "data/phosphor-icons-upstream.json": "2399325233b277b5c97a80e6a5e8941154f5d057beee4e7613db87c87d700236",
+        "data/products.csv": "5756125e2b0e0d2360926f175d0975c8cd846c7589e5e2ce02631ff645e66361",
+        "data/react-performance.csv": "3d925802539abac5afeb63ae8aa1960b7229ad271b3a47caed40ab2d97ad0734",
+        "data/stacks/angular.csv": "704be83f2bad30c7e6de01afb113ffa01e0c458762f48b7102f31ba2367b5553",
+        "data/stacks/astro.csv": "2c2f55fadaafc05e04cc321c8194a1a28b656e6757fe2ba316f41b16428299c6",
+        "data/stacks/avalonia.csv": "442fca14675a020683473e7e49f08abb27b9df0765c80efe54aef61f1a4ac258",
+        "data/stacks/flutter.csv": "64dba0ac17349f28bce517a0f5f48c54d9ed2e487ec0c0258303463b382f41a0",
+        "data/stacks/html-tailwind.csv": "d05a581d20af57b8ca0104a6d31d90a07c437d500662a96c3029fc2f9a4678ee",
+        "data/stacks/javafx.csv": "2e819b8d5abdd23ad4dae0991650fdb57af497aabd68b37463aa9c442944c869",
+        "data/stacks/jetpack-compose.csv": "699de218b286948eaec7d15767b6e1350ee299167e49bf476d82e3ff58724e0a",
+        "data/stacks/laravel.csv": "854ea4daa5fc61292d22235ad33b49ba3fe22423c3de8d3cb03758ffed3b59f9",
+        "data/stacks/nextjs.csv": "ecd2c27b2ea0127d203ae726060efcdd7335b5e83f96b99e4f3befbbfeebd5a4",
+        "data/stacks/nuxt-ui.csv": "9c0179d559abe39ad63b958b54cb29c82be1dd20706430476096ea8967bfa328",
+        "data/stacks/nuxtjs.csv": "3d9b54ed2d151bd9c86e9e5609b8a6f88a00c4c52fa601a30af96c49b2c4d176",
+        "data/stacks/react-native.csv": "ba31dd9c0c04da6bc02a74448bf121f9c0728ae5ba3b4d47b487778b0a1135b5",
+        "data/stacks/react.csv": "4dd176a9787e5c6306b5df94158d75955adcdc6edab41ce5286641a5842303c1",
+        "data/stacks/shadcn.csv": "e56cfde5b74907836ac3582a4779d5b7f3d206a702ab81b8669a1b668c3eeb51",
+        "data/stacks/svelte.csv": "f6e379ba802941ba26b01d4ffbe3cd39120f2587659a1d93851c707f66bc13db",
+        "data/stacks/swiftui.csv": "bdd9231ff3ad658f4e7c063e1eb49df2fd09ac8d90631a86df899b39833b9623",
+        "data/stacks/threejs.csv": "155d583b9c64da0df4b6c6cb060c02eab222505e0734d6353da02c9e2b5d982b",
+        "data/stacks/uno.csv": "a0474363e4225b5367214d5675fd3e075f137026f9500f0d04357882ef4f6d48",
+        "data/stacks/uwp.csv": "c409f08c1fbba1f1029f1acaa554e7b4471cc85517a5751c9f2e62465badcd5c",
+        "data/stacks/vue.csv": "b655f1ebb9dff2652d15981f31b1784c8a6d4759efd2815a14f3088257569f95",
+        "data/stacks/winui.csv": "e676dc1c13ee6c205c40b0746f1335150a346c7a49a0616d2545bc3d2c930c85",
+        "data/stacks/wpf.csv": "9781a9950b20333637b30a02e498b7efca21b618a3eeb8665836f3ac6e974da7",
+        "data/styles.csv": "a9b6cadbd1cb9e7cb8398a3b445e0691d01e42ed5e5efa60a5d0c08c99c8100d",
+        "data/typography.csv": "321fc446e89024488ebae96dda93efc4d2307bd8bddb240857ad51364f6782c8",
+        "data/ui-reasoning.csv": "f0774dd741cecdad5eec842034bd6d5e9ea50e9f220a1910069748daa0bb8e9a",
+        "data/ux-guidelines.csv": "d63dc39439cf615cdccfdf7acd2301e0c3ce5e1e56a89b60617fa190f7511512",
+        "references/pro-rules.md": "d28442d61c310b49c054a4ea736f89fb3008beebdbbc38c4b3a540b8f7fadf23",
+        "references/quick-reference.md": "fc53ccfafaa08d40d7326e34e88e9387df60b4256cd649d34dcae0284f247949",
+        "scripts/core.py": "caf92bdcf2579c9a7d6af4f53c54ee9d3c8f05472cfab77aaec38bef120ec63e",
+        "scripts/design_system.py": "e7d1c94c4b2eada17c5551157668362659ccf9626d34dbd58e68142410f90103",
+        "scripts/reasoning_contract.py": "b8bac1af82aa280d3e06f00aabaeac4337e632996b07fed874e2b6ee6e9c5913",
+        "scripts/search.py": "9fd5acc991142fd43c3afe7be0f6720911b668f3988b34e74b5cbc41d58e7947",
+        "scripts/tests/fixtures/catalogs/google-api.json": "22d8dc81a7d6827b7e8b64b53e7d184210fb9759e8e294e0d5133c81cc460176",
+        "scripts/tests/fixtures/catalogs/google-catalog.json": "c608ad5c4084ebc50a4bbbfb69ea2456c01fd5519c457e18410fffd250ae948f",
+        "scripts/tests/fixtures/catalogs/google-existing.csv": "4e0761b839dc6b2187a370e82eddc0aed8a7ff10c09e28dd814bb3656dac595b",
+        "scripts/tests/fixtures/catalogs/google-metadata.json": "30bffc29ae348416a2de2f9c6c418e768e4578f136b0f4bac5d2f70124f2e9ba",
+        "scripts/tests/fixtures/catalogs/google-overrides.json": "6243a48a4619986768c4628e2d0c98ff195beba71ba9be5df8f0c52fc6d90c0b",
+        "scripts/tests/fixtures/catalogs/icons-curated.csv": "68362c9a700c13b96f000784a0198c1c7e117a7088a01c85744e44233038fe9d",
+        "scripts/tests/fixtures/catalogs/phosphor-core.json": "ae4d0bb076240824e1b643c2270d1f8cc0952a69502ec1e622b7dedd85b930bb",
+        "scripts/tests/fixtures/catalogs/phosphor-package.json": "500588c757d6de03e3d7e69b27a8b8b1f88ccf6bb0333e4c1e9b0d6a4f112475",
+        "scripts/tests/fixtures/catalogs/phosphor-react-exports.json": "d79f2ee0afdbc2f87776733e145df3538a16a25d7c2fba0056bb48295dad0ded",
+        "scripts/tests/fixtures/catalogs/phosphor-react-package.json": "1c57a1d76bcc0cdd3632d4c18b9c0e79576b4591df39831c9607e5d0eb4f2cec",
+        "scripts/tests/fixtures/relevance-baseline.json": "0df200fc54c1cb97a52d6775e7f501509163cea8f8b73fd7268429bc1f835afe",
+        "scripts/tests/fixtures/relevance-cases.json": "e77d36eebbf6ddc2860946a02cdb659351da6c09f2688f1ed30939a418099646",
+        "scripts/tests/fixtures/relevance-thresholds.json": "8b1d1c87cecb51db673b7d50e5f6cf29169edfa857853accd1ed80fce3fb4e09",
+        "scripts/tests/test_catalog_refresh.py": "3e2ca5d12702318f641ae62d0c14f22a3bcc84d84e79b863c0e947d475604adb",
+        "scripts/tests/test_catalog_summary_line_endings.py": "fa6ff09f0ec2c99013588c77397f5082dddebe8f467e94c5f8378ec9595f4989",
+        "scripts/tests/test_core.py": "3527fe2f4b852f69f07c17ddc0d615d9a6e025c924e45a33985579a94a8d2118",
+        "scripts/tests/test_core_data_quality.py": "3ffc6b4905c9ea26d7ac4527ab154d153584231aee71b2ae4bd017977fa09cc5",
+        "scripts/tests/test_data_contracts.py": "0360d6e10080c0bca214f2b0bbad582ba50702a542ce21013351aca54938df3a",
+        "scripts/tests/test_design_system_mode.py": "95ad2c154349f7021f55a558f8dcdd71df1a24fcf531a4364a8e49526a0865ef",
+        "scripts/tests/test_design_system_stack.py": "83d09ffe8cfbf7b265f362129f061dfe8e5e167ce5db43adaead197cabc9ca38",
+        "scripts/tests/test_ime_composition.py": "6718a0420a5c791c912763ad9d1b66e824b3b55240bc91242a5cccf13482416d",
+        "scripts/tests/test_native_desktop_stack_freshness.py": "3942845712b9a829323cd3568511483135f2a8c7cd79ccf61679da4b0f624dbb",
+        "scripts/tests/test_relevance_evaluator.py": "2fe56a4d6fe5fff15ff592274b0eeaba925146cefea6c0fa29d8f1b77c9aca1f",
+        "scripts/tests/test_rtl_support.py": "fb1c42f782d1929959c5adaefb8169b187b1446a17720ed4f0691b1cd3bb7898",
+        "scripts/tests/test_skill_script_paths.py": "7cec24b94be771bc60bc84f8993e614bb16d4047930e1dd3d3bed91628311d44",
+        "scripts/tests/test_style_taxonomy.py": "58c14be6c741de5382e3aeca858480570ba96d374532c3b22f44851a02d3076b",
+        "scripts/tests/test_text_layout_resilience.py": "b51d32ee8a15505b87cb81957fb2d1b385e041e8beb4463c311d236bfd29ebd4",
+        "scripts/tests/test_web_stack_freshness.py": "83a6d597410f442441cdb17d0913be151404a608ada6a2487dd2bfe2fbf31e5d",
+        "scripts/validate_data.py": "a599aa256049cf30954d1f164721b99e453eb7e4cb8241bcab2d5573e6cf58b8"
+      }
+    },
+    {
+      "name": "web-design-guidelines",
+      "origin": {
+        "kind": "github",
+        "path": "skills/web-design-guidelines",
+        "name": "web-design-guidelines",
+        "commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+        "repository": "vercel-labs/agent-skills"
+      },
+      "adaptations": [
+        {
+          "file": "SKILL.md",
+          "change": "Enable pinned offline reviews while retaining upstream refresh URL.",
+          "originalSha256": "f4647ca866a3accf763777f83e7682954f0187cd6bea7eea0399796652414e8f"
+        }
+      ],
+      "files": {
+        "SKILL.md": "2bc493678467ba2fec905454f7a966434dfda19bddff3856441f855cda8dba8d",
+        "references/command.md": "d246b026f4f29b5823a9cc857f9edf3d2507002e055e32040cadeaf3b38e0234",
+        "references/source.json": "f478baa81a924cd5c756a75efc9b9510617c4282bd9412ed8ca33f7ff110ba9d"
+      }
+    },
+    {
+      "name": "tailwind",
+      "origin": {
+        "kind": "local-snapshot",
+        "location": "~/.agents/skills/tailwind"
+      },
+      "adaptations": [
+        {
+          "file": "SKILL.md",
+          "change": "Remove nonstandard risk/source frontmatter; preserve instructions and attribution. Normalize UTF-8 without BOM.",
+          "originalSha256": "50676f51f10277ab911f2b7638fd5a55cd81fa38a727adfcdb585f6534d002ef"
+        }
+      ],
+      "files": {
+        "SKILL.md": "2fe40c956cd796230483675b67f29477f91eb266a53819f54a962d186855968d",
+        "references/design-system.md": "88ba88028efbc0c3c10d4247bd9dcb5a4d9252c8b0a39f29b3f10c75352bf1af"
+      }
+    },
+    {
+      "name": "electron",
+      "origin": {
+        "kind": "local-snapshot",
+        "location": "~/.agents/skills/electron"
+      },
+      "adaptations": [
+        {
+          "file": "SKILL.md",
+          "change": "Remove nonstandard risk/source frontmatter; preserve instructions and attribution.",
+          "originalSha256": "d835591804967678a738a0f2b459ee820cd3d909aa1f277e6933e1144464bebb"
+        }
+      ],
+      "files": {
+        "SKILL.md": "1f3f85733539d21bfc3dbbdeb620b87b4839de8d5cfefd416036cb48c8d84a9d"
+      }
+    },
+    {
+      "name": "sql-database-assistant",
+      "origin": {
+        "kind": "local-snapshot",
+        "location": "~/.agents/skills/sql-database-assistant"
+      },
+      "adaptations": [
+        {
+          "file": "SKILL.md",
+          "change": "Remove nonstandard risk/source frontmatter; preserve instructions and attribution.",
+          "originalSha256": "fc2a743782ef4812d448289d5a085b9406d1b62c60a8267c5c72485d8261ecb3"
+        }
+      ],
+      "files": {
+        "SKILL.md": "04aa5f384697775507781ec40605441e00a84ed4ec6bced6abb27f0871d419ca"
+      }
+    },
+    {
+      "name": "typescript-pro",
+      "origin": {
+        "kind": "local-snapshot",
+        "location": "~/.agents/skills/typescript-pro/typescript-pro"
+      },
+      "adaptations": [
+        {
+          "file": "SKILL.md",
+          "change": "Remove nonstandard risk/source frontmatter; preserve instructions and attribution.",
+          "originalSha256": "88b77769bf003a96d3d1e7fdaa280d8b375e72b190bba027bab45639d7ab6992"
+        }
+      ],
+      "files": {
+        "SKILL.md": "d99499d9bd361c6e0dd03da3e9850b83e1d1454e905fff92a9238b1ced2cff65",
+        "references/enterprise-patterns.md": "d7f7a17aa9321a3ef7c22414ac3611ff222bb18641d4a24f4dabc738843d6261",
+        "references/generics.md": "78b631478c537c0c817460c15a7eb1c08f5ddcab6853ef8fd0c8683f6021e66d",
+        "references/nestjs-integration.md": "898dda65d4069d0f578817bcc149d5ae1f2523ee21262aeba52ed71f5f794258",
+        "references/react-integration.md": "b0455a3e7a2778325dd8c2c5829d039d64da8d063b07ea74f32e5344faf607b2",
+        "references/toolchain.md": "b8d6bb558676d27725bb3177a0a67a9af378541bb112336cae31a304d1aee689",
+        "references/type-system.md": "75440fade9d164737a3afce5eb64d15f8942e96b3d3dbcbe753c87e0974e1e39"
+      }
+    },
+    {
+      "name": "vercel-react-best-practices",
+      "origin": {
+        "kind": "local-snapshot",
+        "location": "~/.agents/skills/vercel-react-best-practices"
+      },
+      "adaptations": [],
+      "files": {
+        "AGENTS.md": "5640053923e5f36448c53e50b74069ea7c1477101e645e852bc61a84db328855",
+        "README.md": "2e7e6cbe3952689bf9c00b9a7032f1bffb263cde2d01635f0aa49d3375c33ff5",
+        "SKILL.md": "3286ace648b4d740317b9c1cb7fbd38600eaacc62a8b57ea5e06fd2992b5582e",
+        "rules/_sections.md": "f352f75b84d6c6ee644c3fade99eaf2186bdfdc1d9e5b598bae436f32b3bce4f",
+        "rules/_template.md": "21231af1b4c70cfe6f07625830d982934295c735f91fddd9741b3a8e3688d735",
+        "rules/advanced-effect-event-deps.md": "d6b0ca8ba2982602b736e931c9a8d7a11e0b22cd501ef17c732979fb9ceeb8b2",
+        "rules/advanced-event-handler-refs.md": "029f0c929c665fb9263b8c72a44e50610caf94a6e22a8142821a84482eda825d",
+        "rules/advanced-init-once.md": "3d209bc4b17c2a503fdbb53b39261bc5ee824703a8b387daef3f53bad1f32ce4",
+        "rules/advanced-use-latest.md": "84b3504ef0dc85f171c6aa0c5d15ac6d252ba72e38fc4e87872c0a3b1728345f",
+        "rules/async-api-routes.md": "adf38ea4f34fa74b275b908e49aa20de20af9d9935b4a656314a49217b182663",
+        "rules/async-cheap-condition-before-await.md": "8677605b94a5ed704873d8013bda2b690ff09fe8757fd472d9047cc848cf4019",
+        "rules/async-defer-await.md": "eaa4f64d04eac1023fb61ed27712a81397989d86c126b987fa90baf4da02cc33",
+        "rules/async-dependencies.md": "4901341bd7f7b7036eb8d98b243515ce294e6e4079370b3187c1514c3e597ec6",
+        "rules/async-parallel.md": "ff95abbb67b62a889d7ef71f1d06834238c47ecd3d49483f7823b4cd17d92680",
+        "rules/async-suspense-boundaries.md": "8a6e88c6e5190e10d3e3ebca89a1bc4fefc4bdb0cbc9c6f406ce02452a5759df",
+        "rules/bundle-analyzable-paths.md": "32260f587900a89d642b805a4824bf8e6a197c2c6f62aec76522775d0a2f41ab",
+        "rules/bundle-barrel-imports.md": "ceae03eb1cfad7e82019aeb297f87dc895eca14221c66f724e0801393d4da21f",
+        "rules/bundle-conditional.md": "16992beeaf9bdd1e7ff20989b8672cfffc8b918deb0783c058560c7a233dd37c",
+        "rules/bundle-defer-third-party.md": "64de0f01dfe58b4d3a3865baa623f743ef1b8c363106c7dfaf2b2867f69b96d4",
+        "rules/bundle-dynamic-imports.md": "0fb947cdfec5ce0e95a894c6b68220f88983eff73ce65b98e4f00c885ebd9b36",
+        "rules/bundle-preload.md": "b673a49f4cf4bf385ddf6956ca704139ec2915802bade1925134f8cfabb2278c",
+        "rules/client-event-listeners.md": "e2229c8e121dfdd6bad8063ba6c41213ff612e19e077f17ba805b70d48151775",
+        "rules/client-localstorage-schema.md": "f9d177a557f4bd4bd1a81f30f841f75041821dd88f706a6b8c4eac86c7472e05",
+        "rules/client-passive-event-listeners.md": "277118e32363381459bc7439fa942966da668d2c128d93968f9a289f0bb32861",
+        "rules/client-swr-dedup.md": "866e6cc267f06df39129c44c68c5e6a2e62faa554bc8cdb6ada1f58afe4bcbbe",
+        "rules/js-batch-dom-css.md": "d7343005afc6a9c7e86368e22318f49b88492973e673f7b0ba2eb65697597143",
+        "rules/js-cache-function-results.md": "bbef6423ad250227e8c73a5d9be6fd687707dd187ef50236fd5b6883a41d49b6",
+        "rules/js-cache-property-access.md": "bbecc553a5b51caab2ddc90423a23d4c3245669439ff91e5204e48d62aaf1c5e",
+        "rules/js-cache-storage.md": "7710a2ceb421d9b6d3828d7f38ec8a093af4a372c2b3b4ea2299d5df2518f770",
+        "rules/js-combine-iterations.md": "c43a02979586d39f341fa6da7fc61bdd6a6917fa0c4f9c926091fa540cdf8022",
+        "rules/js-early-exit.md": "b6b967ab80d2a5fc19851d9db9464cf8e4d0e57dccb607a474b8f7818015951d",
+        "rules/js-flatmap-filter.md": "acfa11d07d7982ec565e4d8cfb410d477ffb73a7b41a532b938bcdb15c6ba51f",
+        "rules/js-hoist-regexp.md": "86f4772c5d732c1f5f0656412713c6dc919360f0f3ea32bb1a45937eaaa5866e",
+        "rules/js-index-maps.md": "752dd0803a7394a70e8d437b7eb025d1e085566e30ad733e75b9d2e04cc6c4d9",
+        "rules/js-length-check-first.md": "9e57362d76e57ea6a2ff8cd137cf2a87b094aaff152eac61758305acb450a25c",
+        "rules/js-min-max-loop.md": "f0054bcd1c3168ea8a6474df33c398bc0066eb1e813d59ae57fe36806ec900b6",
+        "rules/js-request-idle-callback.md": "cefb8938f833f4747546d8c4fbe2c8c9938a5bfe27e087636048adef3fd8d719",
+        "rules/js-set-map-lookups.md": "7143f8d7b71cdbc77a171fc801bdcf5e7a209e0f471ff17bb669acc986a6b064",
+        "rules/js-tosorted-immutable.md": "2722514cac46990f3361fa35ee20d499a12da2539362e7871b670978664d158a",
+        "rules/rendering-activity.md": "e23dd494d955db99d376b5bf62a59ce7df9f14576d94094f2e53cfdc388453a0",
+        "rules/rendering-animate-svg-wrapper.md": "dca7f0251244489b3bbb6f5aaf7d70f280d91dc13de8ebd24403286f382ec0f4",
+        "rules/rendering-conditional-render.md": "6db58f36c8b080c35e91f6504281f85ea2dbd133030610c860e60181d6d9556a",
+        "rules/rendering-content-visibility.md": "45437e9594857ee1066ee061e946ed129731cf2e80f7e08f3cc621fa0554c567",
+        "rules/rendering-hoist-jsx.md": "c5fa7274f067ce3760107196a9416df333a7b4187254ef66c547fad7c45cd8d3",
+        "rules/rendering-hydration-no-flicker.md": "bfedc3a73f9687c7836acf915165fb845880453b6dfcf2fa6475dfec96b23027",
+        "rules/rendering-hydration-suppress-warning.md": "7ec1623c69e1a82b09b8b5a6028005e3eb8485741898447af1bcaed8ff8c0139",
+        "rules/rendering-resource-hints.md": "03ffeb3c26ae514bd24ea8683621d67a4b8432926ef7ee8d3296f82ae5c1b6ab",
+        "rules/rendering-script-defer-async.md": "28ef87814467a4758645889dcbb0ccb9a9e2387c4cebbd8cd4dfa33435e3e5d8",
+        "rules/rendering-svg-precision.md": "d57cdfaaaf660a28a9a5d6d10e97202a5eb13e1bc1675e024cb1ccbfa8bb2c32",
+        "rules/rendering-usetransition-loading.md": "c2186f944b60630c67d42222f60ecb12b5a85395e7f31f193982f85983165720",
+        "rules/rerender-defer-reads.md": "bb98d9b7c7622641887df6407406a8c4f61510af9cc1bd275574ebee71bac8c8",
+        "rules/rerender-dependencies.md": "4f0a1806694c2391c0b5b79bb4dee89fdf2c02ee322acf308509c17542240446",
+        "rules/rerender-derived-state-no-effect.md": "1d50f7b1b86d24f987c557415590f79b06250e3ec1ca552da981e31a31f9edb9",
+        "rules/rerender-derived-state.md": "6a501211aa53036905df7531deaf25fdb8582697366fd071d4c2607828662dcb",
+        "rules/rerender-functional-setstate.md": "e46096d4c2c8fc89ab717bd7e56b8a884b612a88013a99b0c63e7dfc45d8cf25",
+        "rules/rerender-lazy-state-init.md": "b8b9e6b6001a1e94979776e744eb38a98432858dd2369995731c9a095ecd1d2e",
+        "rules/rerender-memo-with-default-value.md": "e69d637687b85967554df7d5fcfd83cc6fbb89237e9b80d10fbea7916244aa8b",
+        "rules/rerender-memo.md": "8cc2d062f22ae762f7f5f93baf2bfc374c917079131896559721f9dfbd402a7c",
+        "rules/rerender-move-effect-to-event.md": "00f5eaf8d4380c736c9177b67583f6b33f6b1f84addc252653cd6dea9551ad8d",
+        "rules/rerender-no-inline-components.md": "381ec0a4224c20c57545b6c44a65ffcaf0ed520fad97f3d0f8abcb7389de602f",
+        "rules/rerender-simple-expression-in-memo.md": "1e41299336d72ce42ffe0b4d397496e520eae13ea544b1412b83761555f4e631",
+        "rules/rerender-split-combined-hooks.md": "93543c1987b8bb639302a4598f1444bc9ed02d200ea7ad0e47e890ff3fa8cf21",
+        "rules/rerender-transitions.md": "b51a82fb6b223d13c585dfddaeb753c79d7da0524da87b708f61fd6939600ab6",
+        "rules/rerender-use-deferred-value.md": "2c393cc085e9ae6285ee9e71f4db86ddd0120a41b84c6a1d659f46e8c7684db5",
+        "rules/rerender-use-ref-transient-values.md": "26ddded1d59cc04cddf7c1412ffb05315dd1f358510edcce3c3474d5acb63f32",
+        "rules/server-after-nonblocking.md": "86c8670ad8e6285753645c2cebd164c56baf6f0fa74f914c0ca496d0a0156bcc",
+        "rules/server-auth-actions.md": "a413aba63b73f7f82cf2482646c8c1598eaa75753c8f73f33055b8508de99fea",
+        "rules/server-cache-lru.md": "19d844eebd1fb7ef5f43f4d1e85baf1fc0160547400ab838ba4d40226eb891b9",
+        "rules/server-cache-react.md": "7448470adc9f0066455f9cf45b658f5c3f1884a7990c89f880fbb272a4028b05",
+        "rules/server-dedup-props.md": "5c4d4c9930812d3ab98e28ad97ca2f5af778effbf9b50b6a7558c18abf2e98b5",
+        "rules/server-hoist-static-io.md": "92665f53454156ccc59f115455cf3cbf9c3cbd88dcb5b84b14037f200ab990c5",
+        "rules/server-no-shared-module-state.md": "9c2b6ee5b418c35f8b0ce466d0d1352e25c85e6b7ebbe4495b81791f10f915dc",
+        "rules/server-parallel-fetching.md": "f8f275fea2378e7707a50f2df4af6a2f65fe1fa84edb3ffc4720af805ebabe42",
+        "rules/server-parallel-nested-fetching.md": "1e59763bbec3d6d74b8457c3d82f1a319b483fe5497b665652d8cba69fdda002",
+        "rules/server-serialization.md": "567ce457f775d4e03e2a6ef7bf67213fee35c6c3b9d1bcfa783007d1df414d4b"
+      }
+    }
+  ]
+}

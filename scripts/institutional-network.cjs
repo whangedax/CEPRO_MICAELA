@@ -582,13 +582,7 @@ function prepareBatchExport(core, actor, input) {
     const tempFile = path.join(targetFolder, `${fileName}.tmp_${id().slice(0, 8)}`);
     const finalFile = path.join(targetFolder, fileName);
 
-    let pkg;
-    const hubId = core.setting('institution')?.hub?.id;
-    if (hubId && core.setting('certificate')) {
-      pkg = core.packageFor(actor, hubId, { syncModule });
-    } else {
-      pkg = core.exchangePackage(actor, { syncModule, passphrase: input?.passphrase || 'CETPRO_2026' });
-    }
+    const pkg = require('./sync-transfer.cjs').exportTransfer(core, actor, {syncModule, passphrase:input?.passphrase, channel:'USB'}).package;
 
     const payload = canonical(pkg);
     const expectedSha = hash(payload);
@@ -602,7 +596,7 @@ function prepareBatchExport(core, actor, input) {
 
     fs.renameSync(tempFile, finalFile);
 
-    const opsCount = pkg.body?.operations?.length || 0;
+    const opsCount = Object.values(pkg.summary?.counts || {}).reduce((sum,count)=>sum+count,0);
     totalOperations += opsCount;
 
     packages.push({
@@ -638,17 +632,7 @@ function prepareBatchExport(core, actor, input) {
         const tempFile = path.join(secFolder, `${fileName}.tmp_${id().slice(0, 8)}`);
         const finalFile = path.join(secFolder, fileName);
 
-        let pkg;
-        const linkedDev = devicesList.find((dev) => dev.userId === targetSec.id);
-        if (linkedDev) {
-          pkg = core.packageFor(actor, linkedDev.id, { syncModule });
-        } else {
-          pkg = core.exchangePackage(actor, {
-            recipientUserId: targetSec.id,
-            syncModule,
-            passphrase: input?.passphrase || 'CETPRO_2026'
-          });
-        }
+        const pkg = require('./sync-transfer.cjs').exportTransfer(core, actor, {syncModule, recipientUserId:targetSec.id, passphrase:input?.passphrase, channel:'USB'}).package;
 
         const payload = canonical(pkg);
         const expectedSha = hash(payload);
@@ -662,7 +646,7 @@ function prepareBatchExport(core, actor, input) {
 
         fs.renameSync(tempFile, finalFile);
 
-        const opsCount = pkg.body?.operations?.length || 0;
+        const opsCount = Object.values(pkg.summary?.counts || {}).reduce((sum,count)=>sum+count,0);
         totalOperations += opsCount;
 
         packages.push({
@@ -688,18 +672,7 @@ function prepareBatchExport(core, actor, input) {
       const tempFile = path.join(docenteFolder, `${fileName}.tmp_${id().slice(0, 8)}`);
       const finalFile = path.join(docenteFolder, fileName);
 
-      let pkg;
-      const linkedDev = devicesList.find((dev) => dev.userId === targetDocente.id);
-      if (linkedDev) {
-        pkg = core.packageFor(actor, linkedDev.id, { syncModule });
-      } else {
-        const docenteGroupIds = (targetDocente.assignments || []).map((a) => a.groupId);
-        pkg = core.exchangePackage(actor, {
-          groupId: docenteGroupIds[0],
-          syncModule,
-          passphrase: input?.passphrase || 'CETPRO_2026'
-        });
-      }
+      const pkg = require('./sync-transfer.cjs').exportTransfer(core, actor, {syncModule, recipientUserId:targetDocente.id, passphrase:input?.passphrase, channel:'USB'}).package;
 
       const payload = canonical(pkg);
       const expectedSha = hash(payload);
@@ -713,7 +686,7 @@ function prepareBatchExport(core, actor, input) {
 
       fs.renameSync(tempFile, finalFile);
 
-      const opsCount = pkg.body?.operations?.length || 0;
+      const opsCount = Object.values(pkg.summary?.counts || {}).reduce((sum,count)=>sum+count,0);
       totalOperations += opsCount;
 
       packages.push({

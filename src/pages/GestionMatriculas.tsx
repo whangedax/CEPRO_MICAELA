@@ -12,6 +12,7 @@
  * - Identidad visual Google Stitch (#13594A, #0D3E34, #F6F8FA).
  */
 
+import { DashboardPhotoBand } from '../components/ui/DashboardPhotoBand';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { NavRoute } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -61,11 +62,23 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
   // Filtros de tabla y contexto de carrera
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedProgramFilter, setSelectedProgramFilter] = useState<string>('');
+  const [selectedTurnoFilter, setSelectedTurnoFilter] = useState<string>('');
+  const [selectedSectionFilter, setSelectedSectionFilter] = useState<string>('');
+  const [selectedConvenioFilter, setSelectedConvenioFilter] = useState<'' | 'REGULAR' | 'CONVENIO'>('');
   const [selectedGroupFilter, setSelectedGroupFilter] = useState<string>('');
   const [selectedStateFilter, setSelectedStateFilter] = useState<string>('');
   const [showAllCareers, setShowAllCareers] = useState<boolean>(false);
 
   const hasCareerContext = Boolean(!activeWorkspace?.overview && (activeWorkspace?.programId || activeWorkspace?.groupId));
+
+  useEffect(() => {
+    setSelectedProgramFilter('');
+    setSelectedTurnoFilter('');
+    setSelectedSectionFilter('');
+    setSelectedConvenioFilter('');
+    setSelectedGroupFilter('');
+  }, [activeWorkspace?.programId]);
 
   const activeProgramName = useMemo(() => {
     if (!activeWorkspace?.programId) return '';
@@ -122,6 +135,85 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
     targetGroupId: '',
   });
   const [isSubmittingRetire, setIsSubmittingRetire] = useState<boolean>(false);
+  const modulePanelRef = useRef<HTMLDivElement | null>(null);
+  const retirePanelRef = useRef<HTMLDivElement | null>(null);
+  const previousModalFocusRef = useRef<HTMLElement | null>(null);
+
+  // Trampa de foco, Escape y retorno de foco para modales de matrícula
+  useEffect(() => {
+    const activePanel = moduleModal.isOpen
+      ? modulePanelRef.current
+      : retireModal.isOpen
+      ? retirePanelRef.current
+      : null;
+    if (!moduleModal.isOpen && !retireModal.isOpen) return;
+
+    previousModalFocusRef.current = document.activeElement as HTMLElement | null;
+
+    const focusFirst = () => {
+      const panel = moduleModal.isOpen ? modulePanelRef.current : retirePanelRef.current;
+      if (!panel) return;
+      const focusables = panel.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length > 0) {
+        focusables[0].focus();
+      } else {
+        panel.focus();
+      }
+    };
+
+    const rafId = window.requestAnimationFrame(focusFirst);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const panel = moduleModal.isOpen ? modulePanelRef.current : retirePanelRef.current;
+      if (e.key === 'Escape') {
+        if (moduleModal.isOpen && !isSubmittingModuleAction) {
+          e.preventDefault();
+          setModuleModal({ isOpen: false, enrollment: null, action: 'CONFIRM', reason: '' });
+        } else if (retireModal.isOpen && !isSubmittingRetire) {
+          e.preventDefault();
+          setRetireModal({ isOpen: false, enrollment: null, reason: '', date: '', targetGroupId: '' });
+        }
+        return;
+      }
+
+      if (e.key !== 'Tab' || !panel) return;
+      const focusables = Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => el.offsetParent !== null);
+
+      if (focusables.length === 0) {
+        e.preventDefault();
+        return;
+      }
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first || !panel.contains(document.activeElement)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (document.activeElement === last || !panel.contains(document.activeElement)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    void activePanel;
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener('keydown', handleKeyDown);
+      if (previousModalFocusRef.current && typeof previousModalFocusRef.current.focus === 'function') {
+        previousModalFocusRef.current.focus();
+      }
+    };
+  }, [moduleModal.isOpen, retireModal.isOpen, isSubmittingModuleAction, isSubmittingRetire]);
 
   // Carga de datos
   const loadData = useCallback(async (isManual = false) => {
@@ -563,21 +655,101 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
     }
   };
 
-  // Filtrado de filas de matrículas con soporte de carrera activa
+  const normalizeTurnoLabel = useCallback((value?: string): string => {
+    const t = String(value || '').trim();
+    if (/^ma[nñ]ana$/i.test(t)) return 'Mañana';
+    if (/^tarde$/i.test(t)) return 'Tarde';
+    if (/^noche$/i.test(t)) return 'Noche';
+    return t;
+  }, []);
+
+  const availableFilterPrograms = useMemo(() => {
+    const list: Array<{ id: string; name?: string; nombre?: string }> = programs.length > 0
+      ? programs
+      : Array.from(new Set(availableGroups.map((g) => g.programId).filter(Boolean))).map((id) => ({ id, nombre: id }));
+    return [...list].sort((a, b) =>
+      String(a.nombre || a.name || a.id).localeCompare(String(b.nombre || b.name || b.id), 'es')
+    );
+  }, [programs, availableGroups]);
+
+  const filterSourceGroups = useMemo(() => {
+    let list = availableGroups;
+    if (selectedProgramFilter) {
+      list = list.filter((g) => g.programId === selectedProgramFilter);
+    } else if (hasCareerContext && !showAllCareers && activeWorkspace?.programId) {
+      list = list.filter((g) => g.programId === activeWorkspace.programId);
+    }
+    return list;
+  }, [availableGroups, selectedProgramFilter, hasCareerContext, showAllCareers, activeWorkspace?.programId]);
+
+  const availableFilterTurnos = useMemo(() => {
+    const order: Record<string, number> = { Mañana: 1, Tarde: 2, Noche: 3 };
+    const unique = new Set<string>();
+    for (const g of filterSourceGroups) {
+      const label = normalizeTurnoLabel(g.turno);
+      if (label) unique.add(label);
+    }
+    return Array.from(unique).sort((a, b) => (order[a] || 99) - (order[b] || 99) || a.localeCompare(b, 'es'));
+  }, [filterSourceGroups, normalizeTurnoLabel]);
+
+  const availableFilterSections = useMemo(() => {
+    const unique = new Set<string>();
+    for (const g of filterSourceGroups) {
+      if (selectedTurnoFilter && normalizeTurnoLabel(g.turno) !== selectedTurnoFilter) continue;
+      const sec = String(g.section || '').trim().toUpperCase();
+      if (sec) unique.add(sec);
+    }
+    return Array.from(unique).sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
+  }, [filterSourceGroups, selectedTurnoFilter, normalizeTurnoLabel]);
+
+  const filteredGroupDropdownOptions = useMemo(() => {
+    return filterSourceGroups.filter((g) => {
+      if (selectedTurnoFilter && normalizeTurnoLabel(g.turno) !== selectedTurnoFilter) return false;
+      if (selectedSectionFilter && String(g.section || '').trim().toUpperCase() !== selectedSectionFilter) return false;
+      const isGroupConvenio = Boolean(g.isConvenio || g.convenioName);
+      if (selectedConvenioFilter === 'CONVENIO' && !isGroupConvenio) return false;
+      if (selectedConvenioFilter === 'REGULAR' && isGroupConvenio) return false;
+      return true;
+    });
+  }, [filterSourceGroups, selectedTurnoFilter, selectedSectionFilter, selectedConvenioFilter, normalizeTurnoLabel]);
+
+  const hasTableFilters = Boolean(
+    searchQuery || selectedProgramFilter || selectedTurnoFilter || selectedSectionFilter || selectedConvenioFilter || selectedGroupFilter || selectedStateFilter
+  );
+
+  // Filtrado de filas de matrículas con soporte de carrera activa, turno, sección y convenio
   const filteredEnrollments = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     const careerGroupIds = new Set(careerGroups.map((g) => g.id));
 
     return enrollments.filter((en) => {
-      // Filtrar por carrera activa si no se seleccionó "todas las carreras"
-      if (hasCareerContext && !showAllCareers && !careerGroupIds.has(en.groupId)) {
+      // Si no se eligió una carrera específica en el filtro, respetamos la carrera activa salvo "todas las carreras"
+      if (!selectedProgramFilter && hasCareerContext && !showAllCareers && !careerGroupIds.has(en.groupId)) {
         return false;
       }
+
+      const group = groups.find((g) => g.id === en.groupId);
+      const prog = programs.find((p) => p.id === group?.programId);
+      const mod = modules.find((m) => m.id === group?.moduleId);
+      const turnoLabel = normalizeTurnoLabel(group?.turno);
+      const sectionLabel = String(group?.section || '').trim().toUpperCase();
+      const isGroupConvenio = Boolean(group?.isConvenio || group?.convenioName);
+
+      const matchesProgram = !selectedProgramFilter || group?.programId === selectedProgramFilter;
+      const matchesTurno = !selectedTurnoFilter || turnoLabel === selectedTurnoFilter;
+      const matchesSection = !selectedSectionFilter || sectionLabel === selectedSectionFilter;
+      const matchesConvenio =
+        !selectedConvenioFilter ||
+        (selectedConvenioFilter === 'CONVENIO' ? isGroupConvenio : !isGroupConvenio);
 
       const state = getEnrollmentState(en);
       const studentName = getStudentName(en.studentId).toLowerCase();
       const studentDoc = getStudentDocument(en.studentId).toLowerCase();
       const code = (en.code || '').toLowerCase();
+      const groupName = String(group?.name || '').toLowerCase();
+      const progName = String(prog?.nombre || prog?.name || '').toLowerCase();
+      const modName = String(mod?.nombre || mod?.name || '').toLowerCase();
+      const convStr = String(group?.convenioName || '').trim().toLowerCase();
 
       const matchesGroup = !selectedGroupFilter || en.groupId === selectedGroupFilter;
       const matchesState = !selectedStateFilter || state === selectedStateFilter;
@@ -585,11 +757,36 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
         !q ||
         studentName.includes(q) ||
         studentDoc.includes(q) ||
-        code.includes(q);
+        code.includes(q) ||
+        groupName.includes(q) ||
+        progName.includes(q) ||
+        modName.includes(q) ||
+        convStr.includes(q) ||
+        (isGroupConvenio && 'convenio'.includes(q)) ||
+        turnoLabel.toLowerCase().includes(q) ||
+        (sectionLabel && (sectionLabel.toLowerCase() === q || `sección ${sectionLabel.toLowerCase()}`.includes(q) || `seccion ${sectionLabel.toLowerCase()}`.includes(q)));
 
-      return matchesGroup && matchesState && matchesQuery;
+      return matchesProgram && matchesTurno && matchesSection && matchesConvenio && matchesGroup && matchesState && matchesQuery;
     });
-  }, [enrollments, searchQuery, selectedGroupFilter, selectedStateFilter, getStudentName, getStudentDocument, hasCareerContext, showAllCareers, careerGroups]);
+  }, [
+    enrollments,
+    groups,
+    programs,
+    modules,
+    searchQuery,
+    selectedProgramFilter,
+    selectedTurnoFilter,
+    selectedSectionFilter,
+    selectedConvenioFilter,
+    selectedGroupFilter,
+    selectedStateFilter,
+    getStudentName,
+    getStudentDocument,
+    hasCareerContext,
+    showAllCareers,
+    careerGroups,
+    normalizeTurnoLabel,
+  ]);
 
   // Contadores por estado contextualizados a la carrera activa
   const counts = useMemo(() => {
@@ -640,7 +837,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
         );
       case 'RETIRED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-400 border border-slate-200 dark:border-[#263834]">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-alt text-muted border border-line">
             Retirada
           </span>
         );
@@ -652,51 +849,51 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
   return (
     <div className="flex flex-col w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
       {/* 1. Encabezado Institucional */}
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-[#263834]">
-        <div className="flex flex-col gap-1.5 max-w-3xl">
+      <DashboardPhotoBand as="header" scene="inscripcion" contentClassName="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col gap-1.5 max-w-3xl min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[11px] font-bold text-[#004034] dark:text-[#5EEAD4] uppercase tracking-widest bg-[#E6F4F1] dark:bg-[#132B25] px-2.5 py-1 rounded-md">
+            <span className="text-[11px] font-bold text-brand uppercase tracking-widest bg-brand-soft px-2.5 py-1 rounded-md">
               Ámbito Institucional · Admisión y Matrícula
             </span>
             <StatusBadge size="sm" />
           </div>
-          <h1 className="text-[30px] text-[#0D382F] dark:text-[#F0FDF8] font-bold tracking-tight leading-tight">
+          <h1 className="text-[30px] text-ink font-bold tracking-tight leading-tight">
             Matrículas por Módulo
           </h1>
-          <p className="text-[14px] text-slate-700 dark:text-slate-300 font-normal leading-relaxed">
+          <p className="text-[14px] text-muted font-normal leading-relaxed">
             Incorporación formal de estudiantes, asignación de código MAT y rectificación de pertenencia a módulos curriculares.
           </p>
         </div>
 
         {/* Botón de Actualización */}
-        <div className="flex items-center gap-3 self-start lg:self-center">
+        <div className="flex items-center gap-3 self-start lg:self-center shrink-0">
           <button
             type="button"
             onClick={() => loadData(true)}
             disabled={isRefreshing}
             aria-label="Actualizar datos de matrículas"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4] hover:border-[#13594A]/30 dark:hover:border-[#5EEAD4]/40 text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2.5 rounded-[10px] bg-surface border border-line text-ink hover:text-brand hover:border-brand/40 text-xs font-bold transition-all shadow-[var(--ui-shadow)] cursor-pointer disabled:opacity-50"
           >
-            <RefreshIcon className={`w-4 h-4 text-[#13594A] dark:text-[#5EEAD4] ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshIcon className={`w-4 h-4 text-brand ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>{isRefreshing ? 'Actualizando…' : 'Actualizar'}</span>
           </button>
         </div>
-      </header>
+      </DashboardPhotoBand>
 
       {/* Contexto Académico de Unidad Activa y Conmutador Rápido */}
       <ActiveUnitContextBanner variant="compact" onNavigate={onNavigate} />
 
       {/* 2. Mensajes de Notificación */}
       {errorMsg && (
-        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-sm flex items-start justify-between gap-3 animate-fadeIn">
-          <div className="flex items-center gap-2">
+        <div role="alert" className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-sm flex items-start justify-between gap-3 animate-fadeIn">
+          <div className="flex items-center gap-2 min-w-0">
             <AlertCircleIcon className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
             <span>{errorMsg}</span>
           </div>
           <button
             type="button"
             onClick={() => setErrorMsg(null)}
-            className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-200 text-xs font-bold shrink-0"
+            className="text-rose-700 dark:text-rose-300 hover:underline text-xs font-bold shrink-0 min-h-[44px] px-2 cursor-pointer"
           >
             Cerrar
           </button>
@@ -704,15 +901,15 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
       )}
 
       {successMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-sm flex items-start justify-between gap-3 animate-fadeIn">
-          <div className="flex items-center gap-2">
+        <div role="status" className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-sm flex items-start justify-between gap-3 animate-fadeIn">
+          <div className="flex items-center gap-2 min-w-0">
             <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{successMsg}</span>
           </div>
           <button
             type="button"
             onClick={() => setSuccessMsg(null)}
-            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 text-xs font-bold shrink-0"
+            className="text-emerald-700 dark:text-emerald-300 hover:underline text-xs font-bold shrink-0 min-h-[44px] px-2 cursor-pointer"
           >
             Cerrar
           </button>
@@ -721,28 +918,42 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
       {/* Banner de Contexto de Carrera y Conmutador */}
       {hasCareerContext && (
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] flex flex-wrap items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Ámbito de visualización:</span>
-            <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834]">
+        <div className="p-4 rounded-2xl bg-surface border border-line flex flex-wrap items-center justify-between gap-3 shadow-[var(--ui-shadow)]">
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <span className="text-xs font-bold text-ink">Ámbito de visualización:</span>
+            <div className="inline-flex flex-wrap p-1 rounded-xl bg-surface-alt border border-line gap-1">
               <button
                 type="button"
-                onClick={() => setShowAllCareers(false)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                onClick={() => {
+                  setShowAllCareers(false);
+                  setSelectedProgramFilter('');
+                  setSelectedTurnoFilter('');
+                  setSelectedSectionFilter('');
+                  setSelectedConvenioFilter('');
+                  setSelectedGroupFilter('');
+                }}
+                className={`min-h-[40px] px-3 py-1.5 rounded-[10px] text-xs font-bold transition-all cursor-pointer tabular-nums ${
                   !showAllCareers
-                    ? 'bg-[#13594A] text-white shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+                    ? 'bg-brand text-on-brand shadow-[var(--ui-shadow)]'
+                    : 'text-muted hover:text-ink'
                 }`}
               >
                 🎯 Carrera: {activeProgramName} ({counts.careerTotal} matrículas)
               </button>
               <button
                 type="button"
-                onClick={() => setShowAllCareers(true)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                onClick={() => {
+                  setShowAllCareers(true);
+                  setSelectedProgramFilter('');
+                  setSelectedTurnoFilter('');
+                  setSelectedSectionFilter('');
+                  setSelectedConvenioFilter('');
+                  setSelectedGroupFilter('');
+                }}
+                className={`min-h-[40px] px-3 py-1.5 rounded-[10px] text-xs font-bold transition-all cursor-pointer tabular-nums ${
                   showAllCareers
-                    ? 'bg-[#13594A] text-white shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+                    ? 'bg-brand text-on-brand shadow-[var(--ui-shadow)]'
+                    : 'text-muted hover:text-ink'
                 }`}
               >
                 🌐 Todas las carreras ({counts.allTotal})
@@ -751,7 +962,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
           </div>
 
           {activeWorkspace?.groupId && (
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] border border-emerald-200/80 dark:border-[#205C4E]">
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-brand-soft text-brand border border-brand/20 truncate max-w-full">
               Aula activa en sesión: {groups.find((g) => g.id === activeWorkspace.groupId)?.name || activeWorkspace.groupId}
             </span>
           )}
@@ -760,58 +971,58 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
       {/* 3. Métricas Rápidas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+        <div className="bg-surface p-5 rounded-2xl border border-line shadow-[var(--ui-shadow)] flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[11px] font-bold text-muted uppercase tracking-wider block">
               Matrículas Activas
             </span>
-            <span className="text-2xl font-extrabold text-[#0D382F] dark:text-[#F0FDF8] mt-1 block">
+            <span className="text-2xl font-extrabold text-ink tabular-nums mt-1 block">
               {counts.active}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-[#132B25] text-emerald-700 dark:text-[#5EEAD4] flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-brand-soft text-brand flex items-center justify-center font-bold shrink-0">
             <EnrollmentIcon className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+        <div className="bg-surface p-5 rounded-2xl border border-line shadow-[var(--ui-shadow)] flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[11px] font-bold text-muted uppercase tracking-wider block">
               Provisionales
             </span>
-            <span className="text-2xl font-extrabold text-amber-700 dark:text-amber-400 mt-1 block">
+            <span className="text-2xl font-extrabold text-amber-700 dark:text-amber-400 tabular-nums mt-1 block">
               {counts.provisional}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold shrink-0">
             <AlertCircleIcon className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+        <div className="bg-surface p-5 rounded-2xl border border-line shadow-[var(--ui-shadow)] flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[11px] font-bold text-muted uppercase tracking-wider block">
               Confirmadas
             </span>
-            <span className="text-2xl font-extrabold text-[#0D382F] dark:text-[#F0FDF8] mt-1 block">
+            <span className="text-2xl font-extrabold text-ink tabular-nums mt-1 block">
               {counts.confirmed}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-[#132B25] text-emerald-700 dark:text-[#5EEAD4] flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-brand-soft text-brand flex items-center justify-center font-bold shrink-0">
             <CheckCircleIcon className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+        <div className="bg-surface p-5 rounded-2xl border border-line shadow-[var(--ui-shadow)] flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[11px] font-bold text-muted uppercase tracking-wider block">
               Excluidas de Módulo
             </span>
-            <span className="text-2xl font-extrabold text-rose-700 dark:text-rose-400 mt-1 block">
+            <span className="text-2xl font-extrabold text-rose-700 dark:text-rose-400 tabular-nums mt-1 block">
               {counts.excluded}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 flex items-center justify-center font-bold shrink-0">
             <AlertCircleIcon className="w-5 h-5" />
           </div>
         </div>
@@ -819,28 +1030,28 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
       {/* 4. Formulario de Nueva Matrícula (DIRECTOR y SECRETARIA) */}
       {canManage && (
-        <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs p-6 lg:p-8 space-y-6">
-          <div className="pb-4 border-b border-slate-100 dark:border-[#263834]">
-            <span className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider">
+        <div className="bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)] p-6 lg:p-8 space-y-6">
+          <div className="pb-4 border-b border-line">
+            <span className="text-xs font-bold text-brand uppercase tracking-wider">
               Trámite de Incorporación
             </span>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8] mt-0.5">
+            <h2 className="text-lg font-bold text-ink mt-0.5">
               Registrar Nueva Matrícula
             </h2>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            <p className="text-xs text-muted mt-1">
               Seleccione un estudiante del padrón general del CETPRO o cree uno nuevo en un solo paso.
             </p>
           </div>
 
           {/* Selector de Modo de Incorporación */}
-          <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-[#263834] pb-3">
+          <div className="flex flex-wrap items-center gap-2 border-b border-line pb-3">
             <button
               type="button"
               onClick={() => setEnrollMode('search')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`min-h-[44px] px-4 py-2 rounded-[10px] text-xs font-bold transition-all cursor-pointer flex items-center gap-2 tabular-nums ${
                 enrollMode === 'search'
-                  ? 'bg-[#13594A] text-white shadow-xs'
-                  : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1F2D2A]'
+                  ? 'bg-brand text-on-brand shadow-[var(--ui-shadow)]'
+                  : 'bg-surface-alt text-muted hover:text-ink border border-line'
               }`}
             >
               <SearchIcon className="w-3.5 h-3.5" />
@@ -849,10 +1060,10 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
             <button
               type="button"
               onClick={() => setEnrollMode('create')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`min-h-[44px] px-4 py-2 rounded-[10px] text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                 enrollMode === 'create'
-                  ? 'bg-[#13594A] text-white shadow-xs'
-                  : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1F2D2A]'
+                  ? 'bg-brand text-on-brand shadow-[var(--ui-shadow)]'
+                  : 'bg-surface-alt text-muted hover:text-ink border border-line'
               }`}
             >
               <span>✨ 2. Registrar Nuevo Alumno y Matricular Aquí (En 1 paso)</span>
@@ -864,11 +1075,11 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {/* Selección y Búsqueda de Estudiante */}
                 <div className="space-y-1.5 md:col-span-1">
-                  <label htmlFor="student-search-box" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <label htmlFor="student-search-box" className="block text-xs font-bold text-ink">
                     Buscar Alumno en Padrón (DNI o Nombre) <span className="text-rose-600 dark:text-rose-400">*</span>
                   </label>
                   <div className="relative">
-                    <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <SearchIcon className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       id="student-search-box"
                       type="text"
@@ -878,13 +1089,13 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                         setStudentSearchInput(e.target.value);
                         setIsFormDirty(true);
                       }}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                      className="w-full min-h-[44px] pl-9 pr-3 py-2 rounded-[10px] border border-line bg-surface text-ink placeholder:text-muted text-xs focus:outline-none focus:ring-2 focus:ring-brand"
                     />
                   </div>
 
                   {/* Lista de coincidencias interactivas */}
                   {studentSearchInput.trim() && studentSearchResults.length > 0 && (
-                    <div className="max-h-60 overflow-y-auto rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#182220] shadow-lg divide-y divide-slate-100 dark:divide-[#263834] z-20 relative">
+                    <div className="max-h-60 overflow-y-auto rounded-xl border border-line bg-surface shadow-[var(--ui-shadow)] divide-y divide-line z-20 relative">
                       {studentSearchResults.map((st) => {
                         const inCurrent = isEnrolledInSelectedGroup(st.id);
                         const otherGrp = getOtherEnrollmentGroup(st.id);
@@ -898,15 +1109,15 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                             }}
                             className={`p-2.5 transition-colors cursor-pointer flex items-center justify-between gap-2 text-xs ${
                               isSelected
-                                ? 'bg-emerald-50 dark:bg-[#132B25]'
-                                : 'hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
+                                ? 'bg-brand-soft'
+                                : 'hover:bg-surface-alt'
                             }`}
                           >
-                            <div>
-                              <p className="font-bold text-slate-900 dark:text-[#F0FDF8]">
+                            <div className="min-w-0">
+                              <p className="record-name break-words font-semibold leading-snug" title={st.name}>
                                 {st.name}
                               </p>
-                              <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
+                              <span className="font-mono text-[11px] text-muted tabular-nums">
                                 DNI: {st.document}
                               </span>
                             </div>
@@ -933,15 +1144,15 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
                   {/* Tarjeta de Estudiante Seleccionado */}
                   {selectedStudentId && (
-                    <div className="mt-2 p-3 rounded-xl bg-emerald-50 dark:bg-[#132B25] border border-emerald-200 dark:border-[#208B73]/60 flex items-center justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-[#5EEAD4] block">
+                    <div className="mt-2 p-3 rounded-xl bg-brand-soft border border-brand/30 flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-brand block">
                           Seleccionado
                         </span>
-                        <p className="text-xs font-bold text-emerald-950 dark:text-[#F0FDF8]">
+                        <p className="record-name break-words text-sm font-semibold leading-snug" title={getStudentName(selectedStudentId)}>
                           {getStudentName(selectedStudentId)}
                         </p>
-                        <span className="text-[11px] font-mono text-emerald-800 dark:text-emerald-300">
+                        <span className="text-[11px] font-mono text-brand tabular-nums">
                           DNI: {getStudentDocument(selectedStudentId)}
                         </span>
                       </div>
@@ -951,7 +1162,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                           setSelectedStudentId('');
                           setStudentSearchInput('');
                         }}
-                        className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                        className="min-h-[40px] px-2 text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer shrink-0"
                       >
                         ✕ Quitar
                       </button>
@@ -961,7 +1172,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
                 {/* Selección de Grupo / Aula */}
                 <div className="space-y-1.5 md:col-span-1">
-                  <label htmlFor="select-group" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <label htmlFor="select-group" className="block text-xs font-bold text-ink">
                     Aula y Módulo Curricular <span className="text-rose-600 dark:text-rose-400">*</span>
                   </label>
                   <select
@@ -969,7 +1180,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                     required
                     value={selectedGroupId}
                     onChange={(e) => handleGroupChange(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand"
                   >
                     <option value="">Seleccionar aula…</option>
                     {selectableEnrollmentGroups.map((g) => {
@@ -987,7 +1198,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                     </span>
                   )}
                   {groupDateRangeInfo && (
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-1">
+                    <span className="text-[11px] text-muted tabular-nums block mt-1">
                       Vigencia del aula: {groupDateRangeInfo.gStart} al {groupDateRangeInfo.gEnd}
                     </span>
                   )}
@@ -995,7 +1206,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
                 {/* Fecha de Ingreso con auto-ajuste */}
                 <div className="space-y-1.5 md:col-span-1">
-                  <label htmlFor="input-start-date" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <label htmlFor="input-start-date" className="block text-xs font-bold text-ink">
                     Fecha de Ingreso <span className="text-rose-600 dark:text-rose-400">*</span>
                   </label>
                   <input
@@ -1007,19 +1218,19 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                       setStartDate(e.target.value);
                       setIsFormDirty(true);
                     }}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium tabular-nums focus:outline-none focus:ring-2 focus:ring-brand"
                   />
                   {groupDateRangeInfo && (
-                    <span className="text-[11px] font-semibold text-emerald-700 dark:text-[#5EEAD4] block">
+                    <span className="text-[11px] font-semibold text-brand tabular-nums block">
                       Periodo del aula: {groupDateRangeInfo.gStart} al {groupDateRangeInfo.gEnd} (Fecha ajustada automáticamente al calendario lectivo)
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-[#263834]">
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  {isFormDirty && <span className="text-amber-800 dark:text-amber-400 font-semibold">● Datos de matrícula listos para confirmación</span>}
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-line">
+                <div className="text-xs text-muted">
+                  {isFormDirty && <span className="text-amber-700 dark:text-amber-400 font-semibold">● Datos de matrícula listos para confirmación</span>}
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -1030,14 +1241,14 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                       setStudentSearchInput('');
                       setIsFormDirty(false);
                     }}
-                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors cursor-pointer"
+                    className="min-h-[44px] px-4 py-2 rounded-[10px] border border-line bg-surface text-xs font-bold text-ink hover:bg-surface-alt transition-colors cursor-pointer"
                   >
                     Limpiar
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting || !selectedStudentId || !selectedGroupId}
-                    className="px-6 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#1A7360] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                    className="min-h-[44px] px-6 py-2 rounded-[10px] bg-brand text-on-brand text-xs font-bold hover:opacity-90 transition-opacity shadow-[var(--ui-shadow)] disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? 'Registrando matrícula…' : 'Confirmar Matrícula en Aula'}
                   </button>
@@ -1049,69 +1260,74 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
             <form onSubmit={handleQuickCreateAndEnroll} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    DNI del Estudiante (8 dígitos) <span className="text-rose-600">*</span>
+                  <label htmlFor="quick-dni" className="block text-xs font-bold text-ink mb-1">
+                    DNI del Estudiante (8 dígitos) <span className="text-rose-600 dark:text-rose-400">*</span>
                   </label>
                   <input
+                    id="quick-dni"
                     type="text"
                     required
                     maxLength={8}
                     value={newStudentDni}
                     onChange={(e) => setNewStudentDni(e.target.value.replace(/\D/g, ''))}
                     placeholder="Ej.: 72345678"
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-mono font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-mono font-bold tabular-nums focus:ring-2 focus:ring-brand outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Apellido Paterno <span className="text-rose-600">*</span>
+                  <label htmlFor="quick-ln1" className="block text-xs font-bold text-ink mb-1">
+                    Apellido Paterno <span className="text-rose-600 dark:text-rose-400">*</span>
                   </label>
                   <input
+                    id="quick-ln1"
                     type="text"
                     required
                     value={newStudentLastName1}
                     onChange={(e) => setNewStudentLastName1(e.target.value)}
                     placeholder="Ej.: Quispe"
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus:ring-2 focus:ring-brand outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="quick-ln2" className="block text-xs font-bold text-ink mb-1">
                     Apellido Materno
                   </label>
                   <input
+                    id="quick-ln2"
                     type="text"
                     value={newStudentLastName2}
                     onChange={(e) => setNewStudentLastName2(e.target.value)}
                     placeholder="Ej.: Mamani"
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus:ring-2 focus:ring-brand outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Nombres Completos <span className="text-rose-600">*</span>
+                  <label htmlFor="quick-names" className="block text-xs font-bold text-ink mb-1">
+                    Nombres Completos <span className="text-rose-600 dark:text-rose-400">*</span>
                   </label>
                   <input
+                    id="quick-names"
                     type="text"
                     required
                     value={newStudentNames}
                     onChange={(e) => setNewStudentNames(e.target.value)}
                     placeholder="Ej.: Juan Carlos"
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus:ring-2 focus:ring-brand outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="quick-sex" className="block text-xs font-bold text-ink mb-1">
                     Sexo
                   </label>
                   <select
+                    id="quick-sex"
                     value={newStudentSex}
                     onChange={(e) => setNewStudentSex(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus:ring-2 focus:ring-brand outline-none"
                   >
                     <option value="H">Hombre (H)</option>
                     <option value="M">Mujer (M)</option>
@@ -1119,26 +1335,28 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="quick-birth" className="block text-xs font-bold text-ink mb-1">
                     Fecha de Nacimiento
                   </label>
                   <input
+                    id="quick-birth"
                     type="date"
                     value={newStudentBirthDate}
                     onChange={(e) => setNewStudentBirthDate(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-900 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium tabular-nums focus:ring-2 focus:ring-brand outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Aula de Matrícula <span className="text-rose-600">*</span>
+                  <label htmlFor="quick-group" className="block text-xs font-bold text-ink mb-1">
+                    Aula de Matrícula <span className="text-rose-600 dark:text-rose-400">*</span>
                   </label>
                   <select
+                    id="quick-group"
                     required
                     value={selectedGroupId}
                     onChange={(e) => handleGroupChange(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus:ring-2 focus:ring-brand outline-none"
                   >
                     <option value="">Seleccionar aula…</option>
                     {selectableEnrollmentGroups.map((g) => {
@@ -1153,36 +1371,37 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Fecha de Ingreso <span className="text-rose-600">*</span>
+                  <label htmlFor="quick-start-date" className="block text-xs font-bold text-ink mb-1">
+                    Fecha de Ingreso <span className="text-rose-600 dark:text-rose-400">*</span>
                   </label>
                   <input
+                    id="quick-start-date"
                     type="date"
                     required
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:ring-2 focus:ring-emerald-600 outline-none"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium tabular-nums focus:ring-2 focus:ring-brand outline-none"
                   />
                   {groupDateRangeInfo && (
-                    <span className="text-[11px] font-semibold text-emerald-700 dark:text-[#5EEAD4] block mt-1">
+                    <span className="text-[11px] font-semibold text-brand tabular-nums block mt-1">
                       Periodo: {groupDateRangeInfo.gStart} al {groupDateRangeInfo.gEnd}
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-[#263834]">
+              <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-line">
                 <button
                   type="button"
                   onClick={() => setEnrollMode('search')}
-                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors cursor-pointer"
+                  className="min-h-[44px] px-4 py-2 rounded-[10px] border border-line bg-surface text-xs font-bold text-ink hover:bg-surface-alt transition-colors cursor-pointer"
                 >
                   Volver a Buscar en Padrón
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !newStudentDni.trim() || !newStudentLastName1.trim() || !newStudentNames.trim() || !selectedGroupId}
-                  className="px-6 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#1A7360] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                  className="min-h-[44px] px-6 py-2 rounded-[10px] bg-brand text-on-brand text-xs font-bold hover:opacity-90 transition-opacity shadow-[var(--ui-shadow)] disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? 'Registrando y Matriculando…' : 'Crear Alumno y Matricular de Inmediato (1 paso)'}
                 </button>
@@ -1193,117 +1412,243 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
       )}
 
       {/* 5. Tabla de Matrículas y Pertenencia Modular */}
-      <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-xs p-6 space-y-5">
+      <div className="bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)] p-6 space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
+          <div className="min-w-0">
+            <h2 className="text-base font-bold text-ink">
               Padrón de Matrículas y Control Modular
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-muted mt-0.5">
               Supervisión de módulos cursados, ratificación y rectificación de asignación de aula.
             </p>
           </div>
 
-          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#131C1A] px-3 py-1 rounded-full">
+          <span className="text-xs font-semibold text-ink bg-surface-alt border border-line px-3 py-1 rounded-full tabular-nums shrink-0 self-start md:self-auto">
             {filteredEnrollments.length} matrículas encontradas
           </span>
         </div>
 
         {/* Toolbar de Filtros */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-          {/* Filtro por Aula */}
-          <div>
-            <label htmlFor="filter-group" className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
-              Aula / Grupo
-            </label>
-            <select
-              id="filter-group"
-              value={selectedGroupFilter}
-              onChange={(e) => setSelectedGroupFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
-            >
-              <option value="">Todas las aulas</option>
-              {availableGroups.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="space-y-3 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Filtro por Carrera */}
+            {(availableFilterPrograms.length > 1 || showAllCareers || Boolean(selectedProgramFilter)) && (
+              <div>
+                <label htmlFor="filter-program-enroll" className="block text-[11px] font-bold text-muted uppercase mb-1">
+                  Carrera / Programa
+                </label>
+                <select
+                  id="filter-program-enroll"
+                  value={selectedProgramFilter}
+                  onChange={(e) => {
+                    setSelectedProgramFilter(e.target.value);
+                    setSelectedTurnoFilter('');
+                    setSelectedSectionFilter('');
+                    setSelectedConvenioFilter('');
+                    setSelectedGroupFilter('');
+                  }}
+                  className="w-full min-h-[44px] px-3 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                >
+                  <option value="">
+                    {hasCareerContext && !showAllCareers ? `Carrera activa (${activeProgramName})` : 'Todas las carreras'}
+                  </option>
+                  {availableFilterPrograms.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombre || p.name || p.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-          {/* Filtro por Estado */}
-          <div>
-            <label htmlFor="filter-state" className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
-              Estado Modular
-            </label>
-            <select
-              id="filter-state"
-              value={selectedStateFilter}
-              onChange={(e) => setSelectedStateFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
-            >
-              <option value="">Todos los estados</option>
-              <option value="PROVISIONAL">Provisionales (Confirmar módulo)</option>
-              <option value="CONFIRMED">Confirmadas</option>
-              <option value="EXCLUDED">Excluidas del módulo</option>
-              <option value="RETIRED">Retiradas formalmente</option>
-            </select>
-          </div>
-
-          {/* Búsqueda */}
-          <div>
-            <label htmlFor="search-input-enroll" className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
-              Buscar Estudiante
-            </label>
-            <div className="relative">
-              <SearchIcon className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                id="search-input-enroll"
-                type="search"
-                placeholder="DNI, nombre o código MAT…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
-              />
+            {/* Filtro por Turno */}
+            <div>
+              <label htmlFor="filter-turno-enroll" className="block text-[11px] font-bold text-muted uppercase mb-1">
+                Turno
+              </label>
+              <select
+                id="filter-turno-enroll"
+                value={selectedTurnoFilter}
+                onChange={(e) => {
+                  setSelectedTurnoFilter(e.target.value);
+                  setSelectedSectionFilter('');
+                  setSelectedGroupFilter('');
+                }}
+                className="w-full min-h-[44px] px-3 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <option value="">Todos los turnos</option>
+                {availableFilterTurnos.map((turno) => (
+                  <option key={turno} value={turno}>
+                    {turno}
+                  </option>
+                ))}
+              </select>
             </div>
+
+            {/* Filtro por Sección */}
+            <div>
+              <label htmlFor="filter-section-enroll" className="block text-[11px] font-bold text-muted uppercase mb-1">
+                Sección
+              </label>
+              <select
+                id="filter-section-enroll"
+                value={selectedSectionFilter}
+                onChange={(e) => {
+                  setSelectedSectionFilter(e.target.value);
+                  setSelectedGroupFilter('');
+                }}
+                className="w-full min-h-[44px] px-3 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <option value="">Todas las secciones</option>
+                {availableFilterSections.map((sec) => (
+                  <option key={sec} value={sec}>
+                    Sección {sec}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filtro por Aula */}
+            <div>
+              <label htmlFor="filter-group" className="block text-[11px] font-bold text-muted uppercase mb-1">
+                Aula / Grupo
+              </label>
+              <select
+                id="filter-group"
+                value={selectedGroupFilter}
+                onChange={(e) => setSelectedGroupFilter(e.target.value)}
+                className="w-full min-h-[44px] px-3 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <option value="">Todas las aulas</option>
+                {filteredGroupDropdownOptions.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+            {/* Filtro por Tipo / Convenio */}
+            <div>
+              <label htmlFor="filter-convenio-enroll" className="block text-[11px] font-bold text-muted uppercase mb-1">
+                Tipo / Convenio
+              </label>
+              <select
+                id="filter-convenio-enroll"
+                value={selectedConvenioFilter}
+                onChange={(e) => {
+                  setSelectedConvenioFilter(e.target.value as '' | 'REGULAR' | 'CONVENIO');
+                  setSelectedGroupFilter('');
+                }}
+                className="w-full min-h-[44px] px-3 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <option value="">Todos</option>
+                <option value="REGULAR">Regulares</option>
+                <option value="CONVENIO">Solo Convenios</option>
+              </select>
+            </div>
+
+            {/* Filtro por Estado */}
+            <div>
+              <label htmlFor="filter-state" className="block text-[11px] font-bold text-muted uppercase mb-1">
+                Estado Modular
+              </label>
+              <select
+                id="filter-state"
+                value={selectedStateFilter}
+                onChange={(e) => setSelectedStateFilter(e.target.value)}
+                className="w-full min-h-[44px] px-3 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand"
+              >
+                <option value="">Todos los estados</option>
+                <option value="PROVISIONAL">Provisionales (Confirmar módulo)</option>
+                <option value="CONFIRMED">Confirmadas</option>
+                <option value="EXCLUDED">Excluidas del módulo</option>
+                <option value="RETIRED">Retiradas formalmente</option>
+              </select>
+            </div>
+
+            {/* Búsqueda */}
+            <div>
+              <label htmlFor="search-input-enroll" className="block text-[11px] font-bold text-muted uppercase mb-1">
+                Buscar Estudiante o Ubicación
+              </label>
+              <div className="relative">
+                <SearchIcon className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  id="search-input-enroll"
+                  type="search"
+                  placeholder="DNI, apellidos, código MAT, turno, sección o convenio…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full min-h-[44px] pl-9 pr-3 py-2 rounded-[10px] border border-line bg-surface text-ink placeholder:text-muted text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+              </div>
+            </div>
+
+            {hasTableFilters && (
+              <div className="flex justify-start lg:justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedProgramFilter('');
+                    setSelectedTurnoFilter('');
+                    setSelectedSectionFilter('');
+                    setSelectedConvenioFilter('');
+                    setSelectedGroupFilter('');
+                    setSelectedStateFilter('');
+                  }}
+                  className="min-h-[44px] px-4 py-2 rounded-[10px] bg-surface-alt hover:bg-brand-soft text-ink hover:text-brand border border-line text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Limpiar todos los filtros
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Tabla */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-100 dark:border-[#263834] text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                <th className="py-3 px-4">Estudiante</th>
-                <th className="py-3 px-4">Aula / Módulo</th>
-                <th className="py-3 px-4">Estado Modular</th>
-                {canManage && <th className="py-3 px-4 text-right">Acciones</th>}
+        <div role="region" aria-label="Listado de matrículas" tabIndex={0} className="overflow-x-auto rounded-xl border border-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+          <table className="record-table w-full min-w-[720px] border-collapse text-left">
+            <caption className="sr-only">Matrículas, estudiantes, aulas, turno, sección y estado modular</caption>
+            <thead className="bg-surface-alt">
+              <tr className="border-b border-line text-xs font-semibold text-muted">
+                <th scope="col" className="py-3 px-4">Estudiante</th>
+                <th scope="col" className="py-3 px-4">Carrera · Turno · Sección</th>
+                <th scope="col" className="py-3 px-4">Estado Modular</th>
+                {canManage && <th scope="col" className="py-3 px-4 text-right">Acciones</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-[#263834] text-xs">
+            <tbody className="divide-y divide-line text-sm">
               {isLoading ? (
                 <tr>
-                  <td colSpan={canManage ? 4 : 3} className="py-12 text-center text-slate-500 dark:text-slate-400">
-                    <div className="w-8 h-8 border-3 border-[#13594A]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin mx-auto mb-2" />
+                  <td colSpan={canManage ? 4 : 3} className="py-12 text-center text-muted">
+                    <div className="w-8 h-8 border-3 border-brand/20 border-t-brand rounded-full animate-spin mx-auto mb-2" />
                     Cargando padrón de matrículas…
                   </td>
                 </tr>
               ) : filteredEnrollments.length === 0 ? (
                 <tr>
-                  <td colSpan={canManage ? 4 : 3} className="py-12 text-center text-slate-500 dark:text-slate-400">
-                    <p className="font-bold text-slate-800 dark:text-[#F0FDF8] text-sm">No se encontraron matrículas</p>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
+                  <td colSpan={canManage ? 4 : 3} className="py-12 text-center text-muted">
+                    <p className="font-bold text-ink text-sm">No se encontraron matrículas</p>
+                    <span className="text-xs text-muted mt-1 block">
                       No existen registros que coincidan con los filtros seleccionados.
                     </span>
-                    {(searchQuery || selectedGroupFilter || selectedStateFilter) ? (
+                    {hasTableFilters ? (
                       <button
                         type="button"
                         onClick={() => {
                           setSearchQuery('');
+                          setSelectedProgramFilter('');
+                          setSelectedTurnoFilter('');
+                          setSelectedSectionFilter('');
+                          setSelectedConvenioFilter('');
                           setSelectedGroupFilter('');
                           setSelectedStateFilter('');
                         }}
-                        className="mt-3 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-[#182220] transition-colors cursor-pointer"
+                        className="mt-3 min-h-[44px] px-4 py-2 rounded-[10px] bg-surface-alt text-ink border border-line text-xs font-bold hover:bg-brand-soft transition-colors cursor-pointer"
                       >
                         Limpiar todos los filtros
                       </button>
@@ -1311,7 +1656,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                       <button
                         type="button"
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                        className="mt-3 px-4 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] transition-colors shadow-xs cursor-pointer"
+                        className="mt-3 min-h-[44px] px-4 py-2 rounded-[10px] bg-brand text-on-brand text-xs font-bold hover:opacity-90 transition-opacity shadow-[var(--ui-shadow)] cursor-pointer"
                       >
                         + Registrar nueva matrícula
                       </button>
@@ -1326,38 +1671,60 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                   const prog = programs.find((p) => p.id === group?.programId);
                   const mod = modules.find((m) => m.id === group?.moduleId);
                   const state = getEnrollmentState(en);
+                  const turnoLabel = normalizeTurnoLabel(group?.turno);
+                  const sectionLabel = String(group?.section || '').trim().toUpperCase();
 
                   return (
-                    <tr key={en.id} className="hover:bg-slate-50/70 dark:hover:bg-[#131C1A]/50 transition-colors">
+                    <tr key={en.id} className="align-top transition-colors hover:bg-surface-alt/60">
                       {/* Estudiante y código */}
-                      <td className="py-3.5 px-4">
-                        <span className="font-bold text-slate-900 dark:text-[#F0FDF8] block leading-tight">
+                      <td className="min-w-[240px] max-w-[360px] px-4 py-4">
+                        <span className="record-name block break-words text-base font-semibold leading-snug" title={studentName}>
                           {studentName}
                         </span>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                          <span>Doc: <strong className="text-slate-700 dark:text-slate-200">{studentDoc}</strong></span>
-                          <span>•</span>
-                          <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{en.code || 'MAT'}</span>
-                          <span>•</span>
-                          <span>Ingreso: {en.startDate || 'Pendiente'}</span>
+                        <div className="record-label mt-2 space-y-1 text-xs leading-relaxed tabular-nums">
+                          <p>Documento <strong className="record-code break-all font-semibold">{studentDoc}</strong></p>
+                          <p className="record-code break-all font-medium">{en.code || 'MAT'}</p>
+                          <p>Ingreso <span className="whitespace-nowrap font-medium text-ink">{en.startDate || 'Pendiente'}</span></p>
                         </div>
                       </td>
 
-                      {/* Aula / Módulo */}
-                      <td className="py-3.5 px-4">
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 block">
+                      {/* Carrera / Turno / Sección / Aula */}
+                      <td className="min-w-[240px] max-w-[360px] px-4 py-4">
+                        <span className="record-academic block break-words font-semibold leading-snug" title={group?.name || en.groupId}>
                           {group?.name || en.groupId}
                         </span>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                          {turnoLabel && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-brand-soft text-brand border border-brand/20">
+                              Turno: {turnoLabel}
+                            </span>
+                          )}
+                          {sectionLabel && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-surface-alt text-ink border border-line">
+                              Sección {sectionLabel}
+                            </span>
+                          )}
+                          {(group?.isConvenio || group?.convenioName) && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
+                              {group.convenioName || 'Convenio'}
+                            </span>
+                          )}
+                        </div>
+                        <span className="record-academic mt-1.5 block break-words text-sm leading-relaxed" title={`${prog?.nombre || prog?.name || 'Programa'} · ${mod?.nombre || mod?.name || 'Módulo'}`}>
                           {prog?.nombre || prog?.name || 'Programa'} · {mod?.nombre || mod?.name || 'Módulo'}
                         </span>
+                        {group?.teacherName && (
+                          <span className="record-label mt-1 block text-xs">
+                            Docente: {group.teacherName}
+                          </span>
+                        )}
                       </td>
 
                       {/* Estado */}
-                      <td className="py-3.5 px-4">
+                      <td className="min-w-[140px] px-4 py-4">
                         {renderStateBadge(state)}
                         {en.moduleCorrection?.reason && (
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-1 italic">
+                          <span className="record-label mt-2 block max-w-[260px] break-words text-xs leading-relaxed">
                             Motivo: "{en.moduleCorrection.reason}"
                           </span>
                         )}
@@ -1365,7 +1732,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
                       {/* Acciones */}
                       {canManage && (
-                        <td className="py-3.5 px-4 text-right">
+                        <td className="min-w-[170px] px-4 py-4 text-right">
                           <div className="inline-flex items-center gap-1.5 flex-wrap justify-end">
                             {en.active ? (
                               <>
@@ -1373,7 +1740,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                                   <button
                                     type="button"
                                     onClick={() => handleOpenModuleModal(en, 'CONFIRM')}
-                                    className="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-bold text-xs transition-colors border border-emerald-200 dark:border-emerald-800"
+                                    className="min-h-[44px] px-2.5 py-1 rounded-[10px] bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-bold text-xs transition-colors border border-emerald-200 dark:border-emerald-800 cursor-pointer"
                                   >
                                     Confirmar
                                   </button>
@@ -1381,14 +1748,14 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                                 <button
                                   type="button"
                                   onClick={() => handleOpenModuleModal(en, 'EXCLUDE')}
-                                  className="px-2.5 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 font-bold text-xs transition-colors border border-amber-200 dark:border-amber-800"
+                                  className="min-h-[44px] px-2.5 py-1 rounded-[10px] bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 font-bold text-xs transition-colors border border-amber-200 dark:border-amber-800 cursor-pointer"
                                 >
                                   Quitar de módulo
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleOpenRetireModal(en)}
-                                  className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-[#131C1A] hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-300 hover:text-rose-700 dark:hover:text-rose-300 font-bold text-xs transition-colors border border-slate-200 dark:border-[#263834]"
+                                  className="min-h-[44px] px-2.5 py-1 rounded-[10px] bg-surface-alt hover:bg-rose-50 dark:hover:bg-rose-950/40 text-ink hover:text-rose-700 dark:hover:text-rose-300 font-bold text-xs transition-colors border border-line cursor-pointer"
                                 >
                                   Retirar / Trasladar
                                 </button>
@@ -1397,7 +1764,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                               <button
                                 type="button"
                                 onClick={() => handleOpenModuleModal(en, 'RESTORE')}
-                                className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-bold text-xs transition-colors border border-emerald-200 dark:border-emerald-800"
+                                className="min-h-[44px] px-3 py-1 rounded-[10px] bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-bold text-xs transition-colors border border-emerald-200 dark:border-emerald-800 cursor-pointer"
                               >
                                 Restaurar en módulo
                               </button>
@@ -1416,9 +1783,18 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
       {/* 6. Modal de Corrección Modular */}
       {moduleModal.isOpen && moduleModal.enrollment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200 dark:border-[#263834]">
-            <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="module-modal-title"
+        >
+          <div
+            ref={modulePanelRef}
+            tabIndex={-1}
+            className="cepro-dialog-panel bg-surface rounded-2xl max-w-md w-full p-6 space-y-4 shadow-[var(--ui-shadow)] border border-line"
+          >
+            <h3 id="module-modal-title" className="text-base font-bold text-ink">
               {moduleModal.action === 'CONFIRM'
                 ? 'Confirmar Pertenencia al Módulo'
                 : moduleModal.action === 'EXCLUDE'
@@ -1426,13 +1802,13 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                 : 'Restaurar Matrícula en el Módulo'}
             </h3>
 
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              Estudiante: <strong className="text-slate-800 dark:text-slate-200">{getStudentName(moduleModal.enrollment.studentId)}</strong>
+            <p className="text-xs text-muted">
+              Estudiante: <strong className="text-ink">{getStudentName(moduleModal.enrollment.studentId)}</strong>
               <br />
-              Aula: <strong className="text-slate-800 dark:text-slate-200">{groups.find((g) => g.id === moduleModal.enrollment?.groupId)?.name}</strong>
+              Aula: <strong className="text-ink">{groups.find((g) => g.id === moduleModal.enrollment?.groupId)?.name}</strong>
             </p>
 
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs text-slate-700 dark:text-slate-300">
+            <div className="p-3 rounded-xl bg-surface-alt border border-line text-xs text-ink">
               {moduleModal.action === 'EXCLUDE'
                 ? 'El estudiante será desvinculado exclusivamente de este módulo. Se preservan sus notas previas, asistencias y fichas en otros módulos.'
                 : moduleModal.action === 'CONFIRM'
@@ -1441,7 +1817,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
             </div>
 
             <div>
-              <label htmlFor="module-reason" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label htmlFor="module-reason" className="block text-xs font-bold text-ink mb-1.5">
                 Motivo de la Corrección Modular <span className="text-rose-600 dark:text-rose-400">*</span>
               </label>
               <textarea
@@ -1451,16 +1827,16 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                 placeholder="Indique la justificación técnica o resolución de dirección/secretaría…"
                 value={moduleModal.reason}
                 onChange={(e) => setModuleModal((prev) => ({ ...prev, reason: e.target.value }))}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                className="w-full px-3.5 py-2.5 rounded-[10px] border border-line bg-surface text-ink placeholder:text-muted text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#263834]">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-line">
               <button
                 type="button"
                 onClick={() => setModuleModal({ isOpen: false, enrollment: null, action: 'CONFIRM', reason: '' })}
                 disabled={isSubmittingModuleAction}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors"
+                className="min-h-[44px] px-4 py-2 rounded-[10px] border border-line bg-surface text-xs font-bold text-ink hover:bg-surface-alt transition-colors cursor-pointer"
               >
                 Cancelar
               </button>
@@ -1468,7 +1844,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                 type="button"
                 onClick={handleConfirmModuleAction}
                 disabled={isSubmittingModuleAction || !moduleModal.reason.trim()}
-                className="px-5 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#1A7360] transition-colors shadow-xs disabled:opacity-50"
+                className="min-h-[44px] px-5 py-2 rounded-[10px] bg-brand text-on-brand text-xs font-bold hover:opacity-90 transition-opacity shadow-[var(--ui-shadow)] disabled:opacity-50 cursor-pointer"
               >
                 {isSubmittingModuleAction ? 'Guardando…' : 'Confirmar Operación'}
               </button>
@@ -1479,21 +1855,30 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
 
       {/* 7. Modal de Retiro / Traslado de Matrícula */}
       {retireModal.isOpen && retireModal.enrollment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200 dark:border-[#263834]">
-            <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="retire-modal-title"
+        >
+          <div
+            ref={retirePanelRef}
+            tabIndex={-1}
+            className="cepro-dialog-panel bg-surface rounded-2xl max-w-md w-full p-6 space-y-4 shadow-[var(--ui-shadow)] border border-line"
+          >
+            <h3 id="retire-modal-title" className="text-base font-bold text-ink">
               Retiro Formal o Traslado de Matrícula
             </h3>
 
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              Estudiante: <strong className="text-slate-800 dark:text-slate-200">{getStudentName(retireModal.enrollment.studentId)}</strong>
+            <p className="text-xs text-muted">
+              Estudiante: <strong className="text-ink">{getStudentName(retireModal.enrollment.studentId)}</strong>
               <br />
-              Aula actual: <strong className="text-slate-800 dark:text-slate-200">{groups.find((g) => g.id === retireModal.enrollment?.groupId)?.name}</strong>
+              Aula actual: <strong className="text-ink">{groups.find((g) => g.id === retireModal.enrollment?.groupId)?.name}</strong>
             </p>
 
             <div className="space-y-3">
               <div>
-                <label htmlFor="retire-date" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="retire-date" className="block text-xs font-bold text-ink mb-1">
                   Fecha de Retiro / Traslado <span className="text-rose-600 dark:text-rose-400">*</span>
                 </label>
                 <input
@@ -1502,19 +1887,19 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                   required
                   value={retireModal.date}
                   onChange={(e) => setRetireModal((prev) => ({ ...prev, date: e.target.value }))}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                  className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium tabular-nums focus:outline-none focus:ring-2 focus:ring-brand"
                 />
               </div>
 
               <div>
-                <label htmlFor="retire-target-group" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="retire-target-group" className="block text-xs font-bold text-ink mb-1">
                   Trasladar a otro Grupo (Opcional)
                 </label>
                 <select
                   id="retire-target-group"
                   value={retireModal.targetGroupId}
                   onChange={(e) => setRetireModal((prev) => ({ ...prev, targetGroupId: e.target.value }))}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                  className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand"
                 >
                   <option value="">Solo retirar (Sin traslado)</option>
                   {availableGroups
@@ -1525,13 +1910,13 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                       </option>
                     ))}
                 </select>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-1">
+                <span className="text-[11px] text-muted block mt-1">
                   Si selecciona un aula destino, se creará la nueva matrícula en una sola transacción.
                 </span>
               </div>
 
               <div>
-                <label htmlFor="retire-reason" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="retire-reason" className="block text-xs font-bold text-ink mb-1">
                   Motivo Administrativo <span className="text-rose-600 dark:text-rose-400">*</span>
                 </label>
                 <textarea
@@ -1541,17 +1926,17 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                   placeholder="Ej.: Retiro voluntario, cambio de turno, traslado de sección…"
                   value={retireModal.reason}
                   onChange={(e) => setRetireModal((prev) => ({ ...prev, reason: e.target.value }))}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                  className="w-full px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink placeholder:text-muted text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#263834]">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-line">
               <button
                 type="button"
                 onClick={() => setRetireModal({ isOpen: false, enrollment: null, reason: '', date: '', targetGroupId: '' })}
                 disabled={isSubmittingRetire}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#131C1A] transition-colors"
+                className="min-h-[44px] px-4 py-2 rounded-[10px] border border-line bg-surface text-xs font-bold text-ink hover:bg-surface-alt transition-colors cursor-pointer"
               >
                 Cancelar
               </button>
@@ -1559,7 +1944,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
                 type="button"
                 onClick={handleConfirmRetire}
                 disabled={isSubmittingRetire || !retireModal.reason.trim() || !retireModal.date}
-                className="px-5 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition-colors shadow-xs disabled:opacity-50"
+                className="min-h-[44px] px-5 py-2 rounded-[10px] bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition-colors shadow-[var(--ui-shadow)] disabled:opacity-50 cursor-pointer"
               >
                 {isSubmittingRetire ? 'Procesando…' : 'Confirmar Retiro'}
               </button>
@@ -1569,7 +1954,7 @@ export const GestionMatriculas: React.FC<GestionMatriculasProps> = ({ onNavigate
       )}
 
       {/* 8. Pie de Página */}
-      <footer className="text-center py-4 text-xs text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-[#263834]">
+      <footer className="text-center py-4 text-xs text-muted border-t border-line">
         CEPRO_MICAELA 2.0 · Módulo de Matrículas e Historial Modular Fuera de Línea
       </footer>
     </div>

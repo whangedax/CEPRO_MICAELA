@@ -42,7 +42,7 @@ describe('Sistema de Respaldos y Restauración (Tarea 36)', () => {
   let headersSecretaria = {};
   let headersDocente = {};
 
-  before(async () => {
+  const authenticateRoles = async () => {
     // 1. Autenticar DIRECTOR
     const loginDir = await fetch(`${BASE_URL}/api/login`, {
       method: 'POST',
@@ -84,7 +84,9 @@ describe('Sistema de Respaldos y Restauración (Tarea 36)', () => {
       'Authorization': `Bearer ${tokenDocente}`,
       'Content-Type': 'application/json',
     };
-  });
+  };
+
+  before(authenticateRoles);
 
   // =========================================================================
   // 1. CONTROL DE ACCESO RBAC ESTRICTO
@@ -306,6 +308,12 @@ describe('Sistema de Respaldos y Restauración (Tarea 36)', () => {
     assert.equal(restoreResult.success, true);
     assert.ok(restoreResult.previousCopy, 'Debe devolver el nombre del respaldo preventivo antes-restaurar');
     assert.ok(restoreResult.previousCopy.includes('antes-restaurar'), 'Debe incluir etiqueta antes-restaurar');
+    assert.equal(restoreResult.requiresLogin, true);
+    for (const headers of [headersDirector, headersSecretaria, headersDocente]) {
+      const expired = await fetch(`${BASE_URL}/api/me`, { headers });
+      assert.equal(expired.status, 401, 'Una restauración debe revocar todas las sesiones anteriores');
+    }
+    await authenticateRoles();
 
     // 3. Comprobar que el estudiante temporal ya NO existe en la base restaurada
     const dashAfterRestore = await (await fetch(`${BASE_URL}/api/dashboard?overview=1`, { headers: headersDirector })).json();

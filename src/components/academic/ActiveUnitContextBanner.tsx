@@ -1,21 +1,3 @@
-﻿/**
- * src/components/academic/ActiveUnitContextBanner.tsx
- *
- * Componente transversal de Contexto Académico de Unidad Activa — CEPRO_MICAELA 2.0.
- * Resuelve y presenta con claridad jerárquica:
- *   1. Año / Periodo Académico (ej. Periodo 2026-I)
- *   2. Carrera Técnica (Programa de Estudios)
- *   3. Módulo Formativo (con horas y créditos)
- *   4. Aula / Turno / Sección + Docente + N° de estudiantes
- *   5. Unidad Didáctica Activa (Código UD 1..UD 7, Nombre completo, Fechas de inicio/fin, Horas y Créditos)
- *
- * Incluye:
- *   - Conmutador rápido en línea de Unidades Didácticas (1 clic, de 4 hasta 7 UDs + EFSRT + Módulo Completo)
- *     protegido por PendingChangesContext (requestSafeTransition).
- *   - Botones jerárquicos directos: [🎓 Cambiar Carrera / Módulo] y [🏫 Cambiar Aula / Turno].
- *   - Adaptación visual "full" y "compact", soporte de modo oscuro AAA (0 cajas blancas).
- */
-
 import React, { useMemo } from 'react';
 import { NavRoute } from '../../types';
 import { useAuth } from '../../context/AuthContext';
@@ -26,12 +8,11 @@ import { CareerEmblemIcon, resolveCareerVisualTheme } from './CareerVisualBanner
 import {
   CalendarIcon,
   StudentsIcon,
+  GroupsIcon,
   EnrollmentIcon,
   AttendanceIcon,
   EvaluationIcon,
   DocumentIcon,
-  SunIcon,
-  SunsetIcon,
 } from '../ui/Icons';
 
 export interface CareerScopeToggleConfig {
@@ -62,10 +43,15 @@ function formatUnitCodeDisplay(code?: string): string {
 }
 
 function formatReadableDateRange(start?: string, end?: string): string {
-  if (!start && !end) return '';
-  if (start && end) return `${start} al ${end}`;
-  return start || end || '';
+  const readable = (date: string) => date.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1');
+  if (start && end) return readable(start) + " al " + readable(end);
+  if (start) return "Desde " + readable(start);
+  return end ? "Hasta " + readable(end) : "";
 }
+
+const control = 'inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[10px] px-3 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-60';
+const neutral = control + ' border border-line bg-surface text-ink hover:bg-surface-alt';
+const primary = control + ' bg-brand text-on-brand hover:opacity-90';
 
 export const ActiveUnitContextBanner: React.FC<ActiveUnitContextBannerProps> = ({
   variant = 'full',
@@ -101,9 +87,10 @@ export const ActiveUnitContextBanner: React.FC<ActiveUnitContextBannerProps> = (
   // 1. Periodo Académico
   const periodLabel = useMemo(() => {
     if (activeGroup?.periodId) return activeGroup.periodId;
-    if (activeWorkspace?.year) return `${activeWorkspace.year}-I`;
+    if (activeWorkspace?.periodId) return activeWorkspace.periodId;
+    if (activeWorkspace?.year) return activeWorkspace.year;
     return '2026-I';
-  }, [activeGroup?.periodId, activeWorkspace?.year]);
+  }, [activeGroup?.periodId, activeWorkspace?.periodId, activeWorkspace?.year]);
 
   // 2. Carrera Técnica
   const activeProgram = useMemo(() => {
@@ -126,13 +113,10 @@ export const ActiveUnitContextBanner: React.FC<ActiveUnitContextBannerProps> = (
   }, [activeGroup?.moduleId, activeWorkspace?.moduleId, options?.modules]);
 
   const moduleStageBadge = useMemo(() => {
-    const modId = activeGroup?.moduleId || activeWorkspace?.moduleId || '';
-    const num = Number(modId.replace(/\D+/g, ''));
-    if (!Number.isNaN(num) && num > 0) {
-      return num % 2 === 1 ? 'Módulo I' : 'Módulo II';
-    }
-    return periodLabel.endsWith('-II') ? 'Módulo II' : 'Módulo I';
-  }, [activeGroup?.moduleId, activeWorkspace?.moduleId, periodLabel]);
+    if (periodLabel === '2026-I') return 'Módulo I';
+    if (periodLabel === '2026-II') return 'Módulo II';
+    return 'Módulo formativo';
+  }, [periodLabel]);
 
   const moduleName = activeModule?.nombre || activeGroup?.name || 'Módulo Formativo';
 
@@ -177,7 +161,7 @@ export const ActiveUnitContextBanner: React.FC<ActiveUnitContextBannerProps> = (
     if (activeWorkspace.mode === 'MODULE') {
       return {
         badge: 'MÓDULO COMPLETO',
-        title: `Módulo Completo — Gestión Integral del Aula (${moduleName})`,
+        title: moduleName,
         dateRange: formatReadableDateRange(activeGroup.fechaInicio, activeGroup.fechaFin),
         hours: activeModule?.hours,
         credits: activeModule?.credits,
@@ -229,368 +213,167 @@ export const ActiveUnitContextBanner: React.FC<ActiveUnitContextBannerProps> = (
     });
   };
 
-  // =========================================================================
-  // RENDER EN VISTA GLOBAL (SIN AULA SELECCIONADA)
-  // =========================================================================
+  const spacing = variant === 'compact' ? 'px-4 py-3' : 'px-5 py-4 sm:px-6';
+  const surface = `rounded-2xl border border-line bg-surface shadow-[var(--ui-shadow)] ${className}`;
   if (isGlobalOverview) {
     return (
-      <section
-        aria-label="Contexto Académico Institucional"
-        className={`rounded-3xl bg-white dark:bg-[#182220] border border-slate-200/90 dark:border-[#263834] shadow-[0_2px_12px_rgba(19,89,74,0.05)] p-4 sm:p-5 transition-colors ${className}`}
-      >
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-[#13594A] text-white flex items-center justify-center text-lg font-extrabold shrink-0 shadow-xs">
-              🎯
+      <section aria-label="Contexto Académico Institucional" className={surface}>
+        <div className={`${spacing} flex flex-wrap items-center justify-between gap-4`}>
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-brand-soft text-brand">
+              <GroupsIcon className="size-5" aria-hidden="true" />
             </div>
             <div>
-              <div className="flex flex-wrap items-center gap-2 mb-1">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-extrabold uppercase tracking-wider bg-[#E6F4F1] dark:bg-[#132B25] text-[#004034] dark:text-[#5EEAD4] border border-[#13594A]/25 dark:border-[#205C4E]">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  Periodo {periodLabel}
-                </span>
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                  {role === 'DOCENTE'
-                    ? 'Sin Unidad Didáctica seleccionada'
-                    : 'Ámbito Global Institucional (Todas las 7 Carreras Técnicas)'}
-                </span>
-              </div>
-              <h2 className="text-base sm:text-lg font-extrabold text-[#0D382F] dark:text-[#F0FDF8] leading-snug">
-                {role === 'DOCENTE'
-                  ? 'Seleccione su Carrera, Aula y Unidad Didáctica de Trabajo'
-                  : 'Vista Global del CETPRO Micaela Bastidas — 7 Carreras y 16 Aulas'}
+              <p className="text-sm font-semibold text-brand tabular-nums">Periodo {periodLabel}</p>
+              <h2 className="mt-0.5 text-xl font-bold text-ink">
+                {role === 'DOCENTE' ? 'Elige tu espacio de trabajo' : 'Vista institucional'}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
-                {role === 'DOCENTE'
-                  ? 'Elija su módulo formativo, especialidad y unidad didáctica (UD 1 a UD 7) para registrar asistencia, calificaciones vigesimales y formatos oficiales.'
-                  : 'Supervisión consolidada de toda la institución. Puede seleccionar una carrera, aula o unidad didáctica específica en cualquier momento.'}
+              <p className="mt-1 text-sm text-muted">
+                {role === 'DOCENTE' ? 'Selecciona una carrera, un aula y una unidad para empezar.' : 'Consulta el consolidado o selecciona un aula para ver su información.'}
               </p>
             </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => handleOpenStep(1)}
-              className="px-4 py-2.5 rounded-2xl bg-[#13594A] hover:bg-[#0D382F] text-white text-xs sm:text-sm font-extrabold shadow-sm transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4]"
-            >
-              <span>🎯 Seleccionar Carrera, Módulo y Unidad Didáctica</span>
-            </button>
-          </div>
+          <button type="button" onClick={() => handleOpenStep(1)} disabled={isLoading} className={primary}>
+            Elegir contexto
+          </button>
         </div>
       </section>
     );
   }
 
-  // =========================================================================
-  // RENDER CON AULA Y UNIDAD ACTIVA SELECCIONADA
-  // =========================================================================
   const theme = resolveCareerVisualTheme(activeGroup.programId, programName);
-  const isMorning = (activeGroup.turno || '').toLowerCase().includes('mañana');
-  const pedagogicalUnits = (activeGroup.units || []).filter((u) => u.code !== 'EFSRT');
-  const efsrtUnit = (activeGroup.units || []).find((u) => u.code === 'EFSRT') || null;
+  const pedagogicalUnits = (activeGroup.units || []).filter((unit) => unit.code !== 'EFSRT');
+  const efsrtUnit = (activeGroup.units || []).find((unit) => unit.code === 'EFSRT');
+  const practiceActive = activeWorkspace?.mode === 'PRACTICE' || activeWorkspace?.unit === 'EFSRT';
+  const moduleActive = activeWorkspace?.mode === 'MODULE';
+  const breadcrumbs = [
+    `Periodo ${periodLabel}`,
+    programName,
+    activeModule?.nombre ? `${moduleStageBadge} · ${moduleName}` : moduleStageBadge,
+    activeGroup.name,
+  ].filter(Boolean);
+  const switchClass = (selected: boolean) =>
+    selected ? primary + ' border border-brand' : neutral;
+  const quickActions = [
+    { route: 'asistencia', label: 'Asistencia', Icon: AttendanceIcon },
+    { route: 'evaluacion', label: 'Evaluaciones', Icon: EvaluationIcon },
+    { route: 'documentos', label: 'Formatos PDF', Icon: DocumentIcon },
+    ...(isAdminOrSec ? [{ route: 'matriculas', label: 'Matrículas', Icon: EnrollmentIcon } as const] : []),
+  ] as const;
+  const scope = careerScopeToggle;
 
   return (
-    <section
-      aria-label="Contexto Académico de Unidad Activa"
-      className={`rounded-3xl bg-white dark:bg-[#182220] border border-[#13594A]/30 dark:border-[#263834] shadow-[0_4px_18px_rgba(19,89,74,0.06)] overflow-hidden transition-colors ${className}`}
-    >
-      {/* Fila Superior: Jerarquía Académica Completa (Año -> Carrera -> Módulo -> Aula) + Botones de Cambio */}
-      <div
-        className={`${
-          variant === 'compact' ? 'px-4 py-3.5' : 'px-5 py-4 sm:px-6 sm:py-5'
-        } bg-gradient-to-r from-[#F4FAF8] via-white to-[#F4FAF8] dark:from-[#132B25]/80 dark:via-[#182220] dark:to-[#132B25]/60 border-b border-slate-200/80 dark:border-[#263834]`}
-      >
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-          {/* Bloque izquierdo: Emblema + Ruta Jerárquica + Unidad Didáctica Activa */}
-          <div className="flex items-start gap-3.5 min-w-0 flex-1">
-            <div
-              className={`w-12 h-12 rounded-2xl ${theme.iconBgClass} text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5`}
-            >
-              <CareerEmblemIcon
-                programId={activeGroup.programId}
-                programName={programName}
-                className="w-6 h-6 text-white"
-              />
+    <section aria-label="Contexto Académico de Unidad Activa" className={surface}>
+      <div className={`${spacing} space-y-4`}>
+        <nav aria-label="Ruta académica" className="min-w-0">
+          <ol className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-sm text-muted">
+            {breadcrumbs.map((label, index) => (
+              <li key={index} className="flex min-w-0 items-baseline gap-2.5">
+                {index > 0 && <span aria-hidden="true">›</span>}
+                <span className="min-w-0 break-words">{label}</span>
+              </li>
+            ))}
+          </ol>
+        </nav>
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+          <div className="flex min-w-0 flex-1 basis-80 items-start gap-3">
+            <div aria-hidden="true" className={`flex size-11 shrink-0 items-center justify-center rounded-[10px] text-white ${theme.iconBgClass}`}>
+              <CareerEmblemIcon programId={activeGroup.programId} programName={programName} className="size-5" />
             </div>
-
-            <div className="min-w-0 flex-1 space-y-1.5">
-              {/* Etiquetas superiores: Periodo · Carrera · Módulo · Turno/Sección */}
-              <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg font-extrabold bg-[#13594A] text-white tabular-nums">
-                  <CalendarIcon className="w-3.5 h-3.5" />
-                  <span>Periodo {periodLabel}</span>
-                </span>
-
-                <span className="text-slate-400 dark:text-slate-500 font-bold">›</span>
-
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg font-extrabold bg-[#E6F4F1] dark:bg-[#132B25] text-[#004034] dark:text-[#5EEAD4] border border-[#13594A]/25 dark:border-[#205C4E]">
-                  <span>🎓 {programName}</span>
-                </span>
-
-                <span className="text-slate-400 dark:text-slate-500 font-bold">›</span>
-
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg font-bold bg-slate-100 dark:bg-[#131C1A] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#263834]">
-                  <span>
-                    {moduleStageBadge}: {moduleName}
-                  </span>
-                  {activeModule?.hours ? (
-                    <span className="text-slate-500 dark:text-slate-400 tabular-nums">
-                      ({activeModule.hours}h
-                      {activeModule.credits ? ` · ${activeModule.credits} cr.` : ''})
-                    </span>
-                  ) : null}
-                </span>
-
-                <span className="text-slate-400 dark:text-slate-500 font-bold">›</span>
-
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200/80 dark:border-amber-800/60">
-                  {isMorning ? (
-                    <SunIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                  ) : (
-                    <SunsetIcon className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
-                  )}
-                  <span>
-                    Turno {activeGroup.turno || 'Mañana'} · Secc. {activeGroup.section || 'A1'}
-                  </span>
-                </span>
-              </div>
-
-              {/* Unidad Didáctica Activa Destacada */}
-              <div className="flex flex-wrap items-center gap-2.5 pt-0.5">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs sm:text-sm font-black bg-[#13594A] dark:bg-[#5EEAD4] text-white dark:text-[#0B2922] shadow-2xs tracking-tight tabular-nums">
-                  <span>📌 {activeUnitDisplay.badge}</span>
-                </span>
-
-                <h2 className="text-base sm:text-lg font-extrabold text-[#0D382F] dark:text-[#F0FDF8] leading-snug">
-                  {activeUnitDisplay.title}
-                </h2>
-
-                {activeUnitDisplay.dateRange && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-[#132B25] text-[#004034] dark:text-[#5EEAD4] border border-emerald-200 dark:border-[#205C4E] tabular-nums">
-                    <CalendarIcon className="w-3.5 h-3.5 text-[#13594A] dark:text-[#5EEAD4]" />
-                    <span>Vigencia: {activeUnitDisplay.dateRange}</span>
-                  </span>
-                )}
-
-                {(activeUnitDisplay.hours || activeUnitDisplay.credits) && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#263834] tabular-nums">
-                    {activeUnitDisplay.hours ? <span>{activeUnitDisplay.hours} horas</span> : null}
-                    {activeUnitDisplay.hours && activeUnitDisplay.credits ? <span>·</span> : null}
-                    {activeUnitDisplay.credits ? (
-                      <span>{activeUnitDisplay.credits} créditos</span>
-                    ) : null}
-                  </span>
-                )}
-              </div>
-
-              {/* Metadatos del Aula: Docente y Participantes */}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-300 font-medium">
-                {activeGroup.teacherName && (
-                  <span>
-                    Docente:{' '}
-                    <strong className="text-slate-900 dark:text-[#F0FDF8] font-bold">
-                      {activeGroup.teacherName}
-                    </strong>
-                  </span>
-                )}
-                <span className="inline-flex items-center gap-1 tabular-nums">
-                  <StudentsIcon className="w-3.5 h-3.5 text-[#13594A] dark:text-[#5EEAD4]" />
-                  <strong className="text-slate-900 dark:text-[#F0FDF8] font-bold">
-                    {activeGroup.studentCount}
-                  </strong>{' '}
-                  estudiantes matriculados
-                </span>
-              </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-brand">
+                {moduleActive ? 'Módulo completo' : practiceActive ? 'Práctica activa · EFSRT' : `Unidad activa · ${activeUnitDisplay.badge}`}
+              </p>
+              <h2 className={`mt-0.5 break-words font-bold leading-snug text-ink ${variant === 'compact' ? 'text-lg' : 'text-xl sm:text-2xl'}`}>
+                {activeUnitDisplay.title}
+              </h2>
             </div>
           </div>
-
-          {/* Bloque derecho: Botones Claros de Cambio Jerárquico */}
-          <div className="flex flex-wrap items-center gap-2 shrink-0 self-start xl:self-center">
-            <button
-              type="button"
-              onClick={() => handleOpenStep(2)}
-              disabled={isLoading}
-              className="px-3.5 py-2 rounded-xl bg-white dark:bg-[#131C1A] hover:bg-[#F2FBF8] dark:hover:bg-[#132B25] text-slate-800 dark:text-slate-200 hover:text-[#13594A] dark:hover:text-[#5EEAD4] border border-slate-200/90 dark:border-[#263834] text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
-              title="Cambiar de Carrera Técnica o Módulo Formativo"
-            >
-              <span>🎓 Cambiar Carrera / Módulo</span>
+          <div role="group" aria-label="Cambiar contexto académico" className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => handleOpenStep(2)} disabled={isLoading} className={neutral} aria-label="Cambiar carrera o módulo">
+              Carrera o módulo
             </button>
-
-            <button
-              type="button"
-              onClick={() => handleOpenStep(3)}
-              disabled={isLoading}
-              className="px-3.5 py-2 rounded-xl bg-[#13594A] hover:bg-[#0D382F] text-white text-xs font-extrabold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-              title="Cambiar de Aula, Turno o Unidad Didáctica"
-            >
-              <span>🏫 Cambiar Aula / Turno</span>
+            <button type="button" onClick={() => handleOpenStep(3)} disabled={isLoading} className={neutral} aria-label="Cambiar aula, turno o unidad">
+              Cambiar aula
             </button>
           </div>
         </div>
+        <dl className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
+          {activeUnitDisplay.dateRange && (
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="size-4 shrink-0 text-brand" aria-hidden="true" />
+              <dt className="sr-only">Vigencia</dt>
+              <dd className="font-medium text-ink tabular-nums">{activeUnitDisplay.dateRange}</dd>
+            </div>
+          )}
+          {activeUnitDisplay.hours !== undefined && <div><dt className="sr-only">Duración</dt><dd className="font-medium text-ink tabular-nums">{activeUnitDisplay.hours} horas</dd></div>}
+          {activeUnitDisplay.credits !== undefined && <div><dt className="sr-only">Créditos</dt><dd className="font-medium text-ink tabular-nums">{activeUnitDisplay.credits} créditos</dd></div>}
+          <div><dt className="sr-only">Turno y sección</dt><dd>Turno {activeGroup.turno || 'Mañana'} · Sección {activeGroup.section || 'A1'}</dd></div>
+          {activeGroup.teacherName && <div className="min-w-0 break-words"><dt className="inline">Docente: </dt><dd className="inline font-medium text-ink">{activeGroup.teacherName}</dd></div>}
+          <div className="flex items-center gap-2">
+            <StudentsIcon className="size-4 shrink-0 text-brand" aria-hidden="true" />
+            <dt className="sr-only">Matrícula del aula</dt>
+            <dd className="tabular-nums">{activeGroup.studentCount} estudiantes</dd>
+          </div>
+        </dl>
       </div>
 
-      {/* Fila Inferior: Conmutador Rápido de Unidades Didácticas en Línea (1 clic) + Acciones Rápidas */}
-      {showInlineUnitSwitcher && activeGroup.units && activeGroup.units.length > 0 && (
-        <div className="px-4 py-3 sm:px-6 bg-slate-50/80 dark:bg-[#131C1A] flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-300 mr-1.5 flex items-center gap-1">
-              <span>Unidades del Aula ({pedagogicalUnits.length} UDs):</span>
-            </span>
-
-            {pedagogicalUnits.map((u) => {
-              const isSelected =
-                activeWorkspace?.mode === 'UNIT' && activeWorkspace?.unit === u.code;
-              const codeLabel = formatUnitCodeDisplay(u.code);
-              const dateInfo = formatReadableDateRange(u.fechaInicio, u.fechaFin);
-              const tooltip = [
-                `${codeLabel}: ${u.name || 'Unidad Didáctica'}`,
-                dateInfo ? `Fechas: ${dateInfo}` : '',
-                u.hours ? `${u.hours} horas` : '',
-                u.credits ? `${u.credits} créditos` : '',
-              ]
-                .filter(Boolean)
-                .join(' · ');
-
+      {showInlineUnitSwitcher && Boolean(activeGroup.units?.length) && (
+        <div className={`${spacing} space-y-3 border-t border-line bg-surface-alt`}>
+          <div role="group" aria-label="Unidades del aula" className="flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-sm font-semibold text-ink" aria-hidden="true">Unidades del aula</span>
+            {pedagogicalUnits.map((unit) => {
+              const selected = activeWorkspace?.mode === 'UNIT' && activeWorkspace?.unit === unit.code;
+              const label = formatUnitCodeDisplay(unit.code);
               return (
-                <button
-                  key={u.code}
-                  type="button"
-                  disabled={isLoading}
-                  onClick={() => handleQuickUnitSwitch('UNIT', u.code)}
-                  title={tooltip}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer border flex items-center gap-1.5 tabular-nums ${
-                    isSelected
-                      ? 'bg-[#13594A] text-white border-[#13594A] dark:bg-[#5EEAD4] dark:text-[#0B2922] dark:border-[#5EEAD4] shadow-xs ring-2 ring-[#13594A]/20 dark:ring-[#5EEAD4]/25'
-                      : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200/90 dark:border-[#263834] hover:border-[#13594A] dark:hover:border-[#5EEAD4] hover:text-[#13594A] dark:hover:text-[#5EEAD4]'
-                  }`}
-                >
-                  <span>{codeLabel}</span>
-                  {variant === 'full' && u.name && isSelected && (
-                    <span className="hidden md:inline font-bold opacity-95 max-w-[180px] truncate">
-                      · {u.name}
-                    </span>
-                  )}
+                <button key={unit.code} type="button" disabled={isLoading} aria-pressed={selected}
+                  onClick={() => handleQuickUnitSwitch('UNIT', unit.code)}
+                  title={unit.name} aria-label={unit.name ? `${label}: ${unit.name}` : label} className={switchClass(selected)}>
+                  {label}
                 </button>
               );
             })}
-
             {efsrtUnit && (
-              <button
-                type="button"
-                disabled={isLoading}
-                onClick={() => handleQuickUnitSwitch('PRACTICE', 'EFSRT')}
-                title={`EFSRT: Experiencias Formativas en Situaciones Reales de Trabajo (${
-                  efsrtUnit.hours || 128
-                }h)`}
-                className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer border tabular-nums ${
-                  activeWorkspace?.mode === 'PRACTICE' || activeWorkspace?.unit === 'EFSRT'
-                    ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
-                    : 'bg-amber-50/80 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 border-amber-200 dark:border-amber-800/60 hover:border-amber-500'
-                }`}
-              >
+              <button type="button" disabled={isLoading} aria-pressed={practiceActive} className={switchClass(practiceActive)}
+                onClick={() => handleQuickUnitSwitch('PRACTICE', 'EFSRT')} title={efsrtUnit.name}>
                 EFSRT
               </button>
             )}
-
             {isAdminOrSec && (
-              <button
-                type="button"
-                disabled={isLoading}
-                onClick={() => handleQuickUnitSwitch('MODULE', undefined)}
-                title="Ver y gestionar el Módulo Completo (Nóminas y Actas Consolidadas)"
-                className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer border ${
-                  activeWorkspace?.mode === 'MODULE'
-                    ? 'bg-[#13594A] text-white border-[#13594A] dark:bg-[#5EEAD4] dark:text-[#0B2922] dark:border-[#5EEAD4] shadow-xs'
-                    : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200/90 dark:border-[#263834] hover:border-[#13594A] dark:hover:border-[#5EEAD4]'
-                }`}
-              >
-                Módulo Completo
+              <button type="button" disabled={isLoading} aria-pressed={moduleActive} className={switchClass(moduleActive)}
+                onClick={() => handleQuickUnitSwitch('MODULE', undefined)}>
+                Módulo completo
               </button>
             )}
           </div>
-
-          {/* Acciones directas opcionales (Asistencia, Notas, Formatos, Matrículas) */}
           {showQuickModuleActions && (
-            <div className="flex flex-wrap items-center gap-1.5 shrink-0">
-              <button
-                type="button"
-                onClick={() => navigateSafe('asistencia')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#182220] hover:bg-[#E6F4F1] dark:hover:bg-[#132B25] text-slate-800 dark:text-slate-200 hover:text-[#13594A] dark:hover:text-[#5EEAD4] border border-slate-200 dark:border-[#263834] text-xs font-bold transition-colors cursor-pointer"
-              >
-                <AttendanceIcon className="w-3.5 h-3.5 text-[#13594A] dark:text-[#5EEAD4]" />
-                <span>Asistencia</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigateSafe('evaluacion')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#182220] hover:bg-[#E6F4F1] dark:hover:bg-[#132B25] text-slate-800 dark:text-slate-200 hover:text-[#13594A] dark:hover:text-[#5EEAD4] border border-slate-200 dark:border-[#263834] text-xs font-bold transition-colors cursor-pointer"
-              >
-                <EvaluationIcon className="w-3.5 h-3.5 text-[#13594A] dark:text-[#5EEAD4]" />
-                <span>Evaluaciones</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigateSafe('documentos')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#182220] hover:bg-[#E6F4F1] dark:hover:bg-[#132B25] text-slate-800 dark:text-slate-200 hover:text-[#13594A] dark:hover:text-[#5EEAD4] border border-slate-200 dark:border-[#263834] text-xs font-bold transition-colors cursor-pointer"
-              >
-                <DocumentIcon className="w-3.5 h-3.5 text-[#13594A] dark:text-[#5EEAD4]" />
-                <span>Formatos PDF</span>
-              </button>
-
-              {isAdminOrSec && (
-                <button
-                  type="button"
-                  onClick={() => navigateSafe('matriculas')}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#13594A] hover:bg-[#0D382F] text-white text-xs font-bold transition-colors cursor-pointer shadow-2xs"
-                >
-                  <EnrollmentIcon className="w-3.5 h-3.5" />
-                  <span>Nóminas / Matrículas</span>
+            <div role="group" aria-label="Acciones del aula" className="flex flex-wrap items-center gap-2">
+              {quickActions.map(({ route, label, Icon }) => (
+                <button key={route} type="button" onClick={() => navigateSafe(route)} className={neutral}>
+                  <Icon className="size-4 shrink-0 text-brand" aria-hidden="true" />
+                  {label}
                 </button>
-              )}
+              ))}
             </div>
           )}
         </div>
       )}
 
-      {/* Conmutador opcional de alcance Carrera vs Consolidado Institucional */}
-      {careerScopeToggle && (
-        <div className="px-4 py-2.5 sm:px-6 bg-white dark:bg-[#182220] border-t border-slate-100 dark:border-[#263834] flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834]">
-            <button
-              type="button"
-              onClick={() => careerScopeToggle.onToggle(false)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer tabular-nums ${
-                !careerScopeToggle.showAll
-                  ? 'bg-[#13594A] text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
-              }`}
-            >
-              🎯 Viendo Carrera: {programName} ({careerScopeToggle.careerCount}{' '}
-              {careerScopeToggle.unitLabel || 'matriculados'})
+      {scope && (
+        <div className={`${spacing} flex flex-wrap items-center justify-between gap-3 border-t border-line`}>
+          <div role="group" aria-label="Alcance de la consulta" className="flex flex-wrap gap-2">
+            <button type="button" aria-pressed={!scope.showAll} onClick={() => scope.onToggle(false)}
+              title={programName} className={switchClass(!scope.showAll)}>
+              Mi carrera ({scope.careerCount} {scope.unitLabel || 'matriculados'})
             </button>
-            <button
-              type="button"
-              onClick={() => careerScopeToggle.onToggle(true)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer tabular-nums ${
-                careerScopeToggle.showAll
-                  ? 'bg-[#13594A] text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
-              }`}
-            >
-              🌐 Ver Consolidado Institucional ({careerScopeToggle.totalCount})
+            <button type="button" aria-pressed={scope.showAll} onClick={() => scope.onToggle(true)} className={switchClass(scope.showAll)}>
+              Consolidado ({scope.totalCount})
             </button>
           </div>
-
-          {careerScopeToggle.onQuickEnroll && (
-            <button
-              type="button"
-              onClick={careerScopeToggle.onQuickEnroll}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
-            >
-              <span>➕ Matricular Alumno en esta Carrera</span>
+          {scope.onQuickEnroll && (
+            <button type="button" onClick={scope.onQuickEnroll} className={neutral}>
+              <EnrollmentIcon className="size-4 shrink-0 text-brand" aria-hidden="true" />
+              Matricular estudiante
             </button>
           )}
         </div>

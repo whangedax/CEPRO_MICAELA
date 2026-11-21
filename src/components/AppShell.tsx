@@ -30,7 +30,7 @@ export const AppShell: React.FC<AppShellProps> = ({
     }
   }, [currentRoute, closeSelector]);
   return (
-    <div className="min-h-screen bg-[#F6F8FA] dark:bg-[#0F1715] text-[#172B28] dark:text-[#F0FDF8] antialiased transition-colors duration-200">
+    <div className="min-h-screen bg-[var(--ui-canvas)] text-[var(--ui-ink)] antialiased transition-colors duration-200">
       {/* Sidebar fijo a la izquierda */}
       <Sidebar
         currentRoute={currentRoute}
@@ -42,7 +42,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       <AcademicWorkflowModal onNavigate={onRouteChange} />
 
       {/* Área con desplazamiento y Topbar fijo */}
-      <div className="pl-64">
+      <div className="pl-[72px] md:pl-64">
         <Topbar
           user={user}
           onLogout={onLogout}
@@ -51,7 +51,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             window.location.hash = '#/perfil';
           }}
         />
-        <main className="relative pt-24 pb-8 px-4 md:pt-28 md:pb-10 md:px-6 xl:pt-28 xl:pb-12 xl:px-10 w-full min-h-screen bg-[#F6F8FA] dark:bg-[#0F1715] transition-colors duration-200" id="main-content">
+        <main className="relative pt-36 pb-8 px-4 md:pb-10 md:px-6 lg:pt-28 xl:pt-28 xl:pb-12 xl:px-8 w-full min-h-screen bg-[var(--ui-canvas)] text-[var(--ui-ink)] transition-colors duration-200" id="main-content">
           {children}
         </main>
       </div>

@@ -11,7 +11,8 @@
  * - Identidad visual Google Stitch (#13594A, #0D3E34, #F6F8FA).
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { DashboardPhotoBand } from '../components/ui/DashboardPhotoBand';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { NavRoute } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../api/client';
@@ -48,7 +49,7 @@ const LABEL_DESCRIPTIONS: Record<string, { title: string; color: string }> = {
   'antes-nuevo-a_o': { title: 'Previo a Clonar Año', color: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800' },
   'antes-nuevo-ano': { title: 'Previo a Clonar Año', color: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800' },
   'antes-restaurar': { title: 'Preventivo de Restauración', color: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800' },
-  'antes-migrar': { title: 'Previo a Migración', color: 'bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#263834]' },
+  'antes-migrar': { title: 'Previo a Migración', color: 'bg-surface-alt text-ink border-line' },
   'cifrado-export': { title: 'Cifrado Portátil (AES-256)', color: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800' },
 };
 
@@ -80,8 +81,10 @@ function formatBytes(bytes: number): string {
 }
 
 export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNavigate }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const isDirector = user?.role === 'DIRECTOR';
+  const exportModalRef = useRef<HTMLDivElement | null>(null);
+  const previousExportFocusRef = useRef<HTMLElement | null>(null);
 
   // Estados de navegación interna
   const [activeTab, setActiveTab] = useState<ActiveTab>('list');
@@ -130,6 +133,72 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
   const [decryptPassphrase, setDecryptPassphrase] = useState<string>('');
   const [decryptError, setDecryptError] = useState<string | null>(null);
   const [isDecrypting, setIsDecrypting] = useState<boolean>(false);
+
+  // Trampa de foco, cierre con Escape y retorno de foco para modal de exportación cifrada
+  useEffect(() => {
+    if (!showExportModal) return;
+
+    previousExportFocusRef.current = document.activeElement as HTMLElement | null;
+
+    const focusFirst = () => {
+      const panel = exportModalRef.current;
+      if (!panel) return;
+      const focusables = panel.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length > 0) {
+        focusables[0].focus();
+      } else {
+        panel.focus();
+      }
+    };
+
+    const rafId = window.requestAnimationFrame(focusFirst);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (!isExporting) {
+          e.preventDefault();
+          setShowExportModal(false);
+        }
+        return;
+      }
+
+      if (e.key !== 'Tab' || !exportModalRef.current) return;
+      const focusables = Array.from(
+        exportModalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => el.offsetParent !== null);
+
+      if (focusables.length === 0) {
+        e.preventDefault();
+        return;
+      }
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first || !exportModalRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (document.activeElement === last || !exportModalRef.current.contains(document.activeElement)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener('keydown', handleKeyDown);
+      if (previousExportFocusRef.current && typeof previousExportFocusRef.current.focus === 'function') {
+        previousExportFocusRef.current.focus();
+      }
+    };
+  }, [showExportModal, isExporting]);
 
   // Cargar lista de respaldos de forma aislada
   const loadBackups = useCallback(async () => {
@@ -365,8 +434,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
       setInspectReport(null);
       setDecryptPassphrase('');
 
-      // Recargar datos actualizados
-      await loadData();
+      if (!result.requiresLogin) await loadData();
     } catch (err: any) {
       setRestoreError(err?.message || 'Error al ejecutar la restauración.');
     } finally {
@@ -386,10 +454,34 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
     );
   }, [backups, searchTerm]);
 
+  if (restoreSuccess?.requiresLogin) {
+    return (
+      <section role="status" aria-labelledby="restore-complete-title"
+        className="mx-auto max-w-xl rounded-2xl border border-line bg-surface p-6 sm:p-8 space-y-4">
+        <CheckCircleIcon className="h-10 w-10 text-brand" aria-hidden="true" />
+        <h1 id="restore-complete-title" className="text-2xl font-bold text-ink">Respaldo restaurado</h1>
+        <p className="text-base text-muted">
+          La restauración finalizó y las sesiones anteriores se cerraron.
+          Ingrese nuevamente con una cuenta del respaldo restaurado.
+        </p>
+        <p className="text-sm text-muted">
+          Copia preventiva guardada <span className="font-semibold text-ink break-all">{restoreSuccess.previousCopy}</span>
+        </p>
+        <button type="button" onClick={() => { apiClient.setToken(null); void logout(); }}
+          className="min-h-[44px] rounded-[10px] bg-brand px-5 py-3 font-semibold text-on-brand focus-visible:ring-2 focus-visible:ring-brand">
+          Volver a iniciar sesión
+        </button>
+      </section>
+    );
+  }
+
   if (!isDirector) {
     return (
-      <div className="p-8 text-center text-red-700 dark:text-rose-300 bg-red-50 dark:bg-rose-950/40 rounded-2xl border border-red-200 dark:border-rose-800/60 m-6">
-        <AlertCircleIcon className="w-8 h-8 mx-auto text-red-600 mb-2" />
+      <div
+        role="alert"
+        className="p-8 text-center text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 rounded-2xl border border-rose-200 dark:border-rose-800/60 m-6"
+      >
+        <AlertCircleIcon className="w-8 h-8 mx-auto text-rose-600 dark:text-rose-400 mb-2" />
         <h2 className="text-lg font-bold">Módulo Exclusivo de Dirección</h2>
         <p className="text-sm mt-1">
           La gestión de copias de seguridad y restauración del sistema está reservada estrictamente al rol DIRECTOR.
@@ -400,24 +492,24 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
 
   return (
     <div className="space-y-6">
-      {/* Cabecera institucional Stitch */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-[#13594A]/10 text-[#13594A] flex items-center justify-center shrink-0">
+      {/* Cabecera institucional */}
+      <DashboardPhotoBand as="header" scene="transferencia" contentClassName="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-start gap-4 min-w-0">
+          <div className="w-12 h-12 rounded-[10px] bg-brand-soft text-brand flex items-center justify-center shrink-0">
             <BackupIcon className="w-7 h-7" />
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-[#172B28]">Centro de Respaldos y Restauración</h1>
-            <p className="text-sm text-slate-500 mt-1">
+          <div className="min-w-0">
+            <h1 className="text-[30px] leading-[36px] font-bold text-ink tracking-tight">Centro de Respaldos y Restauración</h1>
+            <p className="text-sm text-muted mt-1">
               Protección y recuperación integral de la base de datos institucional de CEPRO_MICAELA.
             </p>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <span
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
                   healthLoading
-                    ? 'bg-slate-50 dark:bg-[#131C1A] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#263834]'
+                    ? 'bg-surface-alt text-muted border-line'
                     : healthError || !health
-                    ? 'bg-slate-100 dark:bg-[#182220] text-slate-700 dark:text-slate-300 border-slate-300 dark:border-[#263834]'
+                    ? 'bg-surface-alt text-muted border-line'
                     : health.healthy
                     ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
                     : health.errors.length > 0
@@ -428,9 +520,9 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${
                     healthLoading
-                      ? 'bg-slate-400'
+                      ? 'bg-muted'
                       : healthError || !health
-                      ? 'bg-slate-500'
+                      ? 'bg-muted'
                       : health.healthy
                       ? 'bg-emerald-500'
                       : health.errors.length > 0
@@ -449,55 +541,58 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                   : 'Advertencias de Integridad'}
               </span>
 
-              <span className="text-xs text-slate-500">
-                Esquema SQLite: <strong>{health ? `v${health.schemaVersion}` : '-'}</strong>
+              <span className="text-xs text-muted tabular-nums">
+                Esquema SQLite: <strong className="text-ink">{health ? `v${health.schemaVersion}` : '-'}</strong>
               </span>
 
-              <span className="text-xs text-slate-500">
-                Modo Journal: <strong>{health ? (health.journalMode || 'WAL').toUpperCase() : '-'}</strong>
+              <span className="text-xs text-muted">
+                Modo Journal: <strong className="text-ink">{health ? (health.journalMode || 'WAL').toUpperCase() : '-'}</strong>
               </span>
 
-              <span className="text-xs text-slate-500">
-                Total respaldos: <strong>{backupsLoading ? '...' : `${backups.length} archivos`}</strong>
+              <span className="text-xs text-muted tabular-nums">
+                Total respaldos: <strong className="text-ink">{backupsLoading ? '...' : `${backups.length} archivos`}</strong>
               </span>
             </div>
           </div>
         </div>
 
         <button
+          type="button"
           onClick={loadData}
           disabled={backupsLoading || healthLoading}
-          className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-[#131C1A] hover:bg-slate-100 dark:hover:bg-[#1F2D2A] border border-slate-200 dark:border-[#263834] rounded-lg transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-3.5 min-h-[44px] text-xs font-semibold text-ink bg-surface-alt hover:border-brand border border-line rounded-[10px] transition-colors disabled:opacity-50 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           title="Actualizar datos"
         >
-          <RefreshIcon className={`w-4 h-4 ${backupsLoading || healthLoading ? 'animate-spin' : ''}`} />
+          <RefreshIcon className={`w-4 h-4 text-brand ${backupsLoading || healthLoading ? 'animate-spin' : ''}`} />
           <span>Actualizar</span>
         </button>
-      </div>
+      </DashboardPhotoBand>
 
       {/* Selector de pestañas principales */}
-      <div className="flex border-b border-slate-200 dark:border-[#263834] gap-2">
+      <div className="flex flex-wrap border-b border-line gap-2">
         <button
+          type="button"
           onClick={() => setActiveTab('list')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+          className={`flex items-center gap-2 px-5 min-h-[44px] text-sm font-semibold border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-t-[10px] ${
             activeTab === 'list'
-              ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+              ? 'border-brand text-brand'
+              : 'border-transparent text-muted hover:text-ink'
           }`}
         >
           <BackupIcon className="w-4 h-4" />
           <span>Copias de Seguridad (Respaldos)</span>
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-surface-alt text-muted border border-line tabular-nums">
             {backupsLoading ? '...' : backups.length}
           </span>
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('restore')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+          className={`flex items-center gap-2 px-5 min-h-[44px] text-sm font-semibold border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-t-[10px] ${
             activeTab === 'restore'
-              ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+              ? 'border-brand text-brand'
+              : 'border-transparent text-muted hover:text-ink'
           }`}
         >
           <UploadIcon className="w-4 h-4" />
@@ -505,14 +600,15 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('health')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+          className={`flex items-center gap-2 px-5 min-h-[44px] text-sm font-semibold border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-t-[10px] ${
             activeTab === 'health'
-              ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+              ? 'border-brand text-brand'
+              : 'border-transparent text-muted hover:text-ink'
           }`}
         >
-          <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
+          <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <span>Salud e Integridad SQLite</span>
         </button>
       </div>
@@ -523,31 +619,37 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
       {activeTab === 'list' && (
         <div className="space-y-6">
           {/* Card: Generar Respaldo Inmediato */}
-          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm space-y-4 transition-colors">
-            <h2 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Crear Respaldo Manual Inmediato</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+          <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] space-y-4 transition-colors">
+            <h2 className="text-base font-bold text-ink">Crear Respaldo Manual Inmediato</h2>
+            <p className="text-xs text-muted">
               Genera una copia completa estructurada en formato JSON canónico con suma de verificación SHA-256 (checksum)
               en la carpeta privada del servicio. Incluye todos los registros académicos, configuraciones, usuarios y
               trazas de auditoría.
             </p>
 
             {createError && (
-              <div className="p-3 rounded-lg bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-800 text-red-700 dark:text-rose-300 text-xs flex items-center gap-2">
+              <div
+                role="alert"
+                className="p-3 rounded-[10px] bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2"
+              >
                 <AlertCircleIcon className="w-4 h-4 shrink-0" />
                 <span>{createError}</span>
               </div>
             )}
 
             {createSuccess && (
-              <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs space-y-1">
+              <div
+                role="status"
+                className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs space-y-1"
+              >
                 <div className="flex items-center gap-1.5 font-bold">
-                  <CheckCircleIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>¡Respaldo creado satisfactoriamente!</span>
                 </div>
                 <p>
                   Archivo: <code className="font-mono font-semibold">{createSuccess.filename}</code>
                 </p>
-                <p className="text-slate-600">
+                <p className="text-emerald-800 dark:text-emerald-300 tabular-nums">
                   Registros respaldados: <strong>{createSuccess.counts.records}</strong> | Operaciones de sincronización:{' '}
                   <strong>{createSuccess.counts.operations}</strong>
                 </p>
@@ -555,14 +657,14 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
             )}
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <input
                   type="text"
                   value={customLabel}
                   onChange={e => setCustomLabel(e.target.value)}
                   placeholder="Etiqueta opcional (ej: fin-de-semestre, antes-auditoria)"
                   maxLength={50}
-                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] rounded-lg text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full min-h-[44px] px-3 py-2 text-xs bg-surface-alt border border-line rounded-[10px] text-ink placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 />
               </div>
 
@@ -570,11 +672,11 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                 type="button"
                 onClick={handleCreateBackup}
                 disabled={isCreatingBackup}
-                className="inline-flex items-center justify-center gap-2 px-5 py-2 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D3E34] rounded-lg transition-colors disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 px-5 min-h-[44px] text-xs font-bold text-on-brand bg-brand hover:opacity-90 rounded-[10px] transition-opacity disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 {isCreatingBackup ? (
                   <>
-                    <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    <div className="w-3.5 h-3.5 border-2 border-on-brand/20 border-t-on-brand rounded-full animate-spin" />
                     <span>Generando copia...</span>
                   </>
                 ) : (
@@ -592,21 +694,21 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                   setExportError(null);
                   setExportSuccess(null);
                 }}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] bg-[#E8F3F0] dark:bg-[#132B25] hover:bg-[#D4EBE5] dark:hover:bg-[#1B3B33] border border-[#13594A]/30 dark:border-[#208B73]/50 rounded-lg transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 min-h-[44px] text-xs font-bold text-brand bg-brand-soft hover:opacity-90 border border-brand/30 rounded-[10px] transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 title="Exportar respaldo cifrado y protegido con contraseña para traslado externo (USB/nube)"
               >
-                <LockIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
+                <LockIcon className="w-4 h-4 text-brand" />
                 <span>Exportar Cifrado (.cetpro-backup)</span>
               </button>
             </div>
           </div>
 
           {/* Card: Tabla de Respaldos Existentes */}
-          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm space-y-4 transition-colors">
+          <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] space-y-4 transition-colors">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h3 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Historial de Respaldos Disponibles</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+              <div className="min-w-0">
+                <h3 className="text-base font-bold text-ink">Historial de Respaldos Disponibles</h3>
+                <p className="text-xs text-muted">
                   Archivos de seguridad almacenados localmente en la carpeta privada del sistema.
                 </p>
               </div>
@@ -617,15 +719,15 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   placeholder="Buscar respaldo..."
-                  className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full min-h-[44px] pl-9 pr-3 py-1.5 text-xs bg-surface-alt border border-line text-ink placeholder:text-muted rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 />
-                <SearchIcon className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-2.5 top-2" />
+                <SearchIcon className="w-4 h-4 text-muted absolute left-3 top-3.5" />
               </div>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border border-slate-200 dark:border-[#263834] rounded-xl overflow-hidden">
-                <thead className="bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-[#263834]">
+              <table className="w-full text-left text-xs border border-line rounded-xl overflow-hidden">
+                <thead className="bg-surface-alt text-ink font-semibold border-b border-line">
                   <tr>
                     <th className="p-3">Nombre del Archivo</th>
                     <th className="p-3">Tipo / Motivo</th>
@@ -634,28 +736,28 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     <th className="p-3 text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-[#263834]">
+                <tbody className="divide-y divide-line">
                   {backupsLoading ? (
                     <tr>
-                      <td colSpan={5} className="p-8 text-center text-slate-500 dark:text-slate-400">
+                      <td colSpan={5} className="p-8 text-center text-muted">
                         <div className="flex items-center justify-center gap-2">
-                          <div className="w-4 h-4 border-2 border-[#13594A]/20 border-t-[#13594A] rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-brand/20 border-t-brand rounded-full animate-spin" />
                           <span>Cargando historial de respaldos...</span>
                         </div>
                       </td>
                     </tr>
                   ) : backupsError ? (
                     <tr>
-                      <td colSpan={5} className="p-6 text-center bg-red-50/50 dark:bg-rose-950/20">
-                        <div className="flex flex-col items-center justify-center gap-2">
-                          <div className="flex items-center gap-2 text-red-700 dark:text-rose-400 font-semibold">
-                            <AlertCircleIcon className="w-4 h-4 text-red-500 dark:text-rose-400" />
+                      <td colSpan={5} className="p-6 text-center bg-rose-50/50 dark:bg-rose-950/20">
+                        <div className="flex flex-col items-center justify-center gap-2" role="alert">
+                          <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-semibold">
+                            <AlertCircleIcon className="w-4 h-4 text-rose-500 dark:text-rose-400" />
                             <span>Error al consultar el historial de respaldos: {backupsError}</span>
                           </div>
                           <button
                             type="button"
                             onClick={loadBackups}
-                            className="mt-1 px-3 py-1 bg-white dark:bg-[#182220] border border-red-300 dark:border-rose-900/60 text-red-700 dark:text-rose-300 rounded-lg hover:bg-red-50 dark:hover:bg-[#1F2D2A] font-semibold shadow-sm transition-colors text-xs"
+                            className="mt-1 px-3 min-h-[44px] bg-surface border border-rose-300 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 rounded-[10px] hover:bg-rose-50 dark:hover:bg-rose-950/40 font-semibold shadow-[var(--ui-shadow)] transition-colors text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                           >
                             Reintentar Carga
                           </button>
@@ -664,11 +766,11 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     </tr>
                   ) : filteredBackups.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-8 text-center text-slate-500 dark:text-slate-400">
-                        <p className="font-bold text-slate-800 dark:text-[#F0FDF8] text-sm">
+                      <td colSpan={5} className="p-8 text-center text-muted">
+                        <p className="font-bold text-ink text-sm">
                           {searchTerm ? 'No se encontraron respaldos coincidentes' : 'No hay respaldos generados aún'}
                         </p>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
+                        <span className="text-xs text-muted mt-1 block">
                           {searchTerm
                             ? 'Pruebe modificando el término de búsqueda.'
                             : 'Genere su primera copia de seguridad institucional para proteger los datos de la institución.'}
@@ -677,7 +779,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                           <button
                             type="button"
                             onClick={() => setSearchTerm('')}
-                            className="mt-3 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-[#182220] transition-colors cursor-pointer"
+                            className="mt-3 px-3.5 min-h-[44px] rounded-[10px] bg-surface-alt border border-line text-ink text-xs font-bold hover:border-brand transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                           >
                             Limpiar búsqueda
                           </button>
@@ -686,7 +788,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                             type="button"
                             onClick={handleCreateBackup}
                             disabled={isCreatingBackup}
-                            className="mt-3 px-4 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] transition-colors shadow-xs cursor-pointer"
+                            className="mt-3 px-4 min-h-[44px] rounded-[10px] bg-brand text-on-brand text-xs font-bold hover:opacity-90 transition-opacity shadow-[var(--ui-shadow)] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                           >
                             + Generar primer respaldo institucional
                           </button>
@@ -697,23 +799,23 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     filteredBackups.map(item => {
                       const desc = LABEL_DESCRIPTIONS[item.label] || {
                         title: item.label,
-                        color: 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#263834]',
+                        color: 'bg-surface-alt text-ink border-line',
                       };
 
                       return (
-                        <tr key={item.filename} className="hover:bg-slate-50/50 dark:hover:bg-[#1F2D2A] transition-colors">
-                          <td className="p-3 font-mono font-semibold text-slate-800 dark:text-[#F0FDF8] text-[11px]">
-                            <div className="flex items-center gap-1.5 flex-wrap">
+                        <tr key={item.filename} className="hover:bg-surface-alt/60 transition-colors">
+                          <td className="p-3 font-mono font-semibold text-ink text-[11px]">
+                            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                               {item.filename.endsWith('.cetpro-backup') && (
                                 <span
                                   title="Respaldo cifrado con AES-256-GCM y derivación scrypt"
-                                  className="inline-flex items-center gap-0.5 text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800/80 px-1.5 py-0.5 rounded text-[9px] font-bold"
+                                  className="inline-flex items-center gap-0.5 text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800/80 px-1.5 py-0.5 rounded-full text-[9px] font-bold"
                                 >
                                   <LockIcon className="w-2.5 h-2.5 text-amber-700 dark:text-amber-400" />
                                   AES-256
                                 </span>
                               )}
-                              <span>{item.filename}</span>
+                              <span className="break-all">{item.filename}</span>
                             </div>
                           </td>
                           <td className="p-3">
@@ -723,23 +825,23 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                               {desc.title}
                             </span>
                           </td>
-                          <td className="p-3 text-slate-600 dark:text-slate-400 text-[11px]">{formatDate(item.createdAt)}</td>
-                          <td className="p-3 text-slate-500 dark:text-slate-400 font-mono text-[11px]">{formatBytes(item.size)}</td>
-                          <td className="p-3 text-right space-x-2">
+                          <td className="p-3 text-muted text-[11px] tabular-nums">{formatDate(item.createdAt)}</td>
+                          <td className="p-3 text-muted font-mono text-[11px] tabular-nums">{formatBytes(item.size)}</td>
+                          <td className="p-3 text-right space-x-2 whitespace-nowrap">
                             <button
                               type="button"
                               onClick={() => handleInspect(item.filename)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#182220] hover:bg-slate-100 dark:hover:bg-[#1F2D2A] border border-slate-300 dark:border-[#263834] rounded-lg transition-colors"
+                              className="inline-flex items-center gap-1 px-2.5 min-h-[44px] text-[11px] font-semibold text-ink bg-surface hover:bg-surface-alt border border-line rounded-[10px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                               title="Inspeccionar integridad y contenido"
                             >
-                              <EyeIcon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                              <EyeIcon className="w-3.5 h-3.5 text-muted" />
                               <span>Verificar</span>
                             </button>
 
                             <button
                               type="button"
                               onClick={() => handleDownloadBackup(item.filename)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-[#13594A] dark:text-[#5EEAD4] bg-[#13594A]/10 dark:bg-[#132B25] hover:bg-[#13594A]/20 dark:hover:bg-[#1B3B33] rounded-lg transition-colors"
+                              className="inline-flex items-center gap-1 px-2.5 min-h-[44px] text-[11px] font-semibold text-brand bg-brand-soft hover:opacity-90 rounded-[10px] transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                               title="Descargar copia JSON a tu disco"
                             >
                               <DownloadIcon className="w-3.5 h-3.5" />
@@ -753,7 +855,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                                 setActiveTab('restore');
                                 handleInspect(item.filename);
                               }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-900/60 rounded-lg transition-colors"
+                              className="inline-flex items-center gap-1 px-2.5 min-h-[44px] text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-900/60 rounded-[10px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                               title="Preparar restauración de este archivo"
                             >
                               <span>Restaurar</span>
@@ -770,15 +872,15 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
 
           {/* Modal / Card de Inspección de Respaldo */}
           {inspectReport && (
-            <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-[#13594A]/30 dark:border-[#263834] shadow-md space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#263834] pb-3">
-                <div className="flex items-center gap-2">
+            <div className="bg-surface p-6 rounded-2xl border border-brand/30 shadow-[var(--ui-shadow)] space-y-4">
+              <div className="flex items-center justify-between border-b border-line pb-3 gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   {inspectReport.requiresPassphrase ? (
-                    <LockIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    <LockIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
                   ) : (
-                    <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   )}
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-[#F0FDF8]">
+                  <h4 className="font-bold text-sm text-ink truncate">
                     {inspectReport.requiresPassphrase ? 'Respaldo Cifrado Detectado: ' : 'Inspección de Integridad: '}
                     {inspectReport.filename || 'Archivo Subido'}
                   </h4>
@@ -790,7 +892,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     setDecryptPassphrase('');
                     setDecryptError(null);
                   }}
-                  className="text-xs text-slate-400 hover:text-slate-600 font-bold"
+                  className="min-h-[44px] px-3 rounded-[10px] text-xs text-muted hover:text-ink font-bold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   ✕ Cerrar
                 </button>
@@ -802,12 +904,15 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     Este archivo está protegido mediante cifrado institucional <strong>AES-256-GCM</strong> y derivación de clave por <strong>scrypt</strong>. Para verificar su integridad y auditar su contenido, ingrese la contraseña:
                   </p>
                   {inspectReport.hint && (
-                    <p className="text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-900/40 p-2 rounded-lg font-mono text-[11px]">
+                    <p className="text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-900/40 p-2 rounded-[10px] font-mono text-[11px]">
                       <strong>Pista de la contraseña:</strong> {inspectReport.hint}
                     </p>
                   )}
                   {decryptError && (
-                    <div className="p-2.5 rounded-lg bg-red-100 dark:bg-rose-950/40 border border-red-300 dark:border-rose-900/60 text-red-800 dark:text-rose-300 text-xs flex items-center gap-2">
+                    <div
+                      role="alert"
+                      className="p-2.5 rounded-[10px] bg-rose-100 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2"
+                    >
                       <AlertCircleIcon className="w-4 h-4 shrink-0" />
                       <span>{decryptError}</span>
                     </div>
@@ -818,17 +923,17 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                       value={decryptPassphrase}
                       onChange={e => setDecryptPassphrase(e.target.value)}
                       placeholder="Contraseña de descifrado..."
-                      className="flex-1 px-3 py-2 text-xs bg-white dark:bg-[#131C1A] border border-amber-300 dark:border-amber-800/80 rounded-lg text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      className="flex-1 min-h-[44px] px-3 py-2 text-xs bg-surface border border-amber-300 dark:border-amber-800/80 rounded-[10px] text-ink placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     />
                     <button
                       type="button"
                       onClick={handleDecryptAndInspect}
                       disabled={isDecrypting || !decryptPassphrase}
-                      className="px-4 py-2 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D3E34] rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="px-4 min-h-[44px] text-xs font-bold text-on-brand bg-brand hover:opacity-90 rounded-[10px] transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     >
                       {isDecrypting ? (
                         <>
-                          <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                          <div className="w-3.5 h-3.5 border-2 border-on-brand/20 border-t-on-brand rounded-full animate-spin" />
                           <span>Descifrando...</span>
                         </>
                       ) : (
@@ -843,62 +948,62 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
               ) : (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    <div className="bg-slate-50 dark:bg-[#131C1A] p-3 rounded-xl border border-slate-200 dark:border-[#263834] space-y-1 text-slate-700 dark:text-slate-300">
-                      <span className="font-semibold text-slate-700 dark:text-slate-200 block">Metadatos de Formato</span>
+                    <div className="bg-surface-alt p-3 rounded-xl border border-line space-y-1 text-muted">
+                      <span className="font-semibold text-ink block">Metadatos de Formato</span>
                       <p>
-                        Aplicación: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.app}</strong>
+                        Aplicación: <strong className="text-ink">{inspectReport.app}</strong>
                       </p>
-                      <p>
-                        Versión del formato: <strong className="text-slate-800 dark:text-[#F0FDF8]">v{inspectReport.version}</strong>
+                      <p className="tabular-nums">
+                        Versión del formato: <strong className="text-ink">v{inspectReport.version}</strong>
                       </p>
-                      <p>
-                        Fecha de creación: <strong className="text-slate-800 dark:text-[#F0FDF8]">{formatDate(inspectReport.at)}</strong>
+                      <p className="tabular-nums">
+                        Fecha de creación: <strong className="text-ink">{formatDate(inspectReport.at)}</strong>
                       </p>
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-[#131C1A] p-3 rounded-xl border border-slate-200 dark:border-[#263834] space-y-1 text-slate-700 dark:text-slate-300">
-                      <span className="font-semibold text-slate-700 dark:text-slate-200 block">Integridad Criptográfica</span>
+                    <div className="bg-surface-alt p-3 rounded-xl border border-line space-y-1 text-muted">
+                      <span className="font-semibold text-ink block">Integridad Criptográfica</span>
                       <p className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
                         <CheckCircleIcon className="w-3.5 h-3.5" />
                         Checksum SHA-256 válido
                       </p>
-                      <p className="font-mono text-[10px] text-slate-500 dark:text-slate-400 break-all">{inspectReport.checksum}</p>
+                      <p className="font-mono text-[10px] text-muted break-all tabular-nums">{inspectReport.checksum}</p>
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-[#131C1A] p-3 rounded-xl border border-slate-200 dark:border-[#263834] space-y-1 text-slate-700 dark:text-slate-300">
-                      <span className="font-semibold text-slate-700 dark:text-slate-200 block">Total de Registros</span>
-                      <p className="text-xl font-bold text-[#13594A] dark:text-[#5EEAD4]">{inspectReport.totalRecords}</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Todas las tablas requeridas presentes</p>
+                    <div className="bg-surface-alt p-3 rounded-xl border border-line space-y-1 text-muted">
+                      <span className="font-semibold text-ink block">Total de Registros</span>
+                      <p className="text-xl font-bold text-brand tabular-nums">{inspectReport.totalRecords}</p>
+                      <p className="text-[11px] text-muted">Todas las tablas requeridas presentes</p>
                     </div>
                   </div>
 
                   {/* Desglose de Entidades Académicas */}
-                  <div className="bg-slate-50 dark:bg-[#131C1A] p-4 rounded-xl border border-slate-200 dark:border-[#263834] text-xs">
-                    <span className="font-semibold text-slate-800 dark:text-[#F0FDF8] block mb-2">Desglose de Entidades en el Respaldo:</span>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-slate-700 dark:text-slate-300">
+                  <div className="bg-surface-alt p-4 rounded-xl border border-line text-xs">
+                    <span className="font-semibold text-ink block mb-2">Desglose de Entidades en el Respaldo:</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-muted tabular-nums">
                       <div>
-                        Estudiantes: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.students}</strong>
+                        Estudiantes: <strong className="text-ink">{inspectReport.counts.students}</strong>
                       </div>
                       <div>
-                        Matrículas: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.enrollments}</strong>
+                        Matrículas: <strong className="text-ink">{inspectReport.counts.enrollments}</strong>
                       </div>
                       <div>
-                        Aulas/Grupos: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.groups}</strong>
+                        Aulas/Grupos: <strong className="text-ink">{inspectReport.counts.groups}</strong>
                       </div>
                       <div>
-                        Calificaciones: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.grades}</strong>
+                        Calificaciones: <strong className="text-ink">{inspectReport.counts.grades}</strong>
                       </div>
                       <div>
-                        Asistencias: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.attendance}</strong>
+                        Asistencias: <strong className="text-ink">{inspectReport.counts.attendance}</strong>
                       </div>
                       <div>
-                        Carreras: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.programs}</strong>
+                        Carreras: <strong className="text-ink">{inspectReport.counts.programs}</strong>
                       </div>
                       <div>
-                        Módulos: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.modules}</strong>
+                        Módulos: <strong className="text-ink">{inspectReport.counts.modules}</strong>
                       </div>
                       <div>
-                        Cuentas de usuario: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.users}</strong>
+                        Cuentas de usuario: <strong className="text-ink">{inspectReport.counts.users}</strong>
                       </div>
                     </div>
                   </div>
@@ -917,7 +1022,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
           {/* Advertencia Crítica */}
           <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 space-y-2">
             <div className="flex items-center gap-2">
-              <AlertCircleIcon className="w-5 h-5 text-amber-600 shrink-0" />
+              <AlertCircleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
               <h3 className="font-bold text-sm">Operación de Alto Impacto: Restauración de Base de Datos</h3>
             </div>
             <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
@@ -929,8 +1034,11 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
           </div>
 
           {restoreError && (
-            <div className="p-4 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-800 text-red-700 dark:text-rose-300 text-xs flex items-center gap-2">
-              <AlertCircleIcon className="w-5 h-5 shrink-0 text-red-600" />
+            <div
+              role="alert"
+              className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2"
+            >
+              <AlertCircleIcon className="w-5 h-5 shrink-0 text-rose-600 dark:text-rose-400" />
               <div>
                 <strong>Error en la restauración:</strong>
                 <p className="mt-0.5">{restoreError}</p>
@@ -939,9 +1047,12 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
           )}
 
           {restoreSuccess && (
-            <div className="p-5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs space-y-2">
+            <div
+              role="status"
+              className="p-5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs space-y-2"
+            >
               <div className="flex items-center gap-2 font-bold text-sm">
-                <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0" />
+                <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>¡Base de datos restaurada satisfactoriamente!</span>
               </div>
               <p>
@@ -950,19 +1061,19 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                   {restoreSuccess.previousCopy}
                 </code>
               </p>
-              <p className="text-emerald-800">
+              <p className="text-emerald-800 dark:text-emerald-300">
                 Los datos han sido validados físicamente con PRAGMA quick_check y verificados con database-health.cjs.
               </p>
             </div>
           )}
 
-          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm space-y-6">
-            <h3 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Paso 1: Seleccionar Origen del Respaldo</h3>
+          <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] space-y-6">
+            <h3 className="text-base font-bold text-ink">Paso 1: Seleccionar Origen del Respaldo</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Opción A: Archivo en servidor */}
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-3">
-                <label className="block text-xs font-bold text-slate-800 dark:text-[#F0FDF8]">
+              <div className="p-4 rounded-xl bg-surface-alt border border-line space-y-3">
+                <label className="block text-xs font-bold text-ink">
                   Opción A: Elegir respaldo existente en el servidor local
                 </label>
                 <select
@@ -973,7 +1084,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     setUploadedFileContent(null);
                     if (e.target.value) handleInspect(e.target.value);
                   }}
-                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] rounded-lg text-slate-800 dark:text-[#F0FDF8] focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full min-h-[44px] px-3 py-2 text-xs bg-surface border border-line rounded-[10px] text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   <option value="">-- Seleccionar archivo del servidor --</option>
                   {backups.map(b => (
@@ -982,14 +1093,14 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     </option>
                   ))}
                 </select>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-muted">
                   Selecciona una copia generada previamente en esta computadora.
                 </p>
               </div>
 
               {/* Opción B: Subir archivo */}
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-3">
-                <label className="block text-xs font-bold text-slate-800 dark:text-[#F0FDF8]">
+              <div className="p-4 rounded-xl bg-surface-alt border border-line space-y-3">
+                <label className="block text-xs font-bold text-ink">
                   Opción B: Cargar archivo de respaldo externo (.json o .cetpro-backup)
                 </label>
                 <input
@@ -1001,13 +1112,13 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                 />
                 <label
                   htmlFor="restore-upload-input"
-                  className="cursor-pointer block border-2 border-dashed border-slate-300 dark:border-[#263834] hover:border-[#13594A] dark:hover:border-[#5EEAD4] rounded-xl p-3 text-center transition-colors bg-white dark:bg-[#182220]"
+                  className="cursor-pointer block border-2 border-dashed border-line hover:border-brand rounded-xl p-3 text-center transition-colors bg-surface focus-within:ring-2 focus-within:ring-brand"
                 >
-                  <UploadIcon className="w-5 h-5 mx-auto text-[#13594A] dark:text-[#5EEAD4] mb-1" />
-                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
+                  <UploadIcon className="w-5 h-5 mx-auto text-brand mb-1" />
+                  <span className="text-xs font-semibold text-ink block truncate">
                     {uploadedFile ? uploadedFile.name : 'Seleccionar archivo .json o .cetpro-backup'}
                   </span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">Hasta 50 MB</span>
+                  <span className="text-[10px] text-muted">Hasta 50 MB</span>
                 </label>
               </div>
             </div>
@@ -1024,12 +1135,15 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     Este respaldo está cifrado con <strong>AES-256-GCM</strong>. Debe ingresar la contraseña con la que fue creado para verificar su integridad antes de proceder a la restauración:
                   </p>
                   {inspectReport.hint && (
-                    <p className="text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-900/40 p-2 rounded-lg font-mono text-[11px]">
+                    <p className="text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-900/40 p-2 rounded-[10px] font-mono text-[11px]">
                       <strong>Pista de la contraseña:</strong> {inspectReport.hint}
                     </p>
                   )}
                   {decryptError && (
-                    <div className="p-2.5 rounded-lg bg-red-100 dark:bg-rose-950/40 border border-red-300 dark:border-rose-900/60 text-red-800 dark:text-rose-300 text-xs flex items-center gap-2">
+                    <div
+                      role="alert"
+                      className="p-2.5 rounded-[10px] bg-rose-100 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2"
+                    >
                       <AlertCircleIcon className="w-4 h-4 shrink-0" />
                       <span>{decryptError}</span>
                     </div>
@@ -1040,48 +1154,48 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                       value={decryptPassphrase}
                       onChange={e => setDecryptPassphrase(e.target.value)}
                       placeholder="Ingrese contraseña para desbloquear..."
-                      className="flex-1 px-3 py-2 text-xs bg-white dark:bg-[#131C1A] border border-amber-300 dark:border-amber-800/80 rounded-lg text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      className="flex-1 min-h-[44px] px-3 py-2 text-xs bg-surface border border-amber-300 dark:border-amber-800/80 rounded-[10px] text-ink placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     />
                     <button
                       type="button"
                       onClick={handleDecryptAndInspect}
                       disabled={isDecrypting || !decryptPassphrase}
-                      className="px-4 py-2 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D3E34] rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="px-4 min-h-[44px] text-xs font-bold text-on-brand bg-brand hover:opacity-90 rounded-[10px] transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     >
                       {isDecrypting ? 'Descifrando...' : 'Desbloquear y Auditar'}
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="p-5 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-3 text-xs">
-                  <h4 className="font-bold text-slate-900 dark:text-[#F0FDF8] flex items-center gap-1.5">
+                <div className="p-5 rounded-xl bg-surface-alt border border-line space-y-3 text-xs">
+                  <h4 className="font-bold text-ink flex items-center gap-1.5">
                     <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span>Respaldo Verificado y Apto para Restauración</span>
                   </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-slate-700 dark:text-slate-300">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-muted tabular-nums">
                     <div>
-                      Alumnos: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.students}</strong>
+                      Alumnos: <strong className="text-ink">{inspectReport.counts.students}</strong>
                     </div>
                     <div>
-                      Matrículas: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.enrollments}</strong>
+                      Matrículas: <strong className="text-ink">{inspectReport.counts.enrollments}</strong>
                     </div>
                     <div>
-                      Aulas: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.groups}</strong>
+                      Aulas: <strong className="text-ink">{inspectReport.counts.groups}</strong>
                     </div>
                     <div>
-                      Notas: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.grades}</strong>
+                      Notas: <strong className="text-ink">{inspectReport.counts.grades}</strong>
                     </div>
                     <div>
-                      Asistencias: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.attendance}</strong>
+                      Asistencias: <strong className="text-ink">{inspectReport.counts.attendance}</strong>
                     </div>
                     <div>
-                      Cuentas: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.users}</strong>
+                      Cuentas: <strong className="text-ink">{inspectReport.counts.users}</strong>
                     </div>
                     <div>
-                      Operaciones: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.counts.operations}</strong>
+                      Operaciones: <strong className="text-ink">{inspectReport.counts.operations}</strong>
                     </div>
                     <div>
-                      Total registros: <strong className="text-slate-800 dark:text-[#F0FDF8]">{inspectReport.totalRecords}</strong>
+                      Total registros: <strong className="text-ink">{inspectReport.totalRecords}</strong>
                     </div>
                   </div>
                 </div>
@@ -1103,14 +1217,14 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     value={restoreConfirmText}
                     onChange={e => setRestoreConfirmText(e.target.value)}
                     placeholder="Escribe RESTAURAR"
-                    className="w-full sm:w-64 px-3 py-2 text-xs font-bold uppercase bg-white dark:bg-[#131C1A] border border-rose-300 dark:border-rose-800/80 rounded-lg text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    className="w-full sm:w-64 min-h-[44px] px-3 py-2 text-xs font-bold uppercase bg-surface border border-rose-300 dark:border-rose-800/80 rounded-[10px] text-ink placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                   />
 
                   <button
                     type="button"
                     onClick={handleExecuteRestore}
                     disabled={isRestoring || restoreConfirmText.trim().toUpperCase() !== 'RESTAURAR'}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 px-6 min-h-[44px] text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-[10px] transition-colors shadow-[var(--ui-shadow)] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     {isRestoring ? (
                       <>
@@ -1136,11 +1250,11 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
       {/* ========================================================================= */}
       {activeTab === 'health' && (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm space-y-4 transition-colors">
+          <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] space-y-4 transition-colors">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h2 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Auditoría de Integridad SQLite</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+              <div className="min-w-0">
+                <h2 className="text-base font-bold text-ink">Auditoría de Integridad SQLite</h2>
+                <p className="text-xs text-muted">
                   Evaluación en tiempo real de la consistencia física y lógica de la base de datos institucional.
                 </p>
               </div>
@@ -1149,23 +1263,26 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                 type="button"
                 onClick={loadHealth}
                 disabled={healthLoading}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-[#131C1A] hover:bg-slate-100 dark:hover:bg-[#1F2D2A] border border-slate-200 dark:border-[#263834] rounded-lg transition-colors disabled:opacity-50 self-start sm:self-auto"
+                className="inline-flex items-center gap-1.5 px-3.5 min-h-[44px] text-xs font-semibold text-ink bg-surface-alt hover:border-brand border border-line rounded-[10px] transition-colors disabled:opacity-50 self-start sm:self-auto shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
-                <RefreshIcon className={`w-3.5 h-3.5 ${healthLoading ? 'animate-spin' : ''}`} />
+                <RefreshIcon className={`w-3.5 h-3.5 text-brand ${healthLoading ? 'animate-spin' : ''}`} />
                 <span>Reevaluar Salud</span>
               </button>
             </div>
 
             {healthError && (
-              <div className="p-4 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 text-red-700 dark:text-rose-300 text-xs flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <AlertCircleIcon className="w-4 h-4 shrink-0 text-red-500 dark:text-rose-400" />
+              <div
+                role="alert"
+                className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 text-xs flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <AlertCircleIcon className="w-4 h-4 shrink-0 text-rose-500 dark:text-rose-400" />
                   <span>No fue posible consultar el diagnóstico de la base de datos: {healthError}</span>
                 </div>
                 <button
                   type="button"
                   onClick={loadHealth}
-                  className="px-3 py-1 bg-white dark:bg-[#182220] border border-red-300 dark:border-rose-900/60 text-red-700 dark:text-rose-300 rounded-lg hover:bg-red-50 dark:hover:bg-[#1F2D2A] font-semibold shadow-sm transition-colors"
+                  className="px-3 min-h-[44px] bg-surface border border-rose-300 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 rounded-[10px] hover:bg-rose-50 dark:hover:bg-rose-950/40 font-semibold shadow-[var(--ui-shadow)] transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   Reintentar
                 </button>
@@ -1173,23 +1290,23 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-1">
-                <span className="text-slate-500 dark:text-slate-400 block">Comprobación Física (PRAGMA quick_check)</span>
+              <div className="p-4 rounded-xl bg-surface-alt border border-line space-y-1">
+                <span className="text-muted block">Comprobación Física (PRAGMA quick_check)</span>
                 <span
                   className={`text-base font-bold flex items-center gap-1 ${
                     healthLoading
-                      ? 'text-slate-500 dark:text-slate-400'
+                      ? 'text-muted'
                       : healthError || !health
-                      ? 'text-slate-600 dark:text-slate-400'
+                      ? 'text-muted'
                       : health.physicalIntegrity
                       ? 'text-emerald-700 dark:text-emerald-400'
-                      : 'text-red-700 dark:text-rose-400'
+                      : 'text-rose-700 dark:text-rose-400'
                   }`}
                 >
                   {healthLoading ? (
                     <span>CONSULTANDO...</span>
                   ) : healthError || !health ? (
-                    <span className="text-xs bg-slate-200 dark:bg-[#182220] text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded font-semibold">NO DISPONIBLE</span>
+                    <span className="text-xs bg-surface border border-line text-muted px-2 py-0.5 rounded-full font-semibold">NO DISPONIBLE</span>
                   ) : health.physicalIntegrity ? (
                     <>
                       <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -1197,46 +1314,46 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     </>
                   ) : (
                     <>
-                      <AlertCircleIcon className="w-4 h-4 text-red-600 dark:text-rose-400" />
+                      <AlertCircleIcon className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                       <span>FALLO DE INTEGRIDAD</span>
                     </>
                   )}
                 </span>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-1">
-                <span className="text-slate-500 dark:text-slate-400 block">Versión del Esquema (user_version)</span>
-                <span className="text-base font-bold text-slate-800 dark:text-[#F0FDF8]">
+              <div className="p-4 rounded-xl bg-surface-alt border border-line space-y-1">
+                <span className="text-muted block">Versión del Esquema (user_version)</span>
+                <span className="text-base font-bold text-ink tabular-nums">
                   {healthLoading ? '...' : healthError || !health ? '-' : `v${health.schemaVersion}`}
                 </span>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-1">
-                <span className="text-slate-500 dark:text-slate-400 block">Modo de Diario (journal_mode)</span>
-                <span className="text-base font-bold text-slate-800 dark:text-[#F0FDF8]">
+              <div className="p-4 rounded-xl bg-surface-alt border border-line space-y-1">
+                <span className="text-muted block">Modo de Diario (journal_mode)</span>
+                <span className="text-base font-bold text-ink">
                   {healthLoading ? '...' : healthError || !health ? '-' : (health.journalMode || 'WAL').toUpperCase()}
                 </span>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-1">
-                <span className="text-slate-500 dark:text-slate-400 block">Estado General de Salud</span>
+              <div className="p-4 rounded-xl bg-surface-alt border border-line space-y-1">
+                <span className="text-muted block">Estado General de Salud</span>
                 <span
                   className={`text-base font-bold flex items-center gap-1 ${
                     healthLoading
-                      ? 'text-slate-500 dark:text-slate-400'
+                      ? 'text-muted'
                       : healthError || !health
-                      ? 'text-slate-600 dark:text-slate-400'
+                      ? 'text-muted'
                       : health.healthy
                       ? 'text-emerald-700 dark:text-emerald-400'
                       : health.errors.length > 0
-                      ? 'text-red-700 dark:text-rose-400'
+                      ? 'text-rose-700 dark:text-rose-400'
                       : 'text-amber-700 dark:text-amber-400'
                   }`}
                 >
                   {healthLoading ? (
                     <span>CONSULTANDO...</span>
                   ) : healthError || !health ? (
-                    <span className="text-xs bg-slate-200 dark:bg-[#182220] text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded font-semibold">NO DISPONIBLE</span>
+                    <span className="text-xs bg-surface border border-line text-muted px-2 py-0.5 rounded-full font-semibold">NO DISPONIBLE</span>
                   ) : health.healthy ? (
                     <>
                       <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -1244,7 +1361,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                     </>
                   ) : health.errors.length > 0 ? (
                     <>
-                      <AlertCircleIcon className="w-4 h-4 text-red-600 dark:text-rose-400" />
+                      <AlertCircleIcon className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                       <span>ERROR DE INTEGRIDAD</span>
                     </>
                   ) : (
@@ -1259,20 +1376,20 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
 
             {/* Fila de comprobaciones físicas y ruta SQLite */}
             {health && (
-              <div className="p-3 rounded-xl bg-slate-50/80 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs flex flex-wrap items-center justify-between gap-3 text-slate-600 dark:text-slate-300">
+              <div className="p-3 rounded-xl bg-surface-alt border border-line text-xs flex flex-wrap items-center justify-between gap-3 text-muted">
                 <div className="flex flex-wrap items-center gap-4">
                   <span>
-                    quick_check: <strong className={health.quickCheck === 'ok' || health.physicalIntegrity ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-rose-400'}>{health.quickCheck || 'ok'}</strong>
+                    quick_check: <strong className={health.quickCheck === 'ok' || health.physicalIntegrity ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}>{health.quickCheck || 'ok'}</strong>
                   </span>
                   <span>
-                    integrity_check: <strong className={health.integrityCheck === 'ok' || health.physicalIntegrity ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-rose-400'}>{health.integrityCheck || 'ok'}</strong>
+                    integrity_check: <strong className={health.integrityCheck === 'ok' || health.physicalIntegrity ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}>{health.integrityCheck || 'ok'}</strong>
                   </span>
                   <span>
-                    foreign_keys: <strong className={health.foreignKeyCheck === 'ok' || !health.errors.some(e => e.code === 'FOREIGN_KEY_VIOLATION') ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-rose-400'}>{health.foreignKeyCheck || 'ok'}</strong>
+                    foreign_keys: <strong className={health.foreignKeyCheck === 'ok' || !health.errors.some(e => e.code === 'FOREIGN_KEY_VIOLATION') ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}>{health.foreignKeyCheck || 'ok'}</strong>
                   </span>
                 </div>
                 {health.dbPath && (
-                  <div className="font-mono text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-md" title={health.dbPath}>
+                  <div className="font-mono text-[11px] text-muted truncate max-w-md min-w-0" title={health.dbPath}>
                     Base: {health.dbPath}
                   </div>
                 )}
@@ -1280,23 +1397,23 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
             )}
 
             {/* Conteos de la base activa */}
-            <div className="bg-slate-50 dark:bg-[#131C1A] p-4 rounded-xl border border-slate-200 dark:border-[#263834] text-xs">
-              <h4 className="font-semibold text-slate-800 dark:text-[#F0FDF8] mb-2">Conteos Activos en SQLite:</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-slate-700 dark:text-slate-300">
+            <div className="bg-surface-alt p-4 rounded-xl border border-line text-xs">
+              <h4 className="font-semibold text-ink mb-2">Conteos Activos en SQLite:</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-muted tabular-nums">
                 <div>
-                  Estudiantes: <strong className="text-slate-800 dark:text-[#F0FDF8]">{healthLoading ? '...' : health ? health.counts.students : '-'}</strong>
+                  Estudiantes: <strong className="text-ink">{healthLoading ? '...' : health ? health.counts.students : '-'}</strong>
                 </div>
                 <div>
-                  Matrículas: <strong className="text-slate-800 dark:text-[#F0FDF8]">{healthLoading ? '...' : health ? health.counts.enrollments : '-'}</strong>
+                  Matrículas: <strong className="text-ink">{healthLoading ? '...' : health ? health.counts.enrollments : '-'}</strong>
                 </div>
                 <div>
-                  Aulas/Grupos: <strong className="text-slate-800 dark:text-[#F0FDF8]">{healthLoading ? '...' : health ? health.counts.groups : '-'}</strong>
+                  Aulas/Grupos: <strong className="text-ink">{healthLoading ? '...' : health ? health.counts.groups : '-'}</strong>
                 </div>
                 <div>
-                  Notas: <strong className="text-slate-800 dark:text-[#F0FDF8]">{healthLoading ? '...' : health ? health.counts.grades : '-'}</strong>
+                  Notas: <strong className="text-ink">{healthLoading ? '...' : health ? health.counts.grades : '-'}</strong>
                 </div>
                 <div>
-                  Asistencias: <strong className="text-slate-800 dark:text-[#F0FDF8]">{healthLoading ? '...' : health ? health.counts.attendance : '-'}</strong>
+                  Asistencias: <strong className="text-ink">{healthLoading ? '...' : health ? health.counts.attendance : '-'}</strong>
                 </div>
               </div>
             </div>
@@ -1304,17 +1421,23 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
             {/* Listado de advertencias o errores lógicos */}
             {health && (health.errors.length > 0 || health.warnings.length > 0) && (
               <div className="space-y-3 pt-2">
-                <h4 className="font-bold text-xs text-slate-800 dark:text-[#F0FDF8]">Detalles de Validación Lógica:</h4>
+                <h4 className="font-bold text-xs text-ink">Detalles de Validación Lógica:</h4>
 
                 {health.errors.map((e, idx) => (
-                  <div key={idx} className="p-3 rounded-lg bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 text-xs text-red-700 dark:text-rose-300">
-                    <strong>[ERROR {e.code}]</strong> {e.entity}:{e.id} — {e.message}
+                  <div key={idx} role="alert" className="p-3 rounded-[10px] bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-xs text-rose-700 dark:text-rose-300 flex items-start gap-2">
+                    <AlertCircleIcon className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>
+                      <strong>[ERROR {e.code}]</strong> {e.entity}:{e.id} — {e.message}
+                    </span>
                   </div>
                 ))}
 
                 {health.warnings.map((w, idx) => (
-                  <div key={idx} className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300">
-                    <strong>[ADVERTENCIA {w.code}]</strong> {w.entity}:{w.id} — {w.message}
+                  <div key={idx} className="p-3 rounded-[10px] bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                    <AlertCircleIcon className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>
+                      <strong>[ADVERTENCIA {w.code}]</strong> {w.entity}:{w.id} — {w.message}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1325,52 +1448,73 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
 
       {/* Modal: Exportar Respaldo Cifrado Portátil */}
       {showExportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white dark:bg-[#182220] rounded-2xl shadow-2xl border border-slate-200 dark:border-[#263834] max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#263834] pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-[#E8F3F0] dark:bg-[#132B25] rounded-xl text-[#13594A] dark:text-[#5EEAD4]">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="export-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isExporting) {
+              setShowExportModal(false);
+            }
+          }}
+        >
+          <div
+            ref={exportModalRef}
+            tabIndex={-1}
+            className="cepro-dialog-panel bg-surface rounded-2xl shadow-[var(--ui-shadow)] border border-line max-w-lg w-full p-6 space-y-4 focus:outline-none"
+          >
+            <div className="flex items-center justify-between border-b border-line pb-3 gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="p-2 bg-brand-soft rounded-[10px] text-brand shrink-0">
                   <LockIcon className="w-5 h-5" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-sm text-[#172B28] dark:text-[#F0FDF8]">Exportar Respaldo Cifrado Portátil</h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Formato seguro .cetpro-backup (AES-256-GCM + scrypt)</p>
+                <div className="min-w-0">
+                  <h3 id="export-modal-title" className="font-bold text-sm text-ink truncate">Exportar Respaldo Cifrado Portátil</h3>
+                  <p className="text-[11px] text-muted truncate">Formato seguro .cetpro-backup (AES-256-GCM + scrypt)</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowExportModal(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold"
+                disabled={isExporting}
+                className="min-h-[44px] px-3 rounded-[10px] text-muted hover:text-ink text-xs font-bold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 ✕ Cerrar
               </button>
             </div>
 
-            <p className="text-xs text-slate-600 dark:text-slate-300">
+            <p className="text-xs text-muted">
               Protege las contraseñas institucionales y datos confidenciales antes de copiarlos a una memoria USB o transmitirlos por red externa. Requiere una contraseña de al menos 8 caracteres para ser descifrado posteriormente.
             </p>
 
             {exportError && (
-              <div className="p-3 rounded-lg bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 text-red-700 dark:text-rose-300 text-xs flex items-center gap-2">
+              <div
+                role="alert"
+                className="p-3 rounded-[10px] bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2"
+              >
                 <AlertCircleIcon className="w-4 h-4 shrink-0" />
                 <span>{exportError}</span>
               </div>
             )}
 
             {exportSuccess && (
-              <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200 text-xs space-y-2">
+              <div
+                role="status"
+                className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200 text-xs space-y-2"
+              >
                 <div className="flex items-center gap-1.5 font-bold">
                   <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>¡Respaldo cifrado exportado exitosamente!</span>
                 </div>
-                <p>
+                <p className="tabular-nums">
                   Archivo: <code className="font-mono font-semibold">{exportSuccess.filename}</code> ({formatBytes(exportSuccess.size)})
                 </p>
                 <div className="pt-2">
                   <button
                     type="button"
                     onClick={() => handleDownloadBackup(exportSuccess.filename)}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#13594A] text-white text-xs font-bold rounded-lg hover:bg-[#0D3E34] transition-colors"
+                    className="inline-flex items-center gap-2 px-3.5 min-h-[44px] bg-brand text-on-brand text-xs font-bold rounded-[10px] hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     <DownloadIcon className="w-3.5 h-3.5" />
                     <span>Descargar Archivo Cifrado Ahora</span>
@@ -1381,7 +1525,7 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-ink mb-1">
                   Contraseña de Cifrado (mínimo 8 caracteres):
                 </label>
                 <input
@@ -1389,12 +1533,12 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                   value={exportPassphrase}
                   onChange={e => setExportPassphrase(e.target.value)}
                   placeholder="Ingrese contraseña segura..."
-                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] rounded-lg text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full min-h-[44px] px-3 py-2 text-xs bg-surface-alt border border-line rounded-[10px] text-ink placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-ink mb-1">
                   Confirmar Contraseña:
                 </label>
                 <input
@@ -1402,12 +1546,12 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                   value={exportConfirmPassphrase}
                   onChange={e => setExportConfirmPassphrase(e.target.value)}
                   placeholder="Repita la contraseña..."
-                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] rounded-lg text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full min-h-[44px] px-3 py-2 text-xs bg-surface-alt border border-line rounded-[10px] text-ink placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-ink mb-1">
                   Pista de Contraseña (opcional, visible sin descifrar):
                 </label>
                 <input
@@ -1416,16 +1560,17 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                   onChange={e => setExportHint(e.target.value)}
                   placeholder="Ej: Iniciales y año del director"
                   maxLength={100}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] rounded-lg text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full min-h-[44px] px-3 py-2 text-xs bg-surface-alt border border-line rounded-[10px] text-ink placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-[#263834]">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-line">
               <button
                 type="button"
                 onClick={() => setShowExportModal(false)}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-[#F0FDF8]"
+                disabled={isExporting}
+                className="px-4 min-h-[44px] text-xs font-semibold text-muted hover:text-ink rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 Cancelar
               </button>
@@ -1434,11 +1579,11 @@ export const RespaldoRestauracion: React.FC<RespaldoRestauracionProps> = ({ onNa
                 type="button"
                 onClick={handleExportEncryptedBackup}
                 disabled={isExporting || !exportPassphrase || !exportConfirmPassphrase}
-                className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D3E34] rounded-lg transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-5 min-h-[44px] text-xs font-bold text-on-brand bg-brand hover:opacity-90 rounded-[10px] transition-opacity disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 {isExporting ? (
                   <>
-                    <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    <div className="w-3.5 h-3.5 border-2 border-on-brand/20 border-t-on-brand rounded-full animate-spin" />
                     <span>Cifrando y generando...</span>
                   </>
                 ) : (

@@ -32,6 +32,11 @@ function inspectDatabase(core){
  for(const user of core.users())for(const a of user.assignments||[]){const g=groups.get(a.groupId);if(!g||a.units?.some(u=>!g.units.includes(u)))add(errors,'ASSIGNMENT_PARENT','users',user.id,'Asignación docente con grupo o unidades inexistentes.');if(a.section&&g&&a.section!==core.groupSection(g))add(errors,'ASSIGNMENT_SECTION','users',user.id,'La sección del docente no coincide con su aula.');}
  const academic=require('./academic-config.cjs');for(const r of core.records('documentSettings').filter(r=>academic.schema[r.scope?.kind])){try{academic.validate(core,r.scope,r.fields);}catch(error){add(errors,'ACADEMIC_CONFIG','documentSettings',r.id,error.message);}}
  for(const y of core.records('documentSettings').filter(r=>r.scope?.kind==='academicYear')){try{for(const message of academic.issues(core,y.scope.target))add(warnings,'CURRICULUM_PENDING','documentSettings',y.id,message);}catch{}}
+ for(const entity of ['groups','students','enrollments','programs','modules','grades','attendance','documentSettings','documentSubmissions','studentRequests','accountRequests','userDirectory']){
+  for(const r of core.records(entity)){
+   if(typeof r?.rev!=='string'||!r.rev.trim())add(warnings,'MISSING_REVISION',entity,r?.id||'unknown','El registro carece de revisión interna (rev); reinicie el servicio para autorrepararlo.');
+  }
+ }
  const qcRows=core.db.prepare('PRAGMA quick_check').all();
  const quickOk=qcRows.every(r=>Object.values(r)[0]==='ok');
  const icRows=core.db.prepare('PRAGMA integrity_check').all();

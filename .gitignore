@@ -9,8 +9,15 @@ Thumbs.db
 *.txt
 .vscode/
 .idea/
-.agents/
-
+# Configuración compartida de agentes; archivos privados excluidos.
+.agents/*
+!.agents/agents/
+!.agents/rules/
+!.agents/skills/
+!.agents/workflows/
+!.agents/skills-lock.json
+.agents/**/__pycache__/
+.agents/**/*.pyc
 # Carpetas temporales y de pruebas
 scratch/
 tmp/
@@ -40,8 +47,16 @@ private-data/
 demo-data/
 data/
 *.sqlite
+*.sqlite-wal
+*.sqlite-shm
+!sources/baseline/production-2026-sterile.sqlite
 tests/offline-artifacts/
 dev-sandbox/
 dist/
 
 release/
+
+# Recursos públicos de skills.
+!.agents/skills/**/LICENSE*
+!.agents/skills/ui-ux-pro-max/data/
+!.agents/skills/ui-ux-pro-max/data/**

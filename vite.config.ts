@@ -20,17 +20,17 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api': {
           target: 'http://127.0.0.1:8085',
-          changeOrigin: false,
+          changeOrigin: true,
           secure: false,
         },
         '/admision-qr': {
           target: 'http://127.0.0.1:8085',
-          changeOrigin: false,
+          changeOrigin: true,
           secure: false,
         },
         '/ficha-2026': {
           target: 'http://127.0.0.1:8085',
-          changeOrigin: false,
+          changeOrigin: true,
           secure: false,
         },
       },
@@ -41,17 +41,17 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api': {
           target: 'http://127.0.0.1:8085',
-          changeOrigin: false,
+          changeOrigin: true,
           secure: false,
         },
         '/admision-qr': {
           target: 'http://127.0.0.1:8085',
-          changeOrigin: false,
+          changeOrigin: true,
           secure: false,
         },
         '/ficha-2026': {
           target: 'http://127.0.0.1:8085',
-          changeOrigin: false,
+          changeOrigin: true,
           secure: false,
         },
       },

@@ -1,17 +1,17 @@
 {
   "templateId": "TMPL-20",
   "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/20_CERTIFICADO_MODULAR.pdf",
-  "sha256": "9638aa3398ce99109e94046acc95fe291eeb94f954817cd08dd83b57226619d0",
+  "sha256": "8611d212d8eb629f6009559937ba87f779a771d3f342808df3ff988388411f9c",
   "pages": [
     {
       "number": 1,
-      "width": 841.89,
-      "height": 595.28
+      "width": 842.04,
+      "height": 595.32
     },
     {
       "number": 2,
-      "width": 841.89,
-      "height": 595.28
+      "width": 842.04,
+      "height": 595.32
     }
   ],
   "contextType": "CERTIFICATION",

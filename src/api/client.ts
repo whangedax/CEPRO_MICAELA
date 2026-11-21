@@ -10,6 +10,14 @@
  */
 
 import {
+  SyncTransferCapabilities,
+  SyncTransferExportInput,
+  SyncTransferExportResponse,
+  SyncTransferPreviewInput,
+  SyncTransferPreviewResponse,
+  SyncTransferImportResponse,
+  WhatsAppExportResponse,
+  WhatsAppImportResponse,
   SystemStatus,
   LoginPayload,
   LoginResponse,
@@ -33,6 +41,11 @@ import {
   DocumentSubmission,
   DocumentSubmitPayload,
   DocumentReviewPayload,
+  DocumentEmissionRecord,
+  DocumentEmissionsFilters,
+  DeleteDocumentEmissionResponse,
+  SuggestDocumentRegisterCodePayload,
+  SuggestedRegistryCodes,
   SimulateUnitAttendancePayload,
   SimulateUnitAttendanceResponse,
   StudentItem,
@@ -45,6 +58,9 @@ import {
   CorrectModuleEnrollmentPayload,
   SaveGroupPayload,
   ClosureGroupPayload,
+  DeleteGroupPayload,
+  ReassignGroupTeacherPayload,
+  ReassignGroupTeacherResponse,
   SaveUserPayload,
   ArchiveUserPayload,
   ChangePasswordPayload,
@@ -495,6 +511,64 @@ class ApiClient {
   }
 
   /**
+   * Consulta el historial de emisiones documentales oficiales registradas (GET /api/document/emissions).
+   */
+  public async getDocumentEmissions(
+    filters?: DocumentEmissionsFilters
+  ): Promise<DocumentEmissionRecord[]> {
+    const params = new URLSearchParams();
+    if (filters?.groupId) params.set('groupId', filters.groupId);
+    if (filters?.templateId) params.set('templateId', filters.templateId);
+    if (filters?.enrollmentId) params.set('enrollmentId', filters.enrollmentId);
+    if (filters?.studentId) params.set('studentId', filters.studentId);
+    if (filters?.year) params.set('year', filters.year);
+    if (filters?.query) params.set('query', filters.query);
+    const query = params.toString();
+    const path = query ? `/api/document/emissions?${query}` : '/api/document/emissions';
+    const response = await this.request<
+      DocumentEmissionRecord[] | { emissions?: DocumentEmissionRecord[] }
+    >('GET', path, undefined, true);
+    if (Array.isArray(response)) {
+      return response;
+    }
+    return Array.isArray(response?.emissions) ? response.emissions : [];
+  }
+
+  /**
+   * Reimprime un duplicado exacto de un título o certificado emitido previamente (POST /api/document/emissions/reprint).
+   */
+  public async reprintDocumentEmission(id: string): Promise<Blob> {
+    return this.requestBlob('POST', '/api/document/emissions/reprint', { id }, true);
+  }
+
+  /**
+   * Elimina un título o documento emitido del historial (POST /api/document/emissions/delete)
+   * y libera su correlativo si fue emitido por error.
+   */
+  public async deleteDocumentEmission(id: string): Promise<DeleteDocumentEmissionResponse> {
+    return this.request<DeleteDocumentEmissionResponse>(
+      'POST',
+      '/api/document/emissions/delete',
+      { id },
+      true
+    );
+  }
+
+  /**
+   * Sugiere código de registro institucional y N° de Resolución Directoral 2026 (POST /api/document/register-code/suggest).
+   */
+  public async suggestDocumentRegisterCode(
+    payload: SuggestDocumentRegisterCodePayload
+  ): Promise<SuggestedRegistryCodes> {
+    return this.request<SuggestedRegistryCodes>(
+      'POST',
+      '/api/document/register-code/suggest',
+      payload,
+      true
+    );
+  }
+
+  /**
    * Registra o actualiza la ficha de un estudiante en el sistema (POST /api/students).
    */
   public async saveStudent(payload: SaveStudentPayload): Promise<StudentItem> {
@@ -544,6 +618,27 @@ class ApiClient {
   }
 
   /**
+   * Archiva formalmente un grupo académico cerrado con 0 estudiantes activos (POST /api/groups/delete).
+   */
+  public async deleteGroup(payload: DeleteGroupPayload): Promise<DashboardGroup> {
+    return this.request<DashboardGroup>('POST', '/api/groups/delete', payload, true);
+  }
+
+  /**
+   * Asigna o reasigna el docente titular de un grupo y sincroniza ficha/encabezados (POST /api/groups/assign-teacher).
+   */
+  public async reassignGroupTeacher(
+    payload: ReassignGroupTeacherPayload
+  ): Promise<ReassignGroupTeacherResponse> {
+    return this.request<ReassignGroupTeacherResponse>(
+      'POST',
+      '/api/groups/assign-teacher',
+      payload,
+      true
+    );
+  }
+
+  /**
    * Consulta el directorio de usuarios institucional (GET /api/users).
    * @param contextual Si es true, filtra por el contexto académico actual (?context=1)
    */
@@ -555,15 +650,20 @@ class ApiClient {
   /**
    * Registra o actualiza una cuenta de usuario institucional (POST /api/users).
    */
-  public async saveUser(payload: SaveUserPayload): Promise<PublicUser> {
-    return this.request<PublicUser>('POST', '/api/users', payload, true);
+  public async saveUser(payload: SaveUserPayload, contextual = false): Promise<PublicUser> {
+    const query = contextual ? '?context=1' : '?global=1';
+    return this.request<PublicUser>('POST', `/api/users${query}`, payload, true);
   }
 
   /**
-   * Archiva una cuenta de usuario con motivo auditable (POST /api/users/archive).
+   * Archiva una cuenta de usuario con motivo auditable y reemplazo opcional (POST /api/users/archive).
    */
-  public async archiveUser(payload: ArchiveUserPayload): Promise<PublicUser> {
-    return this.request<PublicUser>('POST', '/api/users/archive', payload, true);
+  public async archiveUser(
+    payload: ArchiveUserPayload,
+    contextual = false
+  ): Promise<PublicUser> {
+    const query = contextual ? '?context=1' : '?global=1';
+    return this.request<PublicUser>('POST', `/api/users/archive${query}`, payload, true);
   }
 
   /**
@@ -805,15 +905,27 @@ class ApiClient {
   /**
    * Exporta un paquete ligero optimizado para compartir por chat de WhatsApp (POST /api/network/whatsapp/export).
    */
-  public async exportWhatsAppSync(input: { syncModule?: string; asToken?: boolean; recipientUserId?: string }): Promise<any> {
-    return this.request<any>('POST', '/api/network/whatsapp/export', input, true);
+  public async getSyncTransferCapabilities(): Promise<SyncTransferCapabilities> {
+    return this.request<SyncTransferCapabilities>('GET', '/api/network/sync/capabilities', undefined, true);
+  }
+  public async exportSyncTransfer(input: SyncTransferExportInput): Promise<SyncTransferExportResponse> {
+    return this.request<SyncTransferExportResponse>('POST', '/api/network/sync/export', input, true);
+  }
+  public async previewSyncTransfer(input: SyncTransferPreviewInput): Promise<SyncTransferPreviewResponse> {
+    return this.request<SyncTransferPreviewResponse>('POST', '/api/network/sync/preview', input, true);
+  }
+  public async importSyncTransfer(input: { previewToken: string }): Promise<SyncTransferImportResponse> {
+    return this.request<SyncTransferImportResponse>('POST', '/api/network/sync/import', input, true);
+  }
+  public async exportWhatsAppSync(input: { syncModule?: string; asToken?: boolean; recipientUserId?: string }): Promise<WhatsAppExportResponse> {
+    return this.request<WhatsAppExportResponse>('POST', '/api/network/whatsapp/export', input, true);
   }
 
   /**
    * Importa datos provenientes de WhatsApp mediante código copiado o archivo (POST /api/network/whatsapp/import).
    */
-  public async importWhatsAppSync(input: { tokenText?: string; filePath?: string }): Promise<any> {
-    return this.request<any>('POST', '/api/network/whatsapp/import', input, true);
+  public async importWhatsAppSync(input: { tokenText?: string; filePath?: string }): Promise<WhatsAppImportResponse> {
+    return this.request<WhatsAppImportResponse>('POST', '/api/network/whatsapp/import', input, true);
   }
 
   // ==========================================

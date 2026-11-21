@@ -194,7 +194,7 @@ test('avances fuera de orden quedan pendientes; al reenviar su base se aplican s
     f.hub.importPackage(f.director,early,true); assert.equal(f.hub.record('grades',first.id).value,15); assert.ok(f.hub.operations().some(op=>op.body.id===firstId));
   } finally { f.close(); }
 });
-test('los 21 formatos PDF generan contenido autorizado sin marcas de agua', async () => {
+test('los 21 formatos PDF respetan la marca de borrador según sus requisitos oficiales', async () => {
   const f=fixture(); try {
     const group=f.hub.record('groups','G1'); f.hub.saveGroup(f.director,{...group,units:['UD1','UD2','UD3','UD4','UD5','UD6','UD7']});
     const { PDFDocument }=require('pdf-lib');
@@ -204,7 +204,7 @@ test('los 21 formatos PDF generan contenido autorizado sin marcas de agua', asyn
       const bytes=await renderPDF(path.resolve(__dirname,'..'),doc,f.director), pdf=await PDFDocument.load(bytes);
       assert.ok(pdf.getPageCount()>=1,templateId); fs.writeFileSync(path.join(artifacts,`${templateId}.pdf`),bytes);
       const pdfjs=await import('pdfjs-dist/legacy/build/pdf.mjs'), extracted=await pdfjs.getDocument({data:new Uint8Array(bytes),disableFontFace:true,useSystemFonts:true}).promise;
-      for(let pageNumber=1;pageNumber<=extracted.numPages;pageNumber++) { const text=(await (await extracted.getPage(pageNumber)).getTextContent()).items.map(i=>i.str).join(' '); assert.doesNotMatch(text,/BORRADOR - NO OFICIAL/,`${templateId} página ${pageNumber}`); }
+      for(let pageNumber=1;pageNumber<=extracted.numPages;pageNumber++) { const text=(await (await extracted.getPage(pageNumber)).getTextContent()).items.map(i=>i.str).join(' '); if (doc.preflight.complete) assert.doesNotMatch(text,/BORRADOR - NO OFICIAL/,`${templateId} página ${pageNumber}`); else assert.match(text,/BORRADOR - NO OFICIAL/,`${templateId} página ${pageNumber}: requisitos pendientes`); }
       await extracted.destroy?.();
     }
   } finally { f.close(); }

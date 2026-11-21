@@ -1,7 +1,7 @@
 /**
  * src/pages/Sincronizacion.tsx
  * 
- * Módulo de Sincronización USB y Transferencia Académica — CEPRO_MICAELA 2.0.
+ * Módulo de Compartir entre equipos Académica — CEPRO_MICAELA 2.0.
  * Operación 100% offline-first mediante paquetes seguros de intercambio (.cetpro)
  * y sincronización asimétrica de equipos vinculados:
  * - Cifrado robusto scrypt + AES-256-GCM para intercambio USB portátil con clave.
@@ -16,6 +16,7 @@
  * - Identidad visual Google Stitch (#13594A, #0D3E34, #F6F8FA).
  */
 
+import { DashboardPhotoBand } from '../components/ui/DashboardPhotoBand';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { NavRoute } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -49,6 +50,7 @@ import {
   AccountsIcon,
 } from '../components/ui/Icons';
 
+import { SyncTransferPanel } from '../components/network/SyncTransferPanel';
 import { DirectorNetworkPanel } from '../components/network/DirectorNetworkPanel';
 import { DocenteSyncPanel } from '../components/network/DocenteSyncPanel';
 import { SecretariaSyncPanel } from '../components/network/SecretariaSyncPanel';
@@ -213,7 +215,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      setExportError(err?.message || 'Error al exportar el archivo de sincronización.');
+      setExportError(err?.error || err?.message || 'Error al exportar el archivo de sincronización.');
     } finally {
       setIsExporting(false);
     }
@@ -258,7 +260,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
         }
         setFilePackage(parsed);
       } catch (err: any) {
-        setPreviewError(err?.message || 'El formato del archivo no es un JSON válido.');
+        setPreviewError(err?.error || err?.message || 'El formato del archivo no es un JSON válido.');
         setFilePackage(null);
       }
     };
@@ -294,7 +296,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
       setPreviewReport(report);
     } catch (err: any) {
-      setPreviewError(err?.message || 'No se pudo verificar el archivo. Compruebe la clave o el remitente.');
+      setPreviewError(err?.error || err?.message || 'No se pudo verificar el archivo. Compruebe la clave o el remitente.');
     } finally {
       setIsPreviewing(false);
     }
@@ -323,7 +325,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       // Recargar datos actualizados
       await loadData();
     } catch (err: any) {
-      setImportError(err?.message || 'Error al aplicar los datos recibidos.');
+      setImportError(err?.error || err?.message || 'Error al aplicar los datos recibidos.');
     } finally {
       setIsImporting(false);
     }
@@ -369,7 +371,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
     } catch (err: any) {
       setConflictFeedback(prev => ({
         ...prev,
-        [conflict.id]: { type: 'error', message: err?.message || 'Error al resolver el conflicto.' },
+        [conflict.id]: { type: 'error', message: err?.error || err?.message || 'Error al resolver el conflicto.' },
       }));
     } finally {
       setResolvingId(null);
@@ -391,7 +393,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert(`Error al generar paquete de sincronización: ${err?.message || err}`);
+      alert(`Error al generar paquete de sincronización: ${err?.error || err?.message || err}`);
     } finally {
       setIsExportingSyncId(null);
     }
@@ -412,7 +414,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert(`Error al generar solicitud: ${err?.message || err}`);
+      alert(`Error al generar solicitud: ${err?.error || err?.message || err}`);
     }
   };
 
@@ -455,7 +457,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
       await loadData();
     } catch (err: any) {
-      setProvisionError(err?.message || 'Error al autorizar el equipo.');
+      setProvisionError(err?.error || err?.message || 'Error al autorizar el equipo.');
     } finally {
       setIsProvisioning(false);
     }
@@ -470,30 +472,33 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
   }, [usersList]);
 
   return (
-    <div className="space-y-6">
-      {/* Cabecera institucional Stitch */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-[#13594A]/10 text-[#13594A] flex items-center justify-center shrink-0">
+    <div className="mx-auto max-w-6xl space-y-6 pb-8">
+      {/* Cabecera institucional */}
+      <DashboardPhotoBand as="header" scene="transferencia" contentClassName="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-start gap-4 min-w-0">
+          <div className="w-12 h-12 rounded-[10px] bg-brand-soft text-brand border border-line flex items-center justify-center shrink-0">
             <SyncIcon className="w-7 h-7" />
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-[#172B28] dark:text-[#F0FDF8]">Sincronización USB y Transferencia</h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Intercambio seguro de datos entre computadoras institucionales sin necesidad de internet.
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-[30px] sm:leading-[36px] font-bold text-ink tracking-tight">
+              Compartir entre equipos
+            </h1>
+            <p className="text-sm text-muted mt-1">
+              Envía o recibe información por WhatsApp o un archivo USB.
             </p>
             <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {systemStatus?.authority ? 'Equipo Institucional (Dirección)' : 'Equipo de Trabajo Vinculado'}
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800">
+                <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                {user?.role === 'DOCENTE' ? 'Docente' : user?.role === 'SECRETARIA' ? 'Secretaría' : 'Dirección'}
               </span>
               {dashboardData?.lastSync && (
-                <span className="text-xs text-slate-500">
-                  Última sincronización: <strong>{formatDate(dashboardData.lastSync?.at || dashboardData.lastSync)}</strong>
+                <span className="text-xs text-muted tabular-nums">
+                  Última sincronización: <strong className="text-ink">{formatDate(dashboardData.lastSync?.at || dashboardData.lastSync)}</strong>
                 </span>
               )}
               {dashboardData?.pending !== undefined && dashboardData.pending > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800 tabular-nums">
+                  <AlertCircleIcon className="w-3.5 h-3.5 shrink-0" />
                   {dashboardData.pending} {dashboardData.pending === 1 ? 'cambio pendiente' : 'cambios pendientes'} por entregar
                 </span>
               )}
@@ -502,58 +507,71 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
         </div>
 
         <button
+          type="button"
           onClick={loadData}
           disabled={loadingDashboard}
-          className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-[#131C1A] hover:bg-slate-100 dark:hover:bg-[#1F2D2A] border border-slate-200 dark:border-[#263834] rounded-lg transition-colors disabled:opacity-50"
+          className="min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-ink bg-surface-alt hover:bg-brand-soft border border-line rounded-[10px] transition-colors disabled:opacity-50 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           title="Actualizar estado"
         >
-          <RefreshIcon className={`w-4 h-4 ${loadingDashboard ? 'animate-spin' : ''}`} />
+          <RefreshIcon className={`w-4 h-4 shrink-0 ${loadingDashboard ? 'animate-spin' : ''}`} />
           <span>Actualizar</span>
         </button>
-      </div>
+      </DashboardPhotoBand>
 
+      {user && <SyncTransferPanel currentUser={user} onImported={loadData} />}
+      <details className="border border-line rounded-2xl bg-surface p-4 space-y-5">
+        <summary className="min-h-[44px] cursor-pointer font-semibold text-ink">Equipos y herramientas avanzadas{conflictsList.length ? ` · ${conflictsList.length} conflictos pendientes` : ''}</summary>
       {/* Selector de pestañas principales */}
-      <div className="flex border-b border-slate-200 dark:border-[#263834] gap-2">
+      <div className="flex flex-wrap border-b border-line gap-2" role="tablist" aria-label="Secciones de sincronización">
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'network'}
           onClick={() => setActiveTab('network')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+          className={`min-h-[44px] flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
             activeTab === 'network'
-              ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+              ? 'border-brand text-brand'
+              : 'border-transparent text-muted hover:text-ink'
           }`}
         >
-          <UsbIcon className="w-4 h-4" />
+          <UsbIcon className="w-4 h-4 shrink-0" />
           <span>Red Institucional Offline</span>
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-300 dark:border-emerald-700">
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-brand-soft text-brand font-bold border border-line tabular-nums">
             2026
           </span>
         </button>
 
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'exchange'}
           onClick={() => setActiveTab('exchange')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+          className={`min-h-[44px] flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
             activeTab === 'exchange'
-              ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+              ? 'border-brand text-brand'
+              : 'border-transparent text-muted hover:text-ink'
           }`}
         >
-          <SyncIcon className="w-4 h-4" />
+          <SyncIcon className="w-4 h-4 shrink-0" />
           <span>Intercambio de Aulas (USB)</span>
         </button>
 
         {isAdmin && (
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'devices'}
             onClick={() => setActiveTab('devices')}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+            className={`min-h-[44px] flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
               activeTab === 'devices'
-                ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+                ? 'border-brand text-brand'
+                : 'border-transparent text-muted hover:text-ink'
             }`}
           >
-            <LaptopIcon className="w-4 h-4" />
+            <LaptopIcon className="w-4 h-4 shrink-0" />
             <span>Equipos Vinculados</span>
             {dashboardData?.devices && dashboardData.devices.length > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-surface-alt text-ink border border-line tabular-nums">
                 {dashboardData.devices.length}
               </span>
             )}
@@ -562,17 +580,20 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
         {isDirector && (
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'conflicts'}
             onClick={() => setActiveTab('conflicts')}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+            className={`min-h-[44px] flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
               activeTab === 'conflicts'
-                ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+                ? 'border-brand text-brand'
+                : 'border-transparent text-muted hover:text-ink'
             }`}
           >
-            <AlertCircleIcon className="w-4 h-4 text-amber-500" />
+            <AlertCircleIcon className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>Conflictos y Diferencias</span>
             {conflictsList.length > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-600 text-white tabular-nums">
                 {conflictsList.length}
               </span>
             )}
@@ -601,91 +622,93 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       {activeTab === 'exchange' && (
         <div className="space-y-6">
           {/* Tarjeta explicativa de los 3 pasos offline */}
-          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors">
-            <h2 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Tus datos viajan en un archivo protegido</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+          <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] transition-colors">
+            <h2 className="text-base font-bold text-ink">Tus datos viajan en un archivo protegido</h2>
+            <p className="text-sm text-muted mt-1">
               {isTeacher
                 ? 'Guarda tus notas y asistencias. Después crea un archivo .cetpro y entrégalo a secretaría o dirección. Cuando te devuelvan otro archivo, recíbelo aquí.'
                 : 'Recibe el trabajo de los docentes y envía las matrículas o correcciones a la cuenta del docente correspondiente mediante una memoria USB.'}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] flex items-start gap-3">
-                <span className="w-7 h-7 rounded-full bg-[#13594A] dark:bg-[#107560] text-white flex items-center justify-center text-xs font-bold shrink-0">
+              <div className="p-4 rounded-2xl bg-surface-alt border border-line flex items-start gap-3">
+                <span className="w-7 h-7 rounded-full bg-brand text-on-brand flex items-center justify-center text-xs font-bold shrink-0 tabular-nums">
                   1
                 </span>
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-[#F0FDF8]">Crear el archivo</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-ink">Crear el archivo</h3>
+                  <p className="text-xs text-muted mt-1">
                     El sistema reúne los datos guardados y los encripta con una clave de seguridad.
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] flex items-start gap-3">
-                <span className="w-7 h-7 rounded-full bg-[#13594A] dark:bg-[#107560] text-white flex items-center justify-center text-xs font-bold shrink-0">
+              <div className="p-4 rounded-2xl bg-surface-alt border border-line flex items-start gap-3">
+                <span className="w-7 h-7 rounded-full bg-brand text-on-brand flex items-center justify-center text-xs font-bold shrink-0 tabular-nums">
                   2
                 </span>
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-[#F0FDF8]">Llevarlo en USB</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-ink">Llevarlo en USB</h3>
+                  <p className="text-xs text-muted mt-1">
                     Copia el archivo a tu memoria USB y entrégalo junto con la clave asignada.
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] flex items-start gap-3">
-                <span className="w-7 h-7 rounded-full bg-[#13594A] dark:bg-[#107560] text-white flex items-center justify-center text-xs font-bold shrink-0">
+              <div className="p-4 rounded-2xl bg-surface-alt border border-line flex items-start gap-3">
+                <span className="w-7 h-7 rounded-full bg-brand text-on-brand flex items-center justify-center text-xs font-bold shrink-0 tabular-nums">
                   3
                 </span>
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-[#F0FDF8]">Revisar y recibir</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-ink">Revisar y recibir</h3>
+                  <p className="text-xs text-muted mt-1">
                     La otra computadora verifica la firma y previsualiza los cambios sin duplicar datos.
                   </p>
                 </div>
               </div>
             </div>
 
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-4 italic">
+            <p className="text-xs text-muted mt-4 italic">
               * No requiere internet. Un archivo .cetpro sirve exclusivamente para actualizar computadoras de CEPRO_MICAELA.
             </p>
           </div>
 
           {/* Sub-selector Enviar / Recibir */}
-          <div className="inline-flex p-1 bg-slate-100 dark:bg-[#131C1A] rounded-xl border border-transparent dark:border-[#263834]">
+          <div className="inline-flex flex-wrap p-1 bg-surface-alt rounded-[10px] border border-line gap-1">
             <button
+              type="button"
               onClick={() => setExchangeSubTab('send')}
-              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+              className={`min-h-[44px] flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-[10px] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                 exchangeSubTab === 'send'
-                  ? 'bg-white dark:bg-[#1F2D2A] text-[#13594A] dark:text-[#5EEAD4] shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                  ? 'bg-surface text-brand shadow-[var(--ui-shadow)]'
+                  : 'text-muted hover:text-ink'
               }`}
             >
-              <DownloadIcon className="w-4 h-4" />
+              <DownloadIcon className="w-4 h-4 shrink-0" />
               <span>1. Enviar mis datos (Exportar a USB)</span>
             </button>
             <button
+              type="button"
               onClick={() => setExchangeSubTab('receive')}
-              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+              className={`min-h-[44px] flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-[10px] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                 exchangeSubTab === 'receive'
-                  ? 'bg-white dark:bg-[#1F2D2A] text-[#13594A] dark:text-[#5EEAD4] shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                  ? 'bg-surface text-brand shadow-[var(--ui-shadow)]'
+                  : 'text-muted hover:text-ink'
               }`}
             >
-              <UploadIcon className="w-4 h-4" />
+              <UploadIcon className="w-4 h-4 shrink-0" />
               <span>2. Recibir un archivo (Importar desde USB)</span>
             </button>
           </div>
 
           {/* SUBPANEL 1: ENVIAR MIS DATOS (EXPORT) */}
           {exchangeSubTab === 'send' && (
-            <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-6">
+            <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] transition-colors space-y-6">
               <div>
-                <h3 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">
+                <h3 className="text-base font-bold text-ink">
                   Enviar {isTeacher ? 'mi trabajo docente' : 'datos a otra computadora'}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs text-muted mt-1">
                   {isTeacher
                     ? 'Este archivo incluye únicamente tus aulas y unidades. Entrégalo a secretaría o dirección.'
                     : 'Elige primero para quién prepararás el archivo. Si eliges un docente, se incluirán únicamente sus aulas asignadas.'}
@@ -693,8 +716,11 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
               </div>
 
               {exportError && (
-                <div className="p-4 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 flex items-start gap-3 text-red-700 dark:text-rose-200 text-sm">
-                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-rose-400" />
+                <div
+                  role="alert"
+                  className="p-4 rounded-[10px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 flex items-start gap-3 text-red-800 dark:text-red-200 text-sm"
+                >
+                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
                   <div>
                     <h4 className="font-semibold">No se pudo crear el archivo</h4>
                     <p className="text-xs mt-0.5">{exportError}</p>
@@ -705,14 +731,15 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Selector de destinatario (Solo Admin) */}
                 {!isTeacher && (
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <div className="min-w-0">
+                    <label htmlFor="sync-export-recipient" className="block text-xs font-semibold text-ink mb-1">
                       ¿Quién recibirá este archivo?
                     </label>
                     <select
+                      id="sync-export-recipient"
                       value={exportRecipientId}
                       onChange={e => setExportRecipientId(e.target.value)}
-                      className="w-full px-3 py-2 text-sm bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
+                      className="w-full min-h-[44px] px-3 py-2 text-sm bg-surface-alt border border-line text-ink rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     >
                       <option value="">Dirección o secretaría: archivo institucional</option>
                       {teacherUsers.map(u => (
@@ -721,21 +748,22 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                         </option>
                       ))}
                     </select>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                    <p className="text-[11px] text-muted mt-1">
                       Si preparas el archivo para un docente específico, solo contendrá sus grupos autorizados.
                     </p>
                   </div>
                 )}
 
                 {/* Selector de aula / grupo */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <div className="min-w-0">
+                  <label htmlFor="sync-export-group" className="block text-xs font-semibold text-ink mb-1">
                     ¿Qué aula quieres incluir?
                   </label>
                   <select
+                    id="sync-export-group"
                     value={exportGroupId}
                     onChange={e => setExportGroupId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
+                    className="w-full min-h-[44px] px-3 py-2 text-sm bg-surface-alt border border-line text-ink rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     <option value="">Todas mis aulas permitidas</option>
                     {(dashboardData?.groups || []).map(g => (
@@ -744,32 +772,34 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                       </option>
                     ))}
                   </select>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                  <p className="text-[11px] text-muted mt-1">
                     Para una sincronización completa y confiable, se recomienda dejar seleccionadas todas las aulas.
                   </p>
                 </div>
               </div>
 
               {/* Clave de protección */}
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-3">
-                <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200">
+              <div className="p-4 rounded-2xl bg-surface-alt border border-line space-y-3">
+                <label htmlFor="sync-export-passphrase" className="block text-xs font-semibold text-ink">
                   Clave que protege este archivo (mínimo 8 caracteres)
                 </label>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <div className="relative flex-1">
+                  <div className="relative flex-1 min-w-0">
                     <input
+                      id="sync-export-passphrase"
                       type={showExportPassphrase ? 'text' : 'password'}
                       value={exportPassphrase}
                       onChange={e => setExportPassphrase(e.target.value)}
                       minLength={8}
-                      className="w-full pl-9 pr-10 py-2 text-sm font-mono bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
+                      className="w-full min-h-[44px] pl-9 pr-11 py-2 text-sm font-mono bg-surface border border-line text-ink rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                       placeholder="Ingrese o use la clave generada"
                     />
-                    <KeyIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <KeyIcon className="w-4 h-4 text-muted absolute left-3 top-3.5" />
                     <button
                       type="button"
                       onClick={() => setShowExportPassphrase(!showExportPassphrase)}
-                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                      aria-label={showExportPassphrase ? 'Ocultar clave' : 'Mostrar clave'}
+                      className="absolute right-1.5 top-1.5 min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded-[8px] text-muted hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                       title={showExportPassphrase ? 'Ocultar clave' : 'Mostrar clave'}
                     >
                       <EyeIcon className="w-4 h-4" />
@@ -779,7 +809,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                   <button
                     type="button"
                     onClick={handleCopyPassphrase}
-                    className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#182220] hover:bg-slate-100 dark:hover:bg-[#263834] border border-slate-300 dark:border-[#263834] rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                    className="min-h-[44px] px-3.5 py-2 text-xs font-semibold text-ink bg-surface hover:bg-brand-soft border border-line rounded-[10px] transition-colors flex items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     <span>{copiedKey ? '¡Copiada!' : 'Copiar clave'}</span>
                   </button>
@@ -787,12 +817,12 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                   <button
                     type="button"
                     onClick={() => setExportPassphrase(generateSecurePassphrase())}
-                    className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#182220] hover:bg-slate-100 dark:hover:bg-[#263834] border border-slate-300 dark:border-[#263834] rounded-lg transition-colors"
+                    className="min-h-[44px] px-3.5 py-2 text-xs font-semibold text-ink bg-surface hover:bg-brand-soft border border-line rounded-[10px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     Generar otra
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-muted">
                   El sistema prepara una clave segura para proteger el paquete. Comunícala a la persona que recibirá el USB;
                   no es tu contraseña de inicio de sesión.
                 </p>
@@ -806,11 +836,11 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                     id="include-accounts"
                     checked={exportIncludeAccounts}
                     onChange={e => setExportIncludeAccounts(e.target.checked)}
-                    className="mt-0.5 rounded text-[#13594A] focus:ring-[#13594A]"
+                    className="mt-0.5 rounded text-brand focus:ring-brand"
                   />
-                  <label htmlFor="include-accounts" className="text-xs text-slate-700">
+                  <label htmlFor="include-accounts" className="text-xs text-ink">
                     <span className="font-semibold">También enviar solicitudes de creación o cambio de cuentas</span>
-                    <span className="block text-[11px] text-slate-400">
+                    <span className="block text-[11px] text-muted">
                       Se entregan cifradas para que el equipo institucional las autorice formalmente.
                     </span>
                   </label>
@@ -823,16 +853,16 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                   type="button"
                   onClick={handleExportExchange}
                   disabled={isExporting || exportPassphrase.length < 8}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[#13594A] hover:bg-[#0D3E34] rounded-xl transition-all shadow-sm disabled:opacity-50"
+                  className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-on-brand bg-brand hover:opacity-95 rounded-[10px] transition-opacity disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   {isExporting ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-current/20 border-t-current rounded-full animate-spin" />
                       <span>Cifrando y preparando archivo...</span>
                     </>
                   ) : (
                     <>
-                      <DownloadIcon className="w-4 h-4" />
+                      <DownloadIcon className="w-4 h-4 shrink-0" />
                       <span>Crear y descargar archivo .cetpro</span>
                     </>
                   )}
@@ -841,29 +871,29 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
               {/* Resumen tras exportar con éxito */}
               {exportSuccess && (
-                <div className="p-5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-900 dark:text-emerald-200 space-y-3">
+                <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-900 dark:text-emerald-200 space-y-3">
                   <div className="flex items-center gap-2">
                     <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <h4 className="font-bold text-sm">¡Archivo preparado con éxito para llevar en USB!</h4>
                   </div>
-                  <p className="text-xs text-emerald-800 dark:text-emerald-300">
+                  <p className="text-xs">
                     Busca el archivo descargado en tu carpeta de <strong>Descargas</strong>, cópialo a tu memoria USB y entrégalo
-                    junto con su clave: <code className="bg-emerald-100 dark:bg-[#132B25] px-1.5 py-0.5 rounded font-mono font-bold text-emerald-900 dark:text-emerald-200">{exportPassphrase}</code>.
+                    junto con su clave: <code className="bg-emerald-100 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded font-mono font-bold tabular-nums">{exportPassphrase}</code>.
                   </p>
 
-                  <div className="bg-white/80 dark:bg-[#131C1A] p-3 rounded-lg border border-emerald-200 dark:border-emerald-800/60 text-xs text-slate-700 dark:text-slate-300 space-y-1">
-                    <div className="font-semibold text-slate-900 dark:text-[#F0FDF8]">Resumen del paquete exportado:</div>
-                    <div>Emisor: <strong>{exportSuccess.summary.sender?.name}</strong> ({exportSuccess.summary.sender?.role})</div>
+                  <div className="bg-surface p-3 rounded-[10px] border border-line text-xs text-muted space-y-1">
+                    <div className="font-semibold text-ink">Resumen del paquete exportado:</div>
+                    <div>Emisor: <strong className="text-ink">{exportSuccess.summary.sender?.name}</strong> ({exportSuccess.summary.sender?.role})</div>
                     {exportSuccess.summary.recipient && (
-                      <div>Destinatario: <strong>{exportSuccess.summary.recipient.name}</strong> ({exportSuccess.summary.recipient.role})</div>
+                      <div>Destinatario: <strong className="text-ink">{exportSuccess.summary.recipient.name}</strong> ({exportSuccess.summary.recipient.role})</div>
                     )}
-                    <div>Aulas incluidas: <strong>{exportSuccess.summary.groups?.length || 0} aulas</strong></div>
+                    <div className="tabular-nums">Aulas incluidas: <strong className="text-ink">{exportSuccess.summary.groups?.length || 0} aulas</strong></div>
                     <div className="pt-1">
-                      <span className="font-semibold">Contenido:</span>
-                      <ul className="list-disc list-inside mt-0.5 space-y-0.5 text-slate-600 dark:text-slate-400">
+                      <span className="font-semibold text-ink">Contenido:</span>
+                      <ul className="list-disc list-inside mt-0.5 space-y-0.5 tabular-nums">
                         {Object.entries(exportSuccess.summary.counts || {}).map(([key, count]) => (
                           <li key={key}>
-                            <strong>{count}</strong> {ENTITY_LABELS[key] || key}
+                            <strong className="text-ink">{count}</strong> {ENTITY_LABELS[key] || key}
                           </li>
                         ))}
                       </ul>
@@ -876,22 +906,25 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
           {/* SUBPANEL 2: RECIBIR UN ARCHIVO (IMPORT) */}
           {exchangeSubTab === 'receive' && (
-            <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-6">
+            <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] transition-colors space-y-6">
               <div>
-                <h3 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Recibir un archivo desde USB</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Elige el archivo <code>.cetpro</code> que te entregaron y escribe su clave de seguridad para revisar los cambios
+                <h3 className="text-base font-bold text-ink">Recibir un archivo desde USB</h3>
+                <p className="text-xs text-muted mt-1">
+                  Elige el archivo <code className="font-mono text-brand">.cetpro</code> que te entregaron y escribe su clave de seguridad para revisar los cambios
                   antes de incorporarlos a tu base local.
                 </p>
               </div>
 
               {previewError && (
-                <div className="p-4 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 flex items-start gap-3 text-red-700 dark:text-rose-200 text-sm">
-                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-rose-400" />
+                <div
+                  role="alert"
+                  className="p-4 rounded-[10px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 flex items-start gap-3 text-red-800 dark:text-red-200 text-sm"
+                >
+                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
                   <div>
                     <h4 className="font-semibold">No se pudo verificar el archivo</h4>
                     <p className="text-xs mt-0.5">{previewError}</p>
-                    <p className="text-[11px] text-red-500 dark:text-rose-300 mt-1">
+                    <p className="text-[11px] opacity-90 mt-1">
                       Comprueba que hayas seleccionado el archivo correcto y que la clave coincida exactamente.
                     </p>
                   </div>
@@ -899,8 +932,11 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
               )}
 
               {importError && (
-                <div className="p-4 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 flex items-start gap-3 text-red-700 dark:text-rose-200 text-sm">
-                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-rose-400" />
+                <div
+                  role="alert"
+                  className="p-4 rounded-[10px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 flex items-start gap-3 text-red-800 dark:text-red-200 text-sm"
+                >
+                  <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
                   <div>
                     <h4 className="font-semibold">Error al aplicar la actualización</h4>
                     <p className="text-xs mt-0.5">{importError}</p>
@@ -910,11 +946,11 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Selector de archivo */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <div className="min-w-0">
+                  <label htmlFor="exchange-file-input" className="block text-xs font-semibold text-ink mb-1">
                     Archivo de actualización (.cetpro)
                   </label>
-                  <div className="border-2 border-dashed border-slate-300 dark:border-[#263834] rounded-xl p-4 text-center hover:border-[#13594A] dark:hover:border-[#5EEAD4] transition-colors bg-slate-50/50 dark:bg-[#131C1A]">
+                  <div className="border-2 border-dashed border-line rounded-2xl p-4 text-center hover:border-brand transition-colors bg-surface-alt">
                     <input
                       type="file"
                       id="exchange-file-input"
@@ -922,14 +958,14 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                       onChange={handleFileChange}
                       className="hidden"
                     />
-                    <label htmlFor="exchange-file-input" className="cursor-pointer flex flex-col items-center gap-2">
-                      <div className="w-10 h-10 rounded-full bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] flex items-center justify-center">
+                    <label htmlFor="exchange-file-input" className="cursor-pointer flex flex-col items-center gap-2 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-brand-soft text-brand border border-line flex items-center justify-center">
                         <UploadIcon className="w-5 h-5" />
                       </div>
-                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      <span className="text-xs font-bold text-ink truncate max-w-full">
                         {selectedFile ? selectedFile.name : 'Seleccionar archivo .cetpro'}
                       </span>
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                      <span className="text-[11px] text-muted tabular-nums">
                         {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : 'Hasta 32 MB'}
                       </span>
                     </label>
@@ -937,29 +973,31 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                 </div>
 
                 {/* Clave de protección */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <div className="min-w-0">
+                  <label htmlFor="sync-receive-passphrase" className="block text-xs font-semibold text-ink mb-1">
                     Clave que acompaña al archivo
                   </label>
                   <div className="relative">
                     <input
+                      id="sync-receive-passphrase"
                       type={showReceivePassphrase ? 'text' : 'password'}
                       value={receivePassphrase}
                       onChange={e => setReceivePassphrase(e.target.value)}
-                      className="w-full pl-9 pr-10 py-2.5 text-sm font-mono bg-white dark:bg-[#0F1715] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#34D399]"
+                      className="w-full min-h-[44px] pl-9 pr-11 py-2.5 text-sm font-mono bg-surface-alt border border-line text-ink rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                       placeholder="Escribe la clave entregada"
                     />
-                    <KeyIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                    <KeyIcon className="w-4 h-4 text-muted absolute left-3 top-3.5" />
                     <button
                       type="button"
                       onClick={() => setShowReceivePassphrase(!showReceivePassphrase)}
-                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                      aria-label={showReceivePassphrase ? 'Ocultar clave' : 'Mostrar clave'}
+                      className="absolute right-1.5 top-1.5 min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded-[8px] text-muted hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                       title={showReceivePassphrase ? 'Ocultar clave' : 'Mostrar clave'}
                     >
                       <EyeIcon className="w-4 h-4" />
                     </button>
                   </div>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                  <p className="text-[11px] text-muted mt-1">
                     Solicita esta clave a la persona que generó el paquete en la otra computadora.
                   </p>
                 </div>
@@ -971,16 +1009,16 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                   type="button"
                   onClick={handlePreviewPackage}
                   disabled={isPreviewing || !filePackage}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#182220] hover:bg-slate-50 dark:hover:bg-[#263834] border border-slate-300 dark:border-[#263834] rounded-xl transition-all shadow-sm disabled:opacity-50"
+                  className="min-h-[44px] inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-ink bg-surface-alt hover:bg-brand-soft border border-line rounded-[10px] transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   {isPreviewing ? (
                     <>
-                      <div className="w-3.5 h-3.5 border-2 border-slate-500/20 border-t-slate-700 dark:border-t-slate-200 rounded-full animate-spin" />
+                      <div className="w-3.5 h-3.5 border-2 border-current/20 border-t-current rounded-full animate-spin" />
                       <span>Verificando firma y descifrando...</span>
                     </>
                   ) : (
                     <>
-                      <EyeIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
+                      <EyeIcon className="w-4 h-4 text-brand shrink-0" />
                       <span>Revisar archivo (Vista previa)</span>
                     </>
                   )}
@@ -989,53 +1027,56 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
               {/* Tarjeta de vista previa / verificación */}
               {previewReport && (
-                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200 dark:border-[#263834] pb-3">
-                    <div className="flex items-center gap-2">
-                      <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0" />
-                      <h4 className="font-bold text-sm text-slate-900 dark:text-[#F0FDF8]">
+                <div className="p-6 rounded-2xl bg-surface-alt border border-line space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-line pb-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <h4 className="font-bold text-sm text-ink">
                         {previewReport.duplicatePackage
                           ? 'Esta actualización ya fue recibida anteriormente'
                           : 'Este archivo ha sido verificado con éxito'}
                       </h4>
                     </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      Fecha de exportación: <strong>{formatDate(previewReport.createdAt)}</strong>
+                    <span className="text-xs text-muted tabular-nums shrink-0">
+                      Fecha de exportación: <strong className="text-ink">{formatDate(previewReport.createdAt)}</strong>
                     </span>
                   </div>
 
                   {previewReport.duplicatePackage ? (
-                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs">
-                      <strong>Aviso:</strong> Esta computadora ya tiene aplicada esta actualización exacta. No necesitas
-                      recibirla nuevamente.
+                    <div className="p-4 rounded-[10px] bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs flex items-start gap-2">
+                      <AlertCircleIcon className="w-4 h-4 shrink-0 mt-0.5" />
+                      <div>
+                        <strong>Aviso:</strong> Esta computadora ya tiene aplicada esta actualización exacta. No necesitas
+                        recibirla nuevamente.
+                      </div>
                     </div>
                   ) : (
                     <>
                       {/* Metadatos del emisor y contenido */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                        <div className="bg-white dark:bg-[#131C1A] p-3 rounded-xl border border-slate-200 dark:border-[#263834] space-y-1">
-                          <span className="font-semibold text-slate-800 dark:text-[#F0FDF8] block">Emisor del paquete:</span>
-                          <p className="text-slate-600 dark:text-slate-300">
-                            <strong>{previewReport.description?.sender?.name || 'Personal institucional'}</strong>{' '}
+                        <div className="bg-surface p-3 rounded-[10px] border border-line space-y-1 min-w-0">
+                          <span className="font-semibold text-ink block">Emisor del paquete:</span>
+                          <p className="text-muted">
+                            <strong className="text-ink">{previewReport.description?.sender?.name || 'Personal institucional'}</strong>{' '}
                             ({previewReport.description?.sender?.role})
                           </p>
                           {previewReport.description?.recipient && (
-                            <p className="text-slate-500 dark:text-slate-400">
+                            <p className="text-muted">
                               Destinado a: {previewReport.description.recipient.name} ({previewReport.description.recipient.role})
                             </p>
                           )}
                         </div>
 
-                        <div className="bg-white dark:bg-[#131C1A] p-3 rounded-xl border border-slate-200 dark:border-[#263834] space-y-1">
-                          <span className="font-semibold text-slate-800 dark:text-[#F0FDF8] block">Impacto en tu computadora:</span>
-                          <p className="text-slate-600 dark:text-slate-300">
-                            <strong>{previewReport.recordsToAdd ?? previewReport.newRecords ?? 0}</strong> registros nuevos por agregar.
+                        <div className="bg-surface p-3 rounded-[10px] border border-line space-y-1 min-w-0">
+                          <span className="font-semibold text-ink block">Impacto en tu computadora:</span>
+                          <p className="text-muted tabular-nums">
+                            <strong className="text-ink">{previewReport.recordsToAdd ?? previewReport.newRecords ?? 0}</strong> registros nuevos por agregar.
                           </p>
-                          <p className="text-slate-600 dark:text-slate-300">
-                            <strong>{previewReport.recordsToUpdate ?? previewReport.updates ?? 0}</strong> registros por actualizar.
+                          <p className="text-muted tabular-nums">
+                            <strong className="text-ink">{previewReport.recordsToUpdate ?? previewReport.updates ?? 0}</strong> registros por actualizar.
                           </p>
                           {previewReport.accountUpdate && (
-                            <p className="text-indigo-600 dark:text-indigo-400 font-medium">
+                            <p className="text-brand font-medium">
                               * Incluye actualización de credenciales o perfil de usuario.
                             </p>
                           )}
@@ -1044,9 +1085,9 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
                       {/* Desglose de aulas */}
                       {previewReport.description?.groups && previewReport.description.groups.length > 0 && (
-                        <div className="bg-white dark:bg-[#131C1A] p-3 rounded-xl border border-slate-200 dark:border-[#263834] text-xs">
-                          <span className="font-semibold text-slate-800 dark:text-[#F0FDF8] block mb-1">Aulas incluidas:</span>
-                          <ul className="list-disc list-inside space-y-0.5 text-slate-600 dark:text-slate-300">
+                        <div className="bg-surface p-3 rounded-[10px] border border-line text-xs">
+                          <span className="font-semibold text-ink block mb-1">Aulas incluidas:</span>
+                          <ul className="list-disc list-inside space-y-0.5 text-muted">
                             {previewReport.description.groups.map(g => (
                               <li key={g.id}>{g.name}</li>
                             ))}
@@ -1056,9 +1097,10 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
                       {/* Diferencias o pendientes */}
                       {Boolean((previewReport.conflicts && previewReport.conflicts > 0) || (previewReport.pending && previewReport.pending > 0)) && (
-                        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 space-y-1">
-                          <div className="font-bold">
-                            Atención: {previewReport.conflicts || 0} diferencias y {previewReport.pending || 0} datos pendientes.
+                        <div className="p-3.5 rounded-[10px] bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 space-y-1">
+                          <div className="font-bold flex items-center gap-1.5 tabular-nums">
+                            <AlertCircleIcon className="w-4 h-4 shrink-0" />
+                            <span>Atención: {previewReport.conflicts || 0} diferencias y {previewReport.pending || 0} datos pendientes.</span>
                           </div>
                           <p>
                             Se recibirán todos los cambios compatibles. Las diferencias se conservarán de forma segura para
@@ -1067,25 +1109,25 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                         </div>
                       )}
 
-                      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-[#263834]">
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                          * Hasta este momento <strong>no se ha modificado</strong> tu base de datos SQLite.
+                      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-line">
+                        <span className="text-xs text-muted">
+                          * Hasta este momento <strong className="text-ink">no se ha modificado</strong> tu base de datos SQLite.
                         </span>
 
                         <button
                           type="button"
                           onClick={handleApplyPackage}
                           disabled={isImporting}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D3E34] rounded-xl transition-all shadow-sm disabled:opacity-50"
+                          className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-on-brand bg-brand hover:opacity-95 rounded-[10px] transition-opacity disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                         >
                           {isImporting ? (
                             <>
-                              <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                              <div className="w-3.5 h-3.5 border-2 border-current/20 border-t-current rounded-full animate-spin" />
                               <span>Aplicando cambios con respaldo previo...</span>
                             </>
                           ) : (
                             <>
-                              <CheckCircleIcon className="w-4 h-4" />
+                              <CheckCircleIcon className="w-4 h-4 shrink-0" />
                               <span>Recibir los cambios revisados</span>
                             </>
                           )}
@@ -1098,19 +1140,20 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
               {/* Éxito tras aplicar */}
               {importSuccess && (
-                <div className="p-5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 space-y-2">
+                <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 space-y-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircleIcon className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <h4 className="font-bold text-sm">¡Actualización recibida con éxito en esta computadora!</h4>
                   </div>
-                  <p className="text-xs text-emerald-800 dark:text-emerald-300">
-                    Se creó una copia de seguridad automática (<code>antes-sincronizar</code>) antes de modificar los datos.
+                  <p className="text-xs tabular-nums">
+                    Se creó una copia de seguridad automática (<code className="font-mono">antes-sincronizar</code>) antes de modificar los datos.
                     Se incorporaron <strong>{importSuccess.recordsToAdd ?? importSuccess.newRecords ?? 0}</strong> datos nuevos y{' '}
                     <strong>{importSuccess.recordsToUpdate ?? importSuccess.updates ?? 0}</strong> actualizaciones.
                   </p>
                   {Boolean(importSuccess.conflicts || importSuccess.pending) && (
-                    <p className="text-xs text-amber-700">
-                      Las diferencias detectadas fueron retenidas para auditoría y resolución por Dirección.
+                    <p className="text-xs text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                      <AlertCircleIcon className="w-4 h-4 shrink-0" />
+                      <span>Las diferencias detectadas fueron retenidas para auditoría y resolución por Dirección.</span>
                     </p>
                   )}
                 </div>
@@ -1125,9 +1168,9 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       {/* ========================================================================= */}
       {activeTab === 'devices' && isAdmin && (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-4">
-            <h2 className="text-base font-bold text-[#172B28] dark:text-[#F0FDF8]">Equipos Vinculados a la Institución</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+          <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] transition-colors space-y-4">
+            <h2 className="text-base font-bold text-ink">Equipos Vinculados a la Institución</h2>
+            <p className="text-xs text-muted">
               {systemStatus?.authority
                 ? 'Como equipo central de Dirección, puedes autorizar laptops de docentes y secretaría para sincronizar mediante lotes cifrados asimétricos.'
                 : 'Esta computadora es un equipo cliente vinculado. Puedes exportar tu lote de sincronización asimétrica hacia el equipo institucional.'}
@@ -1135,8 +1178,8 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
             {/* Listado de equipos vinculados */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border border-slate-200 dark:border-[#263834] rounded-xl overflow-hidden">
-                <thead className="bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-[#263834]">
+              <table className="w-full text-left text-xs border border-line rounded-[10px] overflow-hidden">
+                <thead className="bg-surface-alt text-muted font-semibold border-b border-line">
                   <tr>
                     <th className="p-3">ID del Equipo</th>
                     <th className="p-3">Usuario Asignado</th>
@@ -1144,23 +1187,23 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                     <th className="p-3 text-right">Acción</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-[#263834]">
+                <tbody className="divide-y divide-line">
                   {(dashboardData?.devices || []).length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="p-4 text-center text-slate-400 dark:text-slate-500">
+                      <td colSpan={4} className="p-4 text-center text-muted">
                         No hay equipos secundarios vinculados actualmente.
                       </td>
                     </tr>
                   ) : (
                     (dashboardData?.devices || []).map(device => (
-                      <tr key={device.id} className="hover:bg-slate-50/50 dark:hover:bg-[#1F2D2A] transition-colors">
-                        <td className="p-3 font-mono font-bold text-slate-800 dark:text-[#F0FDF8]">
+                      <tr key={device.id} className="hover:bg-surface-alt/60 transition-colors">
+                        <td className="p-3 font-mono font-bold text-ink tabular-nums">
                           {device.id.slice(0, 12)}...
                         </td>
-                        <td className="p-3 text-slate-700 dark:text-slate-300">
-                          <strong className="text-slate-900 dark:text-[#F0FDF8]">{device.name || 'Sin nombre'}</strong> ({device.userId})
+                        <td className="p-3 text-muted">
+                          <strong className="text-ink">{device.name || 'Sin nombre'}</strong> ({device.userId})
                         </td>
-                        <td className="p-3 font-mono text-slate-500 dark:text-slate-400 text-[11px]">
+                        <td className="p-3 font-mono text-muted text-[11px] tabular-nums">
                           {device.signingKey?.slice(0, 20)}...
                         </td>
                         <td className="p-3 text-right">
@@ -1168,9 +1211,9 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                             type="button"
                             onClick={() => handleExportSyncForDevice(device.id, device.name)}
                             disabled={isExportingSyncId === device.id}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#13594A] dark:text-[#5EEAD4] bg-[#13594A]/10 dark:bg-[#132B25] hover:bg-[#13594A]/20 dark:hover:bg-[#183B33] rounded-lg transition-colors disabled:opacity-50"
+                            className="min-h-[44px] inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-brand bg-brand-soft hover:opacity-90 border border-line rounded-[10px] transition-opacity disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                           >
-                            <DownloadIcon className="w-3.5 h-3.5" />
+                            <DownloadIcon className="w-3.5 h-3.5 shrink-0" />
                             <span>{isExportingSyncId === device.id ? 'Exportando...' : 'Exportar lote SYNC'}</span>
                           </button>
                         </td>
@@ -1184,28 +1227,33 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
           {/* Sección de vinculación de nuevo equipo (Director) */}
           {isDirector && (
-            <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-4">
-              <h3 className="text-sm font-bold text-[#172B28] dark:text-[#F0FDF8]">Autorizar nuevo equipo docente o secretaría</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                El usuario del nuevo equipo debe generar su archivo <code>SOLICITUD_VINCULACION.json</code> y traértelo en USB.
+            <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] transition-colors space-y-4">
+              <h3 className="text-sm font-bold text-ink">Autorizar nuevo equipo docente o secretaría</h3>
+              <p className="text-xs text-muted">
+                El usuario del nuevo equipo debe generar su archivo <code className="font-mono text-brand">SOLICITUD_VINCULACION.json</code> y traértelo en USB.
                 Pega el contenido o selecciona el usuario correspondiente para emitir su credencial digital institucional.
               </p>
 
               {provisionError && (
-                <div className="p-3 rounded-lg bg-red-50 dark:bg-rose-950/30 border border-red-200 dark:border-rose-900/50 text-red-700 dark:text-rose-200 text-xs">
-                  {provisionError}
+                <div
+                  role="alert"
+                  className="p-3 rounded-[10px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-800 dark:text-red-200 text-xs flex items-start gap-2"
+                >
+                  <AlertCircleIcon className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                  <span>{provisionError}</span>
                 </div>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <div className="min-w-0">
+                  <label htmlFor="sync-provision-user" className="block text-xs font-semibold text-ink mb-1">
                     Cuenta de usuario a asignar:
                   </label>
                   <select
+                    id="sync-provision-user"
                     value={provisionUserId}
                     onChange={e => setProvisionUserId(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                    className="w-full min-h-[44px] px-3 py-2 text-xs bg-surface-alt border border-line text-ink rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     <option value="">-- Seleccionar usuario registrado --</option>
                     {usersList
@@ -1218,16 +1266,17 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <div className="min-w-0">
+                  <label htmlFor="sync-provision-json" className="block text-xs font-semibold text-ink mb-1">
                     Contenido de la solicitud (JSON):
                   </label>
                   <textarea
+                    id="sync-provision-json"
                     rows={3}
                     value={deviceRequestJson}
                     onChange={e => setDeviceRequestJson(e.target.value)}
                     placeholder='{"app":"CEPRO_MICAELA","type":"DEVICE_REQUEST",...}'
-                    className="w-full p-2 text-xs font-mono bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                    className="w-full p-2.5 text-xs font-mono bg-surface-alt border border-line text-ink rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   />
                 </div>
               </div>
@@ -1237,18 +1286,21 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                   type="button"
                   onClick={handleProvisionDevice}
                   disabled={isProvisioning || !provisionUserId || !deviceRequestJson.trim()}
-                  className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D3E34] rounded-lg transition-colors disabled:opacity-50"
+                  className="min-h-[44px] inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-on-brand bg-brand hover:opacity-95 rounded-[10px] transition-opacity disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   {isProvisioning ? 'Firmando credencial...' : 'Firmar y descargar autorización institucional'}
                 </button>
               </div>
 
               {provisionResult && (
-                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs space-y-1">
-                  <strong>¡Equipo autorizado con éxito!</strong>
-                  <p>
-                    Entrega el archivo <code>AUTORIZACION_VINCULACION.json</code> al usuario para que lo aplique en su computadora.
-                  </p>
+                <div className="p-4 rounded-[10px] bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs flex items-start gap-2">
+                  <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <strong>¡Equipo autorizado con éxito!</strong>
+                    <p>
+                      Entrega el archivo <code className="font-mono">AUTORIZACION_VINCULACION.json</code> al usuario para que lo aplique en su computadora.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -1256,17 +1308,17 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
           {/* Generar solicitud si este no es el hub */}
           {!systemStatus?.authority && (
-            <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-4">
-              <h3 className="text-sm font-bold text-[#172B28] dark:text-[#F0FDF8]">Solicitar vinculación de este equipo</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+            <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] transition-colors space-y-4">
+              <h3 className="text-sm font-bold text-ink">Solicitar vinculación de este equipo</h3>
+              <p className="text-xs text-muted">
                 Genera la clave pública de este equipo para entregarla a Dirección en un USB.
               </p>
               <button
                 type="button"
                 onClick={handleGenerateMyDeviceRequest}
-                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-[#131C1A] hover:bg-slate-200 dark:hover:bg-[#1F2D2A] border border-slate-300 dark:border-[#263834] rounded-lg transition-colors"
+                className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-ink bg-surface-alt hover:bg-brand-soft border border-line rounded-[10px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
-                <DownloadIcon className="w-4 h-4" />
+                <DownloadIcon className="w-4 h-4 shrink-0" />
                 <span>Generar y descargar solicitud de vinculación</span>
               </button>
             </div>
@@ -1279,22 +1331,22 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
       {/* ========================================================================= */}
       {activeTab === 'conflicts' && isDirector && (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm transition-colors space-y-2">
-            <h2 className="text-base font-bold text-[#172B28]">Bandeja de Conflictos y Diferencias Académicas</h2>
-            <p className="text-xs text-slate-500">
+          <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] transition-colors space-y-2">
+            <h2 className="text-base font-bold text-ink">Bandeja de Conflictos y Diferencias Académicas</h2>
+            <p className="text-xs text-muted">
               Cuando dos computadoras modifican el mismo registro de forma concurrente, el sistema no borra datos ni
               sobreescribe a ciegas. Los cambios incompatibles se retienen aquí para que Dirección decida qué valor conservar.
-              Cada decisión genera automáticamente una copia de seguridad SQLite (<code>antes-resolver-conflicto</code>).
+              Cada decisión genera automáticamente una copia de seguridad SQLite (<code className="font-mono">antes-resolver-conflicto</code>).
             </p>
           </div>
 
           {conflictsList.length === 0 ? (
-            <div className="bg-white dark:bg-[#182220] p-12 text-center rounded-2xl border border-slate-200 dark:border-[#263834] shadow-sm space-y-3">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-[#5EEAD4] flex items-center justify-center mx-auto">
+            <div className="bg-surface p-12 text-center rounded-2xl border border-line shadow-[var(--ui-shadow)] space-y-3">
+              <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center mx-auto">
                 <CheckCircleIcon className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-[#F0FDF8]">No hay conflictos pendientes</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+              <h3 className="text-sm font-bold text-ink">No hay conflictos pendientes</h3>
+              <p className="text-xs text-muted max-w-md mx-auto">
                 Todas las notas, asistencias, matrículas y registros se encuentran plenamente conciliados y sincronizados.
               </p>
             </div>
@@ -1309,58 +1361,65 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                 return (
                   <div
                     key={conflict.id}
-                    className="bg-white dark:bg-[#182220] p-6 rounded-2xl border border-amber-200 dark:border-amber-800/60 shadow-sm space-y-4"
+                    className="bg-surface p-6 rounded-2xl border border-amber-300 dark:border-amber-800/60 shadow-[var(--ui-shadow)] space-y-4"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 dark:border-[#263834] pb-3">
-                      <div>
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 uppercase">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-line pb-3">
+                      <div className="min-w-0">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 uppercase">
+                          <AlertCircleIcon className="w-3 h-3 shrink-0" />
                           Conflicto: {entityName}
                         </span>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] mt-1">
-                          Registro ID: <code className="font-mono text-xs">{conflict.operation?.body?.recordId}</code>
+                        <h4 className="text-sm font-bold text-ink mt-1 truncate">
+                          Registro ID: <code className="font-mono text-xs tabular-nums">{conflict.operation?.body?.recordId}</code>
                         </h4>
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Propuesto por: <strong className="text-slate-700 dark:text-slate-200">{actorName}</strong> ({actorRole})
+                      <div className="text-xs text-muted shrink-0">
+                        Propuesto por: <strong className="text-ink">{actorName}</strong> ({actorRole})
                       </div>
                     </div>
 
                     {feedback && (
                       <div
-                        className={`p-3 rounded-xl text-xs ${
+                        role={feedback.type === 'error' ? 'alert' : undefined}
+                        className={`p-3 rounded-[10px] text-xs flex items-start gap-2 ${
                           feedback.type === 'success'
-                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                            : 'bg-red-50 dark:bg-rose-950/40 text-red-800 dark:text-rose-200 border border-red-200 dark:border-rose-900/60'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800'
+                            : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800/60'
                         }`}
                       >
-                        {feedback.message}
+                        {feedback.type === 'success' ? (
+                          <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                        ) : (
+                          <AlertCircleIcon className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                        )}
+                        <span>{feedback.message}</span>
                       </div>
                     )}
 
                     {/* Comparativa Lado a Lado */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Valor local */}
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] space-y-2">
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <div className="p-4 rounded-2xl bg-surface-alt border border-line space-y-2 min-w-0">
+                        <div className="flex items-center justify-between text-xs font-bold text-ink">
                           <span>1. Valor Local Actual en este equipo:</span>
-                          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                          <span className="text-[10px] text-muted font-mono tabular-nums">
                             Rev: {conflict.current?.rev || 'Sin rev'}
                           </span>
                         </div>
-                        <pre className="p-2.5 bg-white dark:bg-[#0F1715] rounded-lg border border-slate-200 dark:border-[#263834] text-[11px] font-mono text-slate-800 dark:text-slate-200 overflow-x-auto max-h-40">
+                        <pre className="p-2.5 bg-canvas rounded-[10px] border border-line text-[11px] font-mono text-ink overflow-x-auto max-h-40 tabular-nums">
                           {JSON.stringify(conflict.current || {}, null, 2)}
                         </pre>
                       </div>
 
                       {/* Valor entrante */}
-                      <div className="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 space-y-2">
-                        <div className="flex items-center justify-between text-xs font-bold text-blue-900 dark:text-blue-300">
+                      <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 space-y-2 min-w-0">
+                        <div className="flex items-center justify-between text-xs font-bold text-blue-900 dark:text-blue-200">
                           <span>2. Valor Recibido en el archivo:</span>
-                          <span className="text-[10px] text-blue-500 dark:text-blue-400 font-mono">
+                          <span className="text-[10px] text-blue-700 dark:text-blue-300 font-mono tabular-nums">
                             Rev: {conflict.operation?.body?.value?.rev || 'Sin rev'}
                           </span>
                         </div>
-                        <pre className="p-2.5 bg-white dark:bg-[#0F1715] rounded-lg border border-blue-200 dark:border-blue-900/50 text-[11px] font-mono text-slate-800 dark:text-slate-200 overflow-x-auto max-h-40">
+                        <pre className="p-2.5 bg-canvas rounded-[10px] border border-blue-200 dark:border-blue-900/50 text-[11px] font-mono text-ink overflow-x-auto max-h-40 tabular-nums">
                           {JSON.stringify(conflict.operation?.body?.value || {}, null, 2)}
                         </pre>
                       </div>
@@ -1368,10 +1427,11 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
 
                     {/* Motivo obligatorio para auditar la decisión */}
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      <label htmlFor={`conflict-reason-${conflict.id}`} className="block text-xs font-semibold text-ink mb-1">
                         Motivo obligatorio de la resolución (auditoría institucional):
                       </label>
                       <input
+                        id={`conflict-reason-${conflict.id}`}
                         type="text"
                         value={conflictReasons[conflict.id] || ''}
                         onChange={e =>
@@ -1381,7 +1441,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                           }))
                         }
                         placeholder="Ejemplo: Se conserva la nota firmada en físico tras revisión con el docente titular"
-                        className="w-full px-3 py-2 text-xs bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+                        className="w-full min-h-[44px] px-3 py-2 text-xs bg-surface-alt border border-line text-ink rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                       />
                     </div>
 
@@ -1391,7 +1451,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                         type="button"
                         onClick={() => handleResolveConflict(conflict, 'KEEP_LOCAL')}
                         disabled={resolvingId === conflict.id}
-                        className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#1F2D2A] hover:bg-slate-100 dark:hover:bg-[#263834] border border-slate-300 dark:border-[#263834] rounded-xl transition-colors disabled:opacity-50"
+                        className="w-full sm:w-auto min-h-[44px] px-4 py-2 text-xs font-bold text-ink bg-surface-alt hover:bg-brand-soft border border-line rounded-[10px] transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                       >
                         {resolvingId === conflict.id ? 'Procesando...' : 'Conservar valor local (KEEP_LOCAL)'}
                       </button>
@@ -1400,7 +1460,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
                         type="button"
                         onClick={() => handleResolveConflict(conflict, 'ACCEPT_INCOMING')}
                         disabled={resolvingId === conflict.id}
-                        className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-white bg-[#13594A] dark:bg-[#107560] hover:bg-[#0D3E34] dark:hover:bg-[#0B5C4B] rounded-xl transition-colors disabled:opacity-50"
+                        className="w-full sm:w-auto min-h-[44px] px-4 py-2 text-xs font-bold text-on-brand bg-brand hover:opacity-95 rounded-[10px] transition-opacity disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                       >
                         {resolvingId === conflict.id ? 'Procesando...' : 'Aceptar cambio entrante (ACCEPT_INCOMING)'}
                       </button>
@@ -1412,6 +1472,7 @@ export const Sincronizacion: React.FC<SincronizacionProps> = ({ onNavigate }) =>
           )}
         </div>
       )}
+      </details>
     </div>
   );
 };

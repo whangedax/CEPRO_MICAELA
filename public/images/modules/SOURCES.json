@@ -1,0 +1,34 @@
+[
+  {
+    "file": "transferencia.webp",
+    "author": "cottonbro studio",
+    "source": "https://www.pexels.com/photo/hand-putting-a-usb-flash-drive-in-a-laptop-5474284/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 20212,
+    "sha256": "b09d7ddc27ef2992d977938b815a79e883b467c1d13b40d0c2396f06354bd71a"
+  },
+  {
+    "file": "calendario.webp",
+    "author": "Edge Training",
+    "source": "https://www.pexels.com/photo/a-person-marking-a-day-in-a-calendar-17668838/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 24510,
+    "sha256": "e7a7321bdbaa2c15f1ddace5597ecc0e4fe0ab46017124e9199e1324b557a34b"
+  },
+  {
+    "file": "evaluacion.webp",
+    "author": "Andy Barbour",
+    "source": "https://www.pexels.com/photo/a-person-marking-a-test-paper-6684373/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 41340,
+    "sha256": "8d4902750a4b331e8c267fd598d0d9d603d1ffbf0674fab4a1f3507e9e763322"
+  },
+  {
+    "file": "inscripcion.webp",
+    "author": "Tima Miroshnichenko",
+    "source": "https://www.pexels.com/photo/a-person-filling-up-a-form-on-a-clipboard-6169648/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 27584,
+    "sha256": "fe8e6662e6287c3fc935b79c04bad215708b986db868a2ac86c5b3a50d34d8da"
+  }
+]

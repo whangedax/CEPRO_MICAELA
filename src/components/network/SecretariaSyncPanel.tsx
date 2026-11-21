@@ -9,7 +9,7 @@ interface SecretariaSyncPanelProps {
 
 export const SecretariaSyncPanel: React.FC<SecretariaSyncPanelProps> = ({ currentUser }) => {
   const [usbPath, setUsbPath] = useState<string>('D:\\');
-  const [passphrase, setPassphrase] = useState<string>('ClaveInstitucional2026!');
+  const [passphrase, setPassphrase] = useState<string>('');
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [exportResult, setExportResult] = useState<BatchExportResponse | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export const SecretariaSyncPanel: React.FC<SecretariaSyncPanelProps> = ({ curren
       });
       setExportResult(res);
     } catch (err: any) {
-      setExportError(err.message || 'Error al exportar lote al USB.');
+      setExportError(err?.error || err?.message || 'Error al exportar lote al USB.');
     } finally {
       setIsExporting(false);
     }
@@ -49,7 +49,7 @@ export const SecretariaSyncPanel: React.FC<SecretariaSyncPanelProps> = ({ curren
       });
       setScanResult(res);
     } catch (err: any) {
-      setScanError(err.message || 'Error al escanear la memoria USB.');
+      setScanError(err?.error || err?.message || 'Error al escanear la memoria USB.');
     } finally {
       setIsScanning(false);
     }
@@ -65,7 +65,7 @@ export const SecretariaSyncPanel: React.FC<SecretariaSyncPanelProps> = ({ curren
       setImportResult(res);
       handleScan();
     } catch (err: any) {
-      setScanError(err.message || 'Error al importar actualizaciones.');
+      setScanError(err?.error || err?.message || 'Error al importar actualizaciones.');
     } finally {
       setIsImporting(false);
     }
@@ -74,74 +74,82 @@ export const SecretariaSyncPanel: React.FC<SecretariaSyncPanelProps> = ({ curren
   return (
     <div className="space-y-6">
       {/* Banner de Estado de Secretaría */}
-      <div className="bg-[#131F1C] border border-[#233530] rounded-xl p-5 text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      <div className="bg-surface border border-line rounded-2xl p-6 shadow-[var(--ui-shadow)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-            <span className="text-xs uppercase font-bold tracking-wider text-emerald-400">Estación de Secretaría Académica</span>
+            <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span className="text-xs uppercase font-bold tracking-wider text-brand">Estación de Secretaría Académica</span>
           </div>
-          <h2 className="text-lg font-bold text-emerald-100">{currentUser.name}</h2>
-          <p className="text-xs text-gray-400">
+          <h2 className="text-lg font-bold text-ink truncate">{currentUser.name}</h2>
+          <p className="text-xs text-muted mt-0.5">
             Padrón Institucional 2026 | Matrículas, estudiantes y nóminas oficiales
           </p>
         </div>
-        <div className="text-right">
-          <span className="text-xs bg-[#1C2C28] text-emerald-300 border border-[#2E453F] px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5">
-            <UsbIcon className="w-4 h-4 text-emerald-400" />
+        <div className="shrink-0">
+          <span className="text-xs bg-brand-soft text-brand border border-line px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-semibold">
+            <UsbIcon className="w-4 h-4 shrink-0" />
             Canal USB con Causalidad Académica
           </span>
         </div>
       </div>
 
       {/* Configuración de Ruta USB */}
-      <div className="bg-[#101A17] border border-[#1C2B27] rounded-xl p-5">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+      <div className="bg-surface border border-line rounded-2xl p-6 shadow-[var(--ui-shadow)]">
+        <label
+          htmlFor="secretaria-usb-path"
+          className="block text-xs font-semibold uppercase tracking-wider text-muted mb-2"
+        >
           Ruta o Letra de Unidad de la Memoria USB Institucional:
         </label>
         <div className="flex flex-col sm:flex-row gap-3">
           <input
+            id="secretaria-usb-path"
             type="text"
             value={usbPath}
             onChange={(e) => setUsbPath(e.target.value)}
             placeholder="Ejemplo: D:\ o E:\"
-            className="flex-1 bg-[#162320] border border-[#253934] rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-emerald-500"
+            className="flex-1 min-w-0 min-h-[44px] bg-surface-alt border border-line rounded-[10px] px-4 py-2.5 text-ink font-mono text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           />
           <button
+            type="button"
             onClick={handleScan}
             disabled={isScanning}
-            className="bg-[#182824] hover:bg-[#203530] text-emerald-300 border border-[#2A433D] px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+            className="min-h-[44px] bg-surface-alt hover:bg-brand-soft text-ink border border-line px-4 py-2.5 rounded-[10px] text-sm font-semibold flex items-center justify-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50"
           >
-            <RefreshIcon className={`w-4 h-4 ${isScanning ? 'animate-spin' : ''}`} />
-            {isScanning ? 'Escaneando...' : 'Escanear USB'}
+            <RefreshIcon className={`w-4 h-4 shrink-0 ${isScanning ? 'animate-spin' : ''}`} />
+            <span>{isScanning ? 'Escaneando...' : 'Escanear USB'}</span>
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Exportar Matrículas hacia Dirección */}
-        <div className="bg-[#101A17] border border-[#1C2B27] rounded-xl p-6 flex flex-col justify-between">
-          <div>
-            <div className="w-10 h-10 rounded-lg bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 flex items-center justify-center mb-4">
+        <div className="bg-surface border border-line rounded-2xl p-6 shadow-[var(--ui-shadow)] flex flex-col justify-between">
+          <div className="min-w-0">
+            <div className="w-10 h-10 rounded-[10px] bg-brand-soft border border-line text-brand flex items-center justify-center mb-4">
               <StudentsIcon className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-white mb-2">Exportar Estudiantes y Matrículas</h3>
-            <p className="text-xs text-gray-400 leading-relaxed mb-4">
-              Exporta en un paquete institucional firmado todas las altas de participantes, matrículas activas y rectificaciones registradas en Secretaría hacia la bandeja <code className="text-emerald-300">para-direccion/</code>.
+            <h3 className="text-base font-bold text-ink mb-2">Exportar Estudiantes y Matrículas</h3>
+            <p className="text-xs text-muted leading-relaxed mb-4">
+              Exporta en un paquete institucional firmado todas las altas de participantes, matrículas activas y rectificaciones registradas en Secretaría hacia la bandeja <code className="text-brand font-mono">para-direccion/</code>.
             </p>
 
             {exportError && (
-              <div className="p-3 mb-4 rounded-lg bg-red-950/40 border border-red-800/60 text-red-200 text-xs flex items-start gap-2">
-                <AlertCircleIcon className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+              <div
+                role="alert"
+                className="p-3 mb-4 rounded-[10px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-800 dark:text-red-200 text-xs flex items-start gap-2"
+              >
+                <AlertCircleIcon className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                 <span>{exportError}</span>
               </div>
             )}
 
             {exportResult && (
-              <div className="p-3 mb-4 rounded-lg bg-emerald-950/40 border border-emerald-800/60 text-emerald-200 text-xs flex items-start gap-2">
-                <CheckCircleIcon className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-emerald-300">¡Lote de Secretaría exportado!</p>
-                  <p className="text-[11px] text-gray-300 mt-1">
+              <div className="p-3 mb-4 rounded-[10px] bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200 text-xs flex items-start gap-2">
+                <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="font-semibold">¡Lote de Secretaría exportado!</p>
+                  <p className="text-[11px] opacity-90 mt-1 tabular-nums">
                     Operaciones: {exportResult.totalOperations} | Archivos: {exportResult.totalPackages ?? (exportResult as any).packagesCount ?? exportResult.packages?.length ?? 0}
                   </p>
                 </div>
@@ -150,42 +158,46 @@ export const SecretariaSyncPanel: React.FC<SecretariaSyncPanelProps> = ({ curren
           </div>
 
           <button
+            type="button"
             onClick={handleExport}
             disabled={isExporting}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/30 transition-all text-sm"
+            className="w-full min-h-[44px] bg-brand hover:opacity-95 disabled:opacity-50 text-on-brand font-semibold py-2.5 px-4 rounded-[10px] flex items-center justify-center gap-2 transition-opacity text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
-            <DownloadIcon className="w-4 h-4" />
-            {isExporting ? 'Exportando Lote de Secretaría...' : 'Exportar Matrículas al USB →'}
+            <DownloadIcon className="w-4 h-4 shrink-0" />
+            <span>{isExporting ? 'Exportando Lote de Secretaría...' : 'Exportar Matrículas al USB →'}</span>
           </button>
         </div>
 
         {/* Recibir Actualizaciones de Dirección */}
-        <div className="bg-[#101A17] border border-[#1C2B27] rounded-xl p-6 flex flex-col justify-between">
-          <div>
-            <div className="w-10 h-10 rounded-lg bg-purple-950/60 border border-purple-800/40 text-purple-400 flex items-center justify-center mb-4">
+        <div className="bg-surface border border-line rounded-2xl p-6 shadow-[var(--ui-shadow)] flex flex-col justify-between">
+          <div className="min-w-0">
+            <div className="w-10 h-10 rounded-[10px] bg-brand-soft border border-line text-brand flex items-center justify-center mb-4">
               <UploadIcon className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-white mb-2">Recibir Aprobaciones de Dirección</h3>
-            <p className="text-xs text-gray-400 leading-relaxed mb-4">
-              Recibe del USB las resoluciones rectorales, apertura de aulas o actualizaciones curriculares depositadas por la Dirección en <code className="text-purple-300">para-secretaria/</code>.
+            <h3 className="text-base font-bold text-ink mb-2">Recibir Aprobaciones de Dirección</h3>
+            <p className="text-xs text-muted leading-relaxed mb-4">
+              Recibe del USB las resoluciones rectorales, apertura de aulas o actualizaciones curriculares depositadas por la Dirección en <code className="text-brand font-mono">para-secretaria/</code>.
             </p>
 
             {scanError && (
-              <div className="p-3 mb-4 rounded-lg bg-red-950/40 border border-red-800/60 text-red-200 text-xs flex items-start gap-2">
-                <AlertCircleIcon className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+              <div
+                role="alert"
+                className="p-3 mb-4 rounded-[10px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-800 dark:text-red-200 text-xs flex items-start gap-2"
+              >
+                <AlertCircleIcon className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                 <span>{scanError}</span>
               </div>
             )}
 
             {scanResult && (
-              <div className="p-3 mb-4 rounded-lg bg-[#142320] border border-[#203934] text-xs">
-                <div className="flex justify-between items-center text-gray-300 mb-1">
+              <div className="p-3 mb-4 rounded-[10px] bg-surface-alt border border-line text-xs space-y-1">
+                <div className="flex justify-between items-center text-muted">
                   <span>Archivos detectados en USB:</span>
-                  <span className="font-bold text-white">{scanResult.scannedFilesCount}</span>
+                  <span className="font-bold text-ink tabular-nums">{scanResult.scannedFilesCount}</span>
                 </div>
-                <div className="flex justify-between items-center text-gray-300">
+                <div className="flex justify-between items-center text-muted">
                   <span>Listos para aplicar:</span>
-                  <span className={`font-bold ${scanResult.pendingToImportCount > 0 ? 'text-emerald-400' : 'text-gray-400'}`}>
+                  <span className={`font-bold tabular-nums ${scanResult.pendingToImportCount > 0 ? 'text-brand' : 'text-muted'}`}>
                     {scanResult.pendingToImportCount}
                   </span>
                 </div>
@@ -193,11 +205,11 @@ export const SecretariaSyncPanel: React.FC<SecretariaSyncPanelProps> = ({ curren
             )}
 
             {importResult && (
-              <div className="p-3 mb-4 rounded-lg bg-emerald-950/40 border border-emerald-800/60 text-emerald-200 text-xs flex items-start gap-2">
-                <CheckCircleIcon className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-emerald-300">¡Lote aplicado en base de datos!</p>
-                  <p className="text-[11px] text-gray-300 mt-1">
+              <div className="p-3 mb-4 rounded-[10px] bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200 text-xs flex items-start gap-2">
+                <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="font-semibold">¡Lote aplicado en base de datos!</p>
+                  <p className="text-[11px] opacity-90 mt-1 tabular-nums">
                     Archivos importados: {importResult.importedFilesCount} (Respaldo: {importResult.backupCreated})
                   </p>
                 </div>
@@ -206,12 +218,13 @@ export const SecretariaSyncPanel: React.FC<SecretariaSyncPanelProps> = ({ curren
           </div>
 
           <button
+            type="button"
             onClick={handleImport}
             disabled={isImporting || !scanResult || scanResult.pendingToImportCount === 0}
-            className="w-full bg-[#182A26] hover:bg-[#203833] disabled:opacity-40 text-emerald-300 border border-[#2D4A43] font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all text-sm"
+            className="w-full min-h-[44px] bg-surface-alt hover:bg-brand-soft disabled:opacity-40 text-ink border border-line font-semibold py-2.5 px-4 rounded-[10px] flex items-center justify-center gap-2 transition-colors text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
-            <UploadIcon className="w-4 h-4" />
-            {isImporting ? 'Aplicando...' : 'Aplicar Actualizaciones desde USB'}
+            <UploadIcon className="w-4 h-4 shrink-0" />
+            <span>{isImporting ? 'Aplicando...' : 'Aplicar Actualizaciones desde USB'}</span>
           </button>
         </div>
       </div>

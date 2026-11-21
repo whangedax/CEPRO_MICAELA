@@ -27,7 +27,7 @@ describe('Tarea 38 — Respaldos Cifrados e Integración Electron', () => {
   const testPassphrase = 'ClaveUltraSegura2026!';
   const testHint = 'Prueba QA Tarea 38';
 
-  before(async () => {
+  const authenticateRoles = async () => {
     // 1. Login DIRECTOR
     const loginDir = await fetch(`${BASE_URL}/api/login`, {
       method: 'POST',
@@ -69,7 +69,9 @@ describe('Tarea 38 — Respaldos Cifrados e Integración Electron', () => {
       'Authorization': `Bearer ${tokenDocente}`,
       'Content-Type': 'application/json',
     };
-  });
+  };
+
+  before(authenticateRoles);
 
   // =========================================================================
   // BLOQUE 1: RESPALDOS CIFRADOS PORTÁTILES (AES-256-GCM + SCRYPT)
@@ -217,6 +219,12 @@ describe('Tarea 38 — Respaldos Cifrados e Integración Electron', () => {
     assert.equal(result.success, true);
     assert.ok(result.previousCopy, 'Debe crear copia preventiva antes-restaurar');
     assert.ok(result.previousCopy.includes('antes-restaurar'), 'Debe incluir etiqueta antes-restaurar');
+    assert.equal(result.requiresLogin, true);
+    for (const headers of [headersDirector, headersSecretaria, headersDocente]) {
+      const expired = await fetch(`${BASE_URL}/api/me`, { headers });
+      assert.equal(expired.status, 401, 'Una restauración debe revocar todas las sesiones anteriores');
+    }
+    await authenticateRoles();
   });
 
   // =========================================================================

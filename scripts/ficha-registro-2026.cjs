@@ -1079,6 +1079,19 @@ function generateStandaloneAdmissionHtml(config = {}) {
   const displayPhone9 = cleanPhone.startsWith('51') && cleanPhone.length === 11 ? cleanPhone.slice(2) : cleanPhone;
   const receptorNombre = config.receptorNombre || 'Secretaría Académica';
   const instName = config.institucion || 'CETPRO "MICAELA BASTIDAS PUYUCAWA"';
+  // Embed the same local photo in LAN and downloaded forms so neither needs network access.
+  const photoPaths = [
+    path.join(__dirname, '..', 'dist', 'images', 'modules', 'inscripcion.webp'),
+    path.join(__dirname, '..', 'public', 'images', 'modules', 'inscripcion.webp'),
+  ];
+  let photoMarkup = '';
+  for (const photoPath of photoPaths) {
+    try {
+      const photo = fs.readFileSync(photoPath);
+      photoMarkup = '<img class="admission-photo" alt="" width="960" height="540" src="data:image/webp;base64,' + photo.toString('base64') + '">';
+      break;
+    } catch { /* Keep the solid banner if the optional photo is missing. */ }
+  }
   let embeddedQrJs = '';
   try {
     const selfSrc = fs.readFileSync(__filename, 'utf8');
@@ -1113,6 +1126,8 @@ function generateStandaloneAdmissionHtml(config = {}) {
     body { background-color: var(--bg); color: var(--text); padding: 12px; line-height: 1.5; font-size: 14px; }
     .container { max-width: 640px; margin: 0 auto; }
     .header { text-align: center; margin-bottom: 20px; padding: 16px 12px; background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; }
+    .admission-photo { width: 100%; height: clamp(80px, 21vw, 132px); object-fit: cover; display: block; border-radius: 8px; margin-bottom: 12px; }
+    @media print { .admission-photo { display: none; } }
     .badge { display: inline-block; background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; margin-bottom: 6px; }
     h1 { font-size: 18px; color: #fff; margin-bottom: 4px; }
     .subtitle { color: var(--text-muted); font-size: 12px; }
@@ -1147,6 +1162,7 @@ function generateStandaloneAdmissionHtml(config = {}) {
 <body>
   <div class="container">
     <div class="header">
+      ${photoMarkup}
       <div class="badge">Año Académico 2026</div>
       <h1>${instName}</h1>
       <p class="subtitle">FICHA DE MATRÍCULA Y REGISTRO DE DATOS 2026</p>
@@ -1902,7 +1918,7 @@ function ensureAdmissionRecordsScoped(core) {
     if (r && (!r.scope || !r.scope.kind)) {
       const scope = inferAdmissionScope(r);
       if (scope) {
-        core.putRecord('documentSettings', { ...r, scope });
+        core.putRecord('documentSettings', { ...r, scope, rev: r.rev || require('node:crypto').randomUUID() });
         fixed++;
       }
     }
@@ -1920,7 +1936,7 @@ function getConfig(core, user) {
 
   const programs = (core.records('programs') || []).map(p => ({
     id: p.id,
-    name: p.name,
+    name: p.nombre || p.name || p.id,
     code: p.code || p.id
   }));
 
@@ -1995,7 +2011,7 @@ function getPublicInfo(core, query) {
   const cleanPhone = normalizePeruWhatsapp(custom.secretariaWhatsapp || custom.whatsappPhone || '');
   const programs = (core.records('programs') || []).map(p => ({
     id: p.id,
-    name: p.name,
+    name: p.nombre || p.name || p.id,
     code: p.code || p.id
   }));
   return {

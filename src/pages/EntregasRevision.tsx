@@ -19,7 +19,8 @@
  * - Operación 100% aislada en SQLite sintético local (dev-sandbox/data).
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { DashboardPhotoBand } from '../components/ui/DashboardPhotoBand';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { usePendingChanges } from '../context/PendingChangesContext';
@@ -117,6 +118,93 @@ export const EntregasRevision: React.FC = () => {
   const [isSubmittingReview, setIsSubmittingReview] = useState<boolean>(false);
   const [conflictError, setConflictError] = useState<string | null>(null);
   const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
+
+  const confirmPanelRef = useRef<HTMLDivElement>(null);
+  const reviewPanelRef = useRef<HTMLDivElement>(null);
+  const pdfPanelRef = useRef<HTMLDivElement>(null);
+
+  const activeModalType = showPdfViewer
+    ? 'pdf'
+    : showReviewModal && selectedSubmission
+    ? 'review'
+    : showConfirmModal && preflightData
+    ? 'confirm'
+    : null;
+
+  useEffect(() => {
+    if (!activeModalType) return;
+
+    const panelEl =
+      activeModalType === 'pdf'
+        ? pdfPanelRef.current
+        : activeModalType === 'review'
+        ? reviewPanelRef.current
+        : confirmPanelRef.current;
+
+    const previousFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusTimer = window.setTimeout(() => {
+      if (!panelEl) return;
+      const firstFocusable = panelEl.querySelector<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      firstFocusable?.focus();
+    }, 0);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (activeModalType === 'pdf') {
+          setShowPdfViewer(false);
+        } else if (activeModalType === 'review') {
+          requestSafeTransition(() => {
+            setShowReviewModal(false);
+            setSelectedSubmission(null);
+          });
+        } else {
+          setShowConfirmModal(false);
+        }
+        return;
+      }
+
+      if (e.key === 'Tab' && panelEl) {
+        const focusables = Array.from(
+          panelEl.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (focusables.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        } else if (!panelEl.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus?.isConnected) {
+        previousFocus.focus();
+      }
+    };
+  }, [activeModalType, requestSafeTransition]);
 
   // Registro de cambios pendientes para el motivo de revisión
   useEffect(() => {
@@ -443,7 +531,7 @@ export const EntregasRevision: React.FC = () => {
           </span>
         );
       default:
-        return <span className="text-xs text-slate-500 dark:text-slate-400">{status}</span>;
+        return <span className="text-xs text-muted">{status}</span>;
     }
   };
 
@@ -452,11 +540,11 @@ export const EntregasRevision: React.FC = () => {
       {/* Banner de Entorno de Pruebas Institucional (solo en desarrollo/QA) */}
       {!__IS_INSTITUTIONAL__ && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-950 dark:text-amber-200">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
               <DeliveriesIcon className="w-5 h-5 text-amber-800 dark:text-amber-300" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="text-xs font-bold tracking-wider uppercase text-amber-800 dark:text-amber-300">
                 ENTORNO DE PRUEBAS LOCAL · OPERACIÓN SIMULADA EN SQLITE
               </div>
@@ -466,7 +554,7 @@ export const EntregasRevision: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/80 dark:bg-[#182220] border border-amber-300 dark:border-amber-500/40 text-amber-900 dark:text-amber-200 shadow-sm">
+            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-surface border border-amber-300 dark:border-amber-500/40 text-amber-900 dark:text-amber-200 shadow-sm">
               Rol Activo: {role}
             </span>
           </div>
@@ -474,49 +562,54 @@ export const EntregasRevision: React.FC = () => {
       )}
 
       {/* Encabezado Principal */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#F0FDF8]">
+      <DashboardPhotoBand as="header" scene="supervision" contentClassName="flex flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+            <h1 className="text-[24px] sm:text-[30px] leading-tight font-bold tracking-tight text-ink truncate">
               {isTeacher ? 'Entrega de Documentos Académicos' : 'Bandeja de Entrega y Revisión'}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#13594A]/10 text-[#13594A]">
-              Google Stitch 2.0
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-soft text-brand border border-brand/20 shrink-0">
+              Gestión Documental
             </span>
           </div>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-muted mt-1">
             {isTeacher
               ? 'Verifique los requisitos del Preflight antes de registrar la entrega formal de sus formatos ante Secretaría y Dirección.'
               : 'Recepción, inspección y dictamen de documentos emitidos por los docentes institucionales.'}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start md:self-auto">
+        <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
           <button
+            type="button"
             onClick={() => loadSubmissions()}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#1F2D2A] active:scale-95 transition-all shadow-sm disabled:opacity-60"
+            className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-[10px] bg-surface border border-line text-ink hover:bg-brand-soft hover:text-brand active:scale-95 transition-all shadow-[var(--ui-shadow)] disabled:opacity-60 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
             title="Actualizar bandeja de entregas"
           >
             <RefreshIcon className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             <span>Refrescar</span>
           </button>
         </div>
-      </div>
+      </DashboardPhotoBand>
 
       {/* Contexto Académico de Unidad Activa y Conmutador Rápido */}
       <ActiveUnitContextBanner variant="compact" />
 
       {/* Notificaciones */}
       {errorMsg && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-200 text-sm flex items-start justify-between gap-3 animate-fadeIn">
-          <div className="flex items-center gap-2">
+        <div
+          role="alert"
+          className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-200 text-sm flex items-start justify-between gap-3 animate-fadeIn"
+        >
+          <div className="flex items-center gap-2 min-w-0">
             <AlertCircleIcon className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
-            <span>{errorMsg}</span>
+            <span className="min-w-0">{errorMsg}</span>
           </div>
           <button
+            type="button"
             onClick={() => setErrorMsg(null)}
-            className="text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-200 text-xs font-bold shrink-0"
+            className="min-h-[44px] px-3 rounded-[10px] text-rose-700 hover:text-rose-900 dark:text-rose-300 dark:hover:text-rose-100 text-xs font-bold shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
           >
             Cerrar
           </button>
@@ -524,14 +617,18 @@ export const EntregasRevision: React.FC = () => {
       )}
 
       {successMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-200 text-sm flex items-start justify-between gap-3 animate-fadeIn">
-          <div className="flex items-center gap-2">
+        <div
+          role="status"
+          className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-200 text-sm flex items-start justify-between gap-3 animate-fadeIn"
+        >
+          <div className="flex items-center gap-2 min-w-0">
             <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>{successMsg}</span>
+            <span className="min-w-0">{successMsg}</span>
           </div>
           <button
+            type="button"
             onClick={() => setSuccessMsg(null)}
-            className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-200 text-xs font-bold shrink-0"
+            className="min-h-[44px] px-3 rounded-[10px] text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-emerald-100 text-xs font-bold shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
           >
             Cerrar
           </button>
@@ -544,27 +641,29 @@ export const EntregasRevision: React.FC = () => {
       {isTeacher && (
         <div className="space-y-6">
           {/* Barra de pestañas para docente */}
-          <div className="flex border-b border-slate-200 dark:border-[#263834]">
+          <div className="flex border-b border-line gap-1">
             <button
+              type="button"
               onClick={() => setTeacherTab('preparar')}
-              className={`pb-3 px-4 text-sm font-bold border-b-2 transition-colors ${
+              className={`min-h-[44px] pb-3 pt-2 px-4 text-sm font-bold border-b-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-brand ${
                 teacherTab === 'preparar'
-                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                  ? 'border-brand text-brand'
+                  : 'border-transparent text-muted hover:text-ink'
               }`}
             >
               1. Preparar y Entregar Documento
             </button>
             <button
+              type="button"
               onClick={() => setTeacherTab('historial')}
-              className={`pb-3 px-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
+              className={`min-h-[44px] pb-3 pt-2 px-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand ${
                 teacherTab === 'historial'
-                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                  ? 'border-brand text-brand'
+                  : 'border-transparent text-muted hover:text-ink'
               }`}
             >
               <span>2. Historial de Mis Entregas</span>
-              <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 dark:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 font-semibold">
+              <span className="px-2 py-0.5 rounded-full text-xs bg-surface-alt border border-line text-ink font-semibold tabular-nums">
                 {submissions.length}
               </span>
             </button>
@@ -574,23 +673,23 @@ export const EntregasRevision: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Columna Izquierda: Selección de Plantilla */}
               <div className="lg:col-span-5 space-y-4">
-                <div className="bg-white dark:bg-[#182220] p-5 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8] mb-3 flex items-center justify-between">
-                    <span>{activeWorkspace?.groupId ? 'Formatos Disponibles en Aula' : 'Selección de Aula Requerida'}</span>
-                    <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                <div className="bg-surface p-5 rounded-2xl border border-line shadow-[var(--ui-shadow)]">
+                  <h3 className="text-sm font-bold text-ink mb-3 flex items-center justify-between gap-2">
+                    <span className="min-w-0 truncate">{activeWorkspace?.groupId ? 'Formatos Disponibles en Aula' : 'Selección de Aula Requerida'}</span>
+                    <span className="text-[11px] font-normal text-muted tabular-nums shrink-0">
                       {activeWorkspace?.groupId ? `${authorizedTemplates.length} formatos pertinentes` : 'Espacio pendiente'}
                     </span>
                   </h3>
 
                   {!activeWorkspace?.groupId ? (
-                    <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-center space-y-3">
+                    <div className="p-6 rounded-2xl bg-surface-alt border border-line text-center space-y-3">
                       <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 flex items-center justify-center mx-auto">
                         <AlertCircleIcon className="w-5 h-5" />
                       </div>
-                      <h4 className="text-xs font-bold text-slate-800 dark:text-[#F0FDF8]">
+                      <h4 className="text-xs font-bold text-ink">
                         Aula no seleccionada
                       </h4>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                      <p className="text-[11px] text-muted leading-relaxed">
                         Para preparar y tramitar documentos oficiales, seleccione un aula y unidad didáctica activa desde la barra superior.
                       </p>
                     </div>
@@ -599,24 +698,25 @@ export const EntregasRevision: React.FC = () => {
                       {authorizedTemplates.map(tmpl => {
                         const isSelected = selectedTemplateId === tmpl.id;
                         return (
-                          <div
+                          <button
                             key={tmpl.id}
+                            type="button"
                             onClick={() => handleSelectTemplate(tmpl.id)}
-                            className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                            className={`w-full text-left p-3.5 rounded-2xl border cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-brand ${
                               isSelected
-                                ? 'bg-emerald-50/60 dark:bg-[#132B25] border-[#13594A] dark:border-[#208B73] ring-1 ring-[#13594A] dark:ring-[#208B73] shadow-sm'
-                                : 'bg-slate-50/50 dark:bg-[#131C1A] border-slate-200/70 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] hover:border-slate-300 dark:hover:border-[#34524B]'
+                                ? 'bg-brand-soft border-brand ring-1 ring-brand shadow-sm'
+                                : 'bg-surface-alt border-line hover:bg-surface hover:border-brand/40'
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8]">{tmpl.id}</span>
-                              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white dark:bg-[#182220] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-bold text-ink tabular-nums">{tmpl.id}</span>
+                              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-surface text-muted border border-line">
                                 {tmpl.kind}
                               </span>
                             </div>
-                            <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-1">{tmpl.title}</div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">{tmpl.desc}</div>
-                          </div>
+                            <div className="text-xs font-semibold text-ink mt-1">{tmpl.title}</div>
+                            <div className="text-[11px] text-muted line-clamp-1 mt-0.5">{tmpl.desc}</div>
+                          </button>
                         );
                       })}
                     </div>
@@ -624,14 +724,14 @@ export const EntregasRevision: React.FC = () => {
                 </div>
 
                 {/* Tarjeta de ayuda a Configuración Documental */}
-                <div className="bg-slate-50 dark:bg-[#131C1A] p-4 rounded-2xl border border-slate-200 dark:border-[#263834] text-xs text-slate-600 dark:text-slate-400 space-y-2">
-                  <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <DocumentIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
-                    ¿Faltan datos en su documento?
+                <div className="bg-surface-alt p-4 rounded-2xl border border-line text-xs text-muted space-y-2">
+                  <div className="font-bold text-ink flex items-center gap-1.5">
+                    <DocumentIcon className="w-4 h-4 text-brand shrink-0" />
+                    <span>¿Faltan datos en su documento?</span>
                   </div>
                   <p>
                     Si el informe Preflight reporta parámetros faltantes, diríjase a{' '}
-                    <a href="#/configuracion-documental" className="text-[#13594A] dark:text-[#5EEAD4] font-bold underline">
+                    <a href="#/configuracion-documental" className="text-brand font-bold underline">
                       Configuración Documental
                     </a>{' '}
                     para registrar capacidades, competencias o los 5 indicadores de logro.
@@ -641,29 +741,29 @@ export const EntregasRevision: React.FC = () => {
 
               {/* Columna Derecha: Estado Preflight y Acciones de Entrega */}
               <div className="lg:col-span-7 space-y-6">
-                <div className="bg-white dark:bg-[#182220] p-6 rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm space-y-6">
+                <div className="bg-surface p-6 rounded-2xl border border-line shadow-[var(--ui-shadow)] space-y-6">
                   {/* Encabezado del Documento Seleccionado */}
-                  <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-[#263834] pb-4">
-                    <div>
-                      <div className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-line pb-4">
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-brand uppercase tracking-wider tabular-nums">
                         {selectedTemplateId} · Verificación Preflight
                       </div>
-                      <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8] mt-0.5">
+                      <h2 className="text-lg font-bold text-ink mt-0.5">
                         {catalogTemplates.find(t => t.id === selectedTemplateId)?.title}
                       </h2>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Docente: <strong className="text-slate-700 dark:text-slate-200">{user?.name}</strong> | Aula:{' '}
-                        <strong className="text-slate-700 dark:text-slate-200">{getReadableGroupLabel(activeWorkspace?.groupId)}</strong>
+                      <div className="text-xs text-muted mt-1">
+                        Docente: <strong className="text-ink">{user?.name}</strong> | Aula:{' '}
+                        <strong className="text-ink">{getReadableGroupLabel(activeWorkspace?.groupId)}</strong>
                         {activeWorkspace?.unit && ` | Unidad: ${activeWorkspace.unit}`}
                       </div>
                     </div>
 
-                    <div>
+                    <div className="shrink-0">
                       {isLoadingPreflight ? (
-                        <span className="text-xs text-slate-400">Validando...</span>
+                        <span className="text-xs text-muted">Validando...</span>
                       ) : !activeWorkspace?.groupId ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-[#1F2D2A] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
-                          <AlertCircleIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-surface-alt text-muted border border-line">
+                          <AlertCircleIcon className="w-4 h-4 text-muted" />
                           Preflight pendiente: seleccione un aula
                         </span>
                       ) : preflightData?.preflight.complete ? (
@@ -672,13 +772,13 @@ export const EntregasRevision: React.FC = () => {
                           Preflight Completo
                         </span>
                       ) : preflightData ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 tabular-nums">
                           <AlertCircleIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                           Incompleto ({preflightData.preflight.missing.length || 0} pendientes)
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-[#1F2D2A] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#263834]">
-                          <AlertCircleIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-surface-alt text-muted border border-line">
+                          <AlertCircleIcon className="w-4 h-4 text-muted" />
                           Preflight pendiente: seleccione un aula
                         </span>
                       )}
@@ -687,22 +787,22 @@ export const EntregasRevision: React.FC = () => {
 
                   {/* Checklist Preflight */}
                   {isLoadingPreflight ? (
-                    <div className="py-12 text-center text-slate-500 text-xs">
-                      <div className="w-8 h-8 border-3 border-[#13594A]/20 border-t-[#13594A] rounded-full animate-spin mx-auto mb-2" />
+                    <div className="py-12 text-center text-muted text-xs">
+                      <div className="w-8 h-8 border-3 border-brand/20 border-t-brand rounded-full animate-spin mx-auto mb-2" />
                       Evaluando parámetros institucionales en SQLite...
                     </div>
                   ) : preflightData ? (
                     <div className="space-y-4">
                       {/* Progreso */}
                       <div>
-                        <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 mb-1.5">
+                        <div className="flex items-center justify-between text-xs text-muted mb-1.5">
                           <span className="font-semibold">Requisitos Cumplidos</span>
-                          <span className="font-bold">
+                          <span className="font-bold text-ink tabular-nums">
                             {preflightData.preflight.filled} de {preflightData.preflight.total} campos (
                             {Math.round((preflightData.preflight.filled / (preflightData.preflight.total || 1)) * 100)}%)
                           </span>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-[#131C1A] h-2.5 rounded-full overflow-hidden border border-slate-200/50 dark:border-[#263834]">
+                        <div className="w-full bg-surface-alt h-2.5 rounded-full overflow-hidden border border-line">
                           <div
                             className={`h-full transition-all duration-300 ${
                               preflightData.preflight.complete ? 'bg-emerald-500' : 'bg-amber-500'
@@ -716,9 +816,9 @@ export const EntregasRevision: React.FC = () => {
 
                       {/* Huella Digital (Exclusiva de Dirección) */}
                       {user?.role === 'DIRECTOR' && (
-                        <div className="p-3 bg-slate-50 dark:bg-[#131C1A] rounded-2xl border border-slate-200/80 dark:border-[#263834] text-xs flex items-center justify-between">
-                          <span className="text-slate-500 dark:text-slate-400 font-medium">Huella SHA-256 (Fingerprint):</span>
-                          <code className="font-mono text-[#13594A] dark:text-[#5EEAD4] font-bold text-[11px]">
+                        <div className="p-3 bg-surface-alt rounded-2xl border border-line text-xs flex items-center justify-between gap-2">
+                          <span className="text-muted font-medium">Huella SHA-256 (Fingerprint):</span>
+                          <code className="font-mono text-brand font-bold text-[11px] tabular-nums">
                             {preflightData.fingerprint.slice(0, 16)}...
                           </code>
                         </div>
@@ -727,8 +827,8 @@ export const EntregasRevision: React.FC = () => {
                       {/* Campos Faltantes si no está completo */}
                       {!preflightData.preflight.complete && (
                         <div className="p-4 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 space-y-2">
-                          <div className="text-xs font-bold text-rose-800 dark:text-rose-200 flex items-center gap-1.5">
-                            <AlertCircleIcon className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                          <div className="text-xs font-bold text-rose-800 dark:text-rose-200 flex items-center gap-1.5 tabular-nums">
+                            <AlertCircleIcon className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
                             Campos Pendientes para Emisión Oficial ({preflightData.preflight.missing.length})
                           </div>
                           <p className="text-[11px] text-rose-700 dark:text-rose-300 leading-relaxed">
@@ -745,7 +845,7 @@ export const EntregasRevision: React.FC = () => {
                           <div className="pt-2">
                             <a
                               href="#/configuracion-documental"
-                              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] bg-white dark:bg-[#132B25] px-3 py-1.5 rounded-xl border border-emerald-300 dark:border-[#208B73] hover:bg-emerald-50 dark:hover:bg-[#183B33] transition-all shadow-sm"
+                              className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-bold text-brand bg-surface px-3.5 py-2 rounded-[10px] border border-brand/30 hover:bg-brand-soft transition-all shadow-sm"
                             >
                               Ir a Configuración Documental
                             </a>
@@ -754,14 +854,14 @@ export const EntregasRevision: React.FC = () => {
                       )}
 
                       {/* Acciones del Docente */}
-                      <div className="pt-4 border-t border-slate-100 dark:border-[#263834] flex flex-wrap items-center justify-between gap-3">
+                      <div className="pt-4 border-t border-line flex flex-wrap items-center justify-between gap-3">
                         <button
                           type="button"
                           onClick={handlePreviewOfficialPdf}
                           disabled={isLoadingPdf}
-                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-[#1F2D2A] transition-all shadow-sm active:scale-95 disabled:opacity-60"
+                          className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] bg-surface border border-line text-ink text-xs font-semibold hover:bg-brand-soft hover:text-brand transition-all shadow-sm active:scale-95 disabled:opacity-60 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
                         >
-                          <EyeIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                          <EyeIcon className="w-4 h-4 text-muted" />
                           <span>{isLoadingPdf ? 'Generando PDF...' : 'Previsualizar PDF'}</span>
                         </button>
 
@@ -769,10 +869,10 @@ export const EntregasRevision: React.FC = () => {
                           type="button"
                           onClick={() => setShowConfirmModal(true)}
                           disabled={!preflightData.preflight.complete || isSubmitting}
-                          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 ${
+                          className={`min-h-[44px] inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] text-xs font-bold transition-all shadow-sm active:scale-95 focus-visible:ring-2 focus-visible:ring-brand ${
                             preflightData.preflight.complete
-                              ? 'bg-[#13594A] text-white hover:bg-[#0D3E34]'
-                              : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none dark:bg-[#182220] dark:text-slate-600 dark:border dark:border-[#263834]'
+                              ? 'bg-brand text-on-brand hover:bg-brand/90 cursor-pointer'
+                              : 'bg-surface-alt border border-line text-muted cursor-not-allowed shadow-none opacity-60'
                           }`}
                           title={
                             preflightData.preflight.complete
@@ -791,55 +891,55 @@ export const EntregasRevision: React.FC = () => {
             </div>
           ) : (
             /* Historial de Entregas del Docente */
-            <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm overflow-hidden">
-              <div className="p-5 border-b border-slate-100 dark:border-[#263834] flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">Mis Entregas Registradas</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <div className="bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)] overflow-hidden">
+              <div className="p-5 border-b border-line flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-ink">Mis Entregas Registradas</h3>
+                  <p className="text-xs text-muted mt-0.5">
                     Historial de documentos presentados formalmente ante Secretaría y Dirección.
                   </p>
                 </div>
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] px-3 py-1 rounded-full">
+                <span className="text-xs font-bold text-ink bg-surface-alt border border-line px-3 py-1 rounded-full tabular-nums shrink-0">
                   {submissions.length} entregas
                 </span>
               </div>
 
               {submissions.length === 0 ? (
-                <div className="p-12 text-center text-slate-500 dark:text-slate-400 text-xs">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#131C1A] flex items-center justify-center mx-auto mb-3">
-                    <DeliveriesIcon className="w-6 h-6 text-slate-400" />
+                <div className="p-12 text-center text-muted text-xs">
+                  <div className="w-12 h-12 rounded-full bg-surface-alt border border-line flex items-center justify-center mx-auto mb-3">
+                    <DeliveriesIcon className="w-6 h-6 text-muted" />
                   </div>
-                  <strong className="text-slate-800 dark:text-slate-200 text-sm block mb-1">Aún no tiene entregas registradas</strong>
+                  <strong className="text-ink text-sm block mb-1">Aún no tiene entregas registradas</strong>
                   <span>Utilice la pestaña "Preparar y Entregar Documento" para presentar su primer formato.</span>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100 dark:divide-[#263834]">
+                <div className="divide-y divide-line">
                   {submissions.map(s => (
-                    <div key={s.id} className="p-5 hover:bg-slate-50/60 dark:hover:bg-[#1F2D2A] transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] bg-emerald-50 dark:bg-[#132B25] px-2 py-0.5 rounded border border-emerald-200 dark:border-[#208B73]/50">
+                    <div key={s.id} className="p-5 hover:bg-surface-alt transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-1.5 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+                          <span className="text-xs font-bold text-brand bg-brand-soft px-2 py-0.5 rounded border border-brand/25 tabular-nums shrink-0">
                             {s.templateId}
                           </span>
-                          <span className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">
+                          <span className="text-sm font-bold text-ink truncate">
                             {catalogTemplates.find(t => t.id === s.templateId)?.title || s.templateId}
                           </span>
                           {renderStatusBadge(s.status)}
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted tabular-nums">
                           <span>Fecha: {new Date(s.createdAt).toLocaleString('es-PE')}</span>
-                          <span>Aula: <strong className="text-slate-700 dark:text-slate-300">{getReadableGroupLabel(s.groupId)}</strong></span>
-                          {s.unit && <span>Unidad: <strong className="text-slate-700 dark:text-slate-300">{s.unit}</strong></span>}
+                          <span>Aula: <strong className="text-ink">{getReadableGroupLabel(s.groupId)}</strong></span>
+                          {s.unit && <span>Unidad: <strong className="text-ink">{s.unit}</strong></span>}
                           <span>ID: <code className="font-mono text-[11px]">{s.id.slice(0, 8)}</code></span>
                           <span>Hash PDF: <code className="font-mono text-[11px]">{s.pdfHash.slice(0, 10)}...</code></span>
                         </div>
 
                         {s.reviewReason && (
-                          <div className="mt-2 p-2.5 bg-slate-50 dark:bg-[#131C1A] rounded-xl border border-slate-200/80 dark:border-[#263834] text-xs text-slate-700 dark:text-slate-300">
-                            <strong className="text-slate-900 dark:text-[#F0FDF8]">Dictamen institucional:</strong> {s.reviewReason}
+                          <div className="mt-2 p-2.5 bg-surface-alt rounded-xl border border-line text-xs text-ink">
+                            <strong>Dictamen institucional:</strong> {s.reviewReason}
                             {s.reviewedAt && (
-                              <span className="text-[11px] text-slate-400 ml-2">
+                              <span className="text-[11px] text-muted ml-2 tabular-nums">
                                 ({new Date(s.reviewedAt).toLocaleString('es-PE')})
                               </span>
                             )}
@@ -849,11 +949,12 @@ export const EntregasRevision: React.FC = () => {
 
                       <div className="flex items-center gap-2 self-end md:self-center shrink-0">
                         <button
+                          type="button"
                           onClick={() => handleViewSubmittedPdf(s)}
                           disabled={isLoadingPdf}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#1F2D2A] active:scale-95 transition-all shadow-sm"
+                          className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-[10px] bg-surface border border-line text-ink hover:bg-brand-soft hover:text-brand active:scale-95 transition-all shadow-sm cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
                         >
-                          <EyeIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                          <EyeIcon className="w-4 h-4 text-muted" />
                           <span>Ver PDF Custodial</span>
                         </button>
                       </div>
@@ -873,89 +974,96 @@ export const EntregasRevision: React.FC = () => {
         <div className="space-y-6">
           {/* Tarjetas de Métricas */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div
+            <button
+              type="button"
               onClick={() => setStatusFilter('TODOS')}
-              className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+              className={`text-left p-4 rounded-2xl border cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-brand ${
                 statusFilter === 'TODOS'
-                  ? 'bg-slate-900 dark:bg-[#132B25] text-white border-slate-900 dark:border-[#208B73] shadow-md'
-                  : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
+                  ? 'bg-brand text-on-brand border-brand shadow-[var(--ui-shadow)]'
+                  : 'bg-surface text-ink border-line hover:bg-surface-alt'
               }`}
             >
               <div className="text-[11px] uppercase font-bold tracking-wider opacity-80">Total Entregas</div>
-              <div className="text-2xl font-black mt-1">{metrics.total}</div>
-            </div>
+              <div className="text-2xl font-black mt-1 tabular-nums">{metrics.total}</div>
+            </button>
 
-            <div
+            <button
+              type="button"
               onClick={() => setStatusFilter('ENTREGADO')}
-              className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+              className={`text-left p-4 rounded-2xl border cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-brand ${
                 statusFilter === 'ENTREGADO'
-                  ? 'bg-amber-600 dark:bg-amber-700 text-white border-amber-600 dark:border-amber-600 shadow-md'
-                  : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
+                  ? 'bg-amber-600 dark:bg-amber-700 text-white border-amber-600 shadow-md'
+                  : 'bg-surface text-ink border-line hover:bg-surface-alt'
               }`}
             >
               <div className="text-[11px] uppercase font-bold tracking-wider opacity-80">Por Revisar</div>
-              <div className="text-2xl font-black mt-1 text-amber-600 dark:text-amber-400 group-hover:text-amber-700">
+              <div className={`text-2xl font-black mt-1 tabular-nums ${statusFilter === 'ENTREGADO' ? 'text-white' : 'text-amber-600 dark:text-amber-400'}`}>
                 {metrics.entregado}
               </div>
-            </div>
+            </button>
 
-            <div
+            <button
+              type="button"
               onClick={() => setStatusFilter('RECIBIDO')}
-              className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+              className={`text-left p-4 rounded-2xl border cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-brand ${
                 statusFilter === 'RECIBIDO'
-                  ? 'bg-sky-600 dark:bg-sky-700 text-white border-sky-600 dark:border-sky-600 shadow-md'
-                  : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
+                  ? 'bg-sky-600 dark:bg-sky-700 text-white border-sky-600 shadow-md'
+                  : 'bg-surface text-ink border-line hover:bg-surface-alt'
               }`}
             >
               <div className="text-[11px] uppercase font-bold tracking-wider opacity-80">Recibidos</div>
-              <div className="text-2xl font-black mt-1 text-sky-600 dark:text-sky-400">{metrics.recibido}</div>
-            </div>
+              <div className={`text-2xl font-black mt-1 tabular-nums ${statusFilter === 'RECIBIDO' ? 'text-white' : 'text-sky-600 dark:text-sky-400'}`}>{metrics.recibido}</div>
+            </button>
 
-            <div
+            <button
+              type="button"
               onClick={() => setStatusFilter('OBSERVADO')}
-              className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+              className={`text-left p-4 rounded-2xl border cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-brand ${
                 statusFilter === 'OBSERVADO'
-                  ? 'bg-rose-600 dark:bg-rose-700 text-white border-rose-600 dark:border-rose-600 shadow-md'
-                  : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
+                  ? 'bg-rose-600 dark:bg-rose-700 text-white border-rose-600 shadow-md'
+                  : 'bg-surface text-ink border-line hover:bg-surface-alt'
               }`}
             >
               <div className="text-[11px] uppercase font-bold tracking-wider opacity-80">Observados</div>
-              <div className="text-2xl font-black mt-1 text-rose-600 dark:text-rose-400">{metrics.observado}</div>
-            </div>
+              <div className={`text-2xl font-black mt-1 tabular-nums ${statusFilter === 'OBSERVADO' ? 'text-white' : 'text-rose-600 dark:text-rose-400'}`}>{metrics.observado}</div>
+            </button>
 
-            <div
+            <button
+              type="button"
               onClick={() => setStatusFilter('REVISADO')}
-              className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+              className={`text-left p-4 rounded-2xl border cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-brand ${
                 statusFilter === 'REVISADO'
-                  ? 'bg-emerald-700 dark:bg-[#13594A] text-white border-emerald-700 dark:border-[#208B73] shadow-md'
-                  : 'bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A]'
+                  ? 'bg-emerald-700 dark:bg-emerald-800 text-white border-emerald-700 shadow-md'
+                  : 'bg-surface text-ink border-line hover:bg-surface-alt'
               }`}
             >
               <div className="text-[11px] uppercase font-bold tracking-wider opacity-80">Aprobados</div>
-              <div className="text-2xl font-black mt-1 text-emerald-700 dark:text-emerald-400">{metrics.revisado}</div>
-            </div>
+              <div className={`text-2xl font-black mt-1 tabular-nums ${statusFilter === 'REVISADO' ? 'text-white' : 'text-emerald-700 dark:text-emerald-400'}`}>{metrics.revisado}</div>
+            </button>
           </div>
 
           {/* Filtros y Búsqueda */}
-          <div className="bg-white dark:bg-[#182220] p-4 rounded-2xl border border-slate-200 dark:border-[#263834] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
+          <div className="bg-surface p-4 rounded-2xl border border-line flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[var(--ui-shadow)]">
             <div className="relative w-full sm:w-96">
-              <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <SearchIcon className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Buscar por docente, plantilla o código..."
+                aria-label="Buscar entregas por docente, plantilla o código"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50/50 dark:bg-[#131C1A] text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-[#131C1A] focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 focus:border-[#13594A] dark:focus:border-[#5EEAD4]"
+                className="w-full min-h-[44px] pl-9 pr-3 py-2 text-xs rounded-[10px] border border-line bg-surface-alt text-ink placeholder:text-muted focus:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               />
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 self-end sm:self-auto">
-              <FilterIcon className="w-4 h-4 text-slate-400" />
-              <span>Filtro activo: <strong className="text-slate-700 dark:text-slate-200">{statusFilter}</strong></span>
+            <div className="flex items-center gap-2 text-xs text-muted self-end sm:self-auto">
+              <FilterIcon className="w-4 h-4 text-muted" />
+              <span>Filtro activo: <strong className="text-ink">{statusFilter}</strong></span>
               {statusFilter !== 'TODOS' && (
                 <button
+                  type="button"
                   onClick={() => setStatusFilter('TODOS')}
-                  className="text-[#13594A] dark:text-[#5EEAD4] font-bold underline ml-1"
+                  className="min-h-[44px] px-2 text-brand font-bold underline ml-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand rounded-[10px]"
                 >
                   Limpiar
                 </button>
@@ -964,23 +1072,23 @@ export const EntregasRevision: React.FC = () => {
           </div>
 
           {/* Tabla de Entregas */}
-          <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100 dark:border-[#263834] flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">
+          <div className="bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)] overflow-hidden">
+            <div className="p-5 border-b border-line flex items-center justify-between">
+              <h3 className="text-sm font-bold text-ink tabular-nums">
                 Bandeja de Documentos Recibidos ({filteredSubmissions.length})
               </h3>
             </div>
 
             {filteredSubmissions.length === 0 ? (
-              <div className="p-12 text-center text-slate-500 dark:text-slate-400 text-xs">
-                <DeliveriesIcon className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+              <div className="p-12 text-center text-muted text-xs">
+                <DeliveriesIcon className="w-8 h-8 text-muted mx-auto mb-2" />
                 <span>No se encontraron entregas que coincidan con los filtros aplicados.</span>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 dark:bg-[#131C1A] text-[11px] font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-[#263834]">
+                    <tr className="bg-surface-alt text-[11px] font-bold text-muted uppercase tracking-wider border-b border-line">
                       <th className="py-3 px-4">Documento</th>
                       <th className="py-3 px-4">Docente Remitente</th>
                       <th className="py-3 px-4">Aula / Unidad</th>
@@ -989,44 +1097,46 @@ export const EntregasRevision: React.FC = () => {
                       <th className="py-3 px-4 text-right">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-[#263834] text-xs text-slate-700 dark:text-slate-200">
+                  <tbody className="divide-y divide-line text-xs text-ink">
                     {filteredSubmissions.map(s => (
-                      <tr key={s.id} className="hover:bg-slate-50/70 dark:hover:bg-[#1F2D2A] transition-colors">
-                        <td className="py-3.5 px-4">
-                          <div className="font-bold text-slate-900 dark:text-[#F0FDF8]">{s.templateId}</div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                      <tr key={s.id} className="hover:bg-surface-alt transition-colors">
+                        <td className="py-3.5 px-4 max-w-[260px]">
+                          <div className="font-bold text-ink tabular-nums">{s.templateId}</div>
+                          <div className="text-[11px] text-muted truncate">
                             {catalogTemplates.find(t => t.id === s.templateId)?.title || 'Documento Académico'}
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
+                        <td className="py-3.5 px-4 font-semibold text-ink max-w-[200px] truncate">
                           {s.authorName}
                         </td>
                         <td className="py-3.5 px-4">
-                          <span className="font-semibold text-xs text-slate-700 dark:text-slate-200">{getReadableGroupLabel(s.groupId)}</span>
+                          <span className="font-semibold text-xs text-ink">{getReadableGroupLabel(s.groupId)}</span>
                           {s.unit && (
-                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 font-bold text-[10px]">
+                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-brand-soft text-brand border border-brand/25 font-bold text-[10px] tabular-nums">
                               {s.unit}
                             </span>
                           )}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400">
+                        <td className="py-3.5 px-4 text-muted tabular-nums">
                           {new Date(s.createdAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })}
                         </td>
                         <td className="py-3.5 px-4">
                           {renderStatusBadge(s.status)}
                         </td>
-                        <td className="py-3.5 px-4 text-right space-x-1.5">
+                        <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
                           <button
+                            type="button"
                             onClick={() => handleViewSubmittedPdf(s)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-200 bg-white dark:bg-[#182220] hover:bg-slate-100 dark:hover:bg-[#1F2D2A] transition-all font-semibold text-xs shadow-xs"
+                            className="min-h-[44px] inline-flex items-center gap-1 px-3 py-1.5 rounded-[10px] border border-line text-ink bg-surface hover:bg-brand-soft hover:text-brand transition-all font-semibold text-xs shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
                             title="Inspeccionar PDF custodial"
                           >
-                            <EyeIcon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                            <EyeIcon className="w-3.5 h-3.5 text-muted" />
                             <span>PDF</span>
                           </button>
                           <button
+                            type="button"
                             onClick={() => handleOpenReviewModal(s)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#13594A] dark:bg-[#107560] text-white hover:bg-[#0D3E34] dark:hover:bg-[#0B5C4B] transition-all font-semibold text-xs shadow-sm"
+                            className="min-h-[44px] inline-flex items-center gap-1 px-3.5 py-1.5 rounded-[10px] bg-brand text-on-brand hover:bg-brand/90 transition-all font-semibold text-xs shadow-sm cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
                             title="Emitir dictamen de revisión"
                           >
                             <span>Revisar</span>
@@ -1046,30 +1156,40 @@ export const EntregasRevision: React.FC = () => {
           MODAL DE CONFIRMACIÓN DE ENTREGA (DOCENTE)
           ========================================================================= */}
       {showConfirmModal && preflightData && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-[#263834] space-y-5 animate-scaleUp">
-            <div className="flex items-center gap-3 border-b border-slate-100 dark:border-[#263834] pb-4">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center text-[#13594A] dark:text-[#5EEAD4]">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-submit-title"
+          onClick={() => !isSubmitting && setShowConfirmModal(false)}
+          className="fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn"
+        >
+          <div
+            ref={confirmPanelRef}
+            onClick={(e) => e.stopPropagation()}
+            className="cepro-dialog-panel bg-surface rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-line space-y-5 animate-scaleUp"
+          >
+            <div className="flex items-center gap-3 border-b border-line pb-4">
+              <div className="w-10 h-10 rounded-2xl bg-brand-soft border border-brand/20 flex items-center justify-center text-brand shrink-0">
                 <SendIcon className="w-5 h-5" />
               </div>
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">Confirmar Presentación de Entrega</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Trámite Documental Interno — CEPRO_MICAELA 2.0</p>
+              <div className="min-w-0">
+                <h3 id="confirm-submit-title" className="text-base font-bold text-ink">Confirmar Presentación de Entrega</h3>
+                <p className="text-xs text-muted">Trámite Documental Interno — CEPRO_MICAELA 2.0</p>
               </div>
             </div>
 
-            <div className="text-xs text-slate-600 dark:text-slate-300 space-y-3">
+            <div className="text-xs text-muted space-y-3">
               <p>
                 Está a punto de registrar la entrega formal del documento con los parámetros actuales.
-                El backend generará una <strong>copia custodial inmutable</strong> en el servidor SQLite local:
+                El backend generará una <strong className="text-ink">copia custodial inmutable</strong> en el servidor SQLite local:
               </p>
 
-              <div className="p-3 bg-slate-50 dark:bg-[#131C1A] rounded-2xl border border-slate-200 dark:border-[#263834] space-y-1.5 text-xs text-slate-700 dark:text-slate-200">
-                <div><strong>Plantilla:</strong> {selectedTemplateId} · {catalogTemplates.find(t => t.id === selectedTemplateId)?.title}</div>
+              <div className="p-3.5 bg-surface-alt rounded-2xl border border-line space-y-1.5 text-xs text-ink">
+                <div className="tabular-nums"><strong>Plantilla:</strong> {selectedTemplateId} · {catalogTemplates.find(t => t.id === selectedTemplateId)?.title}</div>
                 <div><strong>Aula:</strong> {getReadableGroupLabel(activeWorkspace?.groupId)}</div>
-                {activeWorkspace?.unit && <div><strong>Unidad Didáctica:</strong> {activeWorkspace.unit}</div>}
+                {activeWorkspace?.unit && <div className="tabular-nums"><strong>Unidad Didáctica:</strong> {activeWorkspace.unit}</div>}
                 <div><strong>Docente Remitente:</strong> {user?.name}</div>
-                <div><strong>Huella SHA-256:</strong> <code className="font-mono text-[#13594A] dark:text-[#5EEAD4]">{preflightData.fingerprint.slice(0, 20)}...</code></div>
+                <div className="tabular-nums"><strong>Huella SHA-256:</strong> <code className="font-mono text-brand">{preflightData.fingerprint.slice(0, 20)}...</code></div>
               </div>
 
               <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-[11px] leading-relaxed">
@@ -1077,12 +1197,12 @@ export const EntregasRevision: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#263834]">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-line">
               <button
                 type="button"
                 onClick={() => setShowConfirmModal(false)}
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#1F2D2A] transition-colors"
+                className="min-h-[44px] px-4 py-2 rounded-[10px] text-xs font-semibold bg-surface-alt border border-line text-ink hover:bg-brand-soft hover:text-brand transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
               >
                 Cancelar
               </button>
@@ -1090,7 +1210,7 @@ export const EntregasRevision: React.FC = () => {
                 type="button"
                 onClick={handleConfirmSubmit}
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#13594A] dark:bg-[#107560] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#0B5C4B] transition-all shadow-md active:scale-95 disabled:opacity-60"
+                className="min-h-[44px] inline-flex items-center gap-1.5 px-5 py-2.5 rounded-[10px] bg-brand text-on-brand text-xs font-bold hover:bg-brand/90 transition-all shadow-md active:scale-95 disabled:opacity-60 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
               >
                 <SendIcon className="w-4 h-4" />
                 <span>{isSubmitting ? 'Registrando Entrega...' : (isInstitutional() ? 'Confirmar Entrega Formal' : 'Confirmar entrega de prueba')}</span>
@@ -1104,48 +1224,69 @@ export const EntregasRevision: React.FC = () => {
           MODAL DE REVISIÓN Y DICTAMEN (DIRECCIÓN / SECRETARÍA)
           ========================================================================= */}
       {showReviewModal && selectedSubmission && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 dark:border-[#263834] space-y-5 animate-scaleUp">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#263834] pb-4">
-              <div>
-                <span className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="review-modal-title"
+          onClick={() => {
+            requestSafeTransition(() => {
+              setShowReviewModal(false);
+              setSelectedSubmission(null);
+            });
+          }}
+          className="fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn"
+        >
+          <div
+            ref={reviewPanelRef}
+            onClick={(e) => e.stopPropagation()}
+            className="cepro-dialog-panel bg-surface rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-line space-y-5 animate-scaleUp"
+          >
+            <div className="flex items-start justify-between gap-3 border-b border-line pb-4">
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-brand uppercase tracking-wider">
                   Revisión Institucional
                 </span>
-                <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
+                <h3 id="review-modal-title" className="text-base font-bold text-ink tabular-nums">
                   Dictamen para {selectedSubmission.templateId}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-muted tabular-nums">
                   Docente: {selectedSubmission.authorName} | Aula: {getReadableGroupLabel(selectedSubmission.groupId)} | Presentado:{' '}
                   {new Date(selectedSubmission.createdAt).toLocaleString('es-PE')}
                 </p>
               </div>
 
               <button
+                type="button"
+                aria-label="Cerrar ventana"
                 onClick={() => {
                   requestSafeTransition(() => {
                     setShowReviewModal(false);
                     setSelectedSubmission(null);
                   });
                 }}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold"
+                className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-[10px] text-muted hover:text-ink hover:bg-surface-alt text-sm font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-brand shrink-0"
               >
                 ✕
               </button>
             </div>
 
             {conflictError && (
-              <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2">
+              <div
+                role="alert"
+                className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2"
+              >
                 <AlertCircleIcon className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
-                <div>
+                <div className="min-w-0">
                   <span className="font-bold">Conflicto de Concurrencia (HTTP 409):</span>
                   <p className="mt-0.5">{conflictError}</p>
                   <button
+                    type="button"
                     onClick={async () => {
                       await loadSubmissions();
                       setShowReviewModal(false);
                       setSelectedSubmission(null);
                     }}
-                    className="mt-2 text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] underline"
+                    className="mt-2 min-h-[44px] px-3 rounded-[10px] text-xs font-bold text-brand bg-surface border border-line underline cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     Recargar bandeja ahora
                   </button>
@@ -1156,75 +1297,80 @@ export const EntregasRevision: React.FC = () => {
             <div className="space-y-4">
               {/* Opciones de Estado */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-xs font-bold text-ink mb-2">
                   Decisión / Estado Documental:
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                  <div
+                  <button
+                    type="button"
                     onClick={() => setReviewStatus('RECIBIDO')}
-                    className={`p-3 rounded-2xl border cursor-pointer transition-all ${
+                    className={`min-h-[44px] text-left p-3 rounded-[10px] border cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-brand ${
                       reviewStatus === 'RECIBIDO'
                         ? 'bg-sky-50 dark:bg-sky-950/60 border-sky-500 ring-1 ring-sky-500 text-sky-950 dark:text-sky-200 font-bold'
-                        : 'bg-slate-50 dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1F2D2A]'
+                        : 'bg-surface-alt border-line text-ink hover:bg-surface'
                     }`}
                   >
                     <div className="text-xs">RECIBIDO</div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal mt-0.5">Mesa de partes / Conforme</div>
-                  </div>
+                    <div className="text-[10px] text-muted font-normal mt-0.5">Mesa de partes / Conforme</div>
+                  </button>
 
-                  <div
+                  <button
+                    type="button"
                     onClick={() => setReviewStatus('OBSERVADO')}
-                    className={`p-3 rounded-2xl border cursor-pointer transition-all ${
+                    className={`min-h-[44px] text-left p-3 rounded-[10px] border cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-brand ${
                       reviewStatus === 'OBSERVADO'
                         ? 'bg-rose-50 dark:bg-rose-950/60 border-rose-500 ring-1 ring-rose-500 text-rose-950 dark:text-rose-200 font-bold'
-                        : 'bg-slate-50 dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1F2D2A]'
+                        : 'bg-surface-alt border-line text-ink hover:bg-surface'
                     }`}
                   >
                     <div className="text-xs">OBSERVADO</div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal mt-0.5">Requiere correcciones</div>
-                  </div>
+                    <div className="text-[10px] text-muted font-normal mt-0.5">Requiere correcciones</div>
+                  </button>
 
-                  <div
+                  <button
+                    type="button"
+                    disabled={!isDirector}
                     onClick={() => {
                       if (isDirector) setReviewStatus('REVISADO');
                     }}
-                    className={`p-3 rounded-2xl border transition-all ${
+                    className={`min-h-[44px] text-left p-3 rounded-[10px] border transition-all focus-visible:ring-2 focus-visible:ring-brand ${
                       !isDirector
-                        ? 'bg-slate-100 dark:bg-[#131C1A]/50 border-slate-200 dark:border-[#263834] text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
+                        ? 'bg-surface-alt border-line text-muted cursor-not-allowed opacity-60'
                         : reviewStatus === 'REVISADO'
-                        ? 'bg-emerald-50 dark:bg-[#132B25] border-emerald-600 dark:border-[#208B73] ring-1 ring-emerald-600 dark:ring-[#208B73] text-emerald-950 dark:text-[#5EEAD4] font-bold cursor-pointer'
-                        : 'bg-slate-50 dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1F2D2A] cursor-pointer'
+                        ? 'bg-brand-soft border-brand ring-1 ring-brand text-brand font-bold cursor-pointer'
+                        : 'bg-surface-alt border-line text-ink hover:bg-surface cursor-pointer'
                     }`}
                     title={!isDirector ? 'Exclusivo del rol DIRECTOR' : 'Aprobación oficial'}
                   >
                     <div className="text-xs flex items-center justify-between">
                       <span>REVISADO</span>
-                      {!isDirector && <LockIcon className="w-3.5 h-3.5 text-slate-400" />}
+                      {!isDirector && <LockIcon className="w-3.5 h-3.5 text-muted" />}
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal mt-0.5">Aprobado por Dirección</div>
-                  </div>
+                    <div className="text-[10px] text-muted font-normal mt-0.5">Aprobado por Dirección</div>
+                  </button>
                 </div>
               </div>
 
               {/* Motivo o Justificación */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="review-reason-input" className="block text-xs font-bold text-ink mb-1">
                   Motivo o Fundamentación del Dictamen <span className="text-rose-500">*</span>:
                 </label>
                 <textarea
+                  id="review-reason-input"
                   rows={4}
                   value={reviewReason}
                   onChange={e => setReviewReason(e.target.value)}
                   placeholder="Describa el motivo de la recepción, observaciones técnicas o conformidad emitida..."
-                  className="w-full text-xs p-3 rounded-2xl border border-slate-300 dark:border-[#263834] focus:outline-none focus:ring-2 focus:ring-[#13594A]/20 focus:border-[#13594A] dark:focus:border-[#5EEAD4] bg-white dark:bg-[#131C1A] text-slate-800 dark:text-white resize-none"
+                  className="w-full text-xs p-3 rounded-[10px] border border-line focus:outline-none focus-visible:ring-2 focus-visible:ring-brand bg-surface-alt text-ink resize-none"
                 />
-                <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                <span className="text-[11px] text-muted">
                   Campo obligatorio requerido por el contrato oficial POST /api/document/review.
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#263834]">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-line">
               <button
                 type="button"
                 onClick={() => {
@@ -1234,7 +1380,7 @@ export const EntregasRevision: React.FC = () => {
                   });
                 }}
                 disabled={isSubmittingReview}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#1F2D2A] transition-colors"
+                className="min-h-[44px] px-4 py-2 rounded-[10px] text-xs font-semibold bg-surface-alt border border-line text-ink hover:bg-brand-soft hover:text-brand transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
               >
                 Cancelar
               </button>
@@ -1242,7 +1388,7 @@ export const EntregasRevision: React.FC = () => {
                 type="button"
                 onClick={handleSubmitReview}
                 disabled={isSubmittingReview || !reviewReason.trim()}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#13594A] dark:bg-[#107560] text-white text-xs font-bold hover:bg-[#0D3E34] dark:hover:bg-[#0B5C4B] transition-all shadow-md active:scale-95 disabled:opacity-60"
+                className="min-h-[44px] inline-flex items-center gap-1.5 px-5 py-2.5 rounded-[10px] bg-brand text-on-brand text-xs font-bold hover:bg-brand/90 transition-all shadow-md active:scale-95 disabled:opacity-60 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
               >
                 <span>{isSubmittingReview ? 'Guardando Decisión...' : 'Confirmar Decisión'}</span>
               </button>
@@ -1255,21 +1401,32 @@ export const EntregasRevision: React.FC = () => {
           MODAL DEL VISOR PDF
           ========================================================================= */}
       {showPdfViewer && (
-        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex flex-col p-4 md:p-8 animate-fadeIn">
-          <div className="bg-white dark:bg-[#182220] rounded-3xl flex-1 flex flex-col overflow-hidden shadow-2xl border border-slate-300 dark:border-[#263834]">
-            <div className="p-4 bg-slate-50 dark:bg-[#131C1A] border-b border-slate-200 dark:border-[#263834] flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">{pdfTitle}</h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">{pdfFilename}</p>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pdf-viewer-modal-title"
+          onClick={() => setShowPdfViewer(false)}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex flex-col p-4 md:p-8 animate-fadeIn"
+        >
+          <div
+            ref={pdfPanelRef}
+            onClick={(e) => e.stopPropagation()}
+            className="cepro-dialog-panel bg-surface rounded-2xl flex-1 flex flex-col overflow-hidden shadow-2xl border border-line"
+          >
+            <div className="p-4 bg-surface-alt border-b border-line flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h3 id="pdf-viewer-modal-title" className="text-sm font-bold text-ink truncate">{pdfTitle}</h3>
+                <p className="text-[11px] text-muted truncate">{pdfFilename}</p>
               </div>
               <button
+                type="button"
                 onClick={() => setShowPdfViewer(false)}
-                className="px-4 py-1.5 text-xs font-bold bg-white dark:bg-[#1F2D2A] border border-slate-200 dark:border-[#263834] rounded-xl hover:bg-slate-100 dark:hover:bg-[#263834] transition-colors text-slate-700 dark:text-slate-200 shadow-xs"
+                className="min-h-[44px] px-4 py-2 text-xs font-bold bg-surface border border-line rounded-[10px] hover:bg-brand-soft hover:text-brand transition-colors text-ink shadow-xs shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
               >
                 Cerrar Visor
               </button>
             </div>
-            <div className="flex-1 overflow-auto bg-slate-100 dark:bg-[#0B1210]">
+            <div className="flex-1 overflow-auto bg-canvas">
               <PdfViewer
                 blob={pdfBlob}
                 title={pdfTitle}

@@ -43,7 +43,7 @@ import {
   SearchIcon,
   DocConfigIcon,
 } from '../ui/Icons';
-import { CareerEmblemIcon, resolveCareerVisualTheme } from './CareerVisualBanner';
+import { CareerPhoto, CareerEmblemIcon, resolveCareerVisualTheme } from './CareerVisualBanner';
 
 // ==========================================
 // DATOS SEMILLA / FALLBACK CANÓNICOS 2026
@@ -1060,58 +1060,58 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
       {/* 1. TARJETAS RESUMEN DE TOTALES VERIFICADOS (EXPEDIENTE)  */}
       {/* ======================================================== */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="p-3.5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
+        <div className="p-3.5 bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)]">
+          <div className="flex items-center justify-between text-muted text-xs font-semibold">
             <span>Carreras</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
-          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">7</p>
-          <span className="text-xs text-slate-600 dark:text-slate-400">Planes Oficiales</span>
+          <p className="text-xl font-black tabular-nums text-ink mt-1">7</p>
+          <span className="text-xs text-muted">Planes Oficiales</span>
         </div>
 
-        <div className="p-3.5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
+        <div className="p-3.5 bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)]">
+          <div className="flex items-center justify-between text-muted text-xs font-semibold">
             <span>Módulos</span>
             <span className="w-2 h-2 rounded-full bg-teal-500" />
           </div>
-          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">14</p>
-          <span className="text-xs text-slate-600 dark:text-slate-400">Ciclos Anuales</span>
+          <p className="text-xl font-black tabular-nums text-ink mt-1">14</p>
+          <span className="text-xs text-muted">Ciclos Anuales</span>
         </div>
 
-        <div className="p-3.5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
+        <div className="p-3.5 bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)]">
+          <div className="flex items-center justify-between text-muted text-xs font-semibold">
             <span>Capacidades</span>
             <span className="w-2 h-2 rounded-full bg-cyan-500" />
           </div>
-          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">129</p>
-          <span className="text-xs text-slate-600 dark:text-slate-400">Técnicas / Empleabilidad</span>
+          <p className="text-xl font-black tabular-nums text-ink mt-1">129</p>
+          <span className="text-xs text-muted">Técnicas / Empleabilidad</span>
         </div>
 
-        <div className="p-3.5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
+        <div className="p-3.5 bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)]">
+          <div className="flex items-center justify-between text-muted text-xs font-semibold">
             <span>Indicadores Cap.</span>
             <span className="w-2 h-2 rounded-full bg-blue-500" />
           </div>
-          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">378</p>
-          <span className="text-xs text-slate-600 dark:text-slate-400">Logro Pedagógico</span>
+          <p className="text-xl font-black tabular-nums text-ink mt-1">378</p>
+          <span className="text-xs text-muted">Logro Pedagógico</span>
         </div>
 
-        <div className="p-3.5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
+        <div className="p-3.5 bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)]">
+          <div className="flex items-center justify-between text-muted text-xs font-semibold">
             <span>Indicadores UC</span>
             <span className="w-2 h-2 rounded-full bg-indigo-500" />
           </div>
-          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">258</p>
-          <span className="text-xs text-slate-600 dark:text-slate-400">Anexo 8 MINEDU</span>
+          <p className="text-xl font-black tabular-nums text-ink mt-1">258</p>
+          <span className="text-xs text-muted">Anexo 8 MINEDU</span>
         </div>
 
-        <div className="p-3.5 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834] shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
+        <div className="p-3.5 bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)]">
+          <div className="flex items-center justify-between text-muted text-xs font-semibold">
             <span>Expediente PDF</span>
             <span className="w-2 h-2 rounded-full bg-amber-500" />
           </div>
-          <p className="text-xl font-black tabular-nums text-slate-900 dark:text-[#F0FDF8] mt-1">150</p>
-          <span className="text-xs text-slate-600 dark:text-slate-400">Páginas Auditadas</span>
+          <p className="text-xl font-black tabular-nums text-ink mt-1">150</p>
+          <span className="text-xs text-muted">Páginas Auditadas</span>
         </div>
       </div>
 
@@ -1120,13 +1120,14 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
       {/* ======================================================== */}
       {statusMessage && (
         <div
+          role={statusMessage.type === 'error' ? 'alert' : 'status'}
           className={`p-4 rounded-xl border flex items-center justify-between gap-3 text-sm font-semibold transition-all ${
             statusMessage.type === 'success'
               ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800'
               : 'bg-red-50 dark:bg-rose-950/40 text-red-900 dark:text-rose-200 border-red-200 dark:border-rose-900'
           }`}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             {statusMessage.type === 'success' ? (
               <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             ) : (
@@ -1137,7 +1138,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
           <button
             type="button"
             onClick={() => setStatusMessage(null)}
-            className="text-xs underline hover:no-underline cursor-pointer"
+            className="min-h-[36px] px-2 text-xs underline hover:no-underline cursor-pointer shrink-0"
           >
             Entendido
           </button>
@@ -1148,33 +1149,33 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
       {/* 3. BANNER INFORMATIVO O CONMUTADOR DE MODOS               */}
       {/* ======================================================== */}
       {!isEmbeddedModeLocked ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 p-2 bg-slate-100 dark:bg-[#131C1A] rounded-2xl border border-slate-200 dark:border-[#263834]">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-2 bg-surface-alt rounded-2xl border border-line">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => setViewMode('catalogo_bd')}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              className={`min-h-[44px] px-4 py-2 rounded-[10px] text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 viewMode === 'catalogo_bd'
-                  ? 'bg-white dark:bg-[#182220] text-emerald-900 dark:text-[#5EEAD4] shadow-sm border border-slate-200 dark:border-[#263834]'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+                  ? 'bg-surface text-brand shadow-[var(--ui-shadow)] border border-line'
+                  : 'text-muted hover:text-ink'
               }`}
             >
-              <AcademicConfigIcon className="w-4 h-4" />
+              <AcademicConfigIcon className="w-4 h-4 shrink-0" />
               6. Competencias, Capacidades e Indicadores
             </button>
 
             <button
               type="button"
               onClick={() => setViewMode('saneamiento_bd')}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              className={`min-h-[44px] px-4 py-2 rounded-[10px] text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 viewMode === 'saneamiento_bd'
-                  ? 'bg-white dark:bg-[#182220] text-emerald-900 dark:text-[#5EEAD4] shadow-sm border border-slate-200 dark:border-[#263834]'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+                  ? 'bg-surface text-brand shadow-[var(--ui-shadow)] border border-line'
+                  : 'text-muted hover:text-ink'
               }`}
             >
-              <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               7. Auditoría y Subsanación del Expediente
-              <span className="px-2 py-0.5 rounded-full text-xs font-black bg-emerald-600 text-white">
+              <span className="px-2 py-0.5 rounded-full text-xs font-black bg-emerald-600 text-white tabular-nums">
                 ✓ 16 verificadas
               </span>
             </button>
@@ -1185,25 +1186,26 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
               type="button"
               onClick={loadDocumentaryCatalog}
               disabled={isLoading}
-              className="p-2 text-slate-600 dark:text-slate-300 bg-transparent dark:bg-transparent hover:bg-slate-200 dark:hover:bg-[#182220] rounded-xl transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 text-muted hover:text-ink bg-transparent hover:bg-surface rounded-[10px] transition-colors cursor-pointer"
               title="Recargar catálogo curricular"
+              aria-label="Recargar catálogo curricular"
             >
               <RefreshIcon className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
       ) : (
-        <div className="bg-[#E6F4F1]/70 dark:bg-[#132B25]/80 border border-[#13594A]/30 dark:border-[#205C4E] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="space-y-1">
-            <p className="text-sm font-bold text-[#0D3E34] dark:text-[#5EEAD4] flex items-center gap-2">
+        <div className="bg-brand-soft border border-brand/30 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="space-y-1 min-w-0">
+            <p className="text-sm font-bold text-brand flex items-center gap-2">
               <span>ⓘ ¿Para qué sirve esta sección?</span>
             </p>
             {viewMode === 'catalogo_bd' ? (
-              <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
+              <p className="text-xs text-ink/90 leading-relaxed">
                 Administra las <strong>Unidades de Competencia (UC/CE), las 129 Capacidades Técnicas/Empleabilidad y los 636 Indicadores de Logro</strong> de las 7 carreras oficiales. Alimenta directamente el Plan de Estudios, el Itinerario Formativo, las Sílabos/Programaciones Curriculares y las matrices de evaluación de los <strong>21 formatos oficiales MINEDU</strong>.
               </p>
             ) : (
-              <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
+              <p className="text-xs text-ink/90 leading-relaxed">
                 Presenta la <strong>trazabilidad de las 16 observaciones del expediente fuente PDF ya subsanadas y verificadas</strong>, junto con los parámetros normativos institucionales y el aislamiento preventivo de registros en cuarentena. Garantiza que ningún error tipográfico del documento original afecte los <strong>21 formatos oficiales MINEDU</strong>.
               </p>
             )}
@@ -1212,7 +1214,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
             type="button"
             onClick={loadDocumentaryCatalog}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] bg-white dark:bg-[#182220] border border-[#13594A]/30 dark:border-[#263834] rounded-xl hover:bg-emerald-50 dark:hover:bg-[#1F2D2A] transition-colors shrink-0 cursor-pointer"
+            className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-brand bg-surface border border-brand/30 rounded-[10px] hover:bg-surface-alt transition-colors shrink-0 cursor-pointer"
             title="Recargar catálogo curricular"
           >
             <RefreshIcon className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -1228,9 +1230,9 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
         <div className="space-y-6">
           {/* Selector Horizontal de las 7 Carreras Técnicas */}
           <div>
-            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+            <p className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
               Seleccione la Carrera Técnica para inspección y edición:
-            </label>
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2.5">
               {programs.map((prog) => {
                 const theme = resolveCareerVisualTheme(prog.id, prog.name);
@@ -1243,18 +1245,19 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                       setSelectedProgramId(prog.id);
                       setSelectedModuleIndex(0);
                     }}
-                    className={`p-3 text-left rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`p-3 text-left rounded-2xl border transition-all cursor-pointer flex flex-col justify-between min-w-0 ${
                       isSelected
-                        ? 'bg-emerald-50 dark:bg-[#132B25] border-emerald-600 dark:border-[#208B73] shadow-sm ring-2 ring-emerald-600/20'
-                        : 'bg-white dark:bg-[#182220] border-slate-200 dark:border-[#263834] hover:border-slate-300 dark:hover:border-slate-600'
+                        ? 'bg-brand-soft border-brand shadow-[var(--ui-shadow)] ring-2 ring-brand/20'
+                        : 'bg-surface border-line hover:border-brand/50'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white ${theme.iconBgClass}`}>
+                    <CareerPhoto programId={prog.id} programName={prog.name} decorative className="mb-3 h-20 w-full rounded-lg" />
+                    <div className="flex items-center justify-between mb-2 gap-1">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0 ${theme.iconBgClass}`}>
                         <CareerEmblemIcon programId={prog.id} programName={prog.name} className="w-4 h-4" />
                       </div>
                       <span
-                        className={`text-xs font-black px-1.5 py-0.5 rounded-md ${
+                        className={`text-xs font-black px-1.5 py-0.5 rounded-md truncate ${
                           prog.statusCompleteness === 'COMPLETO'
                             ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
                             : prog.statusCompleteness === 'CON_OBSERVACIONES'
@@ -1265,11 +1268,11 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                         {prog.statusCompleteness}
                       </span>
                     </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8] line-clamp-2 leading-tight">
+                    <div className="min-w-0">
+                      <h4 className="text-xs font-bold text-ink line-clamp-2 leading-tight">
                         {prog.name}
                       </h4>
-                      <p className="text-xs tabular-nums text-slate-600 dark:text-slate-400 mt-1">
+                      <p className="text-xs tabular-nums text-muted mt-1">
                         {prog.totalHoursDeclared}h · {prog.totalCreditsDeclared} cr.
                       </p>
                     </div>
@@ -1281,12 +1284,12 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
 
           {/* Tarjeta de Trabajo del Programa Seleccionado */}
           {currentProgram && (
-            <div className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] p-6 space-y-6">
+            <div className="bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)] p-6 space-y-6">
               {/* Encabezado del Programa */}
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-100 dark:border-[#263834]">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-line">
+                <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white ${
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 ${
                       resolveCareerVisualTheme(currentProgram.id, currentProgram.name).iconBgClass
                     }`}
                   >
@@ -1296,28 +1299,28 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                       className="w-6 h-6"
                     />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-emerald-700 dark:text-[#5EEAD4] uppercase tracking-wider">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-bold text-brand uppercase tracking-wider tabular-nums">
                         {currentProgram.id} · Cód. CNOF: {currentProgram.codigoProgramaFuente}
                       </span>
-                      <span className="text-xs text-slate-400 dark:text-slate-500">|</span>
-                      <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                      <span className="text-xs text-muted">|</span>
+                      <span className="text-xs font-semibold text-muted tabular-nums">
                         {currentProgram.pageRange}
                       </span>
                     </div>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-[#F0FDF8]">
+                    <h2 className="text-xl font-black text-ink truncate">
                       {currentProgram.name}
                     </h2>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={() => handleSaveProgram(false)}
                     disabled={isSaving || !isEditable}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-[#131C1A] hover:bg-slate-200 dark:hover:bg-[#202E2B] rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                    className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-ink bg-surface-alt hover:bg-brand-soft border border-line rounded-[10px] transition-colors cursor-pointer disabled:opacity-50"
                   >
                     <SaveIcon className="w-3.5 h-3.5" />
                     Guardar Carrera
@@ -1326,7 +1329,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                     type="button"
                     onClick={handleSyncToCurriculum}
                     disabled={isSyncing || !isEditable}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D382F] rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                    className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-on-brand bg-brand hover:opacity-90 rounded-[10px] shadow-[var(--ui-shadow)] transition-opacity cursor-pointer disabled:opacity-50"
                   >
                     <RefreshIcon className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
                     Sincronizar con Planes Activos
@@ -1335,14 +1338,14 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
               </div>
 
               {/* Sub-pestañas modulares del programa */}
-              <div className="border-b border-slate-200 dark:border-[#263834] flex flex-wrap gap-2">
+              <div className="border-b border-line flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => setCareerSubTab('ficha')}
-                  className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                  className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
                     careerSubTab === 'ficha'
-                      ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                      ? 'border-brand text-brand'
+                      : 'border-transparent text-muted hover:text-ink'
                   }`}
                 >
                   1. Ficha Técnica y Perfil de Egreso
@@ -1350,10 +1353,10 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                 <button
                   type="button"
                   onClick={() => setCareerSubTab('competencias')}
-                  className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                  className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
                     careerSubTab === 'competencias'
-                      ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                      ? 'border-brand text-brand'
+                      : 'border-transparent text-muted hover:text-ink'
                   }`}
                 >
                   2. Unidades de Competencia (UC/CE) y 258 Indicadores
@@ -1361,10 +1364,10 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                 <button
                   type="button"
                   onClick={() => setCareerSubTab('capacidades')}
-                  className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                  className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
                     careerSubTab === 'capacidades'
-                      ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                      ? 'border-brand text-brand'
+                      : 'border-transparent text-muted hover:text-ink'
                   }`}
                 >
                   3. Módulos, 129 Capacidades y 378 Indicadores
@@ -1372,10 +1375,10 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                 <button
                   type="button"
                   onClick={() => setCareerSubTab('itinerario')}
-                  className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                  className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
                     careerSubTab === 'itinerario'
-                      ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                      ? 'border-brand text-brand'
+                      : 'border-transparent text-muted hover:text-ink'
                   }`}
                 >
                   4. Itinerario de Unidades Didácticas (UD) y EFSRT
@@ -1387,22 +1390,24 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                 <div className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      <label htmlFor="doc-cat-cnof" className="block text-xs font-bold text-ink mb-1">
                         Código de Programa (CNOF / Fuente)
                       </label>
                       <input
+                        id="doc-cat-cnof"
                         type="text"
                         value={currentProgram.codigoProgramaFuente}
                         onChange={(e) => handleUpdateProgramField('codigoProgramaFuente', e.target.value)}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] focus:ring-2 focus:ring-emerald-600 outline-none"
+                        className="w-full min-h-[44px] px-3 py-2 text-sm font-semibold tabular-nums rounded-[10px] bg-surface-alt border border-line text-ink"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      <label htmlFor="doc-cat-sector" className="block text-xs font-bold text-ink mb-1">
                         Sector y Familia Productiva
                       </label>
                       <input
+                        id="doc-cat-sector"
                         type="text"
                         value={`${currentProgram.sector} / ${currentProgram.family}`}
                         onChange={(e) => {
@@ -1411,29 +1416,31 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                           handleUpdateProgramField('family', parts[1]?.trim() || '');
                         }}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] focus:ring-2 focus:ring-emerald-600 outline-none"
+                        className="w-full min-h-[44px] px-3 py-2 text-sm font-semibold rounded-[10px] bg-surface-alt border border-line text-ink"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      <label htmlFor="doc-cat-codmod" className="block text-xs font-bold text-ink mb-1">
                         Código Modular Activo vs Observado
                       </label>
                       <div className="flex gap-2">
                         <input
+                          id="doc-cat-codmod"
                           type="text"
                           value={currentProgram.codigoModularActivo}
                           onChange={(e) => handleUpdateProgramField('codigoModularActivo', e.target.value)}
                           disabled={!isEditable}
                           title="Código modular activo"
-                          className="w-1/2 px-3 py-2 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
+                          className="w-1/2 min-h-[44px] px-3 py-2 text-sm font-semibold tabular-nums rounded-[10px] bg-surface-alt border border-line text-ink"
                         />
-                        <span className="text-xs text-slate-400 self-center">vs</span>
+                        <span className="text-xs text-muted self-center">vs</span>
                         <input
                           type="text"
                           value={currentProgram.codigoModularObservado}
                           disabled
+                          aria-label="Código modular observado en PDF"
                           title="Código modular observado en PDF"
-                          className="w-1/2 px-3 py-2 text-sm font-semibold rounded-xl bg-slate-100 dark:bg-[#1c2925] border border-slate-200 dark:border-[#263834] text-slate-500"
+                          className="w-1/2 min-h-[44px] px-3 py-2 text-sm font-semibold tabular-nums rounded-[10px] bg-surface-alt/60 border border-line text-muted"
                         />
                       </div>
                     </div>
@@ -1441,77 +1448,82 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      <label htmlFor="doc-cat-nivel" className="block text-xs font-bold text-ink mb-1">
                         Nivel Formativo
                       </label>
                       <input
+                        id="doc-cat-nivel"
                         type="text"
                         value={currentProgram.nivelFormativo}
                         onChange={(e) => handleUpdateProgramField('nivelFormativo', e.target.value)}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
+                        className="w-full min-h-[44px] px-3 py-2 text-sm font-semibold rounded-[10px] bg-surface-alt border border-line text-ink"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      <label htmlFor="doc-cat-modalidad" className="block text-xs font-bold text-ink mb-1">
                         Modalidad
                       </label>
                       <input
+                        id="doc-cat-modalidad"
                         type="text"
                         value={currentProgram.modalidad}
                         onChange={(e) => handleUpdateProgramField('modalidad', e.target.value)}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
+                        className="w-full min-h-[44px] px-3 py-2 text-sm font-semibold rounded-[10px] bg-surface-alt border border-line text-ink"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      <label htmlFor="doc-cat-horas" className="block text-xs font-bold text-ink mb-1">
                         Horas Totales Declaradas
                       </label>
                       <input
+                        id="doc-cat-horas"
                         type="number"
                         value={currentProgram.totalHoursDeclared}
                         onChange={(e) => handleUpdateProgramField('totalHoursDeclared', Number(e.target.value))}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-sm tabular-nums font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
+                        className="w-full min-h-[44px] px-3 py-2 text-sm tabular-nums font-semibold rounded-[10px] bg-surface-alt border border-line text-ink"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      <label htmlFor="doc-cat-creditos" className="block text-xs font-bold text-ink mb-1">
                         Créditos Totales Declarados
                       </label>
                       <input
+                        id="doc-cat-creditos"
                         type="number"
                         value={currentProgram.totalCreditsDeclared}
                         onChange={(e) => handleUpdateProgramField('totalCreditsDeclared', Number(e.target.value))}
                         disabled={!isEditable}
-                        className="w-full px-3 py-2 text-sm tabular-nums font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8]"
+                        className="w-full min-h-[44px] px-3 py-2 text-sm tabular-nums font-semibold rounded-[10px] bg-surface-alt border border-line text-ink"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <label htmlFor="doc-cat-perfil" className="block text-xs font-bold text-ink mb-1">
                       Perfil de Egreso Institucional
                     </label>
                     <textarea
+                      id="doc-cat-perfil"
                       rows={3}
                       value={currentProgram.graduateProfile}
                       onChange={(e) => handleUpdateProgramField('graduateProfile', e.target.value)}
                       disabled={!isEditable}
-                      className="w-full p-3 text-sm font-medium rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] focus:ring-2 focus:ring-emerald-600 outline-none leading-relaxed"
+                      className="w-full p-3 text-sm font-medium rounded-[10px] bg-surface-alt border border-line text-ink leading-relaxed"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <p className="block text-xs font-bold text-ink mb-1">
                       Ámbitos de Desempeño Laboral
-                    </label>
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {currentProgram.performanceAreas.map((area, idx) => (
                         <span
                           key={idx}
-                          className="px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#263834]"
+                          className="px-3 py-1 rounded-lg text-xs font-medium bg-surface-alt text-ink border border-line"
                         >
                           {area}
                         </span>
@@ -1526,7 +1538,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                 <div className="space-y-4">
                   <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-900/50 flex items-start gap-3">
                     <AcademicConfigIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                    <div className="text-xs text-blue-900 dark:text-blue-200">
+                    <div className="text-xs text-blue-900 dark:text-blue-200 min-w-0">
                       <p className="font-bold">Nivel Jerárquico: Competencias Específicas y de Empleabilidad (Anexo 8)</p>
                       <p className="mt-0.5 text-blue-800 dark:text-blue-300">
                         Estos 258 indicadores de logro corresponden al perfil de egreso nacional MINEDU. Están segregados de los 378 indicadores de capacidad formativa para evitar duplicidades o distorsiones de evaluación.
@@ -1535,9 +1547,9 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                   </div>
 
                   {currentProgram.competencies.length === 0 ? (
-                    <div className="py-8 text-center text-slate-500 dark:text-slate-400">
+                    <div className="py-8 text-center text-muted">
                       <p className="text-sm font-semibold">Competencias registradas en la línea base institucional</p>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                      <p className="text-xs text-muted mt-1">
                         Las Unidades de Competencia (UC) y Competencias de Empleabilidad (CE) se encuentran vinculadas directamente a los módulos formativos activos.
                       </p>
                     </div>
@@ -1546,41 +1558,41 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                       {currentProgram.competencies.map((comp) => (
                         <div
                           key={comp.id}
-                          className="p-4 rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50/60 dark:bg-[#131C1A] space-y-3"
+                          className="p-4 rounded-xl border border-line bg-surface-alt space-y-3"
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="px-2 py-0.5 rounded-md text-xs font-black uppercase bg-[#13594A] text-white">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="px-2 py-0.5 rounded-md text-xs font-black uppercase bg-brand text-on-brand shrink-0">
                                 {comp.type} · {comp.code}
                               </span>
-                              <h4 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">
+                              <h4 className="text-sm font-bold text-ink min-w-0">
                                 {comp.title}
                               </h4>
                             </div>
-                            <span className="text-xs text-slate-600 dark:text-slate-400">
+                            <span className="text-xs text-muted tabular-nums shrink-0">
                               PDF pág. {comp.page}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                          <p className="text-xs text-muted leading-relaxed">
                             {comp.description}
                           </p>
 
                           {comp.indicators.length > 0 && (
-                            <div className="pt-2 border-t border-slate-200 dark:border-[#263834]">
-                              <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                                Indicadores de Logro de Competencia ({comp.indicators.length})
+                            <div className="pt-2 border-t border-line">
+                              <p className="text-xs font-bold text-ink uppercase tracking-wider mb-2">
+                                Indicadores de Logro de Competencia (<span className="tabular-nums">{comp.indicators.length}</span>)
                               </p>
                               <div className="space-y-1.5 pl-2">
                                 {comp.indicators.map((ind) => (
                                   <div
                                     key={ind.id}
-                                    className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300"
+                                    className="flex items-start gap-2 text-xs text-ink"
                                   >
-                                    <span className="font-bold text-emerald-700 dark:text-[#5EEAD4] shrink-0">
+                                    <span className="font-bold text-brand shrink-0">
                                       • {ind.code}:
                                     </span>
-                                    <span>{ind.text}</span>
-                                    <span className="text-xs text-slate-600 dark:text-slate-400 shrink-0 ml-auto">
+                                    <span className="min-w-0">{ind.text}</span>
+                                    <span className="text-xs text-muted tabular-nums shrink-0 ml-auto">
                                       (p. {ind.page})
                                     </span>
                                   </div>
@@ -1611,8 +1623,8 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                   )}
 
                   {/* Selector de Módulo */}
-                  <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-[#263834]">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-line">
+                    <span className="text-xs font-bold text-ink">
                       Módulo Formativo:
                     </span>
                     {currentProgram.modules.length > 0 ? (
@@ -1621,17 +1633,17 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                           key={mod.id}
                           type="button"
                           onClick={() => setSelectedModuleIndex(idx)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          className={`min-h-[40px] px-3 py-1.5 rounded-[10px] text-xs font-bold transition-all cursor-pointer min-w-0 truncate max-w-full ${
                             selectedModuleIndex === idx
-                              ? 'bg-[#13594A] text-white'
-                              : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                              ? 'bg-brand text-on-brand'
+                              : 'bg-surface-alt text-ink hover:bg-brand-soft border border-line'
                           }`}
                         >
                           Módulo {mod.number}: {mod.name.slice(0, 35)}...
                         </button>
                       ))
                     ) : (
-                      <span className="text-xs text-slate-600 dark:text-slate-400 italic">
+                      <span className="text-xs text-muted italic">
                         Módulos I y II configurados en base de datos 2026.
                       </span>
                     )}
@@ -1643,35 +1655,35 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                       {currentProgram.modules[selectedModuleIndex].capacities.map((cap) => (
                         <div
                           key={cap.id}
-                          className="p-4 rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50/60 dark:bg-[#131C1A] space-y-3"
+                          className="p-4 rounded-xl border border-line bg-surface-alt space-y-3"
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="px-2 py-0.5 rounded-md text-xs font-black uppercase bg-teal-700 text-white">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="px-2 py-0.5 rounded-md text-xs font-black uppercase bg-teal-700 text-white shrink-0">
                                 {cap.type} · {cap.code}
                               </span>
-                              <h5 className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8]">
+                              <h5 className="text-xs font-bold text-ink min-w-0">
                                 {cap.title}
                               </h5>
                             </div>
-                            <span className="text-xs text-slate-600 dark:text-slate-400">
+                            <span className="text-xs text-muted tabular-nums shrink-0">
                               Pág. {cap.page}
                             </span>
                           </div>
 
                           {/* Indicadores de Capacidad */}
                           {cap.indicators.length > 0 && (
-                            <div className="pl-3 border-l-2 border-emerald-500/40 space-y-1.5">
+                            <div className="pl-3 border-l-2 border-brand/40 space-y-1.5">
                               {cap.indicators.map((ind) => (
                                 <div
                                   key={ind.id}
-                                  className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300"
+                                  className="flex items-start gap-2 text-xs text-ink"
                                 >
-                                  <span className="font-bold text-teal-700 dark:text-teal-300">
+                                  <span className="font-bold text-brand shrink-0">
                                     {ind.code}:
                                   </span>
-                                  <span>{ind.text}</span>
-                                  <span className="text-xs text-slate-600 dark:text-slate-400 ml-auto shrink-0">
+                                  <span className="min-w-0">{ind.text}</span>
+                                  <span className="text-xs text-muted tabular-nums ml-auto shrink-0">
                                     (p. {ind.page})
                                   </span>
                                 </div>
@@ -1691,7 +1703,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="border-b border-slate-200 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-600 dark:text-slate-300 font-bold">
+                        <tr className="border-b border-line bg-surface-alt text-muted font-bold">
                           <th className="py-2.5 px-3">Código</th>
                           <th className="py-2.5 px-3">Unidad Didáctica / Experiencia</th>
                           <th className="py-2.5 px-2 text-center">Tipo</th>
@@ -1705,16 +1717,16 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                           <th className="py-2.5 px-2 text-center">Pág.</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-[#263834]">
+                      <tbody className="divide-y divide-line">
                         {currentProgram.modules[selectedModuleIndex]?.units.map((unit) => (
                           <tr
                             key={unit.id}
-                            className="hover:bg-slate-50/50 dark:hover:bg-[#1F2D2A] transition-colors"
+                            className="hover:bg-surface-alt/60 transition-colors"
                           >
-                            <td className="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-[#F0FDF8]">
+                            <td className="py-2.5 px-3 font-mono font-bold text-ink tabular-nums">
                               {unit.code}
                             </td>
-                            <td className="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-200">
+                            <td className="py-2.5 px-3 font-semibold text-ink min-w-0">
                               {unit.name}
                             </td>
                             <td className="py-2.5 px-2 text-center">
@@ -1728,28 +1740,28 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                                 {unit.type}
                               </span>
                             </td>
-                            <td className="py-2.5 px-2 text-center tabular-nums text-slate-600 dark:text-slate-400">
+                            <td className="py-2.5 px-2 text-center tabular-nums text-muted">
                               {unit.creditsTheory}
                             </td>
-                            <td className="py-2.5 px-2 text-center tabular-nums text-slate-600 dark:text-slate-400">
+                            <td className="py-2.5 px-2 text-center tabular-nums text-muted">
                               {unit.creditsPractice}
                             </td>
-                            <td className="py-2.5 px-2 text-center tabular-nums font-bold text-slate-900 dark:text-[#F0FDF8]">
+                            <td className="py-2.5 px-2 text-center tabular-nums font-bold text-ink">
                               {unit.creditsTotal}
                             </td>
-                            <td className="py-2.5 px-2 text-center tabular-nums text-slate-600 dark:text-slate-400">
+                            <td className="py-2.5 px-2 text-center tabular-nums text-muted">
                               {unit.hoursTheory}
                             </td>
-                            <td className="py-2.5 px-2 text-center tabular-nums text-slate-600 dark:text-slate-400">
+                            <td className="py-2.5 px-2 text-center tabular-nums text-muted">
                               {unit.hoursPractice}
                             </td>
-                            <td className="py-2.5 px-2 text-center tabular-nums font-black text-emerald-700 dark:text-[#5EEAD4]">
+                            <td className="py-2.5 px-2 text-center tabular-nums font-black text-brand">
                               {unit.hoursTotal}h
                             </td>
-                            <td className="py-2.5 px-3 text-center tabular-nums text-xs text-slate-600 dark:text-slate-300">
+                            <td className="py-2.5 px-3 text-center tabular-nums text-xs text-muted">
                               {unit.startDate} → {unit.endDate}
                             </td>
-                            <td className="py-2.5 px-2 text-center tabular-nums text-slate-600 dark:text-slate-400">
+                            <td className="py-2.5 px-2 text-center tabular-nums text-muted">
                               {unit.page}
                             </td>
                           </tr>
@@ -1770,47 +1782,47 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
       {viewMode === 'saneamiento_bd' && (
         <div className="space-y-6">
           {/* Sub-pestañas 7.A, 7.B y 7.C del modo Saneamiento */}
-          <div className="border-b border-slate-200 dark:border-[#263834] flex flex-wrap gap-2">
+          <div className="border-b border-line flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => setSaneamientoSubTab('7A')}
-              className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+              className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
                 saneamientoSubTab === '7A'
-                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                  ? 'border-brand text-brand'
+                  : 'border-transparent text-muted hover:text-ink'
               }`}
             >
-              7.A Observaciones Subsanadas del Expediente (16)
+              7.A Observaciones Subsanadas del Expediente (<span className="tabular-nums">16</span>)
             </button>
             <button
               type="button"
               onClick={() => setSaneamientoSubTab('7B')}
-              className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+              className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
                 saneamientoSubTab === '7B'
-                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                  ? 'border-brand text-brand'
+                  : 'border-transparent text-muted hover:text-ink'
               }`}
             >
-              7.B Parámetros Institucionales ({parameters.length})
+              7.B Parámetros Institucionales (<span className="tabular-nums">{parameters.length}</span>)
             </button>
             <button
               type="button"
               onClick={() => setSaneamientoSubTab('7C')}
-              className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+              className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
                 saneamientoSubTab === '7C'
-                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                  ? 'border-brand text-brand'
+                  : 'border-transparent text-muted hover:text-ink'
               }`}
             >
-              7.C Repositorio en Cuarentena ({quarantine.length})
+              7.C Repositorio en Cuarentena (<span className="tabular-nums">{quarantine.length}</span>)
             </button>
             <button
               type="button"
               onClick={() => setSaneamientoSubTab('ALL')}
-              className={`px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
+              className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer ${
                 saneamientoSubTab === 'ALL'
-                  ? 'border-[#13594A] dark:border-[#5EEAD4] text-[#13594A] dark:text-[#5EEAD4]'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                  ? 'border-brand text-brand'
+                  : 'border-transparent text-muted hover:text-ink'
               }`}
             >
               Vista Completa (7.A + 7.B + 7.C)
@@ -1821,16 +1833,17 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
           {(saneamientoSubTab === '7A' || saneamientoSubTab === 'ALL') && (
             <div className="space-y-6">
               {/* Barra de Filtros de Saneamiento */}
-              <div className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] p-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)] p-4 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <label htmlFor="filter-issue-severity" className="text-xs font-bold text-ink">
                       Severidad:
                     </label>
                     <select
+                      id="filter-issue-severity"
                       value={issueSeverityFilter}
                       onChange={(e) => setIssueSeverityFilter(e.target.value)}
-                      className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8] outline-none"
+                      className="min-h-[44px] px-3 py-1.5 text-xs font-semibold rounded-[10px] bg-surface-alt border border-line text-ink"
                     >
                       <option value="TODAS">Todas las severidades</option>
                       <option value="ALTA">Alta</option>
@@ -1842,13 +1855,14 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <label htmlFor="filter-issue-program" className="text-xs font-bold text-ink">
                       Carrera:
                     </label>
                     <select
+                      id="filter-issue-program"
                       value={issueProgramFilter}
                       onChange={(e) => setIssueProgramFilter(e.target.value)}
-                      className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8] outline-none"
+                      className="min-h-[44px] px-3 py-1.5 text-xs font-semibold rounded-[10px] bg-surface-alt border border-line text-ink"
                     >
                       <option value="TODOS">Todas las carreras</option>
                       {programs.map((p) => (
@@ -1861,13 +1875,14 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                 </div>
 
                 <div className="relative w-full sm:w-64">
-                  <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <SearchIcon className="w-4 h-4 text-muted absolute left-3 top-3.5" />
                   <input
                     type="text"
+                    aria-label="Buscar observación por código o campo"
                     value={issueSearchQuery}
                     onChange={(e) => setIssueSearchQuery(e.target.value)}
                     placeholder="Buscar por código o campo..."
-                    className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] outline-none"
+                    className="w-full min-h-[44px] pl-9 pr-3 py-1.5 text-xs font-semibold rounded-[10px] bg-surface-alt border border-line text-ink placeholder:text-muted"
                   />
                 </div>
               </div>
@@ -1879,33 +1894,33 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                   return (
                     <div
                       key={issue.id}
-                      className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] p-5 space-y-4"
+                      className="bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)] p-5 space-y-4"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-slate-100 dark:bg-[#131C1A] text-slate-800 dark:text-[#5EEAD4] border border-slate-200 dark:border-[#263834]">
+                        <div className="flex flex-wrap items-center gap-2 min-w-0">
+                          <span className="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-surface-alt text-brand border border-line tabular-nums">
                             {issue.code}
                           </span>
                           <span
                             className={`px-2 py-0.5 rounded-full text-xs font-black uppercase ${
                               issue.severity === 'ALTA'
-                                ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300'
+                                ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
                                 : issue.severity === 'CUARENTENA'
-                                ? 'bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-300'
+                                ? 'bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800'
                                 : issue.severity === 'BLOQUE_PARCIAL'
-                                ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-300'
-                                : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300'
+                                ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800'
+                                : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
                             }`}
                           >
                             {issue.severity}
                           </span>
-                          <span className="text-xs text-slate-600 dark:text-slate-400">
+                          <span className="text-xs text-muted tabular-nums">
                             {issue.category} · PDF pág. {issue.pagePdf}
                           </span>
                         </div>
 
                         <span
-                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full self-start sm:self-auto ${
+                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full self-start sm:self-auto shrink-0 ${
                             issue.status === 'CORREGIDO_OPERATIVO'
                               ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
                               : issue.status === 'EN_CUARENTENA'
@@ -1917,19 +1932,19 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                         </span>
                       </div>
 
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-[#F0FDF8]">
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold text-ink">
                           {issue.title}
                         </h3>
-                        <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                        <p className="text-xs text-muted mt-1 leading-relaxed">
                           {issue.description}
                         </p>
                       </div>
 
                       {/* Comparativa Literal vs Operativa */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834]">
-                          <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider block mb-1">
+                        <div className="p-3 rounded-xl bg-surface-alt border border-line">
+                          <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-1 tabular-nums">
                             📄 Valor Literal en PDF (Pág. {issue.pagePdf})
                           </span>
                           <p className="text-xs font-mono font-semibold text-rose-700 dark:text-rose-400 break-words">
@@ -1937,26 +1952,26 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                           </p>
                         </div>
 
-                        <div className="p-3 rounded-xl bg-emerald-50/50 dark:bg-[#132B25] border border-emerald-200 dark:border-[#208B73]/40">
-                          <span className="text-xs font-bold text-emerald-800 dark:text-[#5EEAD4] uppercase tracking-wider block mb-1">
+                        <div className="p-3 rounded-xl bg-brand-soft border border-brand/30">
+                          <span className="text-xs font-bold text-brand uppercase tracking-wider block mb-1">
                             ⚙️ Valor Operativo Actual en el Sistema
                           </span>
-                          <p className="text-xs font-semibold text-emerald-900 dark:text-[#F0FDF8] break-words">
+                          <p className="text-xs font-semibold text-ink break-words">
                             {issue.activeOperationalValue}
                           </p>
                         </div>
                       </div>
 
                       {issue.resolutionNote && (
-                        <div className="text-xs text-slate-600 dark:text-slate-400 italic">
-                          <span className="font-bold text-slate-700 dark:text-slate-300">Nota de resolución:</span>{' '}
+                        <div className="text-xs text-muted italic">
+                          <span className="font-bold text-ink">Nota de resolución:</span>{' '}
                           {issue.resolutionNote}
                         </div>
                       )}
 
                       {/* Botón y Formulario de Resolución en Línea */}
                       {isEditable && (
-                        <div className="pt-2 border-t border-slate-100 dark:border-[#263834]">
+                        <div className="pt-2 border-t border-line">
                           {!isEditing ? (
                             <button
                               type="button"
@@ -1966,46 +1981,49 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                                 setEditIssueNote(issue.resolutionNote || '');
                                 setEditIssueStatus(issue.status);
                               }}
-                              className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] hover:underline cursor-pointer"
+                              className="min-h-[36px] text-xs font-bold text-brand hover:underline cursor-pointer"
                             >
                               ✎ Editar / Corregir Valor Operativo
                             </button>
                           ) : (
-                            <div className="space-y-3 p-3.5 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] mt-2">
-                              <h4 className="text-xs font-bold text-slate-800 dark:text-[#F0FDF8]">
+                            <div className="space-y-3 p-3.5 rounded-xl bg-surface-alt border border-line mt-2">
+                              <h4 className="text-xs font-bold text-ink">
                                 Actualizar Resolución Directiva
                               </h4>
                               <div>
-                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                <label htmlFor={`issue-val-${issue.id}`} className="block text-xs font-bold text-ink mb-1">
                                   Nuevo Valor Operativo:
                                 </label>
                                 <input
+                                  id={`issue-val-${issue.id}`}
                                   type="text"
                                   value={editIssueValue}
                                   onChange={(e) => setEditIssueValue(e.target.value)}
-                                  className="w-full px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] outline-none"
+                                  className="w-full min-h-[44px] px-3 py-1.5 text-sm rounded-[10px] bg-surface border border-line text-ink"
                                 />
                               </div>
 
                               <div>
-                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                <label htmlFor={`issue-note-${issue.id}`} className="block text-xs font-bold text-ink mb-1">
                                   Motivo / Nota de Resolución:
                                 </label>
                                 <input
+                                  id={`issue-note-${issue.id}`}
                                   type="text"
                                   value={editIssueNote}
                                   onChange={(e) => setEditIssueNote(e.target.value)}
                                   placeholder="Resolución directiva o justificación institucional..."
-                                  className="w-full px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] outline-none"
+                                  className="w-full min-h-[44px] px-3 py-1.5 text-sm rounded-[10px] bg-surface border border-line text-ink placeholder:text-muted"
                                 />
                               </div>
 
                               <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                                <div className="flex items-center gap-3">
+                                <div className="flex flex-wrap items-center gap-3">
                                   <select
+                                    aria-label="Estado de la observación"
                                     value={editIssueStatus}
                                     onChange={(e) => setEditIssueStatus(e.target.value)}
-                                    className="px-2.5 py-1 text-xs rounded-lg bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] text-slate-800 dark:text-[#F0FDF8]"
+                                    className="min-h-[44px] px-3 py-1 text-xs rounded-[10px] bg-surface border border-line text-ink"
                                   >
                                     <option value="CORREGIDO_OPERATIVO">CORREGIDO OPERATIVO</option>
                                     <option value="PENDIENTE_REVISION">PENDIENTE REVISIÓN</option>
@@ -2013,12 +2031,12 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                                     <option value="BLOQUE_PARCIAL">BLOQUE PARCIAL</option>
                                   </select>
 
-                                  <label className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                                  <label className="flex items-center gap-1.5 text-xs text-ink cursor-pointer">
                                     <input
                                       type="checkbox"
                                       checked={propagateIssue}
                                       onChange={(e) => setPropagateIssue(e.target.checked)}
-                                      className="rounded text-emerald-700"
+                                      className="rounded text-brand"
                                     />
                                     <span>Propagar al plan curricular activo</span>
                                   </label>
@@ -2028,7 +2046,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                                   <button
                                     type="button"
                                     onClick={() => setEditingIssueId(null)}
-                                    className="px-3 py-1 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-800 cursor-pointer"
+                                    className="min-h-[44px] px-4 py-1.5 text-xs font-bold text-muted hover:text-ink rounded-[10px] cursor-pointer"
                                   >
                                     Cancelar
                                   </button>
@@ -2036,7 +2054,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                                     type="button"
                                     onClick={() => handleResolveIssue(issue.id)}
                                     disabled={isSaving}
-                                    className="px-4 py-1.5 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D382F] rounded-lg cursor-pointer"
+                                    className="min-h-[44px] px-4 py-1.5 text-xs font-bold text-on-brand bg-brand hover:opacity-90 rounded-[10px] cursor-pointer disabled:opacity-50"
                                   >
                                     Aplicar Corrección y Actualizar Sistema
                                   </button>
@@ -2057,14 +2075,14 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
           {/* SECCIÓN 7.B: PARÁMETROS NORMATIVOS DEL SISTEMA           */}
           {/* ======================================================== */}
           {(saneamientoSubTab === '7B' || saneamientoSubTab === 'ALL') && (
-            <div className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] p-6 space-y-4">
+            <div className="bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)] p-6 space-y-4">
               <div className="flex items-center gap-2">
-                <DocConfigIcon className="w-5 h-5 text-emerald-700 dark:text-[#5EEAD4]" />
-                <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
+                <DocConfigIcon className="w-5 h-5 text-brand shrink-0" />
+                <h3 className="text-base font-bold text-ink">
                   7.B Parámetros Normativos del Sistema Institucional
                 </h3>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-muted">
                 Criterios normativos de evaluación, asistencia y carga horaria definidos en los documentos de arquitectura 2026.
               </p>
 
@@ -2074,23 +2092,23 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                   return (
                     <div
                       key={param.id}
-                      className="p-4 rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50/50 dark:bg-[#131C1A] space-y-3 flex flex-col justify-between"
+                      className="p-4 rounded-xl border border-line bg-surface-alt space-y-3 flex flex-col justify-between"
                     >
-                      <div>
-                        <span className="text-xs font-bold text-emerald-700 dark:text-[#5EEAD4] uppercase tracking-wider block">
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-brand uppercase tracking-wider block">
                           {param.category}
                         </span>
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-[#F0FDF8] mt-1">
+                        <h4 className="text-xs font-bold text-ink mt-1">
                           {param.name}
                         </h4>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        <p className="text-xs text-muted mt-1">
                           {param.description}
                         </p>
                       </div>
-                      <div className="pt-2 border-t border-slate-200 dark:border-[#263834]">
+                      <div className="pt-2 border-t border-line">
                         {!isEditingParam ? (
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-bold text-slate-900 dark:text-[#5EEAD4] font-mono tabular-nums">
+                            <span className="text-xs font-bold text-ink font-mono tabular-nums">
                               {param.value}
                             </span>
                             {isEditable && (
@@ -2100,7 +2118,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                                   setEditingParamId(param.id);
                                   setEditParamValue(param.value);
                                 }}
-                                className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] hover:underline cursor-pointer"
+                                className="min-h-[36px] text-xs font-bold text-brand hover:underline cursor-pointer"
                               >
                                 Modificar
                               </button>
@@ -2110,9 +2128,10 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                           <div className="space-y-2">
                             <input
                               type="text"
+                              aria-label={`Nuevo valor para ${param.name}`}
                               value={editParamValue}
                               onChange={(e) => setEditParamValue(e.target.value)}
-                              className="w-full px-2.5 py-1.5 text-sm font-mono font-semibold rounded-lg bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] text-slate-900 dark:text-[#F0FDF8] focus:ring-2 focus:ring-emerald-600 outline-none"
+                              className="w-full min-h-[44px] px-3 py-1.5 text-sm font-mono font-semibold rounded-[10px] bg-surface border border-line text-ink"
                               placeholder="Nuevo valor..."
                             />
                             <div className="flex items-center justify-end gap-2">
@@ -2122,7 +2141,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                                   setEditingParamId(null);
                                   setEditParamValue('');
                                 }}
-                                className="px-2.5 py-1 text-xs font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#182220] border border-slate-300 dark:border-[#263834] rounded-lg hover:bg-slate-100 dark:hover:bg-[#1F2D2A] cursor-pointer"
+                                className="min-h-[44px] px-3 py-1 text-xs font-bold text-ink bg-surface border border-line rounded-[10px] hover:bg-surface-alt cursor-pointer"
                               >
                                 Cancelar
                               </button>
@@ -2135,7 +2154,7 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                                   }
                                 }}
                                 disabled={isSaving}
-                                className="px-3 py-1 text-xs font-bold text-white bg-[#13594A] hover:bg-[#0D382F] rounded-lg cursor-pointer disabled:opacity-50"
+                                className="min-h-[44px] px-4 py-1 text-xs font-bold text-on-brand bg-brand hover:opacity-90 rounded-[10px] cursor-pointer disabled:opacity-50"
                               >
                                 Guardar
                               </button>
@@ -2154,16 +2173,16 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
           {/* SECCIÓN 7.C: REPOSITORIO DE CUARENTENA DOCUMENTAL        */}
           {/* ======================================================== */}
           {(saneamientoSubTab === '7C' || saneamientoSubTab === 'ALL') && (
-            <div className="bg-white dark:bg-[#182220] rounded-2xl border border-purple-200 dark:border-purple-900/60 p-6 space-y-4">
+            <div className="bg-surface rounded-2xl border border-purple-200 dark:border-purple-900/60 shadow-[var(--ui-shadow)] p-6 space-y-4">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md text-xs font-black uppercase bg-purple-700 text-white">
+                <span className="px-2 py-0.5 rounded-md text-xs font-black uppercase bg-purple-700 text-white shrink-0">
                   Cuarentena
                 </span>
-                <h3 className="text-base font-bold text-slate-900 dark:text-[#F0FDF8]">
+                <h3 className="text-base font-bold text-ink">
                   7.C Contenido Documental Aislado en Cuarentena
                 </h3>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-muted">
                 Registros detectados en el PDF que contienen elementos incompatibles con la carrera de origen. Se conservan como evidencia pero permanecen estrictamente deshabilitados para no generar expedientes inválidos.
               </p>
 
@@ -2172,15 +2191,15 @@ export const DocumentaryCatalogManager: React.FC<DocumentaryCatalogManagerProps>
                   key={item.id}
                   className="p-4 rounded-xl border border-purple-200 dark:border-purple-900/50 bg-purple-50/40 dark:bg-purple-950/20 space-y-2"
                 >
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-purple-900 dark:text-purple-200">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-xs font-bold text-purple-900 dark:text-purple-200 tabular-nums">
                       {item.title} (PDF pág. {item.pagePdf})
                     </h4>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-black bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-200">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-black bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-200 shrink-0">
                       Aislado de Producción
                     </span>
                   </div>
-                  <div className="p-2.5 rounded-lg bg-white dark:bg-[#182220] border border-purple-100 dark:border-purple-900/40 text-xs font-mono text-purple-800 dark:text-purple-300">
+                  <div className="p-2.5 rounded-lg bg-surface border border-purple-100 dark:border-purple-900/40 text-xs font-mono text-purple-800 dark:text-purple-300">
                     {item.detectedContent}
                   </div>
                   <p className="text-xs text-purple-700 dark:text-purple-300 italic">

@@ -8,7 +8,9 @@
  * Genera el bloque con CRC32 estándar y enlace universal para WhatsApp Web.
  */
 
+import { DashboardPhotoBand } from '../components/ui/DashboardPhotoBand';
 import React, { useState, useMemo, useEffect } from 'react';
+import { CareerPhoto } from '../components/academic/CareerVisualBanner';
 import { calculateCrc32 } from '../utils/crc32';
 
 interface CareerOption {
@@ -466,42 +468,42 @@ export const FormularioAdmisionPublico: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F0FDF8] via-[#F6F8FA] to-slate-100 dark:from-[#0B1210] dark:via-[#0F1715] dark:to-[#182220] text-slate-800 dark:text-slate-100 flex flex-col items-center justify-start p-3 sm:p-6 antialiased">
+    <div className="min-h-screen bg-canvas text-ink flex flex-col items-center justify-start p-3 sm:p-6 antialiased">
       {/* Contenedor Principal Adaptable */}
-      <div className="w-full max-w-2xl bg-white dark:bg-[#182220] rounded-3xl shadow-xl border border-emerald-100 dark:border-[#263834] overflow-hidden my-2 sm:my-6 transition-all duration-200">
+      <div className="w-full max-w-2xl bg-surface rounded-2xl shadow-[var(--ui-shadow)] border border-line overflow-hidden my-2 sm:my-6 transition-all duration-200">
         
         {/* Cabecera Cálida e Institucional */}
-        <header className="bg-gradient-to-r from-[#13594A] to-[#1E7260] p-5 sm:p-7 text-white text-center relative overflow-hidden">
-          <div className="relative z-10 flex flex-col items-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-emerald-100 text-xs font-semibold uppercase tracking-wider mb-2">
+        <DashboardPhotoBand as="header" scene="inscripcion" variant="embedded" contentClassName="text-center">
+          <div className="relative z-10 flex flex-col items-center min-w-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-soft text-brand text-xs font-semibold uppercase tracking-wider mb-2">
               <span>🏛️ Admisión y Matrícula 2026</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-snug">
+            <h1 className="text-[28px] sm:text-[30px] leading-[36px] font-bold tracking-tight">
               {institutionName}
             </h1>
-            <p className="text-xs sm:text-sm text-emerald-100 mt-1 max-w-lg">
+            <p className="text-xs sm:text-sm text-muted mt-1 max-w-lg">
               Ficha oficial de pre-inscripción y registro de datos para estudiantes
             </p>
           </div>
-        </header>
+        </DashboardPhotoBand>
 
         {/* Barra de Progreso Accesible de 4 Pasos */}
         {currentStep <= 4 && (
-          <div className="p-4 sm:p-6 bg-slate-50 dark:bg-[#131C1A] border-b border-slate-100 dark:border-[#263834]">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
-              <span className="text-[#13594A] dark:text-[#5EEAD4]">
+          <div className="p-4 sm:p-6 bg-surface-alt border-b border-line">
+            <div className="flex items-center justify-between text-xs font-bold text-muted mb-2 gap-2">
+              <span className="text-brand tabular-nums">
                 Paso {currentStep} de 4
               </span>
-              <span>
+              <span className="truncate">
                 {currentStep === 1 && 'Carrera y Turno'}
                 {currentStep === 2 && 'Tus Datos Personales'}
                 {currentStep === 3 && 'Domicilio y Familia'}
                 {currentStep === 4 && 'Conectividad y Envío'}
               </span>
             </div>
-            <div className="w-full h-2.5 bg-slate-200 dark:bg-[#202E2B] rounded-full overflow-hidden">
+            <div className="w-full h-2.5 bg-surface border border-line rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#13594A] to-[#22c55e] transition-all duration-300 rounded-full"
+                className="h-full bg-brand transition-all duration-300 rounded-full"
                 style={{ width: `${(currentStep / 4) * 100}%` }}
               />
             </div>
@@ -517,10 +519,10 @@ export const FormularioAdmisionPublico: React.FC = () => {
           {currentStep === 1 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div className="text-center sm:text-left">
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                <h2 className="text-lg sm:text-xl font-bold text-ink">
                   1. ¿Qué carrera deseas estudiar?
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
+                <p className="text-xs sm:text-sm text-muted mt-1">
                   Toca la carrera que te interesa para iniciar tu formación técnica:
                 </p>
               </div>
@@ -532,27 +534,26 @@ export const FormularioAdmisionPublico: React.FC = () => {
                   return (
                     <button
                       key={c.id}
+                      aria-pressed={isSelected}
                       type="button"
                       onClick={() => {
                         setCarrera(c.title);
                         setEspecialidad(c.specialty);
                       }}
-                      className={`p-4 rounded-2xl border-2 text-left transition-all duration-150 flex items-start gap-3.5 cursor-pointer ${
+                      className={`p-3 min-h-[44px] rounded-2xl border-2 text-left transition-colors duration-150 flex flex-col gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                         isSelected
-                          ? 'border-[#13594A] dark:border-[#5EEAD4] bg-emerald-50/70 dark:bg-[#132B25] shadow-md ring-2 ring-[#13594A]/20 scale-[1.01]'
-                          : 'border-slate-200 dark:border-[#263834] bg-white dark:bg-[#182220] hover:border-emerald-300 dark:hover:border-emerald-700'
+                          ? 'border-brand bg-brand-soft shadow-[var(--ui-shadow)] ring-2 ring-brand/20'
+                          : 'border-line bg-surface hover:border-brand/50'
                       }`}
                     >
-                      <span className="text-3xl shrink-0" aria-hidden="true">
-                        {c.icon}
-                      </span>
+                      <CareerPhoto programId={c.id} programName={c.title} decorative className="h-36 w-full rounded-xl" />
                       <div className="flex-1 min-w-0">
-                        <span className={`block font-extrabold text-xs sm:text-sm leading-tight ${
-                          isSelected ? 'text-[#13594A] dark:text-[#5EEAD4]' : 'text-slate-900 dark:text-slate-100'
+                        <span className={`block font-bold text-sm leading-snug ${
+                          isSelected ? 'text-brand' : 'text-ink'
                         }`}>
                           {c.title}
                         </span>
-                        <span className="block text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                        <span className="block text-xs leading-relaxed text-muted mt-1">
                           {c.specialty}
                         </span>
                       </div>
@@ -563,33 +564,33 @@ export const FormularioAdmisionPublico: React.FC = () => {
 
               {/* Elección de Turno */}
               <div className="pt-2">
-                <label className="block text-sm font-bold text-slate-800 dark:text-slate-200 mb-2">
+                <label className="block text-sm font-bold text-ink mb-2">
                   ¿En qué horario prefieres estudiar?
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setTurno('MAÑANA')}
-                    className={`py-3.5 px-4 rounded-2xl border-2 font-black text-sm flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                    className={`min-h-[44px] py-3.5 px-4 rounded-[10px] border-2 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       turno === 'MAÑANA'
-                        ? 'border-[#13594A] dark:border-[#5EEAD4] bg-[#13594A] text-white shadow-sm'
-                        : 'border-slate-200 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-100'
+                        ? 'border-brand bg-brand text-on-brand shadow-[var(--ui-shadow)]'
+                        : 'border-line bg-surface-alt text-ink hover:border-brand/50'
                     }`}
                   >
-                    <span>☀️</span>
+                    <span aria-hidden="true">☀️</span>
                     <span>TURNO MAÑANA</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setTurno('TARDE')}
-                    className={`py-3.5 px-4 rounded-2xl border-2 font-black text-sm flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                    className={`min-h-[44px] py-3.5 px-4 rounded-[10px] border-2 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       turno === 'TARDE'
-                        ? 'border-[#13594A] dark:border-[#5EEAD4] bg-[#13594A] text-white shadow-sm'
-                        : 'border-slate-200 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-100'
+                        ? 'border-brand bg-brand text-on-brand shadow-[var(--ui-shadow)]'
+                        : 'border-line bg-surface-alt text-ink hover:border-brand/50'
                     }`}
                   >
-                    <span>🌤️</span>
+                    <span aria-hidden="true">🌤️</span>
                     <span>TURNO TARDE</span>
                   </button>
                 </div>
@@ -603,17 +604,17 @@ export const FormularioAdmisionPublico: React.FC = () => {
           {currentStep === 2 && (
             <div className="space-y-5 animate-in fade-in duration-200">
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                <h2 className="text-lg sm:text-xl font-bold text-ink">
                   2. Tus Datos Personales
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
+                <p className="text-xs sm:text-sm text-muted mt-1">
                   Escribe tus datos exactamente como figuran en tu DNI:
                 </p>
               </div>
 
               {/* DNI */}
               <div>
-                <label htmlFor="student-dni" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                <label htmlFor="student-dni" className="block text-xs font-bold text-muted uppercase mb-1">
                   Documento de Identidad (DNI o Carnet de Extranjería) *
                 </label>
                 <input
@@ -624,14 +625,14 @@ export const FormularioAdmisionPublico: React.FC = () => {
                   placeholder="Ej. 74518624"
                   value={dni}
                   onChange={(e) => setDni(e.target.value.replace(/[^0-9A-Za-z]/g, ''))}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-900 dark:text-white text-base font-bold tracking-wider focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface-alt text-ink text-base font-bold tracking-wider tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 />
               </div>
 
               {/* Apellidos y Nombres */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="student-pat" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                  <label htmlFor="student-pat" className="block text-xs font-bold text-muted uppercase mb-1">
                     Apellido Paterno *
                   </label>
                   <input
@@ -640,11 +641,11 @@ export const FormularioAdmisionPublico: React.FC = () => {
                     placeholder="Ej. MAMANI"
                     value={paterno}
                     onChange={(e) => setPaterno(e.target.value.toUpperCase())}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-900 dark:text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="w-full min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface-alt text-ink text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   />
                 </div>
                 <div>
-                  <label htmlFor="student-mat" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                  <label htmlFor="student-mat" className="block text-xs font-bold text-muted uppercase mb-1">
                     Apellido Materno
                   </label>
                   <input
@@ -653,13 +654,13 @@ export const FormularioAdmisionPublico: React.FC = () => {
                     placeholder="Ej. QUISPE"
                     value={materno}
                     onChange={(e) => setMaterno(e.target.value.toUpperCase())}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-900 dark:text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="w-full min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface-alt text-ink text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="student-nom" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                <label htmlFor="student-nom" className="block text-xs font-bold text-muted uppercase mb-1">
                   Nombres Completos *
                 </label>
                 <input
@@ -668,51 +669,51 @@ export const FormularioAdmisionPublico: React.FC = () => {
                   placeholder="Ej. JUAN CARLOS o MARÍA ELENA"
                   value={nombres}
                   onChange={(e) => setNombres(e.target.value.toUpperCase())}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-900 dark:text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface-alt text-ink text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 />
               </div>
 
               {/* Sexo */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
+                <label className="block text-xs font-bold text-muted uppercase mb-1.5">
                   Sexo *
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setSexo('F')}
-                    className={`py-3 px-4 rounded-xl border-2 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                    className={`min-h-[44px] py-3 px-4 rounded-[10px] border-2 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       sexo === 'F'
-                        ? 'border-pink-500 bg-pink-50 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 shadow-xs'
-                        : 'border-slate-200 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-600 dark:text-slate-400'
+                        ? 'border-pink-500 bg-pink-50 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 shadow-[var(--ui-shadow)]'
+                        : 'border-line bg-surface-alt text-muted hover:border-brand/50'
                     }`}
                   >
-                    <span>👩</span>
+                    <span aria-hidden="true">👩</span>
                     <span>FEMENINO (F)</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setSexo('M')}
-                    className={`py-3 px-4 rounded-xl border-2 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                    className={`min-h-[44px] py-3 px-4 rounded-[10px] border-2 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       sexo === 'M'
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
-                        : 'border-slate-200 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-600 dark:text-slate-400'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-[var(--ui-shadow)]'
+                        : 'border-line bg-surface-alt text-muted hover:border-brand/50'
                     }`}
                   >
-                    <span>👨</span>
+                    <span aria-hidden="true">👨</span>
                     <span>MASCULINO (M)</span>
                   </button>
                 </div>
               </div>
 
               {/* Fecha de Nacimiento y Edad Automática */}
-              <div className="bg-slate-50 dark:bg-[#131C1A] p-4 rounded-2xl border border-slate-200 dark:border-[#263834] space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
+              <div className="bg-surface-alt p-4 rounded-2xl border border-line space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-ink uppercase">
                     Fecha de Nacimiento *
                   </span>
-                  <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-[#5EEAD4]">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-brand-soft text-brand tabular-nums">
                     Edad: {calculatedAge} años
                   </span>
                 </div>
@@ -720,12 +721,12 @@ export const FormularioAdmisionPublico: React.FC = () => {
                 <div className="grid grid-cols-3 gap-2">
                   {/* Día */}
                   <div>
-                    <label htmlFor="birth-day" className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Día</label>
+                    <label htmlFor="birth-day" className="block text-[11px] text-muted mb-1">Día</label>
                     <select
                       id="birth-day"
                       value={birthDay}
                       onChange={(e) => setBirthDay(Number(e.target.value))}
-                      className="w-full px-2.5 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] text-sm font-bold text-slate-800 dark:text-white"
+                      className="w-full min-h-[44px] px-2.5 py-2 rounded-[10px] border border-line bg-surface text-sm font-bold text-ink tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     >
                       {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                         <option key={d} value={d}>{d}</option>
@@ -735,12 +736,12 @@ export const FormularioAdmisionPublico: React.FC = () => {
 
                   {/* Mes */}
                   <div>
-                    <label htmlFor="birth-month" className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Mes</label>
+                    <label htmlFor="birth-month" className="block text-[11px] text-muted mb-1">Mes</label>
                     <select
                       id="birth-month"
                       value={birthMonth}
                       onChange={(e) => setBirthMonth(Number(e.target.value))}
-                      className="w-full px-2 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] text-sm font-bold text-slate-800 dark:text-white"
+                      className="w-full min-h-[44px] px-2 py-2 rounded-[10px] border border-line bg-surface text-sm font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     >
                       {MONTHS.map((m, idx) => (
                         <option key={m} value={idx + 1}>{m}</option>
@@ -750,12 +751,12 @@ export const FormularioAdmisionPublico: React.FC = () => {
 
                   {/* Año */}
                   <div>
-                    <label htmlFor="birth-year" className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Año</label>
+                    <label htmlFor="birth-year" className="block text-[11px] text-muted mb-1">Año</label>
                     <select
                       id="birth-year"
                       value={birthYear}
                       onChange={(e) => setBirthYear(Number(e.target.value))}
-                      className="w-full px-2 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] text-sm font-bold text-slate-800 dark:text-white"
+                      className="w-full min-h-[44px] px-2 py-2 rounded-[10px] border border-line bg-surface text-sm font-bold text-ink tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     >
                       {Array.from({ length: 70 }, (_, i) => 2012 - i).map((y) => (
                         <option key={y} value={y}>{y}</option>
@@ -768,7 +769,7 @@ export const FormularioAdmisionPublico: React.FC = () => {
               {/* Lugar de Nacimiento y Ubicación */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="birth-place" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                  <label htmlFor="birth-place" className="block text-xs font-bold text-muted uppercase mb-1">
                     Lugar de Nacimiento
                   </label>
                   <input
@@ -776,11 +777,11 @@ export const FormularioAdmisionPublico: React.FC = () => {
                     type="text"
                     value={lugarNacimiento}
                     onChange={(e) => setLugarNacimiento(e.target.value.toUpperCase())}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-xs font-semibold text-slate-800 dark:text-white"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface-alt text-xs font-semibold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   />
                 </div>
                 <div>
-                  <label htmlFor="district-place" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                  <label htmlFor="district-place" className="block text-xs font-bold text-muted uppercase mb-1">
                     Distrito Actual
                   </label>
                   <input
@@ -788,7 +789,7 @@ export const FormularioAdmisionPublico: React.FC = () => {
                     type="text"
                     value={distrito}
                     onChange={(e) => setDistrito(e.target.value.toUpperCase())}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-xs font-semibold text-slate-800 dark:text-white"
+                    className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface-alt text-xs font-semibold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   />
                 </div>
               </div>
@@ -801,17 +802,17 @@ export const FormularioAdmisionPublico: React.FC = () => {
           {currentStep === 3 && (
             <div className="space-y-5 animate-in fade-in duration-200">
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                <h2 className="text-lg sm:text-xl font-bold text-ink">
                   3. Domicilio, Contacto y Familia
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
+                <p className="text-xs sm:text-sm text-muted mt-1">
                   Datos indispensables para coordinaciones de matrícula y emergencias:
                 </p>
               </div>
 
               {/* Domicilio Actual */}
               <div>
-                <label htmlFor="student-address" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                <label htmlFor="student-address" className="block text-xs font-bold text-muted uppercase mb-1">
                   Domicilio Actual (Jr. / Av. / Barrio / Nro.) *
                 </label>
                 <input
@@ -820,14 +821,14 @@ export const FormularioAdmisionPublico: React.FC = () => {
                   placeholder="Ej. Jr. Moquegua 450 - Barrio Cerro Colorado"
                   value={domicilio}
                   onChange={(e) => setDomicilio(e.target.value.toUpperCase())}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-900 dark:text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface-alt text-ink text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 />
               </div>
 
               {/* Teléfono / WhatsApp y Correo */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="student-phone" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                  <label htmlFor="student-phone" className="block text-xs font-bold text-muted uppercase mb-1">
                     Teléfono / WhatsApp *
                   </label>
                   <input
@@ -837,11 +838,11 @@ export const FormularioAdmisionPublico: React.FC = () => {
                     placeholder="Ej. 951234567"
                     value={telefono}
                     onChange={(e) => setTelefono(e.target.value.replace(/[^0-9]/g, ''))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-900 dark:text-white text-sm font-bold tracking-wider focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="w-full min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface-alt text-ink text-sm font-bold tracking-wider tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   />
                 </div>
                 <div>
-                  <label htmlFor="student-email" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                  <label htmlFor="student-email" className="block text-xs font-bold text-muted uppercase mb-1">
                     Correo Electrónico (Opcional)
                   </label>
                   <input
@@ -850,14 +851,14 @@ export const FormularioAdmisionPublico: React.FC = () => {
                     placeholder="estudiante@gmail.com"
                     value={correo}
                     onChange={(e) => setCorreo(e.target.value.toLowerCase())}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="w-full min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface-alt text-ink text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   />
                 </div>
               </div>
 
               {/* Contacto de Emergencia */}
               <div>
-                <label htmlFor="student-emergency" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                <label htmlFor="student-emergency" className="block text-xs font-bold text-muted uppercase mb-1">
                   Contacto de Emergencia (Nombre, Parentesco y Celular)
                 </label>
                 <input
@@ -866,21 +867,21 @@ export const FormularioAdmisionPublico: React.FC = () => {
                   placeholder="Ej. MARÍA MAMANI (MAMÁ) - 951987654"
                   value={contactoEmergencia}
                   onChange={(e) => setContactoEmergencia(e.target.value.toUpperCase())}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                  className="w-full min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface-alt text-ink text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 />
               </div>
 
               {/* Estado Civil y Grado de Estudios */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="student-civil" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                  <label htmlFor="student-civil" className="block text-xs font-bold text-muted uppercase mb-1">
                     Estado Civil
                   </label>
                   <select
                     id="student-civil"
                     value={estadoCivil}
                     onChange={(e) => setEstadoCivil(e.target.value as any)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-sm font-semibold text-slate-800 dark:text-white"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-[10px] border border-line bg-surface-alt text-sm font-semibold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     <option value="SOLTERO">Soltera(o)</option>
                     <option value="CASADO">Casada(o)</option>
@@ -891,14 +892,14 @@ export const FormularioAdmisionPublico: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="student-degree" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                  <label htmlFor="student-degree" className="block text-xs font-bold text-muted uppercase mb-1">
                     Grado de Instrucción Logrado
                   </label>
                   <select
                     id="student-degree"
                     value={gradoEstudios}
                     onChange={(e) => setGradoEstudios(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-sm font-semibold text-slate-800 dark:text-white"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-[10px] border border-line bg-surface-alt text-sm font-semibold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     <option value="SECUNDARIA COMPLETA">Secundaria Completa</option>
                     <option value="SECUNDARIA INCOMPLETA">Secundaria Incompleta</option>
@@ -911,20 +912,20 @@ export const FormularioAdmisionPublico: React.FC = () => {
               </div>
 
               {/* Trabajo y Carga Familiar */}
-              <div className="p-4 bg-slate-50 dark:bg-[#131C1A] rounded-2xl border border-slate-200 dark:border-[#263834] space-y-4">
+              <div className="p-4 bg-surface-alt rounded-2xl border border-line space-y-4">
                 {/* ¿Trabaja? */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">
+                  <label className="block text-xs font-bold text-muted uppercase mb-2">
                     ¿Trabajas actualmente?
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setTrabaja(true)}
-                      className={`py-2 px-4 rounded-xl border font-bold text-xs cursor-pointer ${
+                      className={`min-h-[44px] py-2 px-4 rounded-[10px] border font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                         trabaja
-                          ? 'bg-[#13594A] text-white border-[#13594A]'
-                          : 'bg-white dark:bg-[#182220] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300'
+                          ? 'bg-brand text-on-brand border-brand'
+                          : 'bg-surface border-line text-ink hover:border-brand/50'
                       }`}
                     >
                       SÍ TRABAJO
@@ -932,10 +933,10 @@ export const FormularioAdmisionPublico: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setTrabaja(false)}
-                      className={`py-2 px-4 rounded-xl border font-bold text-xs cursor-pointer ${
+                      className={`min-h-[44px] py-2 px-4 rounded-[10px] border font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                         !trabaja
-                          ? 'bg-[#13594A] text-white border-[#13594A]'
-                          : 'bg-white dark:bg-[#182220] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300'
+                          ? 'bg-brand text-on-brand border-brand'
+                          : 'bg-surface border-line text-ink hover:border-brand/50'
                       }`}
                     >
                       NO TRABAJO
@@ -947,25 +948,25 @@ export const FormularioAdmisionPublico: React.FC = () => {
                       placeholder="¿Cuál es tu ocupación o puesto de trabajo?"
                       value={puestoTrabajo}
                       onChange={(e) => setPuestoTrabajo(e.target.value.toUpperCase())}
-                      className="mt-2 w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] text-xs font-semibold"
+                      className="mt-2 w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     />
                   )}
                 </div>
 
                 {/* Carga Familiar */}
-                <div className="pt-2 border-t border-slate-200 dark:border-[#263834]">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">
+                <div className="pt-2 border-t border-line">
+                  <label className="block text-xs font-bold text-muted uppercase mb-2">
                     ¿Tienes personas o hijos a tu cargo?
                   </label>
-                  <div className="flex items-center gap-4">
-                    <div className="grid grid-cols-2 gap-2 flex-1">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="grid grid-cols-2 gap-2 flex-1 min-w-[200px]">
                       <button
                         type="button"
                         onClick={() => setCargaFamiliar(true)}
-                        className={`py-2 px-4 rounded-xl border font-bold text-xs cursor-pointer ${
+                        className={`min-h-[44px] py-2 px-4 rounded-[10px] border font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                           cargaFamiliar
-                            ? 'bg-[#13594A] text-white border-[#13594A]'
-                            : 'bg-white dark:bg-[#182220] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300'
+                            ? 'bg-brand text-on-brand border-brand'
+                            : 'bg-surface border-line text-ink hover:border-brand/50'
                         }`}
                       >
                         SÍ TENGO HIJOS/CARGA
@@ -973,10 +974,10 @@ export const FormularioAdmisionPublico: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setCargaFamiliar(false)}
-                        className={`py-2 px-4 rounded-xl border font-bold text-xs cursor-pointer ${
+                        className={`min-h-[44px] py-2 px-4 rounded-[10px] border font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                           !cargaFamiliar
-                            ? 'bg-[#13594A] text-white border-[#13594A]'
-                            : 'bg-white dark:bg-[#182220] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300'
+                            ? 'bg-brand text-on-brand border-brand'
+                            : 'bg-surface border-line text-ink hover:border-brand/50'
                         }`}
                       >
                         NO TENGO
@@ -988,17 +989,19 @@ export const FormularioAdmisionPublico: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setCargaFamiliarPersonas(Math.max(1, cargaFamiliarPersonas - 1))}
-                          className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-[#202E2B] font-bold text-base"
+                          className="min-w-[44px] min-h-[44px] rounded-[10px] bg-surface border border-line text-ink font-bold text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                          aria-label="Disminuir personas a cargo"
                         >
                           -
                         </button>
-                        <span className="font-extrabold text-sm w-6 text-center">
+                        <span className="font-extrabold text-sm w-6 text-center text-ink tabular-nums">
                           {cargaFamiliarPersonas}
                         </span>
                         <button
                           type="button"
                           onClick={() => setCargaFamiliarPersonas(cargaFamiliarPersonas + 1)}
-                          className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-[#202E2B] font-bold text-base"
+                          className="min-w-[44px] min-h-[44px] rounded-[10px] bg-surface border border-line text-ink font-bold text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                          aria-label="Aumentar personas a cargo"
                         >
                           +
                         </button>
@@ -1016,48 +1019,48 @@ export const FormularioAdmisionPublico: React.FC = () => {
           {currentStep === 4 && (
             <div className="space-y-5 animate-in fade-in duration-200">
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                <h2 className="text-lg sm:text-xl font-bold text-ink">
                   4. Conectividad e Inclusión
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
+                <p className="text-xs sm:text-sm text-muted mt-1">
                   Últimos detalles para adecuar las clases y recursos pedagógicos:
                 </p>
               </div>
 
               {/* Internet en casa */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">
+                <label className="block text-xs font-bold text-muted uppercase mb-2">
                   ¿Dispones de Internet fijo en tu domicilio?
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setInternetCasa(true)}
-                    className={`py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 cursor-pointer ${
+                    className={`min-h-[44px] py-2.5 px-4 rounded-[10px] border font-bold text-xs flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       internetCasa
-                        ? 'bg-[#13594A] text-white border-[#13594A]'
-                        : 'bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#263834]'
+                        ? 'bg-brand text-on-brand border-brand'
+                        : 'bg-surface-alt text-ink border-line hover:border-brand/50'
                     }`}
                   >
-                    <span>📶</span> SÍ TENGO INTERNET
+                    <span aria-hidden="true">📶</span> SÍ TENGO INTERNET
                   </button>
                   <button
                     type="button"
                     onClick={() => setInternetCasa(false)}
-                    className={`py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 cursor-pointer ${
+                    className={`min-h-[44px] py-2.5 px-4 rounded-[10px] border font-bold text-xs flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       !internetCasa
-                        ? 'bg-[#13594A] text-white border-[#13594A]'
-                        : 'bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#263834]'
+                        ? 'bg-brand text-on-brand border-brand'
+                        : 'bg-surface-alt text-ink border-line hover:border-brand/50'
                     }`}
                   >
-                    <span>📵</span> NO TENGO (SOLO DATOS)
+                    <span aria-hidden="true">📵</span> NO TENGO (SOLO DATOS)
                   </button>
                 </div>
               </div>
 
               {/* Operador Celular */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">
+                <label className="block text-xs font-bold text-muted uppercase mb-2">
                   Empresa operadora de tu celular
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -1066,10 +1069,10 @@ export const FormularioAdmisionPublico: React.FC = () => {
                       key={op}
                       type="button"
                       onClick={() => setOperadorCelular(op)}
-                      className={`py-2 rounded-xl border font-bold text-xs cursor-pointer ${
+                      className={`min-h-[44px] py-2 rounded-[10px] border font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                         operadorCelular === op
-                          ? 'bg-[#13594A] text-white border-[#13594A]'
-                          : 'bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#263834]'
+                          ? 'bg-brand text-on-brand border-brand'
+                          : 'bg-surface-alt text-ink border-line hover:border-brand/50'
                       }`}
                     >
                       {op}
@@ -1080,46 +1083,46 @@ export const FormularioAdmisionPublico: React.FC = () => {
 
               {/* Equipos Tecnológicos */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">
+                <label className="block text-xs font-bold text-muted uppercase mb-2">
                   ¿Qué equipos tecnológicos utilizas? (Puedes marcar varios)
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setTieneCelular(!tieneCelular)}
-                    className={`py-3 px-2 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 cursor-pointer ${
+                    className={`min-h-[44px] py-3 px-2 rounded-[10px] border font-bold text-xs flex flex-col items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       tieneCelular
-                        ? 'bg-emerald-50 dark:bg-[#132B25] border-[#13594A] text-[#13594A] dark:text-[#5EEAD4]'
-                        : 'bg-slate-50 dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-600 dark:text-slate-400'
+                        ? 'bg-brand-soft border-brand text-brand'
+                        : 'bg-surface-alt border-line text-muted hover:border-brand/50'
                     }`}
                   >
-                    <span className="text-xl">📱</span>
+                    <span className="text-xl" aria-hidden="true">📱</span>
                     <span>Celular</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setTieneLaptop(!tieneLaptop)}
-                    className={`py-3 px-2 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 cursor-pointer ${
+                    className={`min-h-[44px] py-3 px-2 rounded-[10px] border font-bold text-xs flex flex-col items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       tieneLaptop
-                        ? 'bg-emerald-50 dark:bg-[#132B25] border-[#13594A] text-[#13594A] dark:text-[#5EEAD4]'
-                        : 'bg-slate-50 dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-600 dark:text-slate-400'
+                        ? 'bg-brand-soft border-brand text-brand'
+                        : 'bg-surface-alt border-line text-muted hover:border-brand/50'
                     }`}
                   >
-                    <span className="text-xl">💻</span>
+                    <span className="text-xl" aria-hidden="true">💻</span>
                     <span>Laptop</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setTienePC(!tienePC)}
-                    className={`py-3 px-2 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 cursor-pointer ${
+                    className={`min-h-[44px] py-3 px-2 rounded-[10px] border font-bold text-xs flex flex-col items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       tienePC
-                        ? 'bg-emerald-50 dark:bg-[#132B25] border-[#13594A] text-[#13594A] dark:text-[#5EEAD4]'
-                        : 'bg-slate-50 dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-600 dark:text-slate-400'
+                        ? 'bg-brand-soft border-brand text-brand'
+                        : 'bg-surface-alt border-line text-muted hover:border-brand/50'
                     }`}
                   >
-                    <span className="text-xl">🖥️</span>
+                    <span className="text-xl" aria-hidden="true">🖥️</span>
                     <span>Computadora</span>
                   </button>
                 </div>
@@ -1127,7 +1130,7 @@ export const FormularioAdmisionPublico: React.FC = () => {
 
               {/* Lengua Originaria */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">
+                <label className="block text-xs font-bold text-muted uppercase mb-2">
                   Lengua originaria aprendida en tu infancia
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -1136,10 +1139,10 @@ export const FormularioAdmisionPublico: React.FC = () => {
                       key={len}
                       type="button"
                       onClick={() => setLenguaOriginaria(len)}
-                      className={`py-2 rounded-xl border font-bold text-xs cursor-pointer ${
+                      className={`min-h-[44px] py-2 rounded-[10px] border font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                         lenguaOriginaria === len
-                          ? 'bg-[#13594A] text-white border-[#13594A]'
-                          : 'bg-slate-50 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#263834]'
+                          ? 'bg-brand text-on-brand border-brand'
+                          : 'bg-surface-alt text-ink border-line hover:border-brand/50'
                       }`}
                     >
                       {len}
@@ -1149,18 +1152,18 @@ export const FormularioAdmisionPublico: React.FC = () => {
               </div>
 
               {/* Discapacidad */}
-              <div className="p-4 bg-slate-50 dark:bg-[#131C1A] rounded-2xl border border-slate-200 dark:border-[#263834]">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">
+              <div className="p-4 bg-surface-alt rounded-2xl border border-line">
+                <label className="block text-xs font-bold text-muted uppercase mb-2">
                   ¿Presentas alguna condición de discapacidad?
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setDiscapacidad(false)}
-                    className={`py-2 rounded-xl border font-bold text-xs cursor-pointer ${
+                    className={`min-h-[44px] py-2 rounded-[10px] border font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       !discapacidad
-                        ? 'bg-[#13594A] text-white border-[#13594A]'
-                        : 'bg-white dark:bg-[#182220] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300'
+                        ? 'bg-brand text-on-brand border-brand'
+                        : 'bg-surface border-line text-ink hover:border-brand/50'
                     }`}
                   >
                     NO PRESENTA
@@ -1168,10 +1171,10 @@ export const FormularioAdmisionPublico: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setDiscapacidad(true)}
-                    className={`py-2 rounded-xl border font-bold text-xs cursor-pointer ${
+                    className={`min-h-[44px] py-2 rounded-[10px] border font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       discapacidad
-                        ? 'bg-[#13594A] text-white border-[#13594A]'
-                        : 'bg-white dark:bg-[#182220] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300'
+                        ? 'bg-brand text-on-brand border-brand'
+                        : 'bg-surface border-line text-ink hover:border-brand/50'
                     }`}
                   >
                     SÍ PRESENTA
@@ -1183,7 +1186,7 @@ export const FormularioAdmisionPublico: React.FC = () => {
                     placeholder="Detalle o tipo de discapacidad..."
                     value={tipoDiscapacidad}
                     onChange={(e) => setTipoDiscapacidad(e.target.value.toUpperCase())}
-                    className="mt-2 w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] text-xs font-semibold"
+                    className="mt-2 w-full min-h-[44px] px-3.5 py-2 rounded-[10px] border border-line bg-surface text-ink text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   />
                 )}
               </div>
@@ -1195,26 +1198,26 @@ export const FormularioAdmisionPublico: React.FC = () => {
              ======================================================== */}
           {currentStep === 5 && (
             <div className="space-y-6 text-center animate-in zoom-in-95 duration-200">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-[#5EEAD4] flex items-center justify-center mx-auto text-3xl">
+              <div className="w-16 h-16 rounded-full bg-brand-soft text-brand flex items-center justify-center mx-auto text-3xl" aria-hidden="true">
                 ✓
               </div>
 
               <div>
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                <h2 className="text-xl sm:text-2xl font-bold text-ink">
                   ¡Tu Ficha 2026 está lista para enviar!
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-md mx-auto">
+                <p className="text-xs sm:text-sm text-muted mt-1 max-w-md mx-auto">
                   Presiona el botón verde de abajo para abrir WhatsApp y enviar tus datos directamente a Secretaría del CETPRO.
                 </p>
               </div>
 
               {/* Selector / Editor de Número de WhatsApp Receptor */}
-              <div className="text-left bg-emerald-50/70 dark:bg-[#131C1A] p-4 rounded-2xl border border-emerald-300 dark:border-[#263834] space-y-2">
-                <label className="block text-xs font-extrabold text-slate-800 dark:text-slate-200">
+              <div className="text-left bg-brand-soft p-4 rounded-2xl border border-brand/30 space-y-2">
+                <label className="block text-xs font-extrabold text-ink">
                   📱 Número de WhatsApp de {receptorNombre} (Destino):
                 </label>
                 <div className="flex items-center gap-2">
-                  <span className="px-3.5 py-3 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] text-emerald-700 dark:text-[#5EEAD4] font-black text-sm">
+                  <span className="px-3.5 min-h-[44px] flex items-center rounded-[10px] border border-line bg-surface text-brand font-bold text-sm tabular-nums">
                     +51
                   </span>
                   <input
@@ -1223,10 +1226,10 @@ export const FormularioAdmisionPublico: React.FC = () => {
                     value={whatsappSecretaria}
                     onChange={(e) => setWhatsappSecretaria(e.target.value.replace(/\D/g, '').slice(0, 9))}
                     placeholder="Ej. 985030353 (o vacío para elegir contacto)"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#182220] text-slate-900 dark:text-white font-black text-base tracking-wide focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+                    className="w-full min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface text-ink font-bold text-base tracking-wide tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   />
                 </div>
-                <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                <p className="text-[11px] text-muted">
                   💡 Si la Secretaría le dio otro número hoy, puede escribirlo aquí, o dejarlo vacío para elegir el contacto directamente en su WhatsApp.
                 </p>
               </div>
@@ -1236,9 +1239,9 @@ export const FormularioAdmisionPublico: React.FC = () => {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-150 flex items-center justify-center gap-3 cursor-pointer"
+                className="w-full min-h-[48px] py-4 px-6 rounded-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base sm:text-lg shadow-[var(--ui-shadow)] transition-all duration-150 flex items-center justify-center gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
-                <span className="text-2xl">📲</span>
+                <span className="text-2xl" aria-hidden="true">📲</span>
                 <span>
                   {whatsappSecretaria.replace(/\D/g, '').length === 9
                     ? `ENVIAR MI FICHA AL +51 ${whatsappSecretaria.replace(/\D/g, '')}`
@@ -1252,9 +1255,9 @@ export const FormularioAdmisionPublico: React.FC = () => {
                   href={whatsappContactPickerUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 px-4 rounded-xl border border-emerald-500/50 dark:border-[#263834] bg-white dark:bg-[#182220] hover:bg-emerald-50 text-emerald-700 dark:text-[#5EEAD4] font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full min-h-[44px] py-3 px-4 rounded-[10px] border border-brand/40 bg-surface hover:bg-brand-soft text-brand font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
-                  <span>👥</span>
+                  <span aria-hidden="true">👥</span>
                   <span>O elegir otro contacto en mi lista de WhatsApp</span>
                 </a>
               )}
@@ -1263,9 +1266,9 @@ export const FormularioAdmisionPublico: React.FC = () => {
               <button
                 type="button"
                 onClick={handleDownloadAndPrintPdf}
-                className="w-full py-3.5 px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-sm sm:text-base shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+                className="w-full min-h-[44px] py-3.5 px-5 rounded-[10px] bg-amber-500 hover:bg-amber-600 text-ink font-bold text-sm sm:text-base shadow-[var(--ui-shadow)] transition-all flex items-center justify-center gap-2.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
-                <span className="text-xl">🖨️</span>
+                <span className="text-xl" aria-hidden="true">🖨️</span>
                 <span>DESCARGAR / IMPRIMIR MI FICHA OFICIAL PDF 2026 (EN BOLD)</span>
               </button>
 
@@ -1274,9 +1277,9 @@ export const FormularioAdmisionPublico: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleCopyMessage}
-                  className="w-full py-3 px-4 rounded-xl border border-slate-300 dark:border-[#263834] bg-slate-100 dark:bg-[#131C1A] hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full min-h-[44px] py-3 px-4 rounded-[10px] border border-line bg-surface-alt hover:border-brand text-ink font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
-                  <span>📋</span>
+                  <span aria-hidden="true">📋</span>
                   <span>
                     {copied ? '¡MENSAJE COPIADO AL PORTAPAPELES!' : 'COPIAR MENSAJE PARA PEGARLO EN WHATSAPP'}
                   </span>
@@ -1284,11 +1287,11 @@ export const FormularioAdmisionPublico: React.FC = () => {
               </div>
 
               {/* Vista previa compacta del mensaje */}
-              <div className="text-left bg-slate-50 dark:bg-[#131C1A] p-4 rounded-2xl border border-slate-200 dark:border-[#263834] space-y-2">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+              <div className="text-left bg-surface-alt p-4 rounded-2xl border border-line space-y-2">
+                <span className="text-[11px] font-bold text-muted uppercase tracking-wider block">
                   Vista previa del texto que se enviará:
                 </span>
-                <pre className="text-[11px] text-slate-700 dark:text-slate-300 font-mono whitespace-pre-wrap break-all max-h-40 overflow-y-auto p-2 bg-white dark:bg-[#182220] rounded-xl border border-slate-200 dark:border-[#263834]">
+                <pre className="text-[11px] text-ink font-mono whitespace-pre-wrap break-all max-h-40 overflow-y-auto p-2 bg-surface rounded-[10px] border border-line">
                   {fullWhatsappMessage}
                 </pre>
               </div>
@@ -1297,7 +1300,7 @@ export const FormularioAdmisionPublico: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setCurrentStep(1)}
-                className="text-xs font-bold text-[#13594A] dark:text-[#5EEAD4] hover:underline cursor-pointer"
+                className="min-h-[44px] px-4 rounded-[10px] text-xs font-bold text-brand hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 ← Deseo revisar o corregir mis datos
               </button>
@@ -1306,12 +1309,12 @@ export const FormularioAdmisionPublico: React.FC = () => {
 
           {/* Botones de Navegación de Pasos */}
           {currentStep <= 4 && (
-            <div className="pt-4 border-t border-slate-100 dark:border-[#263834] flex items-center justify-between gap-3">
+            <div className="pt-4 border-t border-line flex items-center justify-between gap-3">
               {currentStep > 1 ? (
                 <button
                   type="button"
                   onClick={() => setCurrentStep(currentStep - 1)}
-                  className="py-3 px-5 rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 cursor-pointer transition-all"
+                  className="min-h-[44px] py-3 px-5 rounded-[10px] border border-line bg-surface-alt text-ink font-bold text-xs hover:border-brand cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   ← Anterior
                 </button>
@@ -1324,7 +1327,7 @@ export const FormularioAdmisionPublico: React.FC = () => {
                   type="button"
                   onClick={() => setCurrentStep(currentStep + 1)}
                   disabled={!canAdvanceStep}
-                  className="py-3 px-6 rounded-xl bg-[#13594A] hover:bg-[#0D382F] text-white font-extrabold text-xs shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                  className="min-h-[44px] py-3 px-6 rounded-[10px] bg-brand hover:opacity-90 text-on-brand font-bold text-xs shadow-[var(--ui-shadow)] transition-all disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   Siguiente paso →
                 </button>
@@ -1333,11 +1336,11 @@ export const FormularioAdmisionPublico: React.FC = () => {
                   type="button"
                   onClick={handleFinalSubmit}
                   disabled={isSubmitting}
-                  className="py-3.5 px-7 rounded-xl bg-gradient-to-r from-[#13594A] to-emerald-600 hover:from-[#0D382F] hover:to-emerald-700 text-white font-black text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                  className="min-h-[44px] py-3.5 px-7 rounded-[10px] bg-brand hover:opacity-90 text-on-brand font-bold text-sm shadow-[var(--ui-shadow)] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-on-brand/30 border-t-on-brand rounded-full animate-spin" />
                       <span>Procesando Ficha…</span>
                     </>
                   ) : (
@@ -1351,7 +1354,7 @@ export const FormularioAdmisionPublico: React.FC = () => {
         </main>
 
         {/* Pie Institucional */}
-        <footer className="p-4 bg-slate-50 dark:bg-[#131C1A] border-t border-slate-100 dark:border-[#263834] text-center text-[11px] text-slate-500 dark:text-slate-400">
+        <footer className="p-4 bg-surface-alt border-t border-line text-center text-[11px] text-muted">
           CETPRO Micaela Bastidas Puyucawa · Puno / San Román / Juliaca · Año Lectivo 2026
         </footer>
       </div>

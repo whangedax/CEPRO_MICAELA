@@ -158,8 +158,12 @@ export function resolveUnitDates(
   fechaFin?: string,
   diasClase: number[] = [1, 2, 3, 4, 5]
 ): UnitCalendarResolution {
-  const start = fechaInicio && /^\d{4}-\d{2}-\d{2}$/.test(fechaInicio) ? fechaInicio : '2026-03-16';
-  const end = fechaFin && /^\d{4}-\d{2}-\d{2}$/.test(fechaFin) && fechaFin >= start ? fechaFin : '2026-07-24';
+  if (!fechaInicio || !fechaFin || !/^\d{4}-\d{2}-\d{2}$/.test(fechaInicio) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(fechaFin) || fechaFin < fechaInicio) {
+    return { fechaInicio: '', fechaFin: '', dates: [], monthSpans: [], firstSchoolDate: '', totalDays: 0 };
+  }
+  const start = fechaInicio;
+  const end = fechaFin;
 
   const allowedSet = new Set(diasClase);
   const dates: string[] = [];

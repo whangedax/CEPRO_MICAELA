@@ -17,9 +17,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   if (size === 'sm') {
     return (
       <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#e6f4f1] dark:bg-[#132B25] text-[#004034] dark:text-[#5EEAD4] text-[10px] font-bold tracking-wider uppercase border border-[#13594A]/20 dark:border-[#205C4E] ${className}`}
+        className={`status-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[var(--ui-brand-soft)] text-[var(--ui-brand)] text-[10px] font-bold tracking-wider uppercase border border-[var(--ui-line)] ${className}`}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-[#13594A] dark:bg-[#5EEAD4]" aria-hidden="true" />
+        <span className="w-1.5 h-1.5 rounded-full bg-[var(--ui-brand)]" aria-hidden="true" />
         SISTEMA INSTITUCIONAL · BASE 2026
       </span>
     );
@@ -27,9 +27,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-white dark:bg-[#182220] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 shadow-xs ${className}`}
+      className={`status-badge inline-flex items-center justify-center px-3 py-1 rounded-full bg-[var(--ui-surface)] border border-[var(--ui-line)] text-[var(--ui-ink)] shadow-xs ${className}`}
     >
-      <span className="text-[10px] font-bold tracking-wider text-slate-700 dark:text-slate-300 uppercase">
+      <span className="text-[10px] font-bold tracking-wider text-[var(--ui-ink)] uppercase">
         SISTEMA INSTITUCIONAL · BASE 2026
       </span>
     </div>

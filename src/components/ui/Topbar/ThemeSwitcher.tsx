@@ -10,7 +10,7 @@ export const ThemeSwitcher: React.FC = () => {
       label: 'Claro',
       title: 'Tema Claro (Modo diurno)',
       icon: (
-        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="5" />
           <line x1="12" y1="1" x2="12" y2="3" />
           <line x1="12" y1="21" x2="12" y2="23" />
@@ -28,7 +28,7 @@ export const ThemeSwitcher: React.FC = () => {
       label: 'Oscuro',
       title: 'Tema Oscuro Ergonómico (Modo nocturno)',
       icon: (
-        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
         </svg>
       ),
@@ -38,7 +38,7 @@ export const ThemeSwitcher: React.FC = () => {
       label: 'Auto',
       title: 'Sincronizar con el Sistema Operativo',
       icon: (
-        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
           <line x1="8" y1="21" x2="16" y2="21" />
           <line x1="12" y1="17" x2="12" y2="21" />
@@ -51,7 +51,7 @@ export const ThemeSwitcher: React.FC = () => {
     <div
       role="radiogroup"
       aria-label="Selector de tema de color institucional"
-      className="inline-flex items-center p-1 rounded-xl bg-slate-100/90 dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] gap-0.5 select-none shadow-xs"
+      className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-line bg-surface-alt p-1"
     >
       {options.map((opt) => {
         const isSelected = theme === opt.id;
@@ -61,17 +61,25 @@ export const ThemeSwitcher: React.FC = () => {
             type="button"
             role="radio"
             aria-checked={isSelected}
+            tabIndex={isSelected ? 0 : -1}
             title={opt.title}
             aria-label={opt.title}
             onClick={() => setTheme(opt.id)}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4] ${
-              isSelected
-                ? 'bg-white dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] shadow-xs border border-slate-200/50 dark:border-[#205C4E]'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-[#1F2D2A]'
+            onKeyDown={event => {
+              if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+              event.preventDefault();
+              const index = options.findIndex(option => option.id === opt.id);
+              const next = event.key === 'Home' ? 0 : event.key === 'End' ? options.length - 1
+                : (index + (event.key === 'ArrowRight' ? 1 : -1) + options.length) % options.length;
+              setTheme(options[next].id);
+              event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('button')[next]?.focus();
+            }}
+            className={`inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-lg border px-2.5 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+              isSelected ? 'border-line bg-surface text-brand shadow-xs' : 'border-transparent text-muted hover:bg-surface hover:text-ink'
             }`}
           >
             {opt.icon}
-            <span className="hidden sm:inline">{opt.label}</span>
+            <span className="hidden 2xl:inline">{opt.label}</span>
           </button>
         );
       })}

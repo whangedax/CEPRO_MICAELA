@@ -1,0 +1,20 @@
+{
+  "checks": [
+    "DIRECTOR: export config via WhatsApp",
+    "DIRECTOR: USB package generated and old output invalidated",
+    "DIRECTOR: rejects package addressed to another account",
+    "DIRECTOR: intended recipient previews and confirms WhatsApp code",
+    "DIRECTOR: real JSON file preview/confirm respects update versus proposal authority",
+    "SECRETARIA: export enrollments via WhatsApp",
+    "SECRETARIA: USB package generated and old output invalidated",
+    "SECRETARIA: rejects package addressed to another account",
+    "SECRETARIA: intended recipient previews and confirms downloaded USB file",
+    "SECRETARIA: real JSON file preview/confirm respects update versus proposal authority",
+    "DOCENTE: export grades via WhatsApp",
+    "DOCENTE: USB package generated and old output invalidated",
+    "DOCENTE: rejects package addressed to another account",
+    "DOCENTE: intended recipient previews and confirms WhatsApp code",
+    "DOCENTE: real JSON file preview/confirm respects update versus proposal authority"
+  ],
+  "errors": []
+}

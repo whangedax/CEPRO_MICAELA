@@ -149,7 +149,7 @@ async function ensureBackendRunning() {
     });
   } else {
     backendProcess = spawn(process.execPath, [runnerScript], {
-      env,
+      env: { ...env, ELECTRON_RUN_AS_NODE: '1' },
       stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
       windowsHide: true,
     });
@@ -165,20 +165,36 @@ async function ensureBackendRunning() {
     });
   }
 
-  // Polling de salud hasta que responda (máximo 15 segundos)
-  const startTime = Date.now();
-  let online = false;
-  while (Date.now() - startTime < 15000) {
-    await new Promise(r => setTimeout(r, 250));
-    online = await checkBackendHealth(backendUrl, instanceSecret);
-    if (online) break;
-  }
+  const supervisedBackend = backendProcess;
+  let startupError = null;
+  const onStartupError = error => { startupError = error; };
+  const onStartupExit = code => {
+    startupError = new Error(`El servicio local terminó durante el inicio (código ${code}).`);
+  };
+  supervisedBackend.once('error', onStartupError);
+  supervisedBackend.once('exit', onStartupExit);
 
-  if (!online) {
-    throw new Error(`El backend local en ${backendUrl} no respondió tras 15 segundos.`);
+  const startupTimeoutMs = 60000;
+  const startedAt = Date.now();
+  try {
+    while (Date.now() - startedAt < startupTimeoutMs) {
+      if (startupError) throw startupError;
+      if (await checkBackendHealth(backendUrl, instanceSecret)) {
+        if (startupError) throw startupError;
+        console.log(`[ELECTRON-MAIN] Backend listo y verificado en ${backendUrl}`);
+        return;
+      }
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
+    throw new Error(`El servicio local en ${backendUrl} no respondió tras ${startupTimeoutMs / 1000} segundos.`);
+  } catch (error) {
+    try { supervisedBackend.kill(); } catch {}
+    if (backendProcess === supervisedBackend) backendProcess = null;
+    throw error;
+  } finally {
+    supervisedBackend.removeListener('error', onStartupError);
+    supervisedBackend.removeListener('exit', onStartupExit);
   }
-
-  console.log(`[ELECTRON-MAIN] Backend listo y verificado en ${backendUrl}`);
 }
 
 /**

@@ -11,7 +11,7 @@
  * o desde cualquier panel del sistema.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { NavRoute } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
@@ -40,6 +40,9 @@ export interface AcademicWorkflowModalProps {
   onNavigate?: (route: NavRoute) => void;
 }
 
+const moduleLabel = (periodId: string) =>
+  periodId === '2026-I' ? 'Módulo I' : periodId === '2026-II' ? 'Módulo II' : '';
+
 export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
   isOpen: propIsOpen,
   onClose: propOnClose,
@@ -48,6 +51,8 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
   const { user } = useAuth();
   const {
     options,
+    error,
+    loadOptions,
     activeWorkspace,
     selectedGroup,
     isSelectorOpen,
@@ -58,17 +63,76 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
   } = useWorkspace();
 
   const isOpen = propIsOpen !== undefined ? propIsOpen : isSelectorOpen;
-  const handleClose = () => {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  const handleClose = useCallback(() => {
     if (propOnClose) propOnClose();
     closeSelector();
-  };
+  }, [propOnClose, closeSelector]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusTimer = window.setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 0);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && panelRef.current) {
+        const focusables = Array.from(
+          panelRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (focusables.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        } else if (!panelRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus?.isConnected) {
+        previousFocus.focus();
+      }
+    };
+  }, [isOpen, handleClose]);
 
   const role = user?.role || 'DOCENTE';
   const isAdminOrSec = role === 'DIRECTOR' || role === 'SECRETARIA';
 
   // Paso actual (1: Módulo, 2: Carrera, 3: Aula y Unidades)
-  const [step, setStep] = useState<1 | 2 | 3>(selectorStep || 1);
-  const [stageFilter, setStageFilter] = useState<'M1' | 'M2' | 'ALL'>('M1');
+  const [requestedStep, setStep] = useState<1 | 2 | 3>(1);
+  const [periodId, setPeriodId] = useState('');
+  const initializedStep = useRef<1 | 2 | 3 | null>(null);
   const [selectedProgramId, setSelectedProgramId] = useState<string>('');
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [isApplying, setIsApplying] = useState<boolean>(false);
@@ -78,82 +142,58 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
   const modules = useMemo(() => options?.modules || [], [options?.modules]);
   const groups = useMemo(() => options?.groups || [], [options?.groups]);
 
-  // Determinar si un módulo o grupo es Módulo I (2026-I) o Módulo II (2026-II)
-  const getModuleStage = (moduleId: string, periodId?: string): 'M1' | 'M2' => {
-    if (periodId && String(periodId).endsWith('-II')) return 'M2';
-    if (periodId && String(periodId).endsWith('-I')) return 'M1';
-    const num = Number((moduleId || '').replace(/\D+/g, ''));
-    if (!Number.isNaN(num) && num > 0) {
-      return num % 2 === 1 ? 'M1' : 'M2';
-    }
-    return 'M1';
-  };
+  const periods = useMemo(() => [...new Set([
+    '2026-I',
+    '2026-II',
+    ...(options?.periods || []),
+    ...groups.map(group => group.periodId),
+    ...modules.map(module => module.periodId),
+  ].filter((period): period is string => Boolean(period)))].sort(), [groups, modules, options?.periods]);
 
-  // Sincronizar paso y pre-selección inteligente al abrir el modal en Paso 1, 2 o 3
-  useEffect(() => {
-    if (!isOpen) return;
-    if (selectorStep) {
-      setStep(selectorStep);
-    }
-    if (!programs.length) return;
-
-    const currentGrp =
-      selectedGroup ||
-      (activeWorkspace?.groupId
-        ? groups.find((g) => g.id === activeWorkspace.groupId) || null
-        : null);
-
-    if (currentGrp) {
-      setSelectedProgramId(currentGrp.programId);
-      setSelectedGroupId(currentGrp.id);
-      setStageFilter(getModuleStage(currentGrp.moduleId, currentGrp.periodId));
-    } else if (activeWorkspace && !activeWorkspace.overview && activeWorkspace.programId) {
-      setSelectedProgramId(activeWorkspace.programId);
-      if (activeWorkspace.groupId) {
-        setSelectedGroupId(activeWorkspace.groupId);
-      }
-    } else {
-      setSelectedProgramId((prev) => prev || programs[0].id);
-    }
-  }, [isOpen, selectorStep, programs, groups, selectedGroup, activeWorkspace]);
-
-  // Todas las aulas de la carrera seleccionada
-  const allCareerGroups = useMemo(() => {
-    if (!selectedProgramId) return [];
-    return groups.filter((g) => g.programId === selectedProgramId);
-  }, [groups, selectedProgramId]);
-
-  // Aulas de la carrera filtradas por Etapa Modular (M1 = 2026-I, M2 = 2026-II, ALL = Ambos)
-  const careerGroups = useMemo(() => {
-    if (!allCareerGroups.length) return [];
-    if (stageFilter === 'ALL') return allCareerGroups;
-    const filtered = allCareerGroups.filter(
-      (g) => getModuleStage(g.moduleId, g.periodId) === stageFilter
-    );
-    return filtered.length > 0 ? filtered : allCareerGroups;
-  }, [allCareerGroups, stageFilter]);
-
-  // Aula actualmente seleccionada
-  const currentGroup: WorkspaceGroupOption | null = useMemo(() => {
-    if (!careerGroups.length) return null;
-    return careerGroups.find((g) => g.id === selectedGroupId) || careerGroups[0] || null;
-  }, [careerGroups, selectedGroupId]);
-
-  // Actualizar aula seleccionada cuando cambia la carrera
-  useEffect(() => {
-    if (careerGroups.length > 0) {
-      if (!selectedGroupId || !careerGroups.some((g) => g.id === selectedGroupId)) {
-        setSelectedGroupId(careerGroups[0].id);
-      }
-    } else {
-      setSelectedGroupId('');
-    }
-  }, [careerGroups, selectedGroupId]);
-
-  const currentProgram = useMemo(
-    () => programs.find((p) => p.id === selectedProgramId) || null,
-    [programs, selectedProgramId]
+  const periodGroups = useMemo(
+    () => groups.filter(group => group.periodId === periodId),
+    [groups, periodId]
   );
+  const periodPlans = useMemo(
+    () => isAdminOrSec ? modules.filter(module => module.periodId === periodId) : [],
+    [modules, periodId, isAdminOrSec]
+  );
+  const periodPrograms = useMemo(() => {
+    const programIds = new Set([...periodGroups, ...periodPlans].map(item => item.programId));
+    return programs.filter(program => programIds.has(program.id));
+  }, [programs, periodGroups, periodPlans]);
+  const currentProgram = periodPrograms.find(program => program.id === selectedProgramId);
+  const careerGroups = periodGroups.filter(group => group.programId === currentProgram?.id);
+  const currentGroup = careerGroups.find(group => group.id === selectedGroupId) || careerGroups[0] || null;
+  const currentPlans = periodPlans.filter(plan =>
+    plan.programId === currentProgram?.id && !careerGroups.some(group => group.moduleId === plan.id)
+  );
+  const step = !periodId ? 1 : requestedStep === 3 && !currentProgram ? 2 : requestedStep;
+
+  useEffect(() => {
+    if (!isOpen) {
+      initializedStep.current = null;
+      return;
+    }
+    if (!options || initializedStep.current === selectorStep) return;
+    initializedStep.current = selectorStep;
+
+    const currentGroup = selectedGroup || groups.find(group => group.id === activeWorkspace?.groupId);
+    const activePeriod = currentGroup?.periodId || activeWorkspace?.periodId || '';
+    setPeriodId(activePeriod);
+    setSelectedProgramId(currentGroup?.programId || activeWorkspace?.programId || '');
+    setSelectedGroupId(currentGroup?.id || '');
+    setFeedbackMsg(null);
+    setStep(activePeriod ? selectorStep : 1);
+  }, [isOpen, options, selectorStep, groups, selectedGroup, activeWorkspace]);
+
+  const choosePeriod = (period: string) => {
+    setPeriodId(period);
+    setSelectedProgramId('');
+    setSelectedGroupId('');
+    setFeedbackMsg(null);
+    setStep(2);
+  };
 
   const pedagogicalUnits: WorkspaceUnitOption[] = useMemo(() => {
     if (!currentGroup) return [];
@@ -181,15 +221,14 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
     unitCode?: string,
     targetRoute?: NavRoute
   ) => {
+    if (isApplying || group.id !== currentGroup?.id || group.periodId !== periodId) return;
     setIsApplying(true);
     setFeedbackMsg(null);
     try {
       const effectiveMode = unitCode === 'EFSRT' ? 'PRACTICE' : mode;
       await selectGroupAndUnit(group, effectiveMode, unitCode);
       handleClose();
-      if (targetRoute) {
-        navigateTo(targetRoute);
-      }
+      navigateTo(targetRoute || 'inicio');
     } catch (err: unknown) {
       const msg = err && typeof err === 'object' && 'error' in err ? String((err as { error: unknown }).error) : 'No se pudo seleccionar la unidad.';
       setFeedbackMsg(msg);
@@ -199,13 +238,14 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
   };
 
   const handleSelectOverview = async () => {
-    if (!isAdminOrSec) return;
+    if (!isAdminOrSec || isApplying) return;
+    setFeedbackMsg(null);
     setIsApplying(true);
     try {
       await selectWorkspace({ overview: true });
       handleClose();
     } catch {
-      // Ignorar
+      setFeedbackMsg('No se pudo abrir la vista global. Inténtelo de nuevo.');
     } finally {
       setIsApplying(false);
     }
@@ -218,24 +258,26 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="academic-workflow-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-md animate-fade-in"
+      onClick={handleClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/55 backdrop-blur-xs animate-fade-in"
     >
       <div
-        className="w-full max-w-5xl bg-white dark:bg-[#131C1A] rounded-3xl border border-slate-200/90 dark:border-[#263834] shadow-[0_25px_70px_rgba(0,0,0,0.3)] flex flex-col max-h-[92vh] overflow-hidden"
+        ref={panelRef}
+        className="cepro-dialog-panel w-full max-w-5xl bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)] flex flex-col max-h-[92vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ENCABEZADO DEL ASISTENTE GUIADO */}
-        <header className="px-6 py-5 border-b border-slate-200/80 dark:border-[#263834] bg-gradient-to-r from-[#F4FAF8] via-white to-[#F4FAF8] dark:from-[#131C1A] dark:via-[#182220] dark:to-[#131C1A] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
-          <div>
+        <header className="px-6 py-5 border-b border-line bg-surface-alt flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
+          <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#13594A] dark:bg-[#5EEAD4]" />
-              <span className="text-[11px] font-bold text-[#13594A] dark:text-[#5EEAD4] uppercase tracking-wider">
-                Navegador Académico Guiado 2026
+              <span className="w-2.5 h-2.5 rounded-full bg-brand shrink-0" aria-hidden="true" />
+              <span className="text-[11px] font-bold text-brand uppercase tracking-wider tabular-nums">
+                Navegador académico
               </span>
             </div>
             <h2
               id="academic-workflow-title"
-              className="text-[20px] font-bold text-[#0D382F] dark:text-[#F0FDF8] leading-tight"
+              className="text-[20px] font-bold text-ink leading-tight"
             >
               {step === 1 && 'Paso 1: Seleccione el Módulo Formativo / Periodo Lectivo'}
               {step === 2 && 'Paso 2: Seleccione la Carrera Técnica (Especialidad)'}
@@ -244,54 +286,58 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
           </div>
 
           {/* Barra de progreso de pasos */}
-          <div className="flex items-center gap-1.5 self-start sm:self-center">
+          <div className="flex items-center gap-1.5 self-start sm:self-center shrink-0">
             <button
               type="button"
               onClick={() => setStep(1)}
-              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              disabled={isApplying}
+              className={`min-h-[44px] px-3 py-1.5 rounded-[10px] text-[12px] font-bold transition-all flex items-center gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand ${
                 step === 1
-                  ? 'bg-[#13594A] text-white shadow-xs'
-                  : 'bg-slate-100 dark:bg-[#182220] text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4]'
+                  ? 'bg-brand text-on-brand shadow-xs'
+                  : 'bg-surface border border-line text-ink hover:text-brand hover:bg-brand-soft'
               }`}
             >
-              <span>1. Módulo</span>
-              {step > 1 && <span className="text-[10px] text-emerald-300">✓</span>}
+              <span className="tabular-nums">1. Módulo</span>
+              {step > 1 && <span className="text-[10px]" aria-hidden="true">✓</span>}
             </button>
-            <span className="text-slate-300 dark:text-slate-600">→</span>
+            <span className="text-muted" aria-hidden="true">→</span>
             <button
               type="button"
               onClick={() => setStep(2)}
-              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              disabled={!periodId || isApplying}
+              className={`min-h-[44px] px-3 py-1.5 rounded-[10px] text-[12px] font-bold transition-all flex items-center gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand ${
                 step === 2
-                  ? 'bg-[#13594A] text-white shadow-xs'
-                  : 'bg-slate-100 dark:bg-[#182220] text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4]'
+                  ? 'bg-brand text-on-brand shadow-xs'
+                  : 'bg-surface border border-line text-ink hover:text-brand hover:bg-brand-soft'
               }`}
             >
-              <span>2. Carrera</span>
-              {step > 2 && <span className="text-[10px] text-emerald-300">✓</span>}
+              <span className="tabular-nums">2. Carrera</span>
+              {step > 2 && <span className="text-[10px]" aria-hidden="true">✓</span>}
             </button>
-            <span className="text-slate-300 dark:text-slate-600">→</span>
+            <span className="text-muted" aria-hidden="true">→</span>
             <button
               type="button"
               onClick={() => setStep(3)}
-              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              disabled={!currentProgram || isApplying}
+              className={`min-h-[44px] px-3 py-1.5 rounded-[10px] text-[12px] font-bold transition-all flex items-center gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand ${
                 step === 3
-                  ? 'bg-[#13594A] text-white shadow-xs'
-                  : 'bg-slate-100 dark:bg-[#182220] text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4]'
+                  ? 'bg-brand text-on-brand shadow-xs'
+                  : 'bg-surface border border-line text-ink hover:text-brand hover:bg-brand-soft'
               }`}
             >
-              <span>3. Unidades</span>
+              <span className="tabular-nums">3. Unidades</span>
             </button>
 
             {/* Botón cerrar si ya existe un espacio o desea omitir */}
             <button
+              ref={closeButtonRef}
               type="button"
               onClick={handleClose}
               title="Cerrar ventana"
               aria-label="Cerrar ventana"
-              className="ml-2 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#182220] transition-colors cursor-pointer"
+              className="ml-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-[10px] text-muted hover:text-ink hover:bg-surface border border-transparent hover:border-line transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -300,78 +346,64 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
 
         {/* CONTENIDO SCROLLABLE SEGÚN EL PASO ACTIVO */}
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
+          {(feedbackMsg || (!options && error)) && (
+            <div
+              role="alert"
+              className="p-3.5 rounded-[10px] bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/60 text-red-800 dark:text-red-200 text-xs font-semibold flex items-center gap-2"
+            >
+              <span className="font-bold shrink-0" aria-hidden="true">!</span>
+              <span className="min-w-0">{feedbackMsg || error}</span>
+              {!options && error && (
+                <button type="button" className="min-h-[44px] shrink-0 px-2 font-bold underline focus-visible:ring-2"
+                  onClick={() => void loadOptions()}>
+                  Reintentar
+                </button>
+              )}
+            </div>
+          )}
           {/* ========================================================
               VENTANA 1: SELECCIÓN DE MÓDULO / PERIODO LECTIVO
              ======================================================== */}
           {step === 1 && (
             <div className="space-y-6 animate-fade-in">
               <div className="text-center max-w-xl mx-auto mb-2">
-                <p className="text-[14px] text-slate-600 dark:text-slate-300">
+                <p className="text-[14px] text-muted">
                   Seleccione el periodo lectivo y la etapa formativa con la que va a trabajar.
                   El sistema organizará automáticamente las carreras técnicas y aulas correspondientes.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {/* Opción 1: Módulo I (2026-I) */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStageFilter('M1');
-                    setStep(2);
-                  }}
-                  className="p-6 rounded-3xl text-left border-2 transition-all duration-200 flex flex-col justify-between group bg-white dark:bg-[#182220] border-slate-200/90 dark:border-[#263834] hover:border-[#13594A] dark:hover:border-[#5EEAD4] hover:shadow-lg cursor-pointer"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#E6F4F1] dark:bg-[#132B25] text-[#004034] dark:text-[#5EEAD4] border border-[#13594A]/25">
-                        Semestre en Curso · Activo
-                      </span>
-                      <CalendarIcon className="w-5 h-5 text-[#13594A] dark:text-[#5EEAD4]" />
-                    </div>
-                    <h3 className="text-[18px] font-bold text-[#172B28] dark:text-[#F0FDF8] group-hover:text-[#13594A] dark:group-hover:text-[#5EEAD4] transition-colors">
-                      Módulo I · Periodo 2026-I
-                    </h3>
-                    <p className="text-[13px] text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
-                      Marzo 2026 – Julio 2026. Etapa formativa regular con 16 aulas activas,
-                      286 estudiantes matriculados y plana docente titular completa.
-                    </p>
-                  </div>
-                  <div className="mt-6 pt-4 border-t border-slate-100 dark:border-[#263834] flex items-center justify-between text-[13px] font-bold text-[#13594A] dark:text-[#5EEAD4]">
-                    <span>Ver Carreras de Módulo I</span>
-                    <ArrowForwardIcon className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </button>
-
-                {/* Opción 2: Módulo II (2026-II) */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStageFilter('M2');
-                    setStep(2);
-                  }}
-                  className="p-6 rounded-3xl text-left border-2 transition-all duration-200 flex flex-col justify-between group bg-white dark:bg-[#182220] border-slate-200/90 dark:border-[#263834] hover:border-[#13594A] dark:hover:border-[#5EEAD4] hover:shadow-lg cursor-pointer"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800/60">
-                        Segundo Semestre · 2026-II
-                      </span>
-                      <CalendarIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                    </div>
-                    <h3 className="text-[18px] font-bold text-[#172B28] dark:text-[#F0FDF8] group-hover:text-[#13594A] dark:group-hover:text-[#5EEAD4] transition-colors">
-                      Módulo II · Periodo 2026-II
-                    </h3>
-                    <p className="text-[13px] text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
-                      Agosto 2026 – Diciembre 2026. Segundo semestre formativo planificado
-                      para continuidad modular y culminación de especialidad técnica.
-                    </p>
-                  </div>
-                  <div className="mt-6 pt-4 border-t border-slate-100 dark:border-[#263834] flex items-center justify-between text-[13px] font-bold text-[#13594A] dark:text-[#5EEAD4]">
-                    <span>Ver Carreras de Módulo II</span>
-                    <ArrowForwardIcon className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </button>
+                {periods.map(period => {
+                  const title = moduleLabel(period);
+                  const count = groups.filter(group => group.periodId === period).length;
+                  return (
+                    <button
+                      key={period}
+                      type="button"
+                      data-testid={`workspace-period-${period}`}
+                      disabled={!options || isApplying}
+                      onClick={() => choosePeriod(period)}
+                      className="p-6 rounded-2xl text-left border-2 transition-colors flex flex-col justify-between group bg-surface border-line hover:border-brand cursor-pointer focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-60"
+                    >
+                      <div>
+                        <CalendarIcon className="w-5 h-5 text-brand mb-4" />
+                        <h3 className="text-lg font-bold text-ink tabular-nums">
+                          {title ? `${title} · Periodo ${period}` : `Periodo ${period}`}
+                        </h3>
+                        <p className="text-sm text-muted mt-2">
+                          {!options ? 'Cargando disponibilidad…' : count
+                            ? `${count} ${count === 1 ? 'aula disponible' : 'aulas disponibles'}`
+                            : role === 'DOCENTE' ? 'Sin aulas asignadas' : 'Sin aulas habilitadas'}
+                        </p>
+                      </div>
+                      <div className="mt-5 pt-3 border-t border-line flex justify-between items-center gap-2 text-sm font-bold text-brand">
+                        <span>{title ? `Ver Carreras de ${title}` : 'Ver carreras del periodo'}</span>
+                        <ArrowForwardIcon className="w-4 h-4 shrink-0" />
+                      </div>
+                    </button>
+                  );
+                })}
 
                 {/* Opción 3: Vista Global Institucional (Solo Secretaría y Dirección) */}
                 {isAdminOrSec ? (
@@ -379,38 +411,28 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                     type="button"
                     onClick={handleSelectOverview}
                     disabled={isApplying}
-                    className="p-6 rounded-3xl text-left border-2 transition-all duration-200 flex flex-col justify-between group bg-gradient-to-br from-[#F2FBF8] to-white dark:from-[#132B25] dark:to-[#182220] border-[#13594A]/40 dark:border-[#205C4E] hover:border-[#13594A] dark:hover:border-[#5EEAD4] hover:shadow-lg cursor-pointer"
+                    className="p-6 rounded-2xl text-left border-2 transition-all duration-200 flex flex-col justify-between group bg-brand-soft/60 border-brand/40 hover:border-brand hover:shadow-[var(--ui-shadow)] cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     <div>
                       <div className="flex items-center justify-between mb-4">
-                        <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#13594A] text-white">
+                        <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-brand text-on-brand">
                           Ámbito Institucional
                         </span>
-                        <CheckCircleIcon className="w-5 h-5 text-[#13594A] dark:text-[#5EEAD4]" />
+                        <CheckCircleIcon className="w-5 h-5 text-brand" />
                       </div>
-                      <h3 className="text-[18px] font-bold text-[#172B28] dark:text-[#F0FDF8] group-hover:text-[#13594A] dark:group-hover:text-[#5EEAD4] transition-colors">
+                      <h3 className="text-[18px] font-bold text-ink group-hover:text-brand transition-colors">
                         Vista Global del CETPRO
                       </h3>
-                      <p className="text-[13px] text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
-                        Supervisión integral de todas las 7 carreras, nóminas consolidadas,
-                        mesa de partes y reportes oficiales sin filtrar por unidad didáctica.
+                      <p className="text-[13px] text-muted mt-2 leading-relaxed">
+                        Consulte las carreras, nóminas y reportes institucionales sin seleccionar una unidad didáctica.
                       </p>
                     </div>
-                    <div className="mt-6 pt-4 border-t border-[#13594A]/20 dark:border-[#263834] flex items-center justify-between text-[13px] font-bold text-[#13594A] dark:text-[#5EEAD4]">
+                    <div className="mt-6 pt-4 border-t border-brand/20 flex items-center justify-between text-[13px] font-bold text-brand">
                       <span>Acceder a Vista Global</span>
                       <ArrowForwardIcon className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
                     </div>
                   </button>
-                ) : (
-                  <div className="p-6 rounded-3xl bg-slate-50 dark:bg-[#182220]/60 border border-slate-200/60 dark:border-[#263834] flex flex-col justify-center text-center">
-                    <span className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">
-                      Plataforma Docente
-                    </span>
-                    <p className="text-[13px] text-slate-600 dark:text-slate-400 mt-2">
-                      Seleccione Módulo I para gestionar sus aulas y unidades asignadas del periodo lectivo 2026.
-                    </p>
-                  </div>
-                )}
+                ) : null}
               </div>
             </div>
           )}
@@ -420,46 +442,56 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
              ======================================================== */}
           {step === 2 && (
             <div className="space-y-6 animate-fade-in">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#263834]">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line">
+                <div className="flex items-center gap-3 min-w-0">
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#182220] hover:bg-slate-200 dark:hover:bg-[#263834] text-slate-700 dark:text-slate-300 text-[12px] font-bold transition-colors cursor-pointer"
+                    className="min-h-[44px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] bg-surface-alt border border-line hover:bg-brand-soft text-ink hover:text-brand text-[12px] font-bold transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     <span>← Volver al Módulo</span>
                   </button>
-                  <span className="text-[13px] text-slate-600 dark:text-slate-300 font-medium">
-                    Etapa: <strong className="text-[#13594A] dark:text-[#5EEAD4]">{stageFilter === 'M1' ? 'Módulo I (2026-I)' : stageFilter === 'M2' ? 'Módulo II (2026-II)' : 'Todos los Módulos'}</strong>
+                  <span className="text-[13px] text-muted font-medium truncate">
+                    <strong className="text-brand tabular-nums">{[moduleLabel(periodId), periodId].filter(Boolean).join(' · ')}</strong>
                   </span>
                 </div>
-                <span className="text-[12px] font-semibold text-slate-500 dark:text-slate-400">
-                  {programs.length} carreras formativas disponibles
+                <span className="text-[12px] font-semibold text-muted tabular-nums shrink-0">
+                  {periodPrograms.length} {periodPrograms.length === 1 ? 'carrera disponible' : 'carreras disponibles'}
                 </span>
               </div>
 
+              {!periodPrograms.length && (
+                <div className="rounded-xl border border-line bg-surface-alt p-5 space-y-2" role="status">
+                  <h3 className="font-bold text-ink">
+                    {role === 'DOCENTE' ? 'Aún no tienes aulas asignadas' : 'Aún no hay aulas ni planes disponibles'} en {periodId}
+                  </h3>
+                  <p className="text-sm text-muted">
+                    {role === 'DIRECTOR' ? 'Revise los planes del periodo en Configuración Académica.' : 'Consulte con Dirección para habilitar sus aulas en este periodo.'}
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {programs.map((prog) => {
+                {periodPrograms.map((prog) => {
                   const isSelected = prog.id === selectedProgramId;
-                  const progGroups = groups.filter((g) => g.programId === prog.id);
+                  const progGroups = periodGroups.filter((g) => g.programId === prog.id);
                   const totalStudents = progGroups.reduce((acc, g) => acc + (g.studentCount || 0), 0);
                   const theme = resolveCareerVisualTheme(prog.id, prog.nombre);
 
                   return (
                     <button
                       key={prog.id}
+                      data-testid={`workspace-program-${prog.id}`}
                       type="button"
                       onClick={() => {
                         setSelectedProgramId(prog.id);
-                        if (progGroups.length > 0) {
-                          setSelectedGroupId(progGroups[0].id);
-                        }
+                        setSelectedGroupId(progGroups[0]?.id || '');
+                        setFeedbackMsg(null);
                         setStep(3);
                       }}
-                      className={`text-left rounded-3xl p-3.5 transition-all duration-200 border flex flex-col justify-between group cursor-pointer ${
+                      className={`text-left rounded-2xl p-3.5 transition-all duration-200 border flex flex-col justify-between group cursor-pointer focus-visible:ring-2 focus-visible:ring-brand ${
                         isSelected
-                          ? 'bg-[#F2FBF8] dark:bg-[#132B25] border-[#13594A] dark:border-[#5EEAD4] ring-2 ring-[#13594A]/25 dark:ring-[#5EEAD4]/25 shadow-md'
-                          : 'bg-white dark:bg-[#182220] border-slate-200/90 dark:border-[#263834] hover:border-[#13594A]/60 hover:shadow-sm'
+                          ? 'bg-brand-soft/60 border-brand ring-2 ring-brand/25 shadow-[var(--ui-shadow)]'
+                          : 'bg-surface border-line hover:border-brand/60 hover:shadow-sm'
                       }`}
                     >
                       <div>
@@ -472,11 +504,11 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                           showToolsFooter={false}
                         />
                         <div className="mt-3 flex items-start justify-between gap-2">
-                          <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#13594A] dark:text-[#5EEAD4]">
+                          <div className="min-w-0">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-brand tabular-nums">
                               {prog.id}
                             </span>
-                            <h4 className="text-[15px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-snug mt-0.5 group-hover:text-[#13594A] dark:group-hover:text-[#5EEAD4] transition-colors">
+                            <h4 className="text-[15px] font-bold text-ink leading-snug mt-0.5 group-hover:text-brand transition-colors">
                               {prog.nombre}
                             </h4>
                           </div>
@@ -488,12 +520,12 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                         </div>
                       </div>
 
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#263834] flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                          <StudentsIcon className="w-3.5 h-3.5 text-[#13594A] dark:text-[#5EEAD4]" />
-                          {totalStudents} matriculados
+                      <div className="mt-3 pt-2.5 border-t border-line flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-ink flex items-center gap-1 tabular-nums">
+                          <StudentsIcon className="w-3.5 h-3.5 text-brand" />
+                          {progGroups.length ? `${totalStudents} matrículas activas` : 'Plan sin aula'}
                         </span>
-                        <span className="font-bold text-[#13594A] dark:text-[#5EEAD4] group-hover:underline">
+                        <span className="font-bold text-brand group-hover:underline">
                           Elegir carrera →
                         </span>
                       </div>
@@ -509,116 +541,114 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
              ======================================================== */}
           {step === 3 && currentProgram && (
             <div className="space-y-6 animate-fade-in">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#263834]">
-                <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line">
+                <div className="flex flex-wrap items-center gap-3 min-w-0">
                   <button
                     type="button"
                     onClick={() => setStep(2)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#182220] hover:bg-slate-200 dark:hover:bg-[#263834] text-slate-700 dark:text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+                    className="min-h-[44px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] bg-surface-alt border border-line hover:bg-brand-soft text-ink hover:text-brand text-xs font-bold transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     <span>← Volver a Carreras</span>
                   </button>
-                  <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
+                  <span className="text-sm text-muted font-medium min-w-0 truncate">
                     Carrera seleccionada:{' '}
-                    <strong className="text-[#13594A] dark:text-[#5EEAD4]">
+                    <strong className="text-brand">
                       {currentProgram.nombre}
                     </strong>
                   </span>
                 </div>
 
-                {/* Conmutador de Semestre / Etapa Modular en Paso 3 */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setStageFilter('M1')}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-                      stageFilter === 'M1'
-                        ? 'bg-[#13594A] text-white'
-                        : 'bg-slate-100 dark:bg-[#182220] text-slate-600 dark:text-slate-300 hover:text-[#13594A]'
-                    }`}
-                  >
-                    Módulo I (2026-I)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStageFilter('M2')}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-                      stageFilter === 'M2'
-                        ? 'bg-[#13594A] text-white'
-                        : 'bg-slate-100 dark:bg-[#182220] text-slate-600 dark:text-slate-300 hover:text-[#13594A]'
-                    }`}
-                  >
-                    Módulo II (2026-II)
-                  </button>
-                  {stageFilter !== 'ALL' && allCareerGroups.length > careerGroups.length && (
-                    <button
-                      type="button"
-                      onClick={() => setStageFilter('ALL')}
-                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#E6F4F1] dark:bg-[#132B25] text-[#004034] dark:text-[#5EEAD4] border border-[#13594A]/30 dark:border-[#205C4E] hover:underline cursor-pointer"
-                    >
-                      Ver todos los semestres (2026-I y 2026-II)
-                    </button>
-                  )}
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 ml-1">
-                    {careerGroups.length}{' '}
-                    {careerGroups.length === 1 ? 'aula habilitada' : 'aulas habilitadas'}
-                  </span>
-                </div>
+                <span className="text-xs font-semibold text-muted tabular-nums">
+                  <strong className="text-brand">{[moduleLabel(periodId), periodId].filter(Boolean).join(' · ')}</strong> · {careerGroups.length}{' '}
+                  {careerGroups.length === 1 ? 'aula disponible' : 'aulas disponibles'}
+                </span>
               </div>
 
-              {/* Selector de Aula / Turno / Sección */}
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-2.5">
-                  1. Seleccione el Aula / Turno de la Carrera:
+              {currentPlans.length > 0 && (
+                <div className="rounded-xl border border-line bg-surface-alt p-5 space-y-4">
+                  <div>
+                    <h3 className="font-bold text-ink">Plan disponible · Sin aula habilitada</h3>
+                    <p className="mt-1 text-sm text-muted">
+                      {role === 'DIRECTOR'
+                        ? 'Para abrir asistencia, notas o documentos, cree un aula con este plan en Grupos y aulas.'
+                        : 'Dirección debe habilitar un aula de este periodo para trabajar con sus registros.'}
+                    </p>
+                  </div>
+                  {currentPlans.map(plan => (
+                    <section key={plan.id} className="border-t border-line pt-3">
+                      <h4 className="text-sm font-bold text-ink">{plan.nombre}</h4>
+                      {plan.plannedUnits?.length ? (
+                        <ul className="mt-2 grid gap-1.5 sm:grid-cols-2 text-sm text-muted">
+                          {plan.plannedUnits.map(unit => (
+                            <li key={unit.code} className="flex gap-2">
+                              <span className="font-bold text-brand">{unit.code}</span>
+                              {unit.name && <span>{unit.name}</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </section>
+                  ))}
+                  {role === 'DIRECTOR' && (
+                    <button type="button" onClick={() => { handleClose(); navigateTo('grupos'); }}
+                      className="min-h-[44px] rounded-[10px] bg-brand px-4 text-sm font-bold text-on-brand focus-visible:ring-2 focus-visible:ring-brand">
+                      Ir a Grupos y aulas
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {careerGroups.length > 0 && <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-ink block mb-2.5">
+                  1. Seleccione el aula
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {careerGroups.map((grp) => {
                     const isGrpSelected = currentGroup?.id === grp.id;
                     const isMorning = (grp.turno || '').toLowerCase().includes('mañana');
                     const grpModule = modules.find((m) => m.id === grp.moduleId);
-                    const grpStageLabel =
-                      getModuleStage(grp.moduleId, grp.periodId) === 'M2'
-                        ? 'Módulo II'
-                        : 'Módulo I';
+                    const grpStageLabel = moduleLabel(grp.periodId) || 'Módulo';
 
                     return (
                       <button
                         key={grp.id}
+                        data-testid={`workspace-group-${grp.id}`}
                         type="button"
-                        onClick={() => setSelectedGroupId(grp.id)}
-                        className={`text-left p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-2 cursor-pointer ${
+                        disabled={isApplying}
+                        onClick={() => { setSelectedGroupId(grp.id); setFeedbackMsg(null); }}
+                        className={`text-left p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand ${
                           isGrpSelected
-                            ? 'bg-[#F2FBF8] dark:bg-[#132B25] border-[#13594A] dark:border-[#5EEAD4] ring-2 ring-[#13594A]/25 shadow-sm'
-                            : 'bg-white dark:bg-[#182220] border-slate-200/90 dark:border-[#263834] hover:border-[#13594A]/50'
+                            ? 'bg-brand-soft/60 border-brand ring-2 ring-brand/25 shadow-sm'
+                            : 'bg-surface border-line hover:border-brand/50'
                         }`}
                       >
-                        <div>
+                        <div className="min-w-0">
                           <div className="flex items-center justify-between gap-1 mb-1.5">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200/80 dark:border-amber-800/60">
                               {isMorning ? (
-                                <SunIcon className="w-3 h-3 text-amber-600" />
+                                <SunIcon className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                               ) : (
-                                <SunsetIcon className="w-3 h-3 text-indigo-500" />
+                                <SunsetIcon className="w-3 h-3 text-indigo-500 dark:text-indigo-300" />
                               )}
                               Turno {grp.turno || 'Mañana'}
                             </span>
-                            <span className="text-[10px] font-bold text-[#13594A] dark:text-[#5EEAD4] tabular-nums">
-                              {grp.periodId || '2026-I'} · Secc. {grp.section || 'A1'}
+                            <span className="text-[10px] font-bold text-brand tabular-nums">
+                              {grp.periodId} · Secc. {grp.section || 'A1'}
                             </span>
                           </div>
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#13594A] dark:text-[#5EEAD4] block">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand block truncate">
                             {grpStageLabel}: {grpModule?.nombre || grp.moduleId}
                           </span>
-                          <h4 className="text-[13px] font-bold text-[#172B28] dark:text-[#F0FDF8] leading-tight mt-0.5">
+                          <h4 className="text-[13px] font-bold text-ink leading-tight mt-0.5 truncate">
                             {grp.name}
                           </h4>
                           {grp.teacherName && (
-                            <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 truncate">
+                            <p className="text-[11px] text-muted mt-1 truncate">
                               Prof. {grp.teacherName}
                             </p>
                           )}
                         </div>
-                        <div className="pt-2 border-t border-slate-100 dark:border-[#263834] flex items-center justify-between text-[11px] font-semibold text-[#13594A] dark:text-[#5EEAD4] tabular-nums">
+                        <div className="pt-2 border-t border-line flex items-center justify-between text-[11px] font-semibold text-brand tabular-nums">
                           <span>{grp.studentCount} matriculados</span>
                           <span>{isGrpSelected ? 'Seleccionada ✓' : 'Elegir'}</span>
                         </div>
@@ -626,26 +656,26 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                     );
                   })}
                 </div>
-              </div>
+              </div>}
 
               {/* Unidades Didácticas del Aula Seleccionada */}
               {currentGroup && (
-                <div className="pt-4 border-t border-slate-200/80 dark:border-[#263834] space-y-4">
+                <div className="pt-4 border-t border-line space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold uppercase tracking-wider text-ink block tabular-nums">
                         2. Haga clic en la Unidad Didáctica que desea gestionar (
                         {pedagogicalUnits.length} UDs):
                       </span>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      <p className="text-xs text-muted mt-0.5 truncate">
                         Módulo:{' '}
-                        <strong className="text-slate-800 dark:text-slate-200">
+                        <strong className="text-ink">
                           {modules.find((m) => m.id === currentGroup.moduleId)?.nombre ||
                             currentGroup.name}
                         </strong>{' '}
                         · Periodo{' '}
-                        <strong className="text-slate-800 dark:text-slate-200">
-                          {currentGroup.periodId || '2026-I'}
+                        <strong className="text-ink tabular-nums">
+                          {currentGroup.periodId}
                         </strong>
                       </p>
                     </div>
@@ -656,7 +686,7 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                         type="button"
                         disabled={isApplying}
                         onClick={() => handleSelectUnit(currentGroup, 'MODULE', undefined, 'matriculas')}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#182220] hover:bg-[#13594A] hover:text-white dark:hover:bg-[#1A6B5A] text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-[#263834] text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+                        className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-[10px] bg-surface-alt hover:bg-brand hover:text-on-brand text-ink border border-line text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
                       >
                         <EnrollmentIcon className="w-4 h-4" />
                         <span>Gestionar Aula Completa (Nóminas de Matrícula)</span>
@@ -677,28 +707,28 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                           key={unit.code}
                           className={`rounded-2xl p-4 border transition-all flex flex-col justify-between ${
                             isUnitActive
-                              ? 'bg-[#F2FBF8] dark:bg-[#132B25] border-[#13594A] dark:border-[#5EEAD4] ring-2 ring-[#13594A]/25 shadow-sm'
-                              : 'bg-white dark:bg-[#182220] border-slate-200/90 dark:border-[#263834] hover:border-[#13594A]/50 hover:shadow-xs'
+                              ? 'bg-brand-soft/60 border-brand ring-2 ring-brand/25 shadow-sm'
+                              : 'bg-surface border-line hover:border-brand/50 hover:shadow-xs'
                           }`}
                         >
-                          <div>
+                          <div className="min-w-0">
                             <div className="flex items-center justify-between gap-2 mb-2">
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-[#13594A] text-white text-xs font-bold tabular-nums">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-brand text-on-brand text-xs font-bold tabular-nums">
                                 {unit.code} · Unidad {idx + 1}
                               </span>
-                              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 tabular-nums">
+                              <div className="flex items-center gap-1.5 text-xs font-semibold text-muted tabular-nums">
                                 {unit.hours ? <span>{unit.hours} h</span> : null}
                                 {unit.hours && unit.credits ? <span>·</span> : null}
                                 {unit.credits ? <span>{unit.credits} créd.</span> : null}
                               </div>
                             </div>
 
-                            <h4 className="text-sm font-bold text-[#172B28] dark:text-[#F0FDF8] leading-snug">
+                            <h4 className="text-sm font-bold text-ink leading-snug">
                               {unit.name || `Unidad Didáctica ${unit.code}`}
                             </h4>
 
                             {(unit.fechaInicio || unit.fechaFin) && (
-                              <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-[#131C1A] border border-emerald-200/70 dark:border-[#263834] text-[11px] font-bold text-[#004034] dark:text-[#5EEAD4] tabular-nums">
+                              <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-brand-soft border border-brand/25 text-[11px] font-bold text-brand tabular-nums">
                                 <CalendarIcon className="w-3 h-3 shrink-0" />
                                 <span>
                                   {unit.fechaInicio || ''} al {unit.fechaFin || ''}
@@ -707,25 +737,27 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                             )}
                           </div>
 
-                          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-[#263834] space-y-2">
+                          <div className="mt-4 pt-3 border-t border-line space-y-2">
                             {/* Botón Principal: Entrar a gestionar */}
                             <button
                               type="button"
                               disabled={isApplying}
                               onClick={() => handleSelectUnit(currentGroup, 'UNIT', unit.code)}
-                              className="w-full py-2.5 px-4 rounded-xl bg-[#13594A] hover:bg-[#0E4438] active:bg-[#0B372D] text-white font-bold text-[12px] tracking-wide flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                              data-testid={`workspace-unit-${unit.code}`}
+                              aria-label={`Abrir ${unit.code}: ${unit.name || unit.code} · ${moduleLabel(periodId) || periodId}`}
+                              className="min-h-[44px] w-full py-2.5 px-4 rounded-[10px] bg-brand hover:bg-brand/90 text-on-brand font-bold text-[12px] tracking-wide flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
                             >
                               <span>Ingresar a Gestionar esta Unidad</span>
                               <ArrowForwardIcon className="w-3.5 h-3.5" />
                             </button>
 
                             {/* Accesos directos rápidos */}
-                            <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+                            <div className="grid grid-cols-3 gap-1.5 text-[11px]">
                               <button
                                 type="button"
                                 disabled={isApplying}
                                 onClick={() => handleSelectUnit(currentGroup, 'UNIT', unit.code, 'asistencia')}
-                                className="p-1.5 rounded-lg bg-slate-50 dark:bg-[#131C1A] hover:bg-[#E6F4F1] dark:hover:bg-[#192825] text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4] font-bold border border-slate-200/80 dark:border-[#263834] transition-colors cursor-pointer text-center"
+                                className="min-h-[44px] p-1.5 rounded-[10px] bg-surface-alt hover:bg-brand-soft text-ink hover:text-brand font-bold border border-line transition-colors cursor-pointer text-center focus-visible:ring-2 focus-visible:ring-brand"
                               >
                                 Asistencia
                               </button>
@@ -733,7 +765,7 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                                 type="button"
                                 disabled={isApplying}
                                 onClick={() => handleSelectUnit(currentGroup, 'UNIT', unit.code, 'evaluacion')}
-                                className="p-1.5 rounded-lg bg-slate-50 dark:bg-[#131C1A] hover:bg-[#E6F4F1] dark:hover:bg-[#192825] text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4] font-bold border border-slate-200/80 dark:border-[#263834] transition-colors cursor-pointer text-center"
+                                className="min-h-[44px] p-1.5 rounded-[10px] bg-surface-alt hover:bg-brand-soft text-ink hover:text-brand font-bold border border-line transition-colors cursor-pointer text-center focus-visible:ring-2 focus-visible:ring-brand"
                               >
                                 Notas
                               </button>
@@ -741,7 +773,7 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                                 type="button"
                                 disabled={isApplying}
                                 onClick={() => handleSelectUnit(currentGroup, 'UNIT', unit.code, 'documentos')}
-                                className="p-1.5 rounded-lg bg-slate-50 dark:bg-[#131C1A] hover:bg-[#E6F4F1] dark:hover:bg-[#192825] text-slate-700 dark:text-slate-300 hover:text-[#13594A] dark:hover:text-[#5EEAD4] font-bold border border-slate-200/80 dark:border-[#263834] transition-colors cursor-pointer text-center"
+                                className="min-h-[44px] p-1.5 rounded-[10px] bg-surface-alt hover:bg-brand-soft text-ink hover:text-brand font-bold border border-line transition-colors cursor-pointer text-center focus-visible:ring-2 focus-visible:ring-brand"
                               >
                                 Formatos PDF
                               </button>
@@ -753,20 +785,20 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
 
                     {/* Tarjeta de Prácticas EFSRT si existe */}
                     {efsrtUnit && (
-                      <div className="rounded-2xl p-4 border bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/60 flex flex-col justify-between">
+                      <div className="rounded-2xl p-4 border bg-amber-50/60 dark:bg-amber-950/25 border-amber-200 dark:border-amber-800/60 flex flex-col justify-between">
                         <div>
                           <div className="flex items-center justify-between gap-2 mb-2">
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-amber-700 text-white text-[11px] font-bold">
                               EFSRT · Prácticas
                             </span>
-                            <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+                            <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 tabular-nums">
                               {efsrtUnit.hours || 192} h · {efsrtUnit.credits || 6} créd.
                             </span>
                           </div>
                           <h4 className="text-[14px] font-bold text-amber-950 dark:text-amber-200 leading-snug">
                             Experiencias Formativas en Situaciones Reales de Trabajo
                           </h4>
-                          <p className="text-[11px] text-amber-900/80 dark:text-amber-300/80 mt-1">
+                          <p className="text-[11px] text-amber-900/80 dark:text-amber-300/80 mt-1 tabular-nums">
                             Evaluación y acta de prácticas formativas de taller y empresa (Formato TMPL-18).
                           </p>
                         </div>
@@ -775,7 +807,7 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
                             type="button"
                             disabled={isApplying}
                             onClick={() => handleSelectUnit(currentGroup, 'PRACTICE', 'EFSRT', 'documentos')}
-                            className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-[12px] tracking-wide flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                            className="min-h-[44px] w-full py-2.5 px-4 rounded-[10px] bg-amber-600 hover:bg-amber-700 text-white font-bold text-[12px] tracking-wide flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
                           >
                             <span>Gestionar Prácticas EFSRT →</span>
                           </button>
@@ -790,8 +822,8 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
         </div>
 
         {/* PIE DE DIÁLOGO */}
-        <footer className="px-6 py-4 border-t border-slate-200/80 dark:border-[#263834] bg-slate-50 dark:bg-[#182220] flex items-center justify-between text-[12px]">
-          <span className="text-slate-500 dark:text-slate-400">
+        <footer className="px-6 py-4 border-t border-line bg-surface-alt flex items-center justify-between text-[12px]">
+          <span className="text-muted tabular-nums">
             {step === 1 && 'Paso 1 de 3 · Selección de Módulo'}
             {step === 2 && 'Paso 2 de 3 · Selección de Carrera'}
             {step === 3 && 'Paso 3 de 3 · Selección de Aula y Unidad Didáctica'}
@@ -799,7 +831,7 @@ export const AcademicWorkflowModal: React.FC<AcademicWorkflowModalProps> = ({
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 rounded-xl bg-white dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-100 dark:hover:bg-[#182220] transition-colors cursor-pointer"
+            className="min-h-[44px] px-4 py-2 rounded-[10px] bg-surface border border-line text-ink font-bold hover:bg-brand-soft hover:text-brand transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-brand"
           >
             Cerrar Asistente
           </button>

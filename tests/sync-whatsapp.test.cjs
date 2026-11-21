@@ -16,7 +16,7 @@ const { OfflineCore } = require('../scripts/offline-core.cjs');
 const Network = require('../scripts/institutional-network.cjs');
 const SyncWhatsApp = require('../scripts/sync-whatsapp.cjs');
 
-const artifactsDir = path.join(__dirname, 'offline-artifacts', 'sync-whatsapp');
+const artifactsDir = path.join(__dirname, '../dev-sandbox/data/sync-whatsapp', require('node:crypto').randomUUID());
 
 test('Fase 4: Sincronización Alternativa por WhatsApp', async (t) => {
   if (fs.existsSync(artifactsDir)) {
@@ -151,6 +151,7 @@ test('Fase 4: Sincronización Alternativa por WhatsApp', async (t) => {
 
     const exportResult = SyncWhatsApp.exportForWhatsApp(docCore, actorDocente, {
       syncModule: 'grades',
+      passphrase: 'Synthetic-transfer-123',
       asToken: true
     });
 
@@ -159,9 +160,9 @@ test('Fase 4: Sincronización Alternativa por WhatsApp', async (t) => {
     assert.ok(exportResult.tokenText.includes('CETPRO-SYNC:v1:'), 'El token debe contener el código');
 
     // Simular que el Director recibe el texto pegado de WhatsApp e importa
-    const importResult = SyncWhatsApp.importFromWhatsApp(hubCore, director, {
-      tokenText: exportResult.tokenText
-    });
+    const previewResult = SyncWhatsApp.importFromWhatsApp(hubCore, director, {tokenText:exportResult.tokenText,passphrase:'Synthetic-transfer-123'});
+    assert.equal(hubCore.records('grades').length,0);
+    const importResult = SyncWhatsApp.importFromWhatsApp(hubCore,director,{previewToken:previewResult.previewToken});
 
     assert.ok(importResult.success, 'La importación del texto de WhatsApp debe ser exitosa');
     assert.equal(importResult.channel, 'WHATSAPP');

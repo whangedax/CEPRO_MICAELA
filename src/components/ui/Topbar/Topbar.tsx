@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserProfile } from '../../../types';
-import { CalendarIcon } from '../Icons';
+import { CalendarIcon, RefreshIcon } from '../Icons';
 import ThemeSwitcher from './ThemeSwitcher';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 
@@ -16,7 +16,7 @@ export const Topbar: React.FC<TopbarProps> = ({ user, onProfileClick, onLogout }
   // Extract initials for clean local offline avatar
   const initials =
     user.name
-      .replace('Prof. ', '')
+      .replace(/^(?:Prof\.?|Lic\.?|Mg\.?|Ing\.?)\s+/i, '')
       .split(' ')
       .filter(Boolean)
       .slice(0, 2)
@@ -34,9 +34,10 @@ export const Topbar: React.FC<TopbarProps> = ({ user, onProfileClick, onLogout }
 
   const activePeriodLabel = React.useMemo(() => {
     if (activeGroup?.periodId) return activeGroup.periodId;
-    if (activeWorkspace?.year) return `${activeWorkspace.year}-I`;
+    if (activeWorkspace?.periodId) return activeWorkspace.periodId;
+    if (activeWorkspace?.year) return activeWorkspace.year;
     return user.period || '2026-I';
-  }, [activeGroup?.periodId, activeWorkspace?.year, user.period]);
+  }, [activeGroup?.periodId, activeWorkspace?.periodId, activeWorkspace?.year, user.period]);
 
   const programName = React.useMemo(() => {
     const progId = activeGroup?.programId || activeWorkspace?.programId;
@@ -45,13 +46,10 @@ export const Topbar: React.FC<TopbarProps> = ({ user, onProfileClick, onLogout }
   }, [activeGroup?.programId, activeWorkspace?.programId, activeWorkspace?.programName, options?.programs]);
 
   const moduleShortLabel = React.useMemo(() => {
-    const modId = activeGroup?.moduleId || activeWorkspace?.moduleId || '';
-    const num = Number(modId.replace(/\D+/g, ''));
-    if (!Number.isNaN(num) && num > 0) {
-      return num % 2 === 1 ? 'Módulo I' : 'Módulo II';
-    }
-    return activePeriodLabel.endsWith('-II') ? 'Módulo II' : 'Módulo I';
-  }, [activeGroup?.moduleId, activeWorkspace?.moduleId, activePeriodLabel]);
+    if (activePeriodLabel === '2026-I') return 'Módulo I';
+    if (activePeriodLabel === '2026-II') return 'Módulo II';
+    return options?.modules.find(m => m.id === activeWorkspace?.moduleId)?.nombre || 'Módulo formativo';
+  }, [activePeriodLabel, options?.modules, activeWorkspace?.moduleId]);
 
   const groupShortLabel = React.useMemo(() => {
     if (activeGroup) {
@@ -89,169 +87,48 @@ export const Topbar: React.FC<TopbarProps> = ({ user, onProfileClick, onLogout }
     return '';
   }, [activeWorkspace, activeGroup]);
 
+  const contextButton = 'min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand';
+  const contextTitle = isGlobalOverview ? 'Vista institucional' : programName || 'Contexto académico';
+  const contextDetail = isGlobalOverview ? 'Selecciona tu espacio de trabajo' : [moduleShortLabel, groupShortLabel].filter(Boolean).join(' · ');
+
   return (
-    <header className="fixed top-0 left-64 right-0 h-20 bg-white/80 dark:bg-[#131C1A]/95 backdrop-blur-md border-b border-slate-100 dark:border-[#263834] z-40 flex items-center justify-between px-6 xl:px-8 transition-colors duration-200 select-none">
-      {/* Menú y selector permanente de contexto académico (WCAG 2.2 AA) */}
-      <div className="flex items-center gap-3 min-w-0">
-        <span className="hidden 2xl:inline text-[13px] font-medium text-slate-500 dark:text-slate-400 shrink-0">
-          {user.institution}
-        </span>
-
-        <div className="hidden 2xl:block h-4 w-px bg-slate-200 dark:bg-[#263834] shrink-0" />
-
-        {/* Control interactivo permanente de Contexto Académico */}
-        {isGlobalOverview ? (
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#182220] border border-slate-200/90 dark:border-[#263834] text-xs font-bold text-slate-800 dark:text-slate-200 shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              Vista Global · {activePeriodLabel}
-            </span>
-            <button
-              type="button"
-              onClick={() => openSelector(1)}
-              className="px-3.5 py-1.5 rounded-xl bg-[#13594A] hover:bg-[#004034] text-white text-xs font-extrabold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-              title="Seleccionar módulo, carrera o unidad didáctica"
-            >
-              <span>🎯 Seleccionar Unidad</span>
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#E6F4F1] dark:bg-[#132B25] border border-[#13594A]/30 dark:border-[#205C4E] text-[#004034] dark:text-[#5EEAD4] text-xs font-bold shadow-xs">
-              {/* Paso 1: Periodo */}
-              <button
-                type="button"
-                onClick={() => openSelector(1)}
-                className="px-2 py-0.5 rounded-lg bg-[#13594A] text-white font-extrabold text-xs tabular-nums hover:bg-[#0D382F] transition-colors shrink-0 cursor-pointer"
-                title="Cambiar Periodo o Etapa Modular"
-              >
-                {activePeriodLabel}
-              </button>
-
-              <span className="text-slate-400 dark:text-slate-500 shrink-0">•</span>
-
-              {/* Paso 2: Carrera + Módulo */}
-              <button
-                type="button"
-                onClick={() => openSelector(2)}
-                className="font-extrabold hover:underline truncate max-w-[200px] xl:max-w-[280px] shrink-0 cursor-pointer text-left"
-                title={`Carrera: ${programName} (${moduleShortLabel}) — Clic para cambiar de carrera`}
-              >
-                {programName} <span className="font-semibold opacity-85">({moduleShortLabel})</span>
-              </button>
-
-              {groupShortLabel && (
-                <>
-                  <span className="text-slate-400 dark:text-slate-500 hidden 2xl:inline shrink-0">•</span>
-                  <button
-                    type="button"
-                    onClick={() => openSelector(3)}
-                    className="hidden 2xl:inline font-bold hover:underline shrink-0 cursor-pointer"
-                    title="Cambiar Aula o Turno"
-                  >
-                    {groupShortLabel}
-                  </button>
-                </>
-              )}
-
-              {unitLabel && (
-                <>
-                  <span className="text-slate-400 dark:text-slate-500 shrink-0">•</span>
-                  <button
-                    type="button"
-                    onClick={() => openSelector(3)}
-                    className="px-2 py-0.5 rounded-lg bg-[#13594A]/15 dark:bg-[#5EEAD4]/20 text-[#13594A] dark:text-[#5EEAD4] font-extrabold text-xs hover:bg-[#13594A]/25 dark:hover:bg-[#5EEAD4]/30 transition-colors truncate max-w-[150px] xl:max-w-[240px] shrink-0 cursor-pointer"
-                    title={activeUnitName ? `${unitLabel}: ${activeUnitName}` : unitLabel}
-                  >
-                    {unitLabel}
-                    {activeUnitName ? (
-                      <span className="hidden xl:inline font-bold">: {activeUnitName}</span>
-                    ) : null}
-                  </button>
-                </>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => openSelector(activeGroup ? 3 : 1)}
-              className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#182220] hover:bg-[#F2FBF8] dark:hover:bg-[#193830] text-[#13594A] dark:text-[#5EEAD4] border border-[#13594A]/40 dark:border-[#205C4E] text-xs font-extrabold shadow-xs transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
-              title="Cambiar unidad didáctica, aula o carrera técnica"
-            >
-              <span>🔄 Cambiar</span>
-            </button>
-          </div>
+    <header data-app-topbar className="fixed left-[72px] right-0 top-0 z-40 flex h-32 flex-col justify-center gap-2 border-b border-line bg-surface px-3 py-2 text-ink md:left-64 sm:px-5 lg:h-20 lg:flex-row lg:items-center lg:justify-between lg:gap-5 lg:px-6 xl:px-8">
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+        <button type="button" onClick={() => openSelector(1)} title="Cambiar periodo o módulo formativo" aria-label={`Cambiar periodo ${activePeriodLabel}`} className={`${contextButton} inline-flex border border-line bg-surface-alt text-ink hover:bg-brand-soft`}>
+          <CalendarIcon aria-hidden="true" className="hidden size-4 text-brand sm:block" />
+          <span className="tabular-nums">{activePeriodLabel}</span>
+        </button>
+        <button type="button" onClick={() => openSelector(isGlobalOverview ? 1 : 2)} title={`${contextTitle} · ${unitLabel ? `${unitLabel} · ` : ''}${contextDetail}`} aria-label={isGlobalOverview ? 'Seleccionar carrera y unidad' : `Cambiar carrera o módulo: ${programName}`} className="flex min-h-11 min-w-0 flex-1 flex-col justify-center rounded-lg px-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+          <span className="block w-full truncate text-sm font-semibold leading-5 text-ink lg:text-[15px]">{contextTitle}</span>
+          <span className="mt-0.5 block w-full truncate text-xs font-normal leading-4 text-muted">{!isGlobalOverview && unitLabel && <span className="xl:hidden">{unitLabel} · </span>}{contextDetail}</span>
+        </button>
+        {!isGlobalOverview && unitLabel && (
+          <button type="button" onClick={() => openSelector(3)} title={activeUnitName ? `${unitLabel}: ${activeUnitName}` : unitLabel} aria-label={`Cambiar unidad: ${unitLabel}`} className={`${contextButton} hidden border border-line bg-brand-soft text-brand hover:border-brand/50 xl:inline-flex`}>
+            {unitLabel}
+          </button>
         )}
+        <button type="button" onClick={() => openSelector(activeGroup ? 3 : 1)} data-testid="header-change-context" aria-label="Cambiar contexto académico" className={`${contextButton} inline-flex bg-brand text-on-brand hover:opacity-90`}>
+          <RefreshIcon aria-hidden="true" className="size-4" />
+          <span className="hidden sm:inline">Cambiar</span>
+        </button>
       </div>
 
-      {/* Right controls: ThemeSwitcher, Period & Teacher Profile */}
-      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-        {/* Selector de Tema Accesible */}
+      <div className="flex w-full shrink-0 items-center justify-between gap-3 lg:w-auto lg:justify-end lg:gap-4">
         <ThemeSwitcher />
-
-        {/* Active Academic Period Badge (visible en pantallas amplias o vista global) */}
-        <div className="hidden 2xl:inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#182220] border border-slate-200/80 dark:border-[#263834] text-slate-800 dark:text-slate-200 text-xs font-semibold shadow-xs tabular-nums">
-          <CalendarIcon className="w-4 h-4 text-[#13594A] dark:text-[#5EEAD4]" />
-          <span>{activeGroup?.periodId || user.period}</span>
-        </div>
-
-        <div className="hidden 2xl:block h-6 w-px bg-slate-200/80 dark:bg-[#263834]" />
-
-        {/* Profile Button with native semantics and accessible name */}
-        <button
-          type="button"
-          onClick={onProfileClick}
-          aria-label={`Usuario institucional: ${user.name}, ${user.role}`}
-          className="flex items-center gap-3 pl-1 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4] focus-visible:ring-offset-2 rounded-xl p-1 text-left"
-        >
-          <div className="flex flex-col text-right hidden sm:flex">
-            <span className="text-[13px] text-slate-800 dark:text-slate-200 font-bold leading-tight group-hover:text-[#13594A] dark:group-hover:text-[#5EEAD4] transition-colors">
-              {user.name}
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <button type="button" onClick={onProfileClick} aria-label={`Usuario institucional: ${user.name}, ${user.role}`} title={`${user.name} · ${user.role}`} className="group flex min-h-11 min-w-0 items-center gap-3 rounded-xl px-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+            <span className="hidden min-w-0 max-w-36 flex-col text-right sm:flex lg:hidden xl:flex xl:max-w-48 2xl:max-w-64">
+              <span className="truncate text-sm font-semibold leading-5 text-ink group-hover:text-brand">{user.name}</span>
+              <span className="mt-0.5 truncate text-xs font-normal leading-4 text-muted">{user.role}</span>
             </span>
-            <span className="text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-tight">
-              {user.role}
-            </span>
-          </div>
-          <div className="relative">
-            <div className="w-9 h-9 rounded-full bg-[#13594A] text-white font-bold text-xs flex items-center justify-center ring-2 ring-slate-100 dark:ring-[#263834] group-hover:ring-[#13594A]/30 dark:group-hover:ring-[#5EEAD4]/30 transition-all shadow-sm">
-              {initials}
-            </div>
-            <span
-              className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-[#131C1A]"
-              aria-hidden="true"
-            />
-          </div>
-        </button>
-
-        {/* Botón de Cierre de Sesión Oficial */}
-        {onLogout && (
-          <>
-            <div className="h-6 w-px bg-slate-200/80 dark:bg-[#263834]" />
-            <button
-              id="btn-logout"
-              type="button"
-              onClick={onLogout}
-              title="Cerrar sesión institucional"
-              aria-label="Cerrar sesión institucional"
-              className="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200/60 dark:border-[#263834] hover:border-rose-100 dark:hover:border-rose-900/60 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
-            >
-              <svg
-                className="w-4 h-4 pointer-events-none"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
+            <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line bg-brand-soft text-sm font-semibold text-brand" aria-hidden="true">{initials}</span>
+          </button>
+          {onLogout && (
+            <button id="btn-logout" type="button" onClick={onLogout} title="Cerrar sesión institucional" aria-label="Cerrar sesión institucional" className="grid size-11 shrink-0 place-items-center rounded-xl border border-line text-muted transition-colors hover:bg-surface-alt hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+              <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
             </button>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );

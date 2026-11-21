@@ -6,6 +6,7 @@ const fontkit=require('@pdf-lib/fontkit');
 const {AsyncLocalStorage}=require('node:async_hooks');
 const renderContext=new AsyncLocalStorage();
 const Typography=require('./document-typography.cjs');
+const { renderOfficial2026PDF } = require('./documental-2026-engine.cjs');
 const drawKey=(text,args)=>JSON.stringify([text,args.x,args.y,args.size]);
 const nativeEmbedFont=PDFLib.PDFDocument.prototype.embedFont;
 PDFLib.PDFDocument.prototype.embedFont=async function(font,options){const context=renderContext.getStore();if(context&&[PDFLib.StandardFonts.Helvetica,PDFLib.StandardFonts.HelveticaBold].includes(font)){
@@ -25,6 +26,9 @@ PDFLib.PDFPage.prototype.drawText=function(text,options={}){const context=render
 };
 // Adaptador del motor existente: solo fuentes locales y contexto autorizado por el servicio.
 async function renderPDF(root,doc,actor,options={}){
+ if (doc?.templateId === 'TMPL-22' || doc?.templateId === 'TMPL-23' || (doc?.official2026 === true && ['TMPL-01', 'TMPL-19', 'TMPL-20', 'TMPL-21'].includes(doc.templateId))) {
+  return renderOfficial2026PDF(root, doc, actor, options);
+ }
  const isDemo=Boolean(doc.demoMode||doc.demoFill);
  const isDraft=!isDemo&&(doc.preflight?!doc.preflight.complete:(doc.administrativeDraft!==false));
  const isOfficial=!isDemo&&!isDraft;

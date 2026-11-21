@@ -22,9 +22,14 @@ function sterilizeDatabase(sourceDbPath, targetDbPath) {
     fs.unlinkSync(targetDbPath);
   }
 
-  // Crear una copia de trabajo temporal
+  // Volcado atómico consistente desde sourceDbPath en modo solo lectura hacia copia temporal de trabajo
   const tempWorkingDb = `${targetDbPath}.tmp_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
-  fs.copyFileSync(sourceDbPath, tempWorkingDb);
+  const readDb = new DatabaseSync(sourceDbPath, { readOnly: true });
+  try {
+    readDb.exec(`VACUUM INTO '${tempWorkingDb.replace(/'/g, "''").replace(/\\/g, '/')}'`);
+  } finally {
+    readDb.close();
+  }
 
   const db = new DatabaseSync(tempWorkingDb);
 
@@ -58,6 +63,42 @@ function sterilizeDatabase(sourceDbPath, targetDbPath) {
     db.prepare('DELETE FROM deliveries').run();
     db.prepare('DELETE FROM conflicts').run();
 
+    // 3b. Aligerar emisiones removiendo pdfBase64 (conservando metadatos) y sellar rev faltantes
+    let strippedPdfs = 0;
+    let sealedRevs = 0;
+    const updRecordStmt = db.prepare('UPDATE records SET value = ? WHERE entity = ? AND id = ?');
+    db.exec('BEGIN');
+    try {
+      for (const row of db.prepare('SELECT entity, id, value FROM records').all()) {
+        let parsed;
+        try {
+          parsed = JSON.parse(row.value);
+        } catch {
+          continue;
+        }
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) continue;
+        let changed = false;
+        if (row.entity === 'documentEmissions' && Object.hasOwn(parsed, 'pdfBase64')) {
+          delete parsed.pdfBase64;
+          strippedPdfs++;
+          changed = true;
+        }
+        if (!parsed.rev) {
+          parsed.rev = crypto.randomUUID();
+          sealedRevs++;
+          changed = true;
+        }
+        if (changed) {
+          updRecordStmt.run(JSON.stringify(parsed), row.entity, row.id);
+        }
+      }
+      db.exec('COMMIT');
+    } catch (txErr) {
+      try { db.exec('ROLLBACK'); } catch {}
+      throw txErr;
+    }
+    console.log(`[STERILIZE] pdfBase64 removidos en emisiones: ${strippedPdfs}; rev selladas: ${sealedRevs}`);
+
     // 4. Registrar evento de esterilización en auditoría
     const auditId = `audit_sterile_${Date.now()}`;
     const auditEntry = {
@@ -65,7 +106,7 @@ function sterilizeDatabase(sourceDbPath, targetDbPath) {
       at: new Date().toISOString(),
       source: path.basename(sourceDbPath),
       version: '2.0-universal',
-      detail: 'Claves privadas purgadas; dispositivo desvinculado; catalogo y matriculas preservados'
+      detail: 'Claves privadas purgadas; dispositivo desvinculado; catalogo, matriculas y metadatos preservados'
     };
     db.prepare('INSERT INTO audit (id, value) VALUES (?, ?)').run(auditId, JSON.stringify(auditEntry));
 
@@ -75,19 +116,19 @@ function sterilizeDatabase(sourceDbPath, targetDbPath) {
       throw new Error(`Integridad final corrupta tras esterilización: ${finalCheck.quick_check}`);
     }
 
-    // 6. Verificar que matrículas y estudiantes permanecen intactos (286 1:1)
+    // 6. Verificar que alumnos y matrículas activas permanecen íntegros (soporta doble matrícula entre carreras)
     const studentCount = db.prepare("SELECT COUNT(*) as count FROM records WHERE entity = 'students'").get().count;
     const enrollmentCount = db.prepare("SELECT COUNT(*) as count FROM records WHERE entity = 'enrollments'").get().count;
 
     console.log(`[STERILIZE] Estudiantes preservados: ${studentCount}`);
     console.log(`[STERILIZE] Matrículas preservadas: ${enrollmentCount}`);
 
-    if (studentCount !== enrollmentCount) {
-      throw new Error(`Inconsistencia en relación 1:1 de estudiantes y matrículas: ${studentCount} vs ${enrollmentCount}`);
+    if (!(studentCount > 0 && enrollmentCount >= studentCount)) {
+      throw new Error(`Conteo inválido de estudiantes y matrículas: students=${studentCount}, enrollments=${enrollmentCount}`);
     }
 
     // 7. Congelar con VACUUM INTO hacia el archivo final optimizado
-    db.exec(`VACUUM INTO '${targetDbPath.replace(/\\/g, '/')}'`);
+    db.exec(`VACUUM INTO '${targetDbPath.replace(/'/g, "''").replace(/\\/g, '/')}'`);
   } finally {
     db.close();
     if (fs.existsSync(tempWorkingDb)) {
@@ -108,10 +149,12 @@ function sterilizeDatabase(sourceDbPath, targetDbPath) {
 
 if (require.main === module) {
   const rootDir = path.resolve(__dirname, '..');
-  const sourcePath = path.join(rootDir, 'sources', 'baseline', 'production-2026.sqlite');
+  const sourceArg = process.argv[2] ? path.resolve(process.argv[2]) : null;
+  const sourcePath = sourceArg || path.join(rootDir, 'sources', 'baseline', 'production-2026.sqlite');
   const targetPath = path.join(rootDir, 'sources', 'baseline', 'production-2026-sterile.sqlite');
 
   console.log('=== Generando Base de Datos Estéril Institucional ===');
+  console.log('[STERILIZE] Origen:', sourcePath);
   sterilizeDatabase(sourcePath, targetPath);
 }
 

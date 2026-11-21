@@ -1,0 +1,74 @@
+[
+  {
+    "file": "direccion.webp",
+    "author": "ANTONI SHKRABA production",
+    "source": "https://www.pexels.com/photo/coworkers-discussing-documents-8837564/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 84026,
+    "sha256": "bcf9b5e40f72c6efb83dee78a8469be2ba8375186df205fbc7db82feea2408d9"
+  },
+  {
+    "file": "secretaria.webp",
+    "author": "RDNE Stock project",
+    "source": "https://www.pexels.com/photo/woman-working-with-documents-in-office-9034769/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 37564,
+    "sha256": "a13050f00977da2eca695cbe201bcaf880385dfc2f610ca42b94e5dc9071a54b"
+  },
+  {
+    "file": "docente.webp",
+    "author": "Yeşim Çolak",
+    "source": "https://www.pexels.com/photo/empty-classroom-with-large-windows-and-desks-35656174/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 35186,
+    "sha256": "7f596d51af42c0505f2b6a837ab9248d6abb8c19585ca95df3b0054633ed1643"
+  },
+  {
+    "file": "indicadores.webp",
+    "author": "Kaboompics.com",
+    "source": "https://www.pexels.com/photo/a-person-holding-pen-and-a-paper-with-graphs-7876381/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 25882,
+    "sha256": "30aea720c422187d915d81f2e4451ce0260f957e3ad0c48b9160a45d60464689"
+  },
+  {
+    "file": "supervision.webp",
+    "author": "Mikhail Nilov",
+    "source": "https://www.pexels.com/photo/colleagues-carefully-examining-documents-8847051/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 43174,
+    "sha256": "a5039f9c23528be5a76a6c530dc7d35d76e18d70605f44d1ae4083d9b9e2f3ac"
+  },
+  {
+    "file": "archivo.webp",
+    "author": "Anete Lusina",
+    "source": "https://www.pexels.com/photo/person-choosing-document-in-folder-4792285/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 32082,
+    "sha256": "2d0226169587a24ae8604f18ea8de6c921108eb60c7d3ca4c0262483db667fc0"
+  },
+  {
+    "file": "pedagogia.webp",
+    "author": "Tima Miroshnichenko",
+    "source": "https://www.pexels.com/photo/a-person-writing-on-notebook-5708212/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 17184,
+    "sha256": "2d10a8858cf8b34b7862280d0a2081dc81d35dc9f79d113394848873ca7a29c7"
+  },
+  {
+    "file": "aulas.webp",
+    "author": "Pavel Danilyuk",
+    "source": "https://www.pexels.com/photo/people-sitting-and-working-in-front-of-a-desktop-computer-7675029/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 60630,
+    "sha256": "f961d22bc45007e74c7fda029ddf687a3177ec83877cd9f801e80021cd8f2e75"
+  },
+  {
+    "file": "tramites.webp",
+    "author": "MART PRODUCTION",
+    "source": "https://www.pexels.com/photo/a-man-reading-documents-in-a-folder-8872405/",
+    "license": "https://www.pexels.com/license/",
+    "bytes": 19556,
+    "sha256": "455fff915f443c092aa303d7dda1fad0defa6efaf82c6023e06bbeb1937cfb40"
+  }
+]

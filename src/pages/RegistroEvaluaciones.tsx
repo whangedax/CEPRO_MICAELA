@@ -16,6 +16,7 @@
  * - Estándar Google Stitch (#13594A, #0D3E34, #F6F8FA) y accesibilidad WCAG 2.2 AA.
  */
 
+import { DashboardPhotoBand } from '../components/ui/DashboardPhotoBand';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useWorkspace } from '../context/WorkspaceContext';
@@ -201,10 +202,14 @@ export const RegistroEvaluaciones: React.FC = () => {
 
   // Modal para confirmación de desmarcado (clear)
   const [pendingClearConfirm, setPendingClearConfirm] = useState<boolean>(false);
+  const clearPanelRef = useRef<HTMLDivElement | null>(null);
+  const clearPreviousFocusRef = useRef<HTMLElement | null>(null);
 
   // Estado para gestión y resolución segura de conflictos 409
   const [conflictItems, setConflictItems] = useState<GradeConflictItem[] | null>(null);
   const [isResolvingConflict, setIsResolvingConflict] = useState<boolean>(false);
+  const conflictPanelRef = useRef<HTMLDivElement | null>(null);
+  const conflictPreviousFocusRef = useRef<HTMLElement | null>(null);
 
   // Modal para cambiar unidad / aula
   const [isUnitModalOpen, setIsUnitModalOpen] = useState<boolean>(false);
@@ -678,6 +683,79 @@ export const RegistroEvaluaciones: React.FC = () => {
     handleDiscardLocalChanges,
   ]);
 
+  // Trampa de foco, cierre con Escape y retorno de foco en modales de confirmación y conflictos
+  const isConflictModalOpen = Boolean(conflictItems && conflictItems.length > 0);
+
+  useEffect(() => {
+    const activePanel = pendingClearConfirm
+      ? clearPanelRef.current
+      : isConflictModalOpen
+      ? conflictPanelRef.current
+      : null;
+    if (!pendingClearConfirm && !isConflictModalOpen) return;
+
+    const prevRef = pendingClearConfirm ? clearPreviousFocusRef : conflictPreviousFocusRef;
+    prevRef.current = document.activeElement as HTMLElement | null;
+
+    const focusSelector =
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const rafId = window.requestAnimationFrame(() => {
+      const panel = pendingClearConfirm ? clearPanelRef.current : conflictPanelRef.current;
+      if (!panel) return;
+      const focusables = panel.querySelectorAll<HTMLElement>(focusSelector);
+      if (focusables.length > 0) {
+        focusables[0].focus();
+      } else {
+        panel.focus();
+      }
+    });
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const panel = pendingClearConfirm ? clearPanelRef.current : conflictPanelRef.current;
+      if (e.key === 'Escape') {
+        if (pendingClearConfirm) {
+          e.preventDefault();
+          setPendingClearConfirm(false);
+        } else if (isConflictModalOpen && !isResolvingConflict) {
+          e.preventDefault();
+          handleConflictKeepLocal();
+        }
+        return;
+      }
+
+      if (e.key !== 'Tab' || !panel) return;
+      const focusables = Array.from(panel.querySelectorAll<HTMLElement>(focusSelector)).filter(
+        (el) => el.offsetParent !== null
+      );
+      if (focusables.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first || !panel.contains(document.activeElement)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (document.activeElement === last || !panel.contains(document.activeElement)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener('keydown', handleKeyDown);
+      if (prevRef.current && typeof prevRef.current.focus === 'function') {
+        prevRef.current.focus();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingClearConfirm, isConflictModalOpen, isResolvingConflict]);
+
   // Manejo de resolución de conflictos 409
   const handleConflictKeepLocal = () => {
     setConflictItems(null);
@@ -875,9 +953,9 @@ export const RegistroEvaluaciones: React.FC = () => {
   if (isWorkspaceLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-12 min-h-[400px]">
-        <div className="w-9 h-9 border-4 border-[#13594A]/20 border-t-[#13594A] rounded-full animate-spin mb-4" />
-        <p className="text-sm font-semibold text-slate-700">Cargando módulo de evaluaciones…</p>
-        <span className="text-xs text-slate-500 mt-1">Conectando con el registro académico local</span>
+        <div className="w-9 h-9 border-4 border-line border-t-brand rounded-full animate-spin mb-4" />
+        <p className="text-sm font-semibold text-ink">Cargando módulo de evaluaciones…</p>
+        <span className="text-xs text-muted mt-1">Conectando con el registro académico local</span>
       </div>
     );
   }
@@ -886,14 +964,14 @@ export const RegistroEvaluaciones: React.FC = () => {
   if (!activeWorkspace?.groupId) {
     return (
       <div className="p-6 max-w-5xl mx-auto animate-in fade-in duration-300">
-        <div className="bg-white dark:bg-[#182220] rounded-3xl p-8 border border-slate-200/80 dark:border-[#263834] shadow-sm text-center max-w-xl mx-auto">
-          <div className="w-16 h-16 rounded-2xl bg-[#13594A]/10 text-[#13594A] flex items-center justify-center mx-auto mb-4">
+        <DashboardPhotoBand as="header" scene="evaluacion" contentClassName="text-center">
+          <div className="w-16 h-16 rounded-2xl bg-brand-soft text-brand flex items-center justify-center mx-auto mb-4">
             <EvaluationIcon className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl font-bold text-ink tracking-tight">
             Registro Auxiliar de Evaluación
-          </h2>
-          <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+          </h1>
+          <p className="text-xs text-muted mt-2 leading-relaxed">
             Para registrar notas y calificaciones vigesimales, primero debe seleccionar un aula y una
             unidad didáctica autorizada.
           </p>
@@ -906,12 +984,12 @@ export const RegistroEvaluaciones: React.FC = () => {
                   setIsUnitModalOpen(true);
                 }
               }}
-              className="px-6 py-2.5 rounded-xl bg-[#13594A] text-white font-bold text-xs hover:bg-[#0D382F] transition-all shadow-sm"
+              className="min-h-[44px] px-6 py-2.5 rounded-[10px] bg-brand text-on-brand font-bold text-xs hover:opacity-90 transition-all shadow-[var(--ui-shadow)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               Seleccionar Aula y Unidad
             </button>
           </div>
-        </div>
+        </DashboardPhotoBand>
 
         {modalTargetGroup && (
           <SelectUnitModal
@@ -936,16 +1014,16 @@ export const RegistroEvaluaciones: React.FC = () => {
     return (
       <div className="p-6 max-w-5xl mx-auto animate-in fade-in duration-300">
         {/* Cabecera institucional */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
+        <DashboardPhotoBand as="header" scene="evaluacion" className="mb-6" contentClassName="flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-xs text-muted mb-1">
               <span>Gestión Académica</span>
               <span>/</span>
-              <span className="font-semibold text-slate-700">Registro de Evaluaciones</span>
+              <span className="font-semibold text-ink">Registro de Evaluaciones</span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-              <span className="w-3 h-3 rounded-full bg-amber-500" />
-              Selección de Unidad Didáctica Requerida
+            <h1 className="text-2xl font-black text-ink tracking-tight flex items-center gap-2.5">
+              <span className="w-3 h-3 rounded-full bg-amber-500 shrink-0" aria-hidden="true" />
+              <span>Selección de Unidad Didáctica Requerida</span>
             </h1>
           </div>
 
@@ -954,20 +1032,20 @@ export const RegistroEvaluaciones: React.FC = () => {
             onClick={() => {
               if (modalTargetGroup) setIsUnitModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] transition-all shadow-sm self-start sm:self-auto"
+            className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2.5 rounded-[10px] bg-brand text-on-brand text-xs font-bold hover:opacity-90 transition-all shadow-[var(--ui-shadow)] self-start sm:self-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             <FolderOpenIcon className="w-4 h-4" />
             <span>Seleccionar Unidad Didáctica</span>
           </button>
-        </div>
+        </DashboardPhotoBand>
 
         {/* Banner Transversal de Contexto de Unidad Activa (con cambio de UD 1..UD 7 en 1 clic) */}
         <ActiveUnitContextBanner variant="full" className="mb-6" />
 
         {/* Tarjeta de bloqueo informativo con mensaje exacto del servidor */}
-        <div className="bg-amber-50/70 dark:bg-amber-950/30 rounded-3xl p-8 border border-amber-200 dark:border-amber-800/60 text-center max-w-2xl mx-auto shadow-sm">
+        <div className="bg-amber-50/70 dark:bg-amber-950/30 rounded-2xl p-8 border border-amber-200 dark:border-amber-800/60 text-center max-w-2xl mx-auto shadow-[var(--ui-shadow)]">
           <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-900/40 border border-amber-300 dark:border-amber-700/60 text-amber-800 dark:text-amber-200 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
@@ -985,13 +1063,13 @@ export const RegistroEvaluaciones: React.FC = () => {
               onClick={() => {
                 if (modalTargetGroup) setIsUnitModalOpen(true);
               }}
-              className="px-5 py-2.5 rounded-xl bg-[#13594A] text-white font-bold text-xs hover:bg-[#0D382F] transition-all shadow-sm"
+              className="min-h-[44px] px-5 py-2.5 rounded-[10px] bg-brand text-on-brand font-bold text-xs hover:opacity-90 transition-all shadow-[var(--ui-shadow)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               Seleccionar Unidad Didáctica
             </button>
             <a
               href="#/inicio"
-              className="px-5 py-2.5 rounded-xl bg-white dark:bg-[#182220] text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-300 dark:border-[#263834] hover:bg-slate-50 dark:hover:bg-[#1F2D2A] transition-all"
+              className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 rounded-[10px] bg-surface text-ink font-semibold text-xs border border-line hover:bg-surface-alt transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               Volver al Inicio
             </a>
@@ -1023,24 +1101,24 @@ export const RegistroEvaluaciones: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-5 animate-in fade-in duration-200">
       {/* 1. Encabezado institucional e información contextual de aula */}
-      <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-[#263834] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-            <a href="#/inicio" className="hover:text-[#13594A] transition-colors">
+      <DashboardPhotoBand as="header" scene="evaluacion" contentClassName="flex flex-wrap items-center justify-between gap-4">
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-2 text-xs font-semibold text-muted">
+            <a href="#/inicio" className="hover:text-brand transition-colors">
               Inicio
             </a>
             <span>/</span>
-            <span className="text-slate-700 font-bold">Registro de Evaluaciones</span>
+            <span className="text-ink font-bold">Registro de Evaluaciones</span>
             <span>/</span>
-            <span className="text-[#13594A] font-bold">Unidad {activeWorkspace.unit}</span>
+            <span className="text-brand font-bold">Unidad {activeWorkspace.unit}</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-[#F0FDF8] tracking-tight flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#13594A]" />
-              {currentGroup?.name || 'Aula Asignada'}
+          <div className="flex flex-wrap items-center gap-3 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-black text-ink tracking-tight flex items-center gap-2 min-w-0">
+              <span className="w-3 h-3 rounded-full bg-brand shrink-0" aria-hidden="true" />
+              <span className="truncate">{currentGroup?.name || 'Aula Asignada'}</span>
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-brand-soft text-brand">
               Alcance: Por Unidad Didáctica ({activeWorkspace.unit})
             </span>
             {isGroupClosed && (
@@ -1050,19 +1128,19 @@ export const RegistroEvaluaciones: React.FC = () => {
             )}
           </div>
 
-          <p className="text-xs text-slate-600 dark:text-slate-400">
+          <p className="text-xs text-muted">
             {activeWorkspace.unitName
               ? `${activeWorkspace.unit}: ${activeWorkspace.unitName}`
               : `Unidad Didáctica Curricular ${activeWorkspace.unit}`}
             {' · '}
-            <span className="font-semibold text-slate-700 dark:text-slate-300">
+            <span className="font-semibold text-ink">
               Escala vigesimal (0 a 20) · Criterios normados por el MINEDU
             </span>
           </p>
         </div>
 
         {/* Acciones de cabecera */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
             type="button"
             onClick={() => {
@@ -1070,23 +1148,23 @@ export const RegistroEvaluaciones: React.FC = () => {
                 if (modalTargetGroup) setIsUnitModalOpen(true);
               });
             }}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-[#131C1A] dark:hover:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#263834] text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2.5 rounded-[10px] bg-surface-alt hover:bg-brand-soft text-ink border border-line text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             title="Cambiar a otra aula o unidad didáctica"
           >
-            <FolderOpenIcon className="w-4 h-4 text-slate-600" />
+            <FolderOpenIcon className="w-4 h-4 text-muted" />
             <span>Cambiar Aula / Unidad</span>
           </button>
 
           <a
             href="#/documentos"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-[#131C1A] dark:hover:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#263834] text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2.5 rounded-[10px] bg-surface-alt hover:bg-brand-soft text-ink border border-line text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             title="Ver actas y documentos oficiales"
           >
             <span>Ver Documento</span>
-            <ArrowForwardIcon className="w-3 h-3 text-slate-500" />
+            <ArrowForwardIcon className="w-3 h-3 text-muted" />
           </a>
         </div>
-      </div>
+      </DashboardPhotoBand>
 
       {/* Banner Transversal de Contexto de Unidad Activa (con cambio rápido de UD 1..UD 7 en 1 clic) */}
       <ActiveUnitContextBanner variant="full" />
@@ -1095,14 +1173,14 @@ export const RegistroEvaluaciones: React.FC = () => {
       {isGroupClosed && (
         <div
           role="alert"
-          className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-2xl p-4 flex items-center gap-3 text-rose-900 dark:text-rose-200 shadow-sm"
+          className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-2xl p-4 flex items-center gap-3 text-rose-900 dark:text-rose-200 shadow-[var(--ui-shadow)]"
         >
           <div className="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <div className="flex-1 text-xs">
+          <div className="flex-1 text-xs min-w-0">
             <strong className="font-bold block text-sm">Registro académico cerrado</strong>
             <span>Registro cerrado. Solicite reapertura a dirección para modificar calificaciones.</span>
           </div>
@@ -1110,9 +1188,9 @@ export const RegistroEvaluaciones: React.FC = () => {
       )}
 
       {/* 3. Panel de navegación por pestañas de indicadores y resumen estadístico */}
-      <div className="bg-white dark:bg-[#182220] rounded-3xl p-5 border border-slate-200/80 dark:border-[#263834] shadow-sm space-y-4">
+      <div className="bg-surface rounded-2xl p-5 border border-line shadow-[var(--ui-shadow)] space-y-4">
         {/* Pestañas de indicadores */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-3">
           <div
             role="tablist"
             aria-label="Indicador a evaluar"
@@ -1130,10 +1208,10 @@ export const RegistroEvaluaciones: React.FC = () => {
                   aria-selected={isSelected}
                   aria-controls={`tabpanel-${tab.id}`}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] ${
+                  className={`min-h-[44px] px-3.5 py-2 rounded-[10px] text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                     isSelected
-                      ? 'bg-[#13594A] text-white shadow-sm'
-                      : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-[#1F2D2A] hover:text-slate-900 dark:hover:text-[#F0FDF8]'
+                      ? 'bg-brand text-on-brand shadow-[var(--ui-shadow)]'
+                      : 'bg-surface-alt text-ink border border-line hover:bg-brand-soft'
                   }`}
                 >
                   {tab.name}
@@ -1149,14 +1227,16 @@ export const RegistroEvaluaciones: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar estudiante o DNI…"
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-[#263834] bg-slate-50 dark:bg-[#131C1A] text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-[#182220] focus:outline-none focus:ring-2 focus:ring-[#13594A]"
+              aria-label="Buscar estudiante o DNI"
+              className="w-full min-h-[44px] pl-9 pr-3 py-2 text-xs rounded-[10px] border border-line bg-surface-alt text-ink placeholder:text-muted focus:bg-surface focus:outline-none focus:ring-2 focus:ring-brand"
             />
             <svg
-              className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-2.5 top-2"
+              className="w-4 h-4 text-muted absolute left-3 top-3.5 pointer-events-none"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
               strokeWidth="2"
+              aria-hidden="true"
             >
               <circle cx="11" cy="11" r="8" />
               <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35" />
@@ -1165,16 +1245,16 @@ export const RegistroEvaluaciones: React.FC = () => {
         </div>
 
         {/* Guía contextual del indicador seleccionado */}
-        <div className="bg-[#F6F8FA] dark:bg-[#131C1A] rounded-2xl p-3.5 border border-slate-200/60 dark:border-[#263834] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="space-y-0.5">
-            <span className="font-bold text-slate-900 dark:text-[#F0FDF8] block">
+        <div className="bg-surface-alt rounded-2xl p-3.5 border border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="space-y-0.5 min-w-0">
+            <span className="font-bold text-ink block">
               {activeTab === 6
                 ? 'Resultado de la Unidad Didáctica (Logro UD)'
                 : activeTab === 0
                 ? 'Matriz Completa de Evaluación (26 Columnas)'
                 : `Indicador de Logro ${activeTab}`}
             </span>
-            <p className="text-slate-600">
+            <p className="text-muted">
               {activeTab === 6
                 ? 'Confirma el resultado final de la unidad según los criterios institucionales. El sistema no inventa promedios ni calificaciones.'
                 : activeTab === 0
@@ -1186,36 +1266,36 @@ export const RegistroEvaluaciones: React.FC = () => {
           </div>
 
           {/* Tarjetas de estadísticas de la pestaña */}
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-center">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Aprobados</span>
-              <span className="text-xs font-black text-emerald-700">{metrics.approved}</span>
+          <div className="flex items-center gap-2 shrink-0 tabular-nums">
+            <div className="px-3 py-1.5 rounded-[10px] bg-surface border border-line text-center">
+              <span className="text-[10px] uppercase font-bold text-muted block">Aprobados</span>
+              <span className="text-xs font-black text-emerald-700 dark:text-emerald-300">{metrics.approved}</span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-center">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Desaprobados</span>
-              <span className="text-xs font-black text-rose-700">{metrics.failed}</span>
+            <div className="px-3 py-1.5 rounded-[10px] bg-surface border border-line text-center">
+              <span className="text-[10px] uppercase font-bold text-muted block">Desaprobados</span>
+              <span className="text-xs font-black text-rose-700 dark:text-rose-300">{metrics.failed}</span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-center">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Pendientes</span>
-              <span className="text-xs font-black text-slate-600">{metrics.pending}</span>
+            <div className="px-3 py-1.5 rounded-[10px] bg-surface border border-line text-center">
+              <span className="text-[10px] uppercase font-bold text-muted block">Pendientes</span>
+              <span className="text-xs font-black text-muted">{metrics.pending}</span>
             </div>
           </div>
         </div>
 
         {/* Barra de acción: Guardar y estado de cambios */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {isTeacher && !isGroupClosed && (
               <button
                 type="button"
                 id="save-academic"
                 onClick={() => executeSaveInternal(false)}
                 disabled={isSaving || !hasUnsavedChanges}
-                className="px-5 py-2.5 rounded-xl bg-[#13594A] hover:bg-[#0D382F] text-white text-xs font-bold transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                className="min-h-[44px] px-5 py-2.5 rounded-[10px] bg-brand hover:opacity-90 text-on-brand text-xs font-bold tabular-nums transition-all shadow-[var(--ui-shadow)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isSaving ? (
                   <>
-                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-3.5 h-3.5 border-2 border-on-brand/30 border-t-on-brand rounded-full animate-spin" />
                     <span>Guardando matriz…</span>
                   </>
                 ) : (
@@ -1232,7 +1312,7 @@ export const RegistroEvaluaciones: React.FC = () => {
                 type="button"
                 onClick={handleDiscardLocalChanges}
                 disabled={isSaving}
-                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#131C1A] dark:hover:bg-[#1F2D2A] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#263834] text-xs font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                className="min-h-[44px] px-4 py-2 rounded-[10px] bg-surface-alt hover:bg-brand-soft text-ink border border-line text-xs font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 Descartar cambios
               </button>
@@ -1240,8 +1320,8 @@ export const RegistroEvaluaciones: React.FC = () => {
 
             <span
               id="save-state"
-              className={`text-xs font-semibold ${
-                hasUnsavedChanges ? 'text-amber-800' : 'text-slate-500'
+              className={`text-xs font-semibold tabular-nums ${
+                hasUnsavedChanges ? 'text-amber-800 dark:text-amber-300' : 'text-muted'
               }`}
             >
               {hasUnsavedChanges
@@ -1251,17 +1331,17 @@ export const RegistroEvaluaciones: React.FC = () => {
           </div>
 
           {/* Leyenda visual rápida */}
-          <div className="flex items-center gap-3 text-[11px] text-slate-600 dark:text-slate-400">
+          <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted">
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-400 dark:border-emerald-800/80" />
+              <span className="w-3 h-3 rounded bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-400 dark:border-emerald-800/80" aria-hidden="true" />
               <span>Aprobado (≥ 13)</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-rose-100 dark:bg-rose-950/60 border border-rose-400 dark:border-rose-800/80" />
+              <span className="w-3 h-3 rounded bg-rose-100 dark:bg-rose-950/60 border border-rose-400 dark:border-rose-800/80" aria-hidden="true" />
               <span>Desaprobado (&lt; 13)</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-white dark:bg-[#131C1A] border border-slate-300 dark:border-[#263834]" />
+              <span className="w-3 h-3 rounded bg-surface border border-line" aria-hidden="true" />
               <span>Pendiente (vacío)</span>
             </span>
           </div>
@@ -1270,7 +1350,8 @@ export const RegistroEvaluaciones: React.FC = () => {
         {/* Mensaje de feedback tras guardar o ante errores */}
         {saveFeedback && (
           <div
-            role="status"
+            role="alert"
+            aria-live="polite"
             className={`p-3.5 rounded-2xl text-xs font-semibold flex items-center justify-between gap-3 animate-in fade-in duration-200 ${
               saveFeedback.type === 'success'
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200'
@@ -1279,11 +1360,22 @@ export const RegistroEvaluaciones: React.FC = () => {
                 : 'bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-900 dark:text-rose-200'
             }`}
           >
-            <span>{saveFeedback.message}</span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              {saveFeedback.type === 'success' ? (
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              )}
+              <span>{saveFeedback.message}</span>
+            </div>
             <button
               type="button"
               onClick={() => setSaveFeedback(null)}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+              className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-ink hover:bg-surface-alt rounded-[10px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               aria-label="Cerrar notificación"
             >
               ✕
@@ -1293,51 +1385,51 @@ export const RegistroEvaluaciones: React.FC = () => {
       </div>
 
       {/* 4. Tabla de calificaciones (Matriz con soporte de navegación horizontal y sticky) */}
-      <div className="bg-white dark:bg-[#182220] rounded-3xl border border-slate-200/80 dark:border-[#263834] shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)] overflow-hidden">
         <div className="overflow-x-auto max-h-[700px]">
           <table
             className="w-full text-left text-xs border-collapse grade-matrix"
             aria-label="Tabla de registro de evaluaciones"
           >
             {/* Cabecera de la tabla */}
-            <thead className="bg-[#F6F8FA] dark:bg-[#131C1A] sticky top-0 z-20 border-b border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 uppercase font-black tracking-wider text-[11px]">
+            <thead className="bg-surface-alt sticky top-0 z-20 border-b border-line text-ink uppercase font-black tracking-wider text-[11px]">
               {/* Si es pestaña completa (activeTab === 0), cabecera multinivel */}
               {activeTab === 0 ? (
                 <>
-                  <tr className="border-b border-slate-200 dark:border-[#263834]">
+                  <tr className="border-b border-line">
                     <th
                       rowSpan={2}
-                      className="py-3 px-4 sticky left-0 z-30 bg-[#F6F8FA] dark:bg-[#131C1A] border-r border-slate-200 dark:border-[#263834] min-w-[240px] shadow-sm text-slate-800 dark:text-[#F0FDF8]"
+                      className="py-3 px-4 sticky left-0 z-30 bg-surface-alt border-r border-line min-w-[240px] text-ink"
                     >
                       Estudiante
                     </th>
-                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 dark:border-[#263834] bg-[#E8F0EE] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
+                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-line bg-brand-soft text-brand">
                       Indicador de Logro 1
                     </th>
-                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 dark:border-[#263834] bg-[#E8F0EE] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
+                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-line bg-brand-soft text-brand">
                       Indicador de Logro 2
                     </th>
-                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 dark:border-[#263834] bg-[#E8F0EE] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
+                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-line bg-brand-soft text-brand">
                       Indicador de Logro 3
                     </th>
-                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 dark:border-[#263834] bg-[#E8F0EE] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
+                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-line bg-brand-soft text-brand">
                       Indicador de Logro 4
                     </th>
-                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-slate-200 dark:border-[#263834] bg-[#E8F0EE] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4]">
+                    <th colSpan={5} className="py-2.5 px-3 text-center border-r border-line bg-brand-soft text-brand">
                       Indicador de Logro 5
                     </th>
-                    <th rowSpan={2} className="py-3 px-4 text-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border-l border-slate-200 dark:border-[#263834] min-w-[90px]">
+                    <th rowSpan={2} className="py-3 px-4 text-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border-l border-line min-w-[90px]">
                       Logro UD
                     </th>
                   </tr>
                   <tr>
                     {Array.from({ length: 5 }).map((_, gIdx) => (
                       <React.Fragment key={gIdx}>
-                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 dark:border-[#263834] font-bold text-slate-700 dark:text-slate-300">IA1</th>
-                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 dark:border-[#263834] font-bold text-slate-700 dark:text-slate-300">IA2</th>
-                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 dark:border-[#263834] font-bold text-slate-700 dark:text-slate-300">IA3</th>
-                        <th className="py-2 px-2 text-center min-w-[70px] border-r border-slate-200 dark:border-[#263834] font-black text-[#13594A] dark:text-[#5EEAD4] bg-[#E8F0EE]/40 dark:bg-[#132B25]/60">IL</th>
-                        <th className="py-2 px-2 text-center min-w-[65px] border-r border-slate-200 dark:border-[#263834] font-bold text-amber-900 dark:text-amber-300">R</th>
+                        <th className="py-2 px-2 text-center min-w-[68px] border-r border-line font-bold text-ink bg-surface-alt">IA1</th>
+                        <th className="py-2 px-2 text-center min-w-[68px] border-r border-line font-bold text-ink bg-surface-alt">IA2</th>
+                        <th className="py-2 px-2 text-center min-w-[68px] border-r border-line font-bold text-ink bg-surface-alt">IA3</th>
+                        <th className="py-2 px-2 text-center min-w-[72px] border-r border-line font-black text-brand bg-brand-soft">IL</th>
+                        <th className="py-2 px-2 text-center min-w-[68px] border-r border-line font-bold text-amber-900 dark:text-amber-300 bg-surface-alt">R</th>
                       </React.Fragment>
                     ))}
                   </tr>
@@ -1345,7 +1437,7 @@ export const RegistroEvaluaciones: React.FC = () => {
               ) : (
                 /* Cabecera para pestañas individuales (Indicadores 1..5 o Resultado UD) */
                 <tr>
-                  <th className="py-3.5 px-4 sticky left-0 z-30 bg-[#F6F8FA] dark:bg-[#131C1A] border-r border-slate-200 dark:border-[#263834] min-w-[280px] shadow-sm text-slate-800 dark:text-[#F0FDF8]">
+                  <th className="py-3.5 px-4 sticky left-0 z-30 bg-surface-alt border-r border-line min-w-[280px] text-ink tabular-nums">
                     Estudiante ({filteredRoster.length})
                   </th>
                   {displayedIndicators.map((ind) => {
@@ -1353,20 +1445,20 @@ export const RegistroEvaluaciones: React.FC = () => {
                     return (
                       <th
                         key={ind}
-                        className={`py-3.5 px-3 text-center min-w-[90px] border-r border-slate-200 dark:border-[#263834] ${
+                        className={`py-3.5 px-3 text-center min-w-[92px] border-r border-line ${
                           ind === 'RESULTADO_UD'
-                            ? 'bg-emerald-50/70 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-200 font-black'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-200 font-black'
                             : ind.endsWith('.RECOVERY')
-                            ? 'bg-amber-50/50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300'
+                            ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300'
                             : !ind.includes('.')
-                            ? 'bg-[#13594A]/10 dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] font-black'
-                            : ''
+                            ? 'bg-brand-soft text-brand font-black'
+                            : 'bg-surface-alt'
                         }`}
                         title={info.title}
                       >
                         <div className="flex flex-col items-center">
                           <span className="font-black text-xs">{info.code}</span>
-                          <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
+                          <span className="text-[9px] font-semibold text-muted uppercase tracking-tighter">
                             {info.typeBadge}
                           </span>
                         </div>
@@ -1378,12 +1470,12 @@ export const RegistroEvaluaciones: React.FC = () => {
             </thead>
 
             {/* Cuerpo de la tabla */}
-            <tbody id="academic-rows" className="divide-y divide-slate-100 dark:divide-[#263834]">
+            <tbody id="academic-rows" className="divide-y divide-line">
               {filteredRoster.length === 0 ? (
                 <tr>
                   <td
                     colSpan={displayedIndicators.length + 1}
-                    className="py-12 text-center text-slate-500 dark:text-slate-400 text-xs italic"
+                    className="py-12 text-center text-muted text-xs italic"
                   >
                     {searchQuery
                       ? 'No se encontraron estudiantes que coincidan con la búsqueda.'
@@ -1400,19 +1492,19 @@ export const RegistroEvaluaciones: React.FC = () => {
                     <tr
                       key={enId}
                       data-enrollment={enId}
-                      className="hover:bg-slate-50/60 dark:hover:bg-[#1F2D2A] transition-colors"
+                      className="hover:bg-surface-alt transition-colors"
                     >
-                      {/* Columna Estudiante (Sticky) */}
-                      <td className="py-2.5 px-4 sticky left-0 z-10 bg-white dark:bg-[#182220] border-r border-slate-200 dark:border-[#263834] shadow-sm">
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 font-bold w-5 shrink-0">
+                      {/* Columna Estudiante (Sticky con fondo sólido) */}
+                      <td className="py-2.5 px-4 sticky left-0 z-10 bg-surface border-r border-line">
+                        <div className="flex items-center gap-2.5 min-w-0 max-w-[260px]">
+                          <span className="text-[10px] font-mono tabular-nums text-muted font-bold w-6 shrink-0">
                             {rowIdx + 1}.
                           </span>
                           <div className="min-w-0">
-                            <span className="font-bold text-slate-900 dark:text-[#F0FDF8] block truncate text-xs">
+                            <span className="font-bold text-ink block truncate text-xs" title={studentName}>
                               {studentName}
                             </span>
-                            <span className="text-[10px] text-slate-600 dark:text-slate-400 font-mono">
+                            <span className="text-[10px] text-muted font-mono tabular-nums block truncate">
                               DNI: {doc}
                             </span>
                           </div>
@@ -1427,7 +1519,7 @@ export const RegistroEvaluaciones: React.FC = () => {
                         const isDirty = cellState?.isDirty ?? false;
 
                         // Clases según la escala vigesimal
-                        let scoreColorClass = 'text-slate-800 dark:text-[#F0FDF8] border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A]';
+                        let scoreColorClass = 'text-ink border-line bg-surface';
                         if (val !== null) {
                           if (val >= 13) {
                             scoreColorClass =
@@ -1443,11 +1535,11 @@ export const RegistroEvaluaciones: React.FC = () => {
                         return (
                           <td
                             key={ind}
-                            className={`py-1.5 px-2 text-center border-r border-slate-100 dark:border-[#263834] ${
+                            className={`py-1.5 px-2 text-center border-r border-line ${
                               isDirty ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''
                             }`}
                           >
-                            <div className="relative inline-block w-full max-w-[80px]">
+                            <div className="relative inline-block w-full max-w-[82px]">
                               <input
                                 id={inputId}
                                 type="number"
@@ -1461,14 +1553,15 @@ export const RegistroEvaluaciones: React.FC = () => {
                                 disabled={!isTeacher || isGroupClosed || !activeWorkspace.unit}
                                 aria-label={`${ind} de ${studentName}`}
                                 placeholder="—"
-                                className={`w-full py-1.5 px-2 text-center text-xs rounded-lg border transition-all focus:outline-none focus:ring-2 focus:ring-[#13594A] ${scoreColorClass} ${
+                                className={`w-full min-h-[44px] py-1.5 px-2 text-center text-xs tabular-nums rounded-[10px] border transition-all focus:outline-none focus:ring-2 focus:ring-brand ${scoreColorClass} ${
                                   isDirty ? 'ring-2 ring-amber-400 border-amber-500' : ''
                                 } disabled:opacity-60 disabled:cursor-not-allowed`}
                               />
                               {isDirty && (
                                 <span
-                                  className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white dark:ring-[#182220]"
+                                  className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-surface"
                                   title="Calificación modificada sin guardar"
+                                  aria-hidden="true"
                                 />
                               )}
                             </div>
@@ -1506,18 +1599,22 @@ export const RegistroEvaluaciones: React.FC = () => {
           role="dialog"
           aria-modal="true"
           aria-labelledby="clear-dialog-title"
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-md w-full p-6 shadow-2xl border border-amber-200 dark:border-amber-800/60">
+          <div
+            ref={clearPanelRef}
+            tabIndex={-1}
+            className="cepro-dialog-panel bg-surface rounded-2xl max-w-md w-full p-6 shadow-[var(--ui-shadow)] border border-line focus:outline-none"
+          >
             <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <h3 id="clear-dialog-title" className="text-base font-bold text-slate-900 dark:text-[#F0FDF8] text-center">
+            <h3 id="clear-dialog-title" className="text-base font-bold text-ink text-center">
               ¿Confirmar notas que quedarán pendientes?
             </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 text-center leading-relaxed">
+            <p className="text-xs text-muted mt-2 text-center leading-relaxed">
               Algunas notas quedarán pendientes. Se conserva su historial en la base de datos de auditoría.
               ¿Desea continuar y guardar los cambios?
             </p>
@@ -1525,7 +1622,7 @@ export const RegistroEvaluaciones: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setPendingClearConfirm(false)}
-                className="px-4 py-2 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-[#1F2D2A] transition-colors"
+                className="min-h-[44px] px-4 py-2 rounded-[10px] border border-line bg-surface-alt text-ink text-xs font-bold hover:bg-brand-soft transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 Cancelar
               </button>
@@ -1535,7 +1632,7 @@ export const RegistroEvaluaciones: React.FC = () => {
                   setPendingClearConfirm(false);
                   executeSaveInternal(true);
                 }}
-                className="px-4 py-2 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] transition-colors shadow-sm"
+                className="min-h-[44px] px-4 py-2 rounded-[10px] bg-brand text-on-brand text-xs font-bold hover:opacity-90 transition-colors shadow-[var(--ui-shadow)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 Confirmar y Guardar
               </button>
@@ -1551,56 +1648,60 @@ export const RegistroEvaluaciones: React.FC = () => {
           aria-modal="true"
           aria-labelledby="conflict-dialog-title"
           aria-describedby="conflict-dialog-desc"
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-purple-200 dark:border-purple-800/60 flex flex-col max-h-[90vh]">
-            <div className="flex items-start gap-4 mb-4 pb-4 border-b border-slate-100 dark:border-[#263834]">
+          <div
+            ref={conflictPanelRef}
+            tabIndex={-1}
+            className="cepro-dialog-panel bg-surface rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-[var(--ui-shadow)] border border-line flex flex-col focus:outline-none"
+          >
+            <div className="flex items-start gap-4 mb-4 pb-4 border-b border-line">
               <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <div className="flex-1">
-                <h3 id="conflict-dialog-title" className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
+              <div className="flex-1 min-w-0">
+                <h3 id="conflict-dialog-title" className="text-lg font-bold text-ink tracking-tight">
                   Conflicto de actualización — Calificación modificada en otra sesión
                 </h3>
-                <p id="conflict-dialog-desc" className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                <p id="conflict-dialog-desc" className="text-xs text-muted mt-1 leading-relaxed">
                   Uno o más registros fueron modificados en otra sesión o equipo. A continuación puede
                   consultar la versión del servidor y compararla con sus notas locales:
                 </p>
               </div>
             </div>
 
-            <div className="overflow-y-auto flex-1 my-2 border border-slate-200 dark:border-[#263834] rounded-xl">
+            <div className="overflow-y-auto flex-1 my-2 border border-line rounded-xl">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-[#131C1A] border-b border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 font-bold uppercase text-[10px]">
+                  <tr className="bg-surface-alt border-b border-line text-muted font-bold uppercase text-[10px]">
                     <th className="py-2.5 px-3">Estudiante</th>
                     <th className="py-2.5 px-3">Criterio</th>
                     <th className="py-2.5 px-3">Modificación local</th>
                     <th className="py-2.5 px-3">Versión en servidor</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-[#263834]">
+                <tbody className="divide-y divide-line">
                   {conflictItems.map((c) => (
-                    <tr key={`${c.enrollmentId}-${c.indicator}`} className="hover:bg-slate-50/50 dark:hover:bg-[#1F2D2A]">
+                    <tr key={`${c.enrollmentId}-${c.indicator}`} className="hover:bg-surface-alt/60">
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-slate-900 dark:text-[#F0FDF8] block">{c.studentName}</span>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">DNI: {c.document}</span>
+                        <span className="font-bold text-ink block">{c.studentName}</span>
+                        <span className="text-[10px] text-muted font-mono tabular-nums">DNI: {c.document}</span>
                       </td>
-                      <td className="py-2.5 px-3 font-mono font-bold text-slate-700 dark:text-slate-300">
+                      <td className="py-2.5 px-3 font-mono font-bold text-ink">
                         {c.indicator}
                       </td>
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-amber-900 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded text-[11px]">
+                        <span className="font-bold tabular-nums text-amber-900 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-full text-[11px]">
                           {c.localValue !== null ? `Nota: ${c.localValue}` : 'Pendiente (Borrada)'}
                         </span>
                       </td>
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-emerald-900 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded text-[11px]">
+                        <span className="font-bold tabular-nums text-emerald-900 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full text-[11px]">
                           {c.serverValue !== null ? `Nota: ${c.serverValue}` : 'Sin registrar'}
                         </span>
-                        <span className="block text-[9px] text-slate-600 dark:text-slate-400 font-medium mt-0.5">
+                        <span className="block text-[9px] text-muted font-medium mt-0.5">
                           {c.serverRev ? 'Versión registrada' : 'Sin registrar'}
                         </span>
                       </td>
@@ -1610,12 +1711,12 @@ export const RegistroEvaluaciones: React.FC = () => {
               </table>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2.5 mt-4 pt-3 border-t border-slate-100 dark:border-[#263834]">
+            <div className="flex flex-col sm:flex-row gap-2.5 mt-4 pt-3 border-t border-line">
               <button
                 type="button"
                 onClick={handleConflictKeepLocal}
                 disabled={isResolvingConflict}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-[#1F2D2A] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 transition-colors text-center disabled:opacity-50"
+                className="min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface-alt text-ink text-xs font-bold hover:bg-brand-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand transition-colors text-center disabled:opacity-50"
               >
                 Conservar notas locales (sin enviar)
               </button>
@@ -1624,7 +1725,7 @@ export const RegistroEvaluaciones: React.FC = () => {
                 type="button"
                 onClick={handleConflictDiscardAndLoadServer}
                 disabled={isResolvingConflict}
-                className="px-4 py-2.5 rounded-xl border border-purple-300 dark:border-purple-800/60 bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-300 text-xs font-bold hover:bg-purple-100 dark:hover:bg-purple-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors text-center disabled:opacity-50"
+                className="min-h-[44px] px-4 py-2.5 rounded-[10px] border border-purple-300 dark:border-purple-800/60 bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-300 text-xs font-bold hover:bg-purple-100 dark:hover:bg-purple-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors text-center disabled:opacity-50"
               >
                 Descartar notas y cargar servidor
               </button>
@@ -1633,11 +1734,11 @@ export const RegistroEvaluaciones: React.FC = () => {
                 type="button"
                 onClick={handleConflictReapplyWithServerRev}
                 disabled={isResolvingConflict}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 transition-colors text-center shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 min-h-[44px] px-4 py-2.5 rounded-[10px] bg-brand text-on-brand text-xs font-bold hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand transition-colors text-center shadow-[var(--ui-shadow)] disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isResolvingConflict ? (
                   <>
-                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-3.5 h-3.5 border-2 border-on-brand/30 border-t-on-brand rounded-full animate-spin" />
                     <span>Reaplicando…</span>
                   </>
                 ) : (

@@ -13,6 +13,7 @@
  * - Identidad visual Google Stitch (#13594A, #F6F8FA) y accesibilidad WCAG 2.2 AA.
  */
 
+import { DashboardPhotoBand } from '../components/ui/DashboardPhotoBand';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useWorkspace } from '../context/WorkspaceContext';
@@ -100,6 +101,8 @@ export const RegistroAsistencia: React.FC = () => {
   // Estado para gestión y resolución segura de conflictos 409
   const [conflictItems, setConflictItems] = useState<ConflictItem[] | null>(null);
   const [isResolvingConflict, setIsResolvingConflict] = useState<boolean>(false);
+  const conflictPanelRef = useRef<HTMLDivElement | null>(null);
+  const conflictPreviousFocusRef = useRef<HTMLElement | null>(null);
 
   // Modal para cambiar unidad / aula
   const [isUnitModalOpen, setIsUnitModalOpen] = useState<boolean>(false);
@@ -131,14 +134,18 @@ export const RegistroAsistencia: React.FC = () => {
     return grp?.units?.find((u) => u.code === activeWorkspace.unit) || null;
   }, [options, activeWorkspace]);
 
-  const unitStartDate: string = activeUnitOption?.fechaInicio || (currentGroup?.fechaInicio as string) || '2026-03-16';
-  const unitEndDate: string = activeUnitOption?.fechaFin || (currentGroup?.fechaFin as string) || '2026-07-24';
+  const legacyCalendar = (activeWorkspace?.periodId || currentGroup?.periodId) === '2026-I';
+  const unitStartDate: string = activeUnitOption?.fechaInicio || currentGroup?.fechaInicio || (legacyCalendar ? '2026-03-16' : '');
+  const unitEndDate: string = activeUnitOption?.fechaFin || currentGroup?.fechaFin || (legacyCalendar ? '2026-07-24' : '');
 
   const unitCalendar = useMemo<UnitCalendarResolution>(() => {
     return resolveUnitDates(unitStartDate, unitEndDate);
   }, [unitStartDate, unitEndDate]);
 
   const [activeMonthFilter, setActiveMonthFilter] = useState<string | null>(null);
+  useEffect(() => {
+    setActiveMonthFilter(null);
+  }, [activeWorkspace?.groupId, activeWorkspace?.unit]);
 
   // Auto-ajuste de fecha si hoy o la fecha actual está fuera de los días lectivos de la unidad
   useEffect(() => {
@@ -152,6 +159,7 @@ export const RegistroAsistencia: React.FC = () => {
   // Validación estricta de fecha para registro de asistencia:
   // Dentro del rango de la UD, Lu-Vi, y sin ser feriado
   const dateValidationError = useMemo<string | null>(() => {
+    if (!unitCalendar.fechaInicio) return 'Esta unidad aún no tiene un calendario configurado. Consulte con Dirección.';
     if (!sessionDate) return 'Debe seleccionar una fecha de sesión.';
     if (sessionDate < unitStartDate || sessionDate > unitEndDate) {
       return `La fecha ${sessionDate} está fuera del rango oficial de la unidad didáctica (${unitStartDate} al ${unitEndDate}).`;
@@ -165,7 +173,7 @@ export const RegistroAsistencia: React.FC = () => {
       return `La fecha ${sessionDate} corresponde a fin de semana (${dow === 0 ? 'domingo' : 'sábado'}). Las clases ordinarias son de lunes a viernes.`;
     }
     return null;
-  }, [sessionDate, unitStartDate, unitEndDate]);
+  }, [sessionDate, unitStartDate, unitEndDate, unitCalendar.fechaInicio]);
 
   // Fechas que tienen al menos una marca de asistencia guardada con valor válido no nulo (P, F, J, T)
   const datesWithValidAttendance = useMemo(() => {
@@ -641,6 +649,73 @@ export const RegistroAsistencia: React.FC = () => {
   // GESTIÓN Y RESOLUCIÓN SEGURA DE CONFLICTOS HTTP 409
   // =========================================================================
 
+  // Trampa de foco, cierre con Escape y retorno de foco en modal de conflictos 409
+  const isConflictModalOpen = Boolean(conflictItems && conflictItems.length > 0);
+  useEffect(() => {
+    if (!isConflictModalOpen) return;
+
+    conflictPreviousFocusRef.current = document.activeElement as HTMLElement | null;
+
+    const focusFirst = () => {
+      const panel = conflictPanelRef.current;
+      if (!panel) return;
+      const focusables = panel.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length > 0) {
+        focusables[0].focus();
+      } else {
+        panel.focus();
+      }
+    };
+
+    const rafId = window.requestAnimationFrame(focusFirst);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (!isResolvingConflict) {
+          e.preventDefault();
+          handleConflictKeepLocal();
+        }
+        return;
+      }
+
+      if (e.key !== 'Tab' || !conflictPanelRef.current) return;
+      const focusables = Array.from(
+        conflictPanelRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => el.offsetParent !== null);
+
+      if (focusables.length === 0) {
+        e.preventDefault();
+        return;
+      }
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first || !conflictPanelRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (document.activeElement === last || !conflictPanelRef.current.contains(document.activeElement)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener('keydown', handleKeyDown);
+      if (conflictPreviousFocusRef.current && typeof conflictPreviousFocusRef.current.focus === 'function') {
+        conflictPreviousFocusRef.current.focus();
+      }
+    };
+  }, [isConflictModalOpen, isResolvingConflict]);
+
   // Opción 1: Conservar cambios locales sin enviar
   const handleConflictKeepLocal = () => {
     setConflictItems(null);
@@ -753,8 +828,8 @@ export const RegistroAsistencia: React.FC = () => {
   if (isWorkspaceLoading && !dashboardData) {
     return (
       <div className="max-w-6xl mx-auto py-12 flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 border-4 border-[#13594A]/20 border-t-[#13594A] dark:border-t-[#5EEAD4] rounded-full animate-spin" />
-        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+        <div className="w-10 h-10 border-4 border-line border-t-brand rounded-full animate-spin" />
+        <p className="text-sm font-semibold text-muted">
           Cargando registros de asistencia desde el servicio local…
         </p>
       </div>
@@ -765,25 +840,25 @@ export const RegistroAsistencia: React.FC = () => {
   if (!activeWorkspace || !activeWorkspace.groupId) {
     return (
       <div className="max-w-4xl mx-auto py-10 px-4 animate-in fade-in duration-300">
-        <div className="bg-white dark:bg-[#182220] rounded-3xl p-8 border border-slate-200 dark:border-[#263834] shadow-sm text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-[#E6F4F1] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] flex items-center justify-center">
+        <DashboardPhotoBand as="header" scene="calendario" contentClassName="text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-brand-soft text-brand flex items-center justify-center">
             <AttendanceIcon className="w-7 h-7" />
           </div>
-          <h2 className="text-2xl font-bold text-[#0D382F] dark:text-[#F0FDF8] mb-2">
+          <h1 className="text-2xl font-bold text-ink mb-2">
             No hay un aula activa seleccionada
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-lg mx-auto mb-6 leading-relaxed">
+          </h1>
+          <p className="text-sm text-muted max-w-lg mx-auto mb-6 leading-relaxed">
             Para registrar asistencia, primero debe seleccionar una de sus aulas autorizadas desde el panel de inicio.
           </p>
           <button
             type="button"
             onClick={() => openSelector(1)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#13594A] text-white font-bold text-xs hover:bg-[#0D382F] dark:hover:bg-[#1A7360] transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2.5 rounded-[10px] bg-brand text-on-brand font-bold text-xs hover:opacity-90 transition-all shadow-[var(--ui-shadow)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
-            <span>🎯 Seleccionar Aula y Unidad Didáctica</span>
+            <span>Seleccionar Aula y Unidad Didáctica</span>
             <ArrowForwardIcon className="w-4 h-4" />
           </button>
-        </div>
+        </DashboardPhotoBand>
       </div>
     );
   }
@@ -794,32 +869,32 @@ export const RegistroAsistencia: React.FC = () => {
       <div className="max-w-5xl mx-auto py-8 px-4 space-y-6 animate-in fade-in duration-300">
         <ActiveUnitContextBanner variant="full" />
 
-        <div className="bg-white dark:bg-[#182220] rounded-3xl p-8 border border-amber-200 dark:border-amber-800/60 shadow-sm text-center">
+        <DashboardPhotoBand as="header" scene="calendario" contentClassName="text-center">
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 flex items-center justify-center">
             <AttendanceIcon className="w-7 h-7" />
           </div>
-          <h2 className="text-2xl font-bold text-[#0D382F] dark:text-[#F0FDF8] mb-2">
+          <h1 className="text-2xl font-bold text-ink mb-2">
             Seleccione una unidad didáctica para registrar asistencia
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-lg mx-auto mb-6 leading-relaxed">
+          </h1>
+          <p className="text-sm text-muted max-w-lg mx-auto mb-6 leading-relaxed">
             Actualmente se encuentra en la vista general del módulo. Haga clic en cualquiera de las píldoras de unidad didáctica arriba (UD 1, UD 2, etc.) o use el selector para tomar asistencia.
           </p>
-          <div className="flex justify-center gap-3">
+          <div className="flex flex-wrap justify-center gap-3">
             <button
               type="button"
               onClick={handleOpenUnitModal}
-              className="px-5 py-2.5 rounded-xl bg-[#13594A] text-white font-bold text-xs hover:bg-[#0D382F] dark:hover:bg-[#1A7360] transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+              className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 rounded-[10px] bg-brand text-on-brand font-bold text-xs hover:opacity-90 transition-all shadow-[var(--ui-shadow)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               Elegir Unidad Didáctica de este grupo
             </button>
             <a
               href="#/inicio"
-              className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-slate-200 dark:hover:bg-[#202E2B] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+              className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 rounded-[10px] bg-surface-alt text-ink border border-line font-semibold text-xs hover:bg-brand-soft transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               Volver al Inicio
             </a>
           </div>
-        </div>
+        </DashboardPhotoBand>
 
         {/* Modal de selección de unidad */}
         {modalTargetGroup && (
@@ -847,34 +922,34 @@ export const RegistroAsistencia: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300">
       {/* 1. Encabezado Institucional y Breadcrumbs */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#263834]">
-        <div>
+      <DashboardPhotoBand as="header" scene="calendario" contentClassName="flex flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-[11px] font-bold text-[#004034] dark:text-[#5EEAD4] uppercase tracking-widest bg-[#E6F4F1] dark:bg-[#132B25] px-2.5 py-1 rounded-md">
+            <span className="text-[11px] font-bold text-brand uppercase tracking-widest bg-brand-soft px-2.5 py-1 rounded-full">
               Operación Académica
             </span>
             <StatusBadge size="sm" />
           </div>
-          <h1 className="text-3xl font-extrabold text-[#0D382F] dark:text-[#F0FDF8] tracking-tight">
+          <h1 className="text-3xl font-extrabold text-ink tracking-tight">
             Control de Asistencia
           </h1>
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-1">
+          <p className="text-sm font-medium text-muted mt-1">
             Registro diario de asistencia por sesión y cómputo de asistencias institucionales.
           </p>
         </div>
 
         {/* Contexto Activo y Botón de Cambio */}
-        <div className="flex items-center gap-3 self-start md:self-auto">
+        <div className="flex items-center gap-3 self-start md:self-auto shrink-0">
           <button
             type="button"
             onClick={handleOpenUnitModal}
-            className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#182220] hover:bg-slate-50 dark:hover:bg-[#131C1A] text-slate-700 dark:text-slate-300 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="inline-flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface hover:bg-surface-alt text-ink text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             title="Cambiar aula o unidad didáctica"
           >
             Cambiar aula / UD
           </button>
         </div>
-      </div>
+      </DashboardPhotoBand>
 
       {/* Banner Transversal de Contexto de Unidad Activa (con cambio de UD 1..UD 7 en 1 clic) */}
       <ActiveUnitContextBanner variant="full" />
@@ -883,11 +958,13 @@ export const RegistroAsistencia: React.FC = () => {
       {currentGroup?.closed && (
         <div
           role="alert"
-          className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-3 shadow-xs"
+          className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-3 shadow-[var(--ui-shadow)]"
         >
-          <div className="flex items-center gap-3">
-            <span className="text-xl" aria-hidden="true">⚠️</span>
-            <div>
+          <div className="flex items-center gap-3 min-w-0">
+            <svg className="w-5 h-5 shrink-0 text-amber-700 dark:text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div className="min-w-0">
               <strong className="block text-sm font-bold">
                 Registro cerrado institucionalmente
               </strong>
@@ -896,7 +973,7 @@ export const RegistroAsistencia: React.FC = () => {
               </p>
             </div>
           </div>
-          <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 rounded-md">
+          <span className="shrink-0 text-[10px] font-extrabold uppercase px-2.5 py-1 bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 rounded-full">
             Solo Consulta
           </span>
         </div>
@@ -906,10 +983,12 @@ export const RegistroAsistencia: React.FC = () => {
       {dateValidationError && (
         <div
           role="alert"
-          className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-300 dark:border-rose-800/60 text-rose-900 dark:text-rose-200 flex items-start gap-3 shadow-xs"
+          className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-300 dark:border-rose-800/60 text-rose-900 dark:text-rose-200 flex items-start gap-3 shadow-[var(--ui-shadow)]"
         >
-          <span className="text-xl shrink-0 mt-0.5" aria-hidden="true">🚫</span>
-          <div>
+          <svg className="w-5 h-5 shrink-0 mt-0.5 text-rose-700 dark:text-rose-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+          </svg>
+          <div className="min-w-0">
             <strong className="block text-sm font-bold">
               Registro no habilitado para esta fecha
             </strong>
@@ -926,7 +1005,7 @@ export const RegistroAsistencia: React.FC = () => {
           id="attendance-save-feedback"
           role="alert"
           aria-live="polite"
-          className={`p-4 rounded-2xl border flex items-center justify-between gap-3 shadow-xs ${
+          className={`p-4 rounded-2xl border flex items-center justify-between gap-3 shadow-[var(--ui-shadow)] ${
             saveFeedback.type === 'success'
               ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200'
               : saveFeedback.type === 'conflict'
@@ -934,10 +1013,16 @@ export const RegistroAsistencia: React.FC = () => {
               : 'bg-rose-50 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800/60 text-rose-900 dark:text-rose-200'
           }`}
         >
-          <div className="flex items-center gap-3">
-            <span className="text-xl" aria-hidden="true">
-              {saveFeedback.type === 'success' ? '✔' : '⚠'}
-            </span>
+          <div className="flex items-center gap-3 min-w-0">
+            {saveFeedback.type === 'success' ? (
+              <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            )}
             <span className="text-xs font-bold leading-relaxed">
               {saveFeedback.message}
             </span>
@@ -945,7 +1030,7 @@ export const RegistroAsistencia: React.FC = () => {
           <button
             type="button"
             onClick={() => setSaveFeedback(null)}
-            className="text-xs font-semibold px-2 py-1 rounded-md text-slate-700 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/10 dark:bg-transparent"
+            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-xs font-semibold rounded-[10px] text-ink hover:bg-surface-alt transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             aria-label="Cerrar notificación"
           >
             ✕
@@ -954,35 +1039,37 @@ export const RegistroAsistencia: React.FC = () => {
       )}
 
       {/* 4.5. Banner Oficial del Calendario de la Unidad Didáctica y Selector Rápido de Días */}
-      <div className="bg-white dark:bg-[#182220] rounded-2xl p-5 border border-slate-200 dark:border-[#263834] shadow-xs space-y-4">
+      <div className="bg-surface rounded-2xl p-5 border border-line shadow-[var(--ui-shadow)] space-y-4">
         {/* Cabecera del Banner: Información de la Unidad y Píldoras de Meses */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-slate-100 dark:border-[#263834]">
-          <div className="space-y-1">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-line">
+          <div className="space-y-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-bold text-emerald-800 dark:text-[#5EEAD4] bg-emerald-100 dark:bg-[#132B25] px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-brand bg-brand-soft px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                 Calendario Oficial · {activeWorkspace.unit}
               </span>
-              <span className="text-xs font-bold text-slate-800 dark:text-[#F0FDF8]">
+              <span className="text-xs font-bold text-ink truncate">
                 {activeUnitOption?.name || activeWorkspace.unitName || 'Unidad Didáctica Activa'}
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              📅 Vigencia programada: <strong className="text-slate-700 dark:text-slate-300">{unitStartDate} al {unitEndDate}</strong> · {unitCalendar.totalDays} días lectivos oficiales (Lu-Vi)
+            <p className="text-xs text-muted tabular-nums">
+              {unitCalendar.fechaInicio ? (
+                <>Vigencia programada: <strong className="text-ink">{unitStartDate} al {unitEndDate}</strong> · {unitCalendar.totalDays} días lectivos oficiales (Lu-Vi)</>
+              ) : 'Calendario sin configurar'}
             </p>
           </div>
 
           {/* Píldoras de Meses Automáticos */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">
+            <span className="text-sm font-semibold text-muted mr-1">
               Meses:
             </span>
             <button
               type="button"
               onClick={() => setActiveMonthFilter(null)}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`min-h-[44px] px-3.5 py-2 rounded-[10px] text-xs font-bold tabular-nums transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                 activeMonthFilter === null
-                  ? 'bg-[#13594A] text-white shadow-xs'
-                  : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202E2B]'
+                  ? 'bg-brand text-on-brand shadow-[var(--ui-shadow)]'
+                  : 'bg-surface-alt text-ink hover:bg-brand-soft border border-line'
               }`}
             >
               Todos ({unitCalendar.totalDays}d)
@@ -992,15 +1079,15 @@ export const RegistroAsistencia: React.FC = () => {
                 key={m.monthKey}
                 type="button"
                 onClick={() => setActiveMonthFilter(activeMonthFilter === m.monthKey ? null : m.monthKey)}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`min-h-[44px] px-3.5 py-2 rounded-[10px] text-xs font-bold tabular-nums transition-all cursor-pointer flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                   activeMonthFilter === m.monthKey
-                    ? 'bg-[#13594A] text-white shadow-xs'
-                    : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202E2B]'
+                    ? 'bg-brand text-on-brand shadow-[var(--ui-shadow)]'
+                    : 'bg-surface-alt text-ink hover:bg-brand-soft border border-line'
                 }`}
               >
-                <span>🗓 {m.shortLabel}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                  activeMonthFilter === m.monthKey ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                <span>{m.shortLabel}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full tabular-nums ${
+                  activeMonthFilter === m.monthKey ? 'bg-on-brand/20 text-on-brand' : 'bg-surface text-muted border border-line'
                 }`}>
                   {m.count}
                 </span>
@@ -1011,14 +1098,14 @@ export const RegistroAsistencia: React.FC = () => {
 
         {/* Carrusel / Selector Horizontal de Días Lectivos */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400 px-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-muted px-1">
             <span>Días de sesión programados (Seleccione para registrar):</span>
             <span className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-[#5EEAD4]">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" /> Con asistencia registrada
+              <span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" aria-hidden="true" /> Con asistencia registrada
               </span>
-              <span className="inline-flex items-center gap-1 text-slate-400">
-                <span className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600" /> Sin registrar
+              <span className="inline-flex items-center gap-1.5 text-muted">
+                <span className="w-2 h-2 rounded-full bg-line" aria-hidden="true" /> Sin registrar
               </span>
             </span>
           </div>
@@ -1038,27 +1125,27 @@ export const RegistroAsistencia: React.FC = () => {
                     key={d}
                     type="button"
                     onClick={() => handleDateChange(d)}
-                    className={`shrink-0 flex flex-col items-center justify-center min-w-[52px] py-2 px-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                    className={`shrink-0 flex flex-col items-center justify-center min-w-[52px] min-h-[56px] py-2 px-2.5 rounded-[10px] border text-xs font-bold tabular-nums transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       isSelected
-                        ? 'bg-[#13594A] border-[#13594A] text-white shadow-sm ring-2 ring-[#13594A]/30 scale-105'
+                        ? 'bg-brand border-brand text-on-brand shadow-[var(--ui-shadow)] ring-2 ring-brand/30'
                         : hasSaved
-                        ? 'bg-emerald-50/70 dark:bg-[#132B25]/70 border-emerald-200 dark:border-emerald-800/60 text-slate-800 dark:text-[#F0FDF8] hover:border-emerald-400'
-                        : 'bg-slate-50 dark:bg-[#131C1A] border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182220]'
+                        ? 'bg-brand-soft border-brand/40 text-ink hover:border-brand'
+                        : 'bg-surface-alt border-line text-ink hover:bg-brand-soft/60'
                     }`}
                   >
-                    <span className={`text-[10px] font-semibold ${isSelected ? 'text-white/80' : 'text-slate-400 dark:text-slate-500'}`}>
+                    <span className={`text-[10px] font-semibold ${isSelected ? 'text-on-brand/85' : 'text-muted'}`}>
                       {dowName}
                     </span>
-                    <span className="text-sm font-extrabold my-0.5">
+                    <span className="text-sm font-extrabold my-0.5 tabular-nums">
                       {dayNum}
                     </span>
                     <span className="text-[10px] leading-none">
                       {hasSaved ? (
-                        <span className={isSelected ? 'text-white font-bold' : 'text-emerald-700 dark:text-[#5EEAD4] font-bold'}>
+                        <span className={isSelected ? 'text-on-brand font-bold' : 'text-emerald-700 dark:text-emerald-300 font-bold'}>
                           ✓
                         </span>
                       ) : (
-                        <span className={isSelected ? 'text-white/40' : 'text-slate-300 dark:text-slate-600'}>
+                        <span className={isSelected ? 'text-on-brand/50' : 'text-muted'}>
                           ○
                         </span>
                       )}
@@ -1071,13 +1158,13 @@ export const RegistroAsistencia: React.FC = () => {
       </div>
 
       {/* 5. Barra de Herramientas de Sesión */}
-      <div className="bg-white dark:bg-[#182220] rounded-2xl p-5 border border-slate-200 dark:border-[#263834] shadow-xs flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-4">
+      <div className="bg-surface rounded-2xl p-5 border border-line shadow-[var(--ui-shadow)] flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="flex flex-wrap items-end gap-4">
           {/* Selector de Fecha */}
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="attendance-date"
-              className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
+              className="text-[11px] font-bold text-muted uppercase tracking-wider"
             >
               Fecha de sesión
             </label>
@@ -1088,25 +1175,25 @@ export const RegistroAsistencia: React.FC = () => {
               max={unitEndDate}
               value={sessionDate}
               onChange={(e) => handleDateChange(e.target.value)}
-              className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs font-bold text-slate-800 dark:text-[#F0FDF8] focus:bg-white dark:focus:bg-[#182220] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+              className="min-h-[44px] px-3.5 py-2 rounded-[10px] bg-surface-alt border border-line text-xs font-bold tabular-nums text-ink focus:bg-surface focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
 
           {/* Etiqueta de Fecha en Español */}
           <div className="flex flex-col gap-1.5 self-end">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#131C1A] px-3 py-2 rounded-xl border border-slate-200 dark:border-[#263834]">
+            <span className="min-h-[44px] inline-flex items-center text-xs font-semibold tabular-nums text-muted bg-surface-alt px-3.5 py-2 rounded-[10px] border border-line">
               {formatDisplayDate(sessionDate)}
             </span>
           </div>
         </div>
 
         {/* Acciones de Lote y Guardado */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={handleMarkAllPresent}
             disabled={Boolean(currentGroup?.closed) || Boolean(dateValidationError) || rosterData.length === 0}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#263834] bg-white dark:bg-[#131C1A] hover:bg-slate-50 dark:hover:bg-[#182220] text-slate-700 dark:text-slate-200 text-xs font-bold transition-all disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface hover:bg-surface-alt text-ink text-xs font-bold transition-all disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             Marcar todos presentes (P)
           </button>
@@ -1115,18 +1202,18 @@ export const RegistroAsistencia: React.FC = () => {
             type="button"
             onClick={handleSaveClick}
             disabled={Boolean(currentGroup?.closed) || Boolean(dateValidationError) || isSaving || !hasUnsavedChanges}
-            className="px-5 py-2.5 rounded-xl bg-[#13594A] hover:bg-[#0D382F] dark:bg-[#13594A] dark:hover:bg-[#1a7763] text-white text-xs font-extrabold shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A]"
+            className="min-h-[44px] px-5 py-2.5 rounded-[10px] bg-brand hover:opacity-90 text-on-brand text-xs font-extrabold shadow-[var(--ui-shadow)] transition-all flex items-center gap-2 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             {isSaving ? (
               <>
-                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-3.5 h-3.5 border-2 border-on-brand/30 border-t-on-brand rounded-full animate-spin" />
                 <span>Guardando…</span>
               </>
             ) : (
               <>
                 <span>Guardar asistencia</span>
                 {hasUnsavedChanges && (
-                  <span className="w-2 h-2 rounded-full bg-amber-300 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-amber-300 animate-pulse" aria-hidden="true" />
                 )}
               </>
             )}
@@ -1135,23 +1222,23 @@ export const RegistroAsistencia: React.FC = () => {
       </div>
 
       {/* 6. Barra de Resumen de Conteo y Filtro de Búsqueda */}
-      <div className="bg-white dark:bg-[#182220] rounded-2xl p-4 border border-slate-200 dark:border-[#263834] shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-surface rounded-2xl p-4 border border-line shadow-[var(--ui-shadow)] flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Contadores Accesibles */}
-        <div className="flex items-center gap-2 text-xs flex-wrap">
-          <span className="font-bold text-slate-700 dark:text-slate-300 mr-1">Cómputo:</span>
-          <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800/60">
+        <div className="flex items-center gap-2 text-xs flex-wrap tabular-nums">
+          <span className="font-bold text-ink mr-1">Cómputo:</span>
+          <span className="px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800/60">
             {counts.pCount} Presentes
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800/60">
+          <span className="px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800/60">
             {counts.fCount} Faltas
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800/60">
+          <span className="px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800/60">
             {counts.jCount} Justificadas
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800/60">
+          <span className="px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800/60">
             {counts.tCount} Tardanzas
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-[#263834]">
+          <span className="px-2.5 py-1 rounded-full bg-surface-alt text-muted font-semibold border border-line">
             {counts.pending} Sin marcar
           </span>
         </div>
@@ -1167,7 +1254,7 @@ export const RegistroAsistencia: React.FC = () => {
             placeholder="Buscar por apellido, nombre o DNI…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs font-semibold text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-[#182220] focus:outline-none focus:ring-2 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4]"
+            className="w-full min-h-[44px] px-3.5 py-2 rounded-[10px] bg-surface-alt border border-line text-xs font-semibold text-ink placeholder:text-muted focus:bg-surface focus:outline-none focus:ring-2 focus:ring-brand"
           />
           <div aria-live="polite" role="status" className="sr-only">
             {filteredRoster.length} estudiantes listados
@@ -1176,22 +1263,28 @@ export const RegistroAsistencia: React.FC = () => {
       </div>
 
       {/* 7. Tabla Principal de Estudiantes */}
-      <div className="bg-white dark:bg-[#182220] rounded-2xl border border-slate-200 dark:border-[#263834] shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse" aria-label="Nómina oficial de estudiantes">
+      <div className="bg-surface rounded-2xl border border-line shadow-[var(--ui-shadow)] overflow-hidden">
+        <ul aria-label="Significado de las marcas de asistencia" className="flex flex-wrap gap-x-5 gap-y-2 border-b border-line px-4 py-3 text-xs font-semibold">
+          <li className="text-emerald-800 dark:text-emerald-300">P · Presente</li>
+          <li className="text-rose-800 dark:text-rose-300">F · Falta</li>
+          <li className="text-blue-800 dark:text-blue-300">J · Justificada</li>
+          <li className="text-amber-900 dark:text-amber-200">T · Tardanza</li>
+        </ul>
+        <div role="region" aria-label="Listado de asistencia" tabIndex={0} className="overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand">
+          <table className="record-table w-full text-left border-collapse" aria-label="Nómina oficial de estudiantes">
             <thead>
-              <tr className="bg-slate-50 dark:bg-[#131C1A] border-b border-slate-200 dark:border-[#263834] text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                <th scope="col" className="py-3.5 px-4 w-12 text-center">N°</th>
-                <th scope="col" className="py-3.5 px-4">Estudiante / Documento</th>
-                <th scope="col" className="py-3.5 px-4 text-center w-72">Control de Asistencia</th>
-                <th scope="col" className="py-3.5 px-4">Observación pedagógica</th>
-                <th scope="col" className="py-3.5 px-4 text-center w-28">Estado</th>
+              <tr className="bg-surface-alt border-b border-line text-[11px] font-bold text-muted uppercase tracking-wider">
+                <th scope="col" className="py-3.5 px-4 w-12 min-w-[48px] text-center lg:sticky lg:left-0 lg:z-20 bg-surface-alt">N°</th>
+                <th scope="col" className="py-3.5 px-4 min-w-[220px] lg:sticky lg:left-[48px] lg:z-20 bg-surface-alt border-r border-line">Estudiante e identificadores</th>
+                <th scope="col" className="py-3.5 px-4 text-center min-w-[260px]">Control de Asistencia</th>
+                <th scope="col" className="py-3.5 px-4 min-w-[200px]">Observación pedagógica</th>
+                <th scope="col" className="py-3.5 px-4 text-center w-32">Estado</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-[#263834] text-xs">
+            <tbody className="divide-y divide-line text-sm">
               {filteredRoster.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-500 dark:text-slate-400 font-medium">
+                  <td colSpan={5} className="py-12 text-center text-muted font-medium">
                     No se encontraron estudiantes para los criterios seleccionados.
                   </td>
                 </tr>
@@ -1211,30 +1304,30 @@ export const RegistroAsistencia: React.FC = () => {
                     sessionDate < (item.enrollment.startDate || '');
 
                   const isDisabled = Boolean(currentGroup?.closed) || Boolean(dateValidationError) || isPriorToEnrollment;
+                  const rowStickyBg = row.isDirty ? 'bg-surface-alt' : 'bg-surface';
 
                   return (
                     <tr
                       key={enId}
-                      className={`hover:bg-slate-50/80 dark:hover:bg-[#131C1A]/60 transition-colors ${
-                        row.isDirty ? 'bg-amber-50/30 dark:bg-amber-950/20' : ''
+                      className={`hover:bg-surface-alt transition-colors ${
+                        row.isDirty ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''
                       }`}
                     >
                       {/* Número de Orden */}
-                      <td className="py-3 px-4 text-center font-bold text-slate-600 dark:text-slate-400">
+                      <td className={`py-3 px-4 text-center font-bold tabular-nums text-muted lg:sticky lg:left-0 lg:z-10 ${rowStickyBg}`}>
                         {index + 1}
                       </td>
 
                       {/* Datos del Estudiante */}
-                      <td className="py-3 px-4">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-slate-900 dark:text-[#F0FDF8]">
-                            {item.student.name}
-                          </span>
-                          <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono mt-0.5">
-                            DNI: {item.student.document || 'S/D'} · Matrícula: {item.enrollment.code || enId}
-                          </span>
+                      <td className={`py-3 px-4 lg:sticky lg:left-[48px] lg:z-10 border-r border-line ${rowStickyBg}`}>
+                        <div className="flex min-w-[240px] max-w-[320px] flex-col gap-2">
+                          <span className="record-name break-words text-base font-semibold leading-snug text-brand" title={item.student.name}>{item.student.name}</span>
+                          <dl className="grid gap-1.5 text-sm leading-relaxed">
+                            <div className="flex flex-wrap items-baseline gap-x-2"><dt className="record-label text-muted">DNI</dt><dd className="record-code break-all font-medium tabular-nums text-ink">{item.student.document || "S/D"}</dd></div>
+                            <div className="flex flex-wrap items-baseline gap-x-2"><dt className="record-label text-muted">Matrícula</dt><dd className="record-academic break-all font-medium tabular-nums text-ink">{item.enrollment.code || enId}</dd></div>
+                          </dl>
                           {isPriorToEnrollment && (
-                            <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-950/40 px-2 py-0.5 rounded mt-1 self-start">
+                            <span className="text-[10px] font-bold tabular-nums text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded-full mt-1 self-start">
                               Ingreso posterior ({item.enrollment.startDate})
                             </span>
                           )}
@@ -1243,21 +1336,23 @@ export const RegistroAsistencia: React.FC = () => {
 
                       {/* Botones de Marcado P, F, J, T */}
                       <td className="py-3 px-4">
-                        <div className="flex items-center justify-center gap-1.5">
+                        <div role="group" aria-label={"Asistencia de " + item.student.name} className="flex flex-wrap items-center justify-center gap-2">
                           {/* P - Presente */}
                           <button
                             type="button"
                             disabled={isDisabled}
                             aria-pressed={row.value === 'P'}
                             aria-label={`Marcar Presente para ${item.student.name}`}
+                            title="Presente"
                             onClick={() => handleMarkChange(enId, 'P')}
-                            className={`w-9 h-9 rounded-xl font-bold text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] disabled:opacity-30 ${
+                            className={`min-w-[44px] min-h-[44px] rounded-[10px] px-2 font-semibold text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50 ${
                               row.value === 'P'
-                                ? 'bg-emerald-600 dark:bg-emerald-600 text-white shadow-xs font-black'
-                                : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300'
+                                ? 'bg-emerald-700 text-white border-2 border-emerald-800 dark:bg-emerald-300 dark:text-emerald-950 dark:border-emerald-300'
+                                : 'bg-surface-alt text-ink border border-line hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300'
                             }`}
                           >
-                            P
+                            <span>P</span> <span className="hidden 2xl:inline">Presente</span>
+                            {row.value === "P" && <span aria-hidden="true" className="ml-1">✓</span>}
                           </button>
 
                           {/* F - Falta */}
@@ -1266,14 +1361,16 @@ export const RegistroAsistencia: React.FC = () => {
                             disabled={isDisabled}
                             aria-pressed={row.value === 'F'}
                             aria-label={`Marcar Falta para ${item.student.name}`}
+                            title="Falta"
                             onClick={() => handleMarkChange(enId, 'F')}
-                            className={`w-9 h-9 rounded-xl font-bold text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 disabled:opacity-30 ${
+                            className={`min-w-[44px] min-h-[44px] rounded-[10px] px-2 font-semibold text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50 ${
                               row.value === 'F'
-                                ? 'bg-rose-600 dark:bg-rose-600 text-white shadow-xs font-black'
-                                : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-800 dark:hover:text-rose-300'
+                                ? 'bg-red-700 text-white border-2 border-red-800 dark:bg-red-300 dark:text-red-950 dark:border-red-300'
+                                : 'bg-surface-alt text-ink border border-line hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-800 dark:hover:text-rose-300'
                             }`}
                           >
-                            F
+                            <span>F</span> <span className="hidden 2xl:inline">Falta</span>
+                            {row.value === "F" && <span aria-hidden="true" className="ml-1">✓</span>}
                           </button>
 
                           {/* J - Justificada */}
@@ -1282,14 +1379,16 @@ export const RegistroAsistencia: React.FC = () => {
                             disabled={isDisabled}
                             aria-pressed={row.value === 'J'}
                             aria-label={`Marcar Justificada para ${item.student.name}`}
+                            title="Justificada"
                             onClick={() => handleMarkChange(enId, 'J')}
-                            className={`w-9 h-9 rounded-xl font-bold text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 disabled:opacity-30 ${
+                            className={`min-w-[44px] min-h-[44px] rounded-[10px] px-2 font-semibold text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50 ${
                               row.value === 'J'
-                                ? 'bg-amber-600 dark:bg-amber-600 text-white shadow-xs font-black'
-                                : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-800 dark:hover:text-amber-300'
+                                ? 'bg-blue-700 text-white border-2 border-blue-800 dark:bg-blue-300 dark:text-blue-950 dark:border-blue-300'
+                                : 'bg-surface-alt text-ink border border-line hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-800 dark:hover:text-blue-300'
                             }`}
                           >
-                            J
+                            <span>J</span> <span className="hidden 2xl:inline">Justificada</span>
+                            {row.value === "J" && <span aria-hidden="true" className="ml-1">✓</span>}
                           </button>
 
                           {/* T - Tardanza */}
@@ -1298,14 +1397,16 @@ export const RegistroAsistencia: React.FC = () => {
                             disabled={isDisabled}
                             aria-pressed={row.value === 'T'}
                             aria-label={`Marcar Tardanza para ${item.student.name}`}
+                            title="Tardanza"
                             onClick={() => handleMarkChange(enId, 'T')}
-                            className={`w-9 h-9 rounded-xl font-bold text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:opacity-30 ${
+                            className={`min-w-[44px] min-h-[44px] rounded-[10px] px-2 font-semibold text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50 ${
                               row.value === 'T'
-                                ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs font-black'
-                                : 'bg-slate-100 dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-800 dark:hover:text-blue-300'
+                                ? 'bg-amber-300 text-amber-950 border-2 border-amber-700 dark:border-amber-300'
+                                : 'bg-surface-alt text-ink border border-line hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-800 dark:hover:text-amber-300'
                             }`}
                           >
-                            T
+                            <span>T</span> <span className="hidden 2xl:inline">Tardanza</span>
+                            {row.value === "T" && <span aria-hidden="true" className="ml-1">✓</span>}
                           </button>
 
                           {/* Botón Desmarcar */}
@@ -1315,7 +1416,7 @@ export const RegistroAsistencia: React.FC = () => {
                               onClick={() => handleMarkChange(enId, row.value as AttendanceValue)}
                               aria-label={`Limpiar marca de ${item.student.name}`}
                               title="Desmarcar / Dejar pendiente"
-                              className="w-7 h-7 ml-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center text-xs transition-colors"
+                              className="min-w-[44px] min-h-[44px] ml-1 rounded-[10px] text-muted hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                             >
                               ✕
                             </button>
@@ -1328,26 +1429,27 @@ export const RegistroAsistencia: React.FC = () => {
                         <input
                           type="text"
                           disabled={isDisabled}
+                          aria-label={"Observación pedagógica de " + item.student.name}
                           placeholder="Nota u observación opcional…"
                           value={row.observation}
                           onChange={(e) => handleObservationChange(enId, e.target.value)}
                           maxLength={500}
-                          className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs text-slate-800 dark:text-[#F0FDF8] placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-[#182220] focus:outline-none focus:ring-1 focus:ring-[#13594A] dark:focus:ring-[#5EEAD4] disabled:opacity-50"
+                          className="w-full min-h-[44px] px-3 py-2 rounded-[10px] bg-surface-alt border border-line text-sm text-ink placeholder:text-muted focus:bg-surface focus:outline-none focus:ring-2 focus:ring-brand disabled:opacity-50"
                         />
                       </td>
 
                       {/* Estado de Persistencia */}
                       <td className="py-3 px-4 text-center">
                         {row.isDirty ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/40 px-2.5 py-1 rounded-full">
                             ● Modificado
                           </span>
                         ) : row.savedValue !== null ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full">
                             ✔ Guardado
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-[#131C1A] px-2 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted bg-surface-alt border border-line px-2.5 py-1 rounded-full">
                             Sin registrar
                           </span>
                         )}
@@ -1384,63 +1486,67 @@ export const RegistroAsistencia: React.FC = () => {
           aria-modal="true"
           aria-labelledby="conflict-dialog-title"
           aria-describedby="conflict-dialog-desc"
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-white dark:bg-[#182220] rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-purple-200 dark:border-purple-800/60 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+          <div
+            ref={conflictPanelRef}
+            tabIndex={-1}
+            className="cepro-dialog-panel bg-surface rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-[var(--ui-shadow)] border border-line animate-in zoom-in-95 duration-200 flex flex-col focus:outline-none"
+          >
             {/* Encabezado */}
-            <div className="flex items-start gap-4 mb-4 pb-4 border-b border-slate-100 dark:border-[#263834]">
+            <div className="flex items-start gap-4 mb-4 pb-4 border-b border-line">
               <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <div className="flex-1">
-                <h3 id="conflict-dialog-title" className="text-lg font-bold text-slate-900 dark:text-[#F0FDF8] tracking-tight">
+              <div className="flex-1 min-w-0">
+                <h3 id="conflict-dialog-title" className="text-lg font-bold text-ink tracking-tight">
                   Conflicto de actualización — Registro modificado en otra sesión
                 </h3>
-                <p id="conflict-dialog-desc" className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                <p id="conflict-dialog-desc" className="text-xs text-muted mt-1 leading-relaxed">
                   Este registro fue modificado en otra sesión o equipo. A continuación puede consultar la información actualizada del servidor y compararla con sus modificaciones locales antes de decidir cómo proceder:
                 </p>
               </div>
             </div>
 
             {/* Comparación de Registros en Conflicto */}
-            <div className="overflow-y-auto flex-1 my-2 border border-slate-200 dark:border-[#263834] rounded-xl">
+            <div className="overflow-y-auto flex-1 my-2 border border-line rounded-xl">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-[#131C1A] border-b border-slate-200 dark:border-[#263834] text-slate-700 dark:text-slate-300 font-bold uppercase text-[10px]">
+                  <tr className="bg-surface-alt border-b border-line text-muted font-bold uppercase text-[10px]">
                     <th className="py-2.5 px-3">Estudiante</th>
                     <th className="py-2.5 px-3">Modificación local</th>
                     <th className="py-2.5 px-3">Versión actual en servidor</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-[#263834]">
+                <tbody className="divide-y divide-line">
                   {conflictItems.map((c) => (
-                    <tr key={c.enrollmentId} className="hover:bg-slate-50/50 dark:hover:bg-[#131C1A]/50">
+                    <tr key={c.enrollmentId} className="hover:bg-surface-alt/60">
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-slate-900 dark:text-[#F0FDF8] block">{c.studentName}</span>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">DNI: {c.document}</span>
+                        <span className="font-bold text-ink block">{c.studentName}</span>
+                        <span className="text-[10px] text-muted font-mono tabular-nums">DNI: {c.document}</span>
                       </td>
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded text-[11px]">
+                        <span className="font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded-full text-[11px]">
                           {c.localValue ? `Estado: ${c.localValue}` : 'Pendiente / Sin marca'}
                         </span>
                         {c.localObservation && (
-                          <span className="block text-[10px] text-slate-600 dark:text-slate-300 mt-0.5 italic">
+                          <span className="block text-[10px] text-muted mt-0.5 italic">
                             "{c.localObservation}"
                           </span>
                         )}
                       </td>
                       <td className="py-2.5 px-3">
-                        <span className="font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950/40 px-2 py-0.5 rounded text-[11px]">
+                        <span className="font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full text-[11px]">
                           {c.serverValue ? `Estado: ${c.serverValue}` : 'Sin registrar'}
                         </span>
                         {c.serverObservation && (
-                          <span className="block text-[10px] text-slate-600 dark:text-slate-300 mt-0.5 italic">
+                          <span className="block text-[10px] text-muted mt-0.5 italic">
                             "{c.serverObservation}"
                           </span>
                         )}
-                        <span className="block text-[9px] text-slate-600 dark:text-slate-400 font-mono mt-0.5">
+                        <span className="block text-[9px] text-muted font-mono tabular-nums mt-0.5">
                           Rev: {c.serverRev || 'null'}
                         </span>
                       </td>
@@ -1451,13 +1557,13 @@ export const RegistroAsistencia: React.FC = () => {
             </div>
 
             {/* Acciones de Resolución Segura */}
-            <div className="flex flex-col sm:flex-row gap-2.5 mt-4 pt-3 border-t border-slate-100 dark:border-[#263834]">
+            <div className="flex flex-col sm:flex-row gap-2.5 mt-4 pt-3 border-t border-line">
               <button
                 type="button"
                 id="btn-conflict-keep"
                 onClick={handleConflictKeepLocal}
                 disabled={isResolvingConflict}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#263834] bg-white dark:bg-[#131C1A] text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 dark:hover:bg-[#182220] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 transition-colors text-center disabled:opacity-50"
+                className="min-h-[44px] px-4 py-2.5 rounded-[10px] border border-line bg-surface-alt text-ink text-xs font-bold hover:bg-brand-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand transition-colors text-center disabled:opacity-50"
               >
                 Conservar cambios locales (sin enviar)
               </button>
@@ -1467,7 +1573,7 @@ export const RegistroAsistencia: React.FC = () => {
                 id="btn-conflict-discard"
                 onClick={handleConflictDiscardAndLoadServer}
                 disabled={isResolvingConflict}
-                className="px-4 py-2.5 rounded-xl border border-purple-300 dark:border-purple-800/60 bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-200 text-xs font-bold hover:bg-purple-100 dark:hover:bg-purple-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors text-center disabled:opacity-50"
+                className="min-h-[44px] px-4 py-2.5 rounded-[10px] border border-purple-300 dark:border-purple-800/60 bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-200 text-xs font-bold hover:bg-purple-100 dark:hover:bg-purple-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors text-center disabled:opacity-50"
               >
                 Descartar cambios y cargar servidor
               </button>
@@ -1477,11 +1583,11 @@ export const RegistroAsistencia: React.FC = () => {
                 id="btn-conflict-reapply"
                 onClick={handleConflictReapplyWithServerRev}
                 disabled={isResolvingConflict}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-[#13594A] text-white text-xs font-bold hover:bg-[#0D382F] dark:bg-[#13594A] dark:hover:bg-[#1a7763] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 transition-colors text-center shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 min-h-[44px] px-4 py-2.5 rounded-[10px] bg-brand text-on-brand text-xs font-bold hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand transition-colors text-center shadow-[var(--ui-shadow)] disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isResolvingConflict ? (
                   <>
-                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-3.5 h-3.5 border-2 border-on-brand/30 border-t-on-brand rounded-full animate-spin" />
                     <span>Reaplicando…</span>
                   </>
                 ) : (

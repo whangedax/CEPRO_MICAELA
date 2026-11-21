@@ -15,21 +15,59 @@ export const NoticeModal: React.FC<NoticeModalProps> = ({
   originalRoute,
   actionName,
 }) => {
+  const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      // Focus button automatically when dialog opens for keyboard accessibility
-      closeButtonRef.current?.focus();
+    if (!isOpen) return;
 
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          onClose();
+    const previousFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // Focus button automatically when dialog opens for keyboard accessibility
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && panelRef.current) {
+        const focusables = Array.from(
+          panelRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (focusables.length === 0) {
+          e.preventDefault();
+          return;
         }
-      };
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        } else if (!panelRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus?.isConnected) {
+        previousFocus.focus();
+      }
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -42,9 +80,15 @@ export const NoticeModal: React.FC<NoticeModalProps> = ({
       aria-labelledby="modal-title"
       aria-describedby="modal-desc"
     >
-      <div className="relative w-full max-w-md bg-white dark:bg-[#182220] rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-[#263834] transform transition-all">
+      <div
+        ref={panelRef}
+        className="cepro-dialog-panel relative w-full max-w-md rounded-2xl p-6 shadow-2xl transform transition-all"
+      >
         {/* Header icon */}
-        <div className="w-12 h-12 rounded-2xl bg-[#E6F4F1] dark:bg-[#132B25] text-[#13594A] dark:text-[#5EEAD4] flex items-center justify-center mb-4 border border-transparent dark:border-[#205C4E]" aria-hidden="true">
+        <div
+          className="w-12 h-12 rounded-2xl bg-[var(--ui-brand-soft)] text-[var(--ui-brand)] flex items-center justify-center mb-4 border border-[var(--ui-line)]"
+          aria-hidden="true"
+        >
           <svg
             className="w-6 h-6"
             viewBox="0 0 24 24"
@@ -61,26 +105,30 @@ export const NoticeModal: React.FC<NoticeModalProps> = ({
         </div>
 
         {/* Content */}
-        <h3 id="modal-title" className="text-lg font-bold text-[#172B28] dark:text-[#F0FDF8] mb-1">
+        <h3 id="modal-title" className="text-lg font-bold text-[var(--ui-ink)] mb-1">
           {title}
         </h3>
 
         {actionName && (
-          <p className="text-xs font-bold text-[#004034] dark:text-[#5EEAD4] uppercase tracking-wide mb-3">
+          <p className="text-xs font-bold text-[var(--ui-brand)] uppercase tracking-wide mb-3">
             Acción: {actionName}
           </p>
         )}
 
-        <div id="modal-desc" className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#131C1A] border border-slate-200 dark:border-[#263834] text-xs text-slate-700 dark:text-slate-300 mb-5 space-y-2">
-          <p className="font-semibold text-slate-900 dark:text-slate-100">
+        <div
+          id="modal-desc"
+          className="p-3.5 rounded-2xl bg-[var(--ui-canvas)] border border-[var(--ui-line)] text-xs text-[var(--ui-muted)] mb-5 space-y-2"
+        >
+          <p className="font-semibold text-[var(--ui-ink)]">
             Disponible en la futura integración funcional.
           </p>
-          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+          <p className="text-[var(--ui-muted)] leading-relaxed">
             Este prototipo visual opera de forma 100% aislada con datos ficticios para validar la experiencia de usuario y arquitectura React.
           </p>
           {originalRoute && (
-            <p className="text-[11px] text-slate-600 dark:text-slate-400 font-mono pt-1.5 border-t border-slate-200 dark:border-[#263834]">
-              Ruta destino prevista: <span className="text-[#004034] dark:text-[#5EEAD4] font-bold">{originalRoute}</span>
+            <p className="text-[11px] text-[var(--ui-muted)] font-mono pt-1.5 border-t border-[var(--ui-line)]">
+              Ruta destino prevista:{' '}
+              <span className="text-[var(--ui-brand)] font-bold">{originalRoute}</span>
             </p>
           )}
         </div>
@@ -91,7 +139,7 @@ export const NoticeModal: React.FC<NoticeModalProps> = ({
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-[#13594A] text-white text-xs font-semibold hover:bg-[#004034] dark:hover:bg-[#1A6B5A] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13594A] dark:focus-visible:ring-[#5EEAD4] focus-visible:ring-offset-2"
+            className="ui-button-primary px-5 py-2.5 text-xs"
           >
             Entendido
           </button>

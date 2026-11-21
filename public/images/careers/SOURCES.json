@@ -1,0 +1,86 @@
+[
+  {
+    "key": "automotriz",
+    "file": "automotriz.webp",
+    "source": "https://www.pexels.com/photo/person-holding-the-car-hood-8985922/",
+    "download": "https://images.pexels.com/photos/8985922/pexels-photo-8985922.jpeg?auto=compress&cs=tinysrgb&w=960&h=640&fit=crop&fm=webp",
+    "author": "Artem Podrez",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "alt": "Motor de un automóvil bajo el capó abierto en un taller.",
+    "bytes": 47750,
+    "sha256": "7b205a0c5dbedb287812b20a326016f01880ab3fc0527d48cdb085a865fca8d5"
+  },
+  {
+    "key": "motos",
+    "file": "motos.webp",
+    "source": "https://www.pexels.com/photo/serious-adult-male-mechanic-repairing-motorbike-in-garage-3855224/",
+    "download": "https://images.pexels.com/photos/3855224/pexels-photo-3855224.jpeg?auto=compress&cs=tinysrgb&w=960&h=640&fit=crop&fm=webp",
+    "author": "Andrea Piacquadio",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "alt": "Técnico trabajando en una motocicleta dentro del taller.",
+    "bytes": 48114,
+    "sha256": "ff3b743c7da933e5288f992e42145725f39c80233588a67fb2f2de98894d1fac"
+  },
+  {
+    "key": "metalica",
+    "file": "metalica.webp",
+    "source": "https://www.pexels.com/photo/man-in-protective-clothing-welding-metal-26864252/",
+    "download": "https://images.pexels.com/photos/26864252/pexels-photo-26864252.jpeg?auto=compress&cs=tinysrgb&w=960&h=640&fit=crop&fm=webp",
+    "author": "Felipe Silva",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "alt": "Soldador con equipo de protección trabajando una estructura metálica.",
+    "bytes": 84616,
+    "sha256": "c64196d07c66fcb8693022e40c1b491508112f28cf27930c37e5d328b745aee9"
+  },
+  {
+    "key": "peluqueria",
+    "file": "peluqueria.webp",
+    "source": "https://www.pexels.com/photo/a-barber-cutting-a-client-s-hair-7518731/",
+    "download": "https://images.pexels.com/photos/7518731/pexels-photo-7518731.jpeg?auto=compress&cs=tinysrgb&w=960&h=640&fit=crop&fm=webp",
+    "author": "Pavel Danilyuk",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "alt": "Profesional realizando un corte de cabello en una barbería.",
+    "bytes": 95030,
+    "sha256": "c0ef4ca5f686b141d4b43c51c32acbb186935527c68922574e8607df1d7194db"
+  },
+  {
+    "key": "computacion",
+    "file": "computacion.webp",
+    "source": "https://www.pexels.com/photo/people-sitting-and-working-in-front-of-a-desktop-computer-7675029/",
+    "download": "https://images.pexels.com/photos/7675029/pexels-photo-7675029.jpeg?auto=compress&cs=tinysrgb&w=960&h=640&fit=crop&fm=webp",
+    "author": "Pavel Danilyuk",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "alt": "Trabajo colaborativo con aplicaciones en una computadora de escritorio.",
+    "bytes": 68190,
+    "sha256": "e62bfface8c9524ff88003114fecd183ba9875c4df83b5ad25ddb417e9189af5"
+  },
+  {
+    "key": "corte",
+    "file": "corte.webp",
+    "source": "https://www.pexels.com/photo/a-tailor-sewing-on-a-sewing-machine-5830692/",
+    "download": "https://images.pexels.com/photos/5830692/pexels-photo-5830692.jpeg?auto=compress&cs=tinysrgb&w=960&h=640&fit=crop&fm=webp",
+    "author": "Anna Shvets",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "alt": "Confección de prendas con una máquina de coser.",
+    "bytes": 38798,
+    "sha256": "ba1c15f0126e333a5748f76f5849cf8d62e13fc5bac8055ef6ee2a1d179f596d"
+  },
+  {
+    "key": "electricidad",
+    "file": "electricidad.webp",
+    "source": "https://www.pexels.com/photo/man-fixing-in-electric-box-26100225/",
+    "download": "https://images.pexels.com/photos/26100225/pexels-photo-26100225.jpeg?auto=compress&cs=tinysrgb&w=960&h=640&fit=crop&fm=webp",
+    "author": "Philips Espinoza",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "alt": "Técnico con equipo de protección trabajando en un tablero eléctrico.",
+    "bytes": 91850,
+    "sha256": "de971bd4ad9ed56f49811a36528e76a96fc85da44681d61a8c4fff9a4f978e97"
+  }
+]

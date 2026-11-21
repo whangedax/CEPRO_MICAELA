@@ -1,17 +1,17 @@
 {
   "templateId": "TMPL-21",
   "canonicalPdf": "/sources/templates/PLANTILLAS_PDF_IMPRIMIR/PDF_INDIVIDUALES/21_TITULO_AUXILIAR_TECNICO.pdf",
-  "sha256": "955898d430ed005dd06ffa55752cd33724b4ea32d6c58b4a1c13c2437f5b5bf3",
+  "sha256": "bf3bef03580da2659fcafa50fd0e3215d56831cbe1b4fedba7b908e1f6240a80",
   "pages": [
     {
       "number": 1,
-      "width": 841.89,
-      "height": 595.28
+      "width": 792,
+      "height": 612
     },
     {
       "number": 2,
-      "width": 841.89,
-      "height": 595.28
+      "width": 792,
+      "height": 612
     }
   ],
   "contextType": "TITLE",

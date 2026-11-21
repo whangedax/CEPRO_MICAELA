@@ -15,7 +15,7 @@ const { OfflineCore } = require('../scripts/offline-core.cjs');
 const Network = require('../scripts/institutional-network.cjs');
 const { SYNC_MODULES, matchesSyncModule, classifyOperations } = require('../scripts/sync-modules.cjs');
 
-const artifactsDir = path.join(__dirname, 'offline-artifacts', 'sync-modular');
+const artifactsDir = path.join(__dirname, '../dev-sandbox/data/sync-modular', require('node:crypto').randomUUID());
 
 test('Fase 3: Sincronización Modular por Partes (USB)', async (t) => {
   if (fs.existsSync(artifactsDir)) {
@@ -101,6 +101,7 @@ test('Fase 3: Sincronización Modular por Partes (USB)', async (t) => {
   await t.test('2. Exportación masiva de Dirección genera paquetes para Docente Y para Secretaría (para-secretaria/)', () => {
     const exportResult = Network.prepareBatchExport(hubCore, director, {
       usbDrivePath: usbDir,
+      passphrase: 'Synthetic-transfer-123',
       syncModule: 'config'
     });
 
@@ -164,6 +165,7 @@ test('Fase 3: Sincronización Modular por Partes (USB)', async (t) => {
     // El docente exporta al USB seleccionando ÚNICAMENTE el módulo de NOTAS ('grades')
     const exportNotes = Network.prepareBatchExport(docCore, actorDocente, {
       usbDrivePath: usbDir,
+      passphrase: 'Synthetic-transfer-123',
       syncModule: 'grades'
     });
 
@@ -176,15 +178,11 @@ test('Fase 3: Sincronización Modular por Partes (USB)', async (t) => {
     assert.equal(pkgContent.body.syncModule, 'grades', 'El paquete debe estar marcado con syncModule grades');
 
     // Desellar operaciones
-    const hubDev = hubCore.setting('device');
     const crypto = require('node:crypto');
-    const shared = crypto.diffieHellman({
-      privateKey: crypto.createPrivateKey(hubDev.encryption.private),
-      publicKey: crypto.createPublicKey(pkgContent.body.envelope.ephemeral)
-    });
-    const decipher = crypto.createDecipheriv('aes-256-gcm', crypto.createHash('sha256').update(shared).digest(), Buffer.from(pkgContent.body.envelope.iv, 'base64'));
-    decipher.setAuthTag(Buffer.from(pkgContent.body.envelope.tag, 'base64'));
-    const unsealed = JSON.parse(Buffer.concat([decipher.update(Buffer.from(pkgContent.body.envelope.ciphertext, 'base64')), decipher.final()]).toString());
+    const envelope=pkgContent.body.envelope;
+    const decipher=crypto.createDecipheriv('aes-256-gcm',crypto.scryptSync('Synthetic-transfer-123',envelope.salt,32),Buffer.from(envelope.iv,'hex'));
+    decipher.setAuthTag(Buffer.from(envelope.tag,'hex'));
+    const unsealed=JSON.parse(Buffer.concat([decipher.update(Buffer.from(envelope.data,'base64')),decipher.final()]).toString());
 
     const entitiesInPackage = unsealed.operations.map((o) => o.body.entity);
     assert.ok(entitiesInPackage.includes('grades'), 'El paquete debe incluir las calificaciones');

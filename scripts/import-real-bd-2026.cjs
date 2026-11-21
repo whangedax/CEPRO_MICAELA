@@ -572,17 +572,17 @@ const PROGRAMS_CATALOG = [
 const PERSONNEL_2026 = [
   { document: '01309890', name: 'PAREDES FELICIANO, Eloy Valerio', displayName: 'Lic. Eloy Valerio Paredes Feliciano', position: 'Director', specialty: 'Electricidad y Electrónica', email: 'eloyvpflee@gmail.com', phone: '961990905', birthday: '28-Ene', address: 'Tepro "B"-G-11 - Puno', referenceTurno: 'MAÑANA / TARDE', username: 'eloy.paredes', role: 'DIRECTOR' },
   { document: '02436967', name: 'VILCA PUMA, Carmen Yovana', displayName: 'Carmen Yovana Vilca Puma', position: 'Secretaria', specialty: 'Secretaría General', email: 'libertadcarmen19@gmail.com', phone: '999041818', birthday: '16-Jul', address: 'Av. 3 de Octubre 879', referenceTurno: 'MAÑANA / TARDE', username: 'carmen.vilca', role: 'SECRETARIA' },
-  { document: '01206948', name: 'MAQUERA GIL, Aníbal Bruno', displayName: 'Prof. Aníbal Bruno Maquera Gil', position: 'Prof. de Aula', specialty: 'Mecánica de Motos y Vehículos Afines', email: 'anibalbrunomaqueragil@gmail.com', phone: '950961799', birthday: '17-May', address: 'Av. Rinconada Mz. C Lote 21', referenceTurno: 'MAÑANA', username: 'anibal.maquera', role: 'DOCENTE' },
-  { document: '02436621', name: 'HUANCA CASTRO, Serafín', displayName: 'Prof. Serafín Huanca Castro', position: 'Prof. de Aula', specialty: 'Mantenimiento de Sistemas Eléctricos', email: 'serhuacast@gmail.com', phone: '950977724', birthday: '05-Dic', address: 'Jr. Caylloma 244', referenceTurno: 'TARDE', username: 'serafin.huanca', role: 'DOCENTE' },
-  { document: '01296616', name: 'CHURA COAQUIRA, Magda', displayName: 'Prof. Magda Chura Coaquira', position: 'Prof. de Aula', specialty: 'Computación e Informática', email: 'magdachura44@gmail.com', phone: '994836070', birthday: '31-Mar', address: 'Jr. Urcupiña 159', referenceTurno: 'TARDE', username: 'magda.chura', role: 'DOCENTE' },
-  { document: '01540900', name: 'LARICO CANAHUIRE, Teófilo', displayName: 'Prof. Teófilo Larico Canahuire', position: 'Prof. de Aula', specialty: 'Corte y Ensamblaje', email: 'laricoteofilo@gmail.com', phone: '990800601', birthday: '27-Abr', address: 'Jr. Yungay - San Miguel', referenceTurno: 'NOCHE', username: 'teofilo.larico', role: 'DOCENTE' },
-  { document: '01776490', name: 'CHURA MAMANI, René Prudencio', displayName: 'Prof. René Prudencio Chura Mamani', position: 'Prof. de Aula', specialty: 'Corte y Ensamblaje', email: 'renetox28@gmail.com', phone: '950908005', birthday: '28-Abr', address: 'Jr. Santa Fe N° 126 Urb. 27', referenceTurno: 'TARDE', username: 'rene.chura', role: 'DOCENTE' },
-  { document: '40216775', name: 'AYNA CABRERA, Alejandrina', displayName: 'Prof. Alejandrina Ayna Cabrera', position: 'Prof. de Aula', specialty: 'Peluquería y Barbería', email: 'aynacabreraale@gmail.com', phone: '901000902', birthday: '29-Jul', address: 'Av. Laykakota 248 Int. 17', referenceTurno: 'MAÑANA', username: 'alejandrina.ayna', role: 'DOCENTE' },
-  { document: '01777393', name: 'GUTIÉRREZ LOZA, Fidelia Jesusa', displayName: 'Prof. Fidelia Jesusa Gutiérrez Loza', position: 'Prof. de Aula', specialty: 'Peluquería y Barbería', email: 'fidelestetica@gmail.com', phone: '925083339', birthday: '14-Mar', address: 'Jr. Lambayeque 920', referenceTurno: 'NOCHE', username: 'fidelia.gutierrez', role: 'DOCENTE' },
-  { document: '01316666', name: 'CCOLLA VILLANUEVA, María Azucena', displayName: 'Prof. María Azucena Ccolla Villanueva', position: 'Prof. de Aula', specialty: 'Peluquería y Barbería', email: 'macollavillanueva@gmail.com', phone: '950769862', birthday: '01-Jun', address: 'Jr. Candelaria N° 2170 Puno', referenceTurno: 'TARDE', username: 'azucena.ccolla', role: 'DOCENTE' },
-  { document: '41468188', name: 'FLORES LLANOS, Liz Elvira', displayName: 'Prof. Liz Elvira Flores Llanos', position: 'Prof. de Aula', specialty: 'Corte y Ensamblaje', email: 'lizelvira211@hotmail.com', phone: '950902779', birthday: '15-Oct', address: 'Jr. Leocadio Prado N° 695', referenceTurno: 'MAÑANA', username: 'liz.flores', role: 'DOCENTE' },
-  { document: '42923233', name: 'VELÁSQUEZ VILCA, Édgar', displayName: 'Prof. Édgar Velásquez Vilca', position: 'Prof. de Aula', specialty: 'Mecánica Automotriz', email: 'velasquezvilcaedgar@gmail.com', phone: '915110927', birthday: '14-Abr', address: 'Jr. Gervacio Lipa P-7', referenceTurno: 'TARDE', username: 'edgar.velasquez', role: 'DOCENTE' },
-  { document: '01302956', name: 'CCOSI QUENAYA, Cesario Julio', displayName: 'Prof. Cesario Julio Ccosi Quenaya', position: 'Prof. de Aula', specialty: 'Carpintería Metálica', email: 'julioquenaya74@gmail.com', phone: '994381864', birthday: '25-Feb', address: 'Alianza Mz. G Lote 11', referenceTurno: 'TARDE', username: 'cesario.ccosi', role: 'DOCENTE' },
+  { document: '01206948', name: 'MAQUERA GIL, Aníbal Bruno', displayName: 'Prof. Aníbal Bruno Maquera Gil', position: 'Prof. de Aula', specialty: 'Mecánica de Motos y Vehículos Afines', careerId: 'PROG-002', email: 'anibalbrunomaqueragil@gmail.com', phone: '950961799', birthday: '17-May', address: 'Av. Rinconada Mz. C Lote 21', referenceTurno: 'MAÑANA', username: 'anibal.maquera', role: 'DOCENTE' },
+  { document: '02436621', name: 'HUANCA CASTRO, Serafín', displayName: 'Prof. Serafín Huanca Castro', position: 'Prof. de Aula', specialty: 'Mantenimiento de Sistemas Eléctricos', careerId: 'PROG-007', email: 'serhuacast@gmail.com', phone: '950977724', birthday: '05-Dic', address: 'Jr. Caylloma 244', referenceTurno: 'TARDE', username: 'serafin.huanca', role: 'DOCENTE' },
+  { document: '01296616', name: 'CHURA COAQUIRA, Magda', displayName: 'Prof. Magda Chura Coaquira', position: 'Prof. de Aula', specialty: 'Computación e Informática', careerId: 'PROG-005', email: 'magdachura44@gmail.com', phone: '994836070', birthday: '31-Mar', address: 'Jr. Urcupiña 159', referenceTurno: 'TARDE', username: 'magda.chura', role: 'DOCENTE' },
+  { document: '01540900', name: 'LARICO CANAHUIRE, Teófilo', displayName: 'Prof. Teófilo Larico Canahuire', position: 'Prof. de Aula', specialty: 'Corte y Ensamblaje', careerId: 'PROG-006', email: 'laricoteofilo@gmail.com', phone: '990800601', birthday: '27-Abr', address: 'Jr. Yungay - San Miguel', referenceTurno: 'NOCHE', username: 'teofilo.larico', role: 'DOCENTE' },
+  { document: '01776490', name: 'CHURA MAMANI, René Prudencio', displayName: 'Prof. René Prudencio Chura Mamani', position: 'Prof. de Aula', specialty: 'Corte y Ensamblaje', careerId: 'PROG-006', email: 'renetox28@gmail.com', phone: '950908005', birthday: '28-Abr', address: 'Jr. Santa Fe N° 126 Urb. 27', referenceTurno: 'TARDE', username: 'rene.chura', role: 'DOCENTE' },
+  { document: '40216775', name: 'AYNA CABRERA, Alejandrina', displayName: 'Prof. Alejandrina Ayna Cabrera', position: 'Prof. de Aula', specialty: 'Peluquería y Barbería', careerId: 'PROG-004', email: 'aynacabreraale@gmail.com', phone: '901000902', birthday: '29-Jul', address: 'Av. Laykakota 248 Int. 17', referenceTurno: 'MAÑANA', username: 'alejandrina.ayna', role: 'DOCENTE' },
+  { document: '01777393', name: 'GUTIÉRREZ LOZA, Fidelia Jesusa', displayName: 'Prof. Fidelia Jesusa Gutiérrez Loza', position: 'Prof. de Aula', specialty: 'Peluquería y Barbería', careerId: 'PROG-004', email: 'fidelestetica@gmail.com', phone: '925083339', birthday: '14-Mar', address: 'Jr. Lambayeque 920', referenceTurno: 'NOCHE', username: 'fidelia.gutierrez', role: 'DOCENTE' },
+  { document: '01316666', name: 'CCOLLA VILLANUEVA, María Azucena', displayName: 'Prof. María Azucena Ccolla Villanueva', position: 'Prof. de Aula', specialty: 'Peluquería y Barbería', careerId: 'PROG-004', email: 'macollavillanueva@gmail.com', phone: '950769862', birthday: '01-Jun', address: 'Jr. Candelaria N° 2170 Puno', referenceTurno: 'TARDE', username: 'azucena.ccolla', role: 'DOCENTE' },
+  { document: '41468188', name: 'FLORES LLANOS, Liz Elvira', displayName: 'Prof. Liz Elvira Flores Llanos', position: 'Prof. de Aula', specialty: 'Corte y Ensamblaje', careerId: 'PROG-006', email: 'lizelvira211@hotmail.com', phone: '950902779', birthday: '15-Oct', address: 'Jr. Leocadio Prado N° 695', referenceTurno: 'MAÑANA', username: 'liz.flores', role: 'DOCENTE' },
+  { document: '42923233', name: 'VELÁSQUEZ VILCA, Édgar', displayName: 'Prof. Édgar Velásquez Vilca', position: 'Prof. de Aula', specialty: 'Mecánica Automotriz', careerId: 'PROG-001', email: 'velasquezvilcaedgar@gmail.com', phone: '915110927', birthday: '14-Abr', address: 'Jr. Gervacio Lipa P-7', referenceTurno: 'TARDE', username: 'edgar.velasquez', role: 'DOCENTE' },
+  { document: '01302956', name: 'CCOSI QUENAYA, Cesario Julio', displayName: 'Prof. Cesario Julio Ccosi Quenaya', position: 'Prof. de Aula', specialty: 'Carpintería Metálica', careerId: 'PROG-003', email: 'julioquenaya74@gmail.com', phone: '994381864', birthday: '25-Feb', address: 'Alianza Mz. G Lote 11', referenceTurno: 'TARDE', username: 'cesario.ccosi', role: 'DOCENTE' },
   { document: '02444084', name: 'CANAZA ZAPATA, Néstor', displayName: 'Néstor Canaza Zapata', position: 'Personal de Servicio', specialty: 'Servicio, Mantenimiento y Custodia', email: 'necaza@gmail.com', phone: '900772688', birthday: '07-Jun', address: 'Jr. Callao Mz. F', referenceTurno: 'MAÑANA', username: null, role: null },
   { document: '30833265', name: 'PASTOR MURRIEL, Víctor Antonio', displayName: 'Víctor Antonio Pastor Murriel', position: 'Personal de Servicio', specialty: 'Servicio, Vigilancia y Conservación', email: 'kiwiypm@gmail.com', phone: '950808068', birthday: '13-Feb', address: 'Av. Perú N° 815', referenceTurno: 'NOCHE', username: null, role: null }
 ];
@@ -1257,7 +1257,7 @@ function importRealBd2026(options = {}) {
       const credentialsList = [];
       const officialUsernames = new Set(PERSONNEL_2026.filter(p => p.username && p.role).map(p => p.username));
 
-      function upsertAccount(username, password, displayName, role, description, assignments = []) {
+      function upsertAccount(username, password, displayName, role, description, assignments = [], careerId = '') {
         const existing = core.users().find(u => u.username === username);
         const normalizedAssignments = role === 'DOCENTE' ? core.normalizeAssignments(assignments) : [];
         const saved = core.saveUser(director, {
@@ -1267,6 +1267,7 @@ function importRealBd2026(options = {}) {
           name: displayName,
           role,
           description,
+          careerId,
           active: true,
           archived: false,
           assignmentPending: false,
@@ -1294,12 +1295,15 @@ function importRealBd2026(options = {}) {
           person.displayName,
           person.role,
           `${person.position} · ${person.specialty} · Turno ${person.referenceTurno}`,
-          assignments
+          assignments,
+          person.careerId || ''
         );
         if (person.username === 'eloy.paredes') {
           director = core.users().find(u => u.id === savedUser.id) || director;
         }
       }
+
+      const moduleClassrooms = require('./prepare-module-classrooms.cjs').prepareModuleClassrooms(core, director);
 
       // Eliminar cualquier cuenta residual o duplicada (.dev, simulación, etc.) que no esté en las 13 oficiales
       for (const u of core.users()) {
@@ -1386,6 +1390,7 @@ function importRealBd2026(options = {}) {
               const attId = hashRecord(['attendance', enr.id, u.code, [dStr, '1']]);
               core.putRecord('attendance', {
                 id: attId,
+                rev: crypto.randomUUID(),
                 enrollmentId: enr.id,
                 groupId: group.id,
                 periodId: group.periodId,
@@ -1407,21 +1412,21 @@ function importRealBd2026(options = {}) {
               for (const comp of ['IA1', 'IA2', 'IA3']) {
                 const cId = hashRecord(['grades', enr.id, u.code, `IL${k}.${comp}`]);
                 core.putRecord('grades', {
-                  id: cId, enrollmentId: enr.id, groupId: group.id, periodId: group.periodId,
+                  id: cId, rev: crypto.randomUUID(), enrollmentId: enr.id, groupId: group.id, periodId: group.periodId,
                   moduleId: group.moduleId, unit: u.code, indicator: `IL${k}.${comp}`,
                   value: score, pending: false, observation: ''
                 });
               }
               const ilId = hashRecord(['grades', enr.id, u.code, `IL${k}`]);
               core.putRecord('grades', {
-                id: ilId, enrollmentId: enr.id, groupId: group.id, periodId: group.periodId,
+                id: ilId, rev: crypto.randomUUID(), enrollmentId: enr.id, groupId: group.id, periodId: group.periodId,
                 moduleId: group.moduleId, unit: u.code, indicator: `IL${k}`,
                 value: score, pending: false, observation: ''
               });
             }
             const resId = hashRecord(['grades', enr.id, u.code, 'RESULTADO_UD']);
             core.putRecord('grades', {
-              id: resId, enrollmentId: enr.id, groupId: group.id, periodId: group.periodId,
+              id: resId, rev: crypto.randomUUID(), enrollmentId: enr.id, groupId: group.id, periodId: group.periodId,
               moduleId: group.moduleId, unit: u.code, indicator: 'RESULTADO_UD',
               value: score, pending: false, observation: ''
             });
@@ -1461,7 +1466,10 @@ function importRealBd2026(options = {}) {
         modulesCount: PROGRAMS_CATALOG.reduce((n, p) => n + p.modules.length, 0),
         personnelCount: PERSONNEL_2026.length,
         activeClassrooms2026I: createdGroupsSummary.length,
-        preparedClassrooms2026II: createdGroupsSummary.length,
+        preparedClassrooms2026II: createdGroupsSummary.filter(classroom =>
+          core.record('groups', classroom.group2Id)?.periodId === '2026-II'
+        ).length,
+        moduleClassrooms,
         totalRawExcelRows: allRows.length,
         activeEnrollmentsCount,
         uniqueStudentsCount: uniqueStudentsMap.size,
@@ -1504,6 +1512,8 @@ function importRealBd2026(options = {}) {
   }
 }
 
+module.exports = { importRealBd2026, extractStudentsFromBd, PROGRAMS_CATALOG, PERSONNEL_2026, FILE_CLASSROOM_MAPPING };
+
 if (require.main === module) {
   console.log('========================================================================');
   console.log('  CEPRO_MICAELA 2.0 — IMPORTADOR OFICIAL DE BASE DE DATOS (Downloads/bd)');
@@ -1527,4 +1537,4 @@ if (require.main === module) {
   console.log('\n========================================================================');
 }
 
-module.exports = { importRealBd2026, extractStudentsFromBd, PROGRAMS_CATALOG, PERSONNEL_2026, FILE_CLASSROOM_MAPPING };
+
